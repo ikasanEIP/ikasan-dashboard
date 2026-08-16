@@ -2,9 +2,9 @@ package org.ikasan.dashboard.ui.search.listener;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -13,13 +13,13 @@ public abstract class IkasanEventActionListener
 {
     protected SolrSearchFilteringGrid searchResultsGrid;
     protected HashMap<String, Checkbox> selectionBoxes = new HashMap<>();
-    protected HashMap<String, IkasanSolrDocument> selectionItems = new HashMap<>();
+    protected HashMap<String, IkasanESBDocument> selectionItems = new HashMap<>();
     protected Boolean selected = Boolean.FALSE;
     protected ModuleMetaDataService moduleMetadataService;
     protected HashMap<String, ModuleMetaData> moduleMetaDataCache;
 
     public IkasanEventActionListener(ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid,
-            HashMap<String, Checkbox> selectionBoxes, HashMap<String, IkasanSolrDocument> selectionItems)
+            HashMap<String, Checkbox> selectionBoxes, HashMap<String, IkasanESBDocument> selectionItems)
     {
         this.moduleMetadataService = moduleMetadataService;
         if(this.moduleMetadataService == null)
@@ -73,7 +73,7 @@ public abstract class IkasanEventActionListener
      * @param document
      * @return
      */
-    protected boolean shouldActionEvent(IkasanSolrDocument document)
+    protected boolean shouldActionEvent(IkasanESBDocument document)
     {
         if(this.selected)
         {

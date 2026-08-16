@@ -15,7 +15,8 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.service.ESBSearchService;
 
 import java.time.Instant;
 import java.time.LocalTime;
@@ -30,14 +31,14 @@ public class HospitalEventsWidget extends DashboardWidget implements BeforeEnter
 
     private static long MILLI_IN_DAY = 1000 * 60 * 60 * 24;
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanSolrDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private Chart chart;
     private DataSeries exclusionSeries;
     private DataSeries actionedSeries;
 
-    public HospitalEventsWidget(SolrGeneralService solrGeneralService) {
-        this.solrGeneralService = solrGeneralService;
+    public HospitalEventsWidget(ESBSearchService esbSearchService) {
+        this.esbSearchService = esbSearchService;
 
         init();
     }
@@ -209,8 +210,8 @@ public class HospitalEventsWidget extends DashboardWidget implements BeforeEnter
         return dayExclusions;
     }
 
-    private IkasanSolrDocumentSearchResults loadData(String type, long startTime, long endTime) {
-        return this.solrGeneralService.search(new HashSet<String>(), new HashSet<String>(), null,
+    private IkasanDocumentSearchResults loadData(String type, long startTime, long endTime) {
+        return this.esbSearchService.search(new HashSet<String>(), new HashSet<String>(), null,
              startTime, endTime, 0, List.of(type),false, null, null);
     }
 

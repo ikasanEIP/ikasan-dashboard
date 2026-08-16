@@ -10,6 +10,7 @@ import org.apache.solr.core.NodeConfig;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDaoImpl;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
 import org.ikasan.esb.service.business.stream.metadata.BusinessStreamMetaDataServiceImpl;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.junit.After;
@@ -30,7 +31,7 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
     public static final String LEGACY_BUSINESS_STREAM_PAYLOAD = "/data/graph/wriggle3.json";
     public static final String NEW_BUSINESS_STREAM_PAYLOAD = "/data/businessStream/sample-business-stream.json";
 
-    private SolrGeneralDaoImpl dao;
+    private SolrGeneralDao dao;
 
     private NodeConfig config;
 

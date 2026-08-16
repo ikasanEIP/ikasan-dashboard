@@ -1,0 +1,122 @@
+/*
+ * $Id$
+ * $URL$
+ *
+ * ====================================================================
+ * Ikasan Enterprise Integration Platform
+ *
+ * Distributed under the Modified BSD License.
+ * Copyright notice: The copyright for this software and a full listing
+ * of individual contributors are as shown in the packaged copyright.txt
+ * file.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of the ORGANIZATION nor the names of its contributors may
+ *    be used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ====================================================================
+ */
+package org.ikasan.mongo.persistence.security.repository;
+
+import org.ikasan.mongo.persistence.security.model.MongoRoleImpl;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Spring Data MongoDB repository for Role persistence.
+ *
+ * @author Ikasan Development Team
+ */
+@Repository
+@DependsOn("mongoTemplate")
+public interface MongoRoleRepository extends MongoRepository<MongoRoleImpl, String> {
+
+    /**
+     * Find a role by name.
+     *
+     * @param name the name to search for
+     * @return Optional containing the role if found
+     */
+    Optional<MongoRoleImpl> findByName(String name);
+
+    /**
+     * Find roles whose name contains the search term (case-insensitive).
+     *
+     * @param name the search term
+     * @return list of matching roles
+     */
+    List<MongoRoleImpl> findByNameContainingIgnoreCase(String name);
+
+    /**
+     * Find roles whose description contains the search term (case-insensitive).
+     *
+     * @param description the search term
+     * @return list of matching roles
+     */
+    List<MongoRoleImpl> findByDescriptionContainingIgnoreCase(String description);
+
+    /**
+     * Find roles associated with a specific policy.
+     *
+     * @param policyId the policy identifier
+     * @return list of roles associated with the policy
+     */
+    List<MongoRoleImpl> findByPolicyIdsContaining(String policyId);
+
+    /**
+     * Find roles associated with a specific role module.
+     *
+     * @param roleModuleId the role module identifier
+     * @return list of roles associated with the role module
+     */
+    List<MongoRoleImpl> findByRoleModuleIdsContaining(String roleModuleId);
+
+    /**
+     * Find roles associated with a specific role job plan.
+     *
+     * @param roleJobPlanId the role job plan identifier
+     * @return list of roles associated with the role job plan
+     */
+    List<MongoRoleImpl> findByRoleJobPlanIdsContaining(String roleJobPlanId);
+
+    /**
+     * Delete a role by name.
+     *
+     * @param name the name of the role to delete
+     */
+    void deleteByName(String name);
+
+    /**
+     * Check if a role exists by name.
+     *
+     * @param name the name to check
+     * @return true if a role with the given name exists
+     */
+    boolean existsByName(String name);
+}

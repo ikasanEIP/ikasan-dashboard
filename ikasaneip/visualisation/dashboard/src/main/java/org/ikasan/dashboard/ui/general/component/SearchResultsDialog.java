@@ -2,14 +2,14 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ public class SearchResultsDialog extends AbstractCloseableResizableDialog {
 
     private SearchResults searchResults;
 
-    public SearchResultsDialog(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
+    public SearchResultsDialog(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService
         , HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
         , ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService, DateFormatter dateFormatter
         , int maxDownloadBytes){
-        searchResults = new SearchResults(solrGeneralService, hospitalAuditService,
+        searchResults = new SearchResults(esbSearchService, hospitalAuditService,
             resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, dateFormatter, maxDownloadBytes);
 
         searchResults.setSizeFull();

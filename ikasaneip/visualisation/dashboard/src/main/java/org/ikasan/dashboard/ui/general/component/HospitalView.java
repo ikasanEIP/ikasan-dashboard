@@ -27,14 +27,14 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ResubmissionService;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,7 +47,7 @@ import java.util.Optional;
 @Route(value = "exclusion")
 @UIScope
 @org.springframework.stereotype.Component
-public class HospitalView extends AbstractEntityView<IkasanSolrDocument> implements HasUrlParameter<String>
+public class HospitalView extends AbstractEntityView<IkasanESBDocument> implements HasUrlParameter<String>
 {
     Logger logger = LoggerFactory.getLogger(HospitalView.class);
 
@@ -58,7 +58,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     private TextField errorActionTf;
     private TextField dateTimeTf;
 
-    private IkasanSolrDocument errorOccurrence;
+    private IkasanESBDocument errorOccurrence;
     private String exclusionPayload;
 
     private Button resubmitButton;
@@ -66,21 +66,21 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
 
     private HospitalAuditService hospitalAuditService;
 
-    private IkasanSolrDocument ikasanSolrDocument;
+    private IkasanESBDocument ikasanESBDocument;
 
     private Button downloadButton;
     private Tooltip downloadButtonTooltip;
 
     private ResubmissionService resubmissionRestService;
     private ModuleMetaDataService moduleMetadataService;
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private String translatedEventActionMessage;
 
     private DateFormatter dateFormatter;
 
     public HospitalView(@Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService, DateFormatter dateFormatter)
+        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ESBSearchService esbSearchService, DateFormatter dateFormatter)
     {
         this.hospitalAuditService = hospitalAuditService;
         if(this.hospitalAuditService == null)
@@ -97,8 +97,8 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         {
             throw new IllegalArgumentException("moduleMetadataService cannot be null!");
         }
-        this.solrGeneralService = solrGeneralService;
-        if(this.solrGeneralService == null)
+        this.esbSearchService = esbSearchService;
+        if(this.esbSearchService == null)
         {
             throw new IllegalArgumentException("solrGeneralService cannot be null!");
         }
@@ -186,9 +186,9 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
                     progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()), null);
 
-                    ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
-                    boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                        ikasanSolrDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
+                    ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanESBDocument.getModuleName());
+                    boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanESBDocument.getModuleName(),
+                        ikasanESBDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanESBDocument.getId()), authentication.getName());
 
                     if(!result)
                     {
@@ -202,7 +202,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     }
 
                     ExclusionEventAction eventAction = this.getExclusionEventAction(exclusionEventAction.getComment(), ExclusionEventAction.RESUBMIT,
-                        this.ikasanSolrDocument, authentication.getName());
+                        this.ikasanESBDocument, authentication.getName());
                     this.hospitalAuditService.save(eventAction);
 
                     current.access(() ->
@@ -234,9 +234,9 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
                     progressIndicatorDialog.open(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale()), null);
 
-                    ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
-                    boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                        ikasanSolrDocument.getFlowName(), "ignore", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
+                    ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanESBDocument.getModuleName());
+                    boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanESBDocument.getModuleName(),
+                        ikasanESBDocument.getFlowName(), "ignore", this.getErrorUri(ikasanESBDocument.getId()), authentication.getName());
 
                     if(!result)
                     {
@@ -250,7 +250,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     }
 
                     ExclusionEventAction eventAction = this.getExclusionEventAction(exclusionEventAction.getComment(), ExclusionEventAction.IGNORED,
-                        this.ikasanSolrDocument, authentication.getName());
+                        this.ikasanESBDocument, authentication.getName());
 
                     this.hospitalAuditService.save(eventAction);
 
@@ -305,16 +305,16 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     }
 
     @Override
-    public void populate(IkasanSolrDocument ikasanSolrDocument)
+    public void populate(IkasanESBDocument ikasanSolrDocument)
     {
-        this.ikasanSolrDocument = ikasanSolrDocument;
+        this.ikasanESBDocument = ikasanSolrDocument;
         this.moduleNameTf.setValue(Optional.ofNullable(ikasanSolrDocument.getModuleName()).orElse(""));
         this.flowNameTf.setValue(Optional.ofNullable(ikasanSolrDocument.getFlowName()).orElse(""));
         this.eventIdTf.setValue(Optional.ofNullable(ikasanSolrDocument.getEventId()).orElse(""));
         this.errorUriTf.setValue(Optional.ofNullable(this.getErrorUri(ikasanSolrDocument.getId())).orElse(""));
         this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
 
-        this.errorOccurrence = this.solrGeneralService
+        this.errorOccurrence = this.esbSearchService
             .findByErrorUri("error", this.getErrorUri(ikasanSolrDocument.getId()));
         this.exclusionPayload = ikasanSolrDocument.getEvent();
 
@@ -347,7 +347,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
      * @param user
      * @return
      */
-    protected ExclusionEventAction getExclusionEventAction(String comment, String action, IkasanSolrDocument document, String user)
+    protected ExclusionEventAction getExclusionEventAction(String comment, String action, IkasanESBDocument document, String user)
     {
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
@@ -378,7 +378,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     public void setParameter(BeforeEvent beforeEvent, String parameter) {
         logger.info(parameter);
 
-        IkasanSolrDocument solrDocument = this.solrGeneralService.findById("exclusion", parameter);
+        IkasanESBDocument solrDocument = this.esbSearchService.findById("exclusion", parameter);
 
         if(solrDocument == null) {
             beforeEvent.rerouteTo("pageNotFound");

@@ -9,9 +9,9 @@ import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,12 +21,12 @@ public class ErrorEventWidget extends DashboardWidget {
 
     private static int REPORTING_INTERVAL = 60000;
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private DataSeries series;
 
-    public ErrorEventWidget(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService) {
-        this.solrGeneralService = solrGeneralService;
+    public ErrorEventWidget(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService) {
+        this.esbSearchService = esbSearchService;
 
         HorizontalLayout div = new HorizontalLayout();
         div.setWidth("100%");
@@ -99,8 +99,8 @@ public class ErrorEventWidget extends DashboardWidget {
         }
     }
 
-    private IkasanSolrDocumentSearchResults loadData(String type, long startTime, long endTime) {
-        return this.solrGeneralService.search(new HashSet<String>(), new HashSet<String>(), null,
+    private IkasanDocumentSearchResults loadData(String type, long startTime, long endTime) {
+        return this.esbSearchService.search(new HashSet<String>(), new HashSet<String>(), null,
             startTime, endTime, 0, List.of(type),false, null, null);
     }
 }

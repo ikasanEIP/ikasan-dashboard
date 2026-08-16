@@ -17,16 +17,17 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.DownloadLogFileService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.security.model.User;
 import org.ikasan.spec.security.service.UserService;
-import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.security.PermitAll;
@@ -50,7 +51,8 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
     private DownloadLogFileService downloadLogFileService;
 
     @Autowired
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    @Qualifier("esbSearchService")
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     @Autowired
     private UserService userService;
@@ -95,11 +97,11 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
             status.setColspan(4);
             board.add(status);
 
-            DashboardWidget hospital = new HospitalEventsWidget(solrGeneralService);
+            DashboardWidget hospital = new HospitalEventsWidget(esbSearchService);
             hospital.setColspan(6);
             board.add(hospital);
 
-            DashboardWidget error = new ErrorEventWidget(solrGeneralService);
+            DashboardWidget error = new ErrorEventWidget(esbSearchService);
             error.setColspan(6);
             board.add(error);
 

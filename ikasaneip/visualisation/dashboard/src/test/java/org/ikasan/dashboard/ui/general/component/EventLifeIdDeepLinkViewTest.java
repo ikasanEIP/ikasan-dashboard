@@ -6,6 +6,8 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -27,7 +29,7 @@ public class EventLifeIdDeepLinkViewTest extends UITest {
     @Test
     public void test_event_life_id_view_success() throws IOException
     {
-        IkasanSolrDocument document = new IkasanSolrDocument();
+        IkasanESBDocument document = new IkasanSolrDocument();
         document.setId("id");
         document.setComponentName("component");
         document.setErrorAction("exclusion");
@@ -42,12 +44,12 @@ public class EventLifeIdDeepLinkViewTest extends UITest {
         document.setEvent("event");
         document.setEventId("eventId");
 
-        IkasanSolrDocumentSearchResults solrDocumentSearchResults = new IkasanSolrDocumentSearchResults(List.of(document, document, document), 3, 1);
+        IkasanDocumentSearchResults solrDocumentSearchResults = new IkasanSolrDocumentSearchResults(List.of(document, document, document), 3, 1);
 
         Mockito.when(this.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(solrDocumentSearchResults);
@@ -71,12 +73,12 @@ public class EventLifeIdDeepLinkViewTest extends UITest {
     @Test
     public void test_event_life_id_view_success_no_results() throws IOException
     {
-        IkasanSolrDocumentSearchResults solrDocumentSearchResults = new IkasanSolrDocumentSearchResults(List.of(), 0, 0);
+        IkasanDocumentSearchResults solrDocumentSearchResults = new IkasanSolrDocumentSearchResults(List.of(), 0, 0);
 
         Mockito.when(this.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(solrDocumentSearchResults);

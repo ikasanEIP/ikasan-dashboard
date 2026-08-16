@@ -2,16 +2,12 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
-public class EntityContentsViewDialog extends AbstractEntityViewDialog<IkasanSolrDocument> {
-
-    private String titleString;
+public class EntityContentsViewDialog extends AbstractEntityViewDialog<IkasanESBDocument> {
 
     public EntityContentsViewDialog(String titleString) {
         super();
-        this.titleString = titleString;
-
         super.aceEditor.setHeight("100vh");
         super.title.setText(titleString);
     }
@@ -22,7 +18,7 @@ public class EntityContentsViewDialog extends AbstractEntityViewDialog<IkasanSol
     }
 
     @Override
-    public void populate(IkasanSolrDocument solrDocument) {
-        super.open(solrDocument.getEvent());
+    public void populate(IkasanESBDocument document) {
+        super.open(document.getEvent());
     }
 }

@@ -34,21 +34,20 @@ import org.ikasan.designer.json.DesignerJsonHelper;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
-import org.json.JSONException;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.util.*;
@@ -59,7 +58,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     private Logger logger = LoggerFactory.getLogger(BusinessStreamVisualisation.class);
     private DesignerCanvas designerCanvas;
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private ModuleControlService moduleControlRestService;
     private ConfigurationService configurationRestService;
@@ -101,7 +100,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         , ConfigurationService configurationRestService, TriggerService triggerRestService
         , ModuleMetaDataService moduleMetaDataService
         , ConfigurationMetaDataService configurationMetadataService
-        , SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService
+        , ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
@@ -127,8 +126,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         if (this.configurationMetadataService == null) {
             throw new IllegalArgumentException("configurationMetadataService cannot be null!");
         }
-        this.solrSearchService = solrSearchService;
-        if (this.solrSearchService == null) {
+        this.esbSearchService = esbSearchService;
+        if (this.esbSearchService == null) {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
         this.hospitalAuditService = hospitalAuditService;
@@ -265,7 +264,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
         this.flowMap.values().forEach(flow -> {
             entityTypes.forEach(entityType -> {
-                IkasanSolrDocumentSearchResults results = this.solrSearchService.search(Set.of(flow.getModuleName()), Set.of(flow.getFlowName()), searchTerm, startTime
+                IkasanDocumentSearchResults results = this.esbSearchService.search(Set.of(flow.getModuleName()), Set.of(flow.getFlowName()), searchTerm, startTime
                     , endTime, 0, Arrays.asList(entityType), false, null, null);
 
                 if (entityType.equals("wiretap")) {
@@ -508,7 +507,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
         Flow flow =  this.flowMap.get(identifier.getName());
         logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.esbSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, dateFormatter, this.maxDownloadBytes);
         searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), identifier.getType().toLowerCase(), false
             , flow.getModuleName(), flow.getFlowName());
@@ -542,7 +541,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 FlowVisualisationDialog flowVisualisationDialog
                     = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
                     this.triggerRestService, this.configurationMetadataService, moduleMetaData
-                    , this.flowMap.get(nodeId), this.solrSearchService
+                    , this.flowMap.get(nodeId), this.esbSearchService
                     , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
                     , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
                     , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter, this.maxDownloadBytes);

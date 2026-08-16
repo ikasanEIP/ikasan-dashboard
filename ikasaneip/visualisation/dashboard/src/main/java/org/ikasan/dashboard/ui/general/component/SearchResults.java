@@ -29,13 +29,14 @@ import org.ikasan.dashboard.ui.util.IkasanDocumentToCsvConverter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,7 +56,7 @@ public class SearchResults extends Div {
 
     private SolrSearchFilteringGrid searchResultsGrid;
     private NativeLabel resultsLabel = new NativeLabel();
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private Registration replayEventRegistration;
     private ReplayEventSubmissionListener replayEventSubmissionListener;
@@ -83,7 +84,7 @@ public class SearchResults extends Div {
     private BatchInsert replayAuditService;
 
     private HashMap<String, Checkbox> selectionBoxes = new HashMap<>();
-    private HashMap<String, IkasanSolrDocument> selectionItems = new HashMap<>();
+    private HashMap<String, IkasanESBDocument> selectionItems = new HashMap<>();
     private Boolean selected = Boolean.FALSE;
 
     private String translatedEventActionMessage;
@@ -98,12 +99,12 @@ public class SearchResults extends Div {
 
     private IkasanAuthentication ikasanAuthentication;
 
-    public SearchResults(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
+    public SearchResults(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                          HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService,
                          ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService,
                          DateFormatter dateFormatter, int maxDownloadBytes){
-        this.solrGeneralService = solrGeneralService;
-        if(this.solrGeneralService == null) {
+        this.esbSearchService = esbSearchService;
+        if(this.esbSearchService == null) {
             throw new IllegalArgumentException("solrGeneralService cannot be null!!");
         }
         this.hospitalAuditService = hospitalAuditService;
@@ -358,7 +359,7 @@ public class SearchResults extends Div {
      */
     private void createSearchResultsGrid()
     {
-        this.searchResultsGrid = new SolrSearchFilteringGrid(this.solrGeneralService, searchFilter, this.resultsLabel);
+        this.searchResultsGrid = new SolrSearchFilteringGrid(this.esbSearchService, searchFilter, this.resultsLabel);
 
         // Add the icon column to the grid
         this.searchResultsGrid.addColumn(new ComponentRenderer<>(ikasanSolrDocument ->
@@ -399,7 +400,7 @@ public class SearchResults extends Div {
         })).setWidth("40px").setKey("entityImage");
 
         // Add the module name column to the grid
-        this.searchResultsGrid.addColumn(IkasanSolrDocument::getModuleName)
+        this.searchResultsGrid.addColumn(IkasanESBDocument::getModuleName)
             .setKey("moduleName")
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale()))
             .setSortable(true)
@@ -407,14 +408,14 @@ public class SearchResults extends Div {
             .setResizable(true);
 
         // Add the flow name column to the grid
-        this.searchResultsGrid.addColumn(IkasanSolrDocument::getFlowName).setKey("flowName")
+        this.searchResultsGrid.addColumn(IkasanESBDocument::getFlowName).setKey("flowName")
             .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setFlexGrow(6)
             .setResizable(true);
 
         // Add the component name column to the grid
-        this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
+        this.searchResultsGrid.addColumn(LitRenderer.<IkasanESBDocument>of(
             "<div>${item.componentName}</div>")
             .withProperty("componentName",
                 ikasanSolrDocument -> Optional.ofNullable(ikasanSolrDocument.getComponentName()).orElse(getTranslation("label.not-applicable", UI.getCurrent().getLocale()))))
@@ -464,7 +465,7 @@ public class SearchResults extends Div {
             .setResizable(true);
 
         // Add the timestamp column to the grid
-        this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
+        this.searchResultsGrid.addColumn(LitRenderer.<IkasanESBDocument>of(
             "<div>${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp()))).setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
@@ -506,7 +507,7 @@ public class SearchResults extends Div {
         })).setWidth("20px");
 
         // Add the double click replayEventSubmissionListener to the grid so that the relevant dialog can be opened.
-        this.searchResultsGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<IkasanSolrDocument>>)
+        this.searchResultsGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<IkasanESBDocument>>)
             ikasanSolrDocumentItemDoubleClickEvent ->
             {
                 if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.WIRETAP))
@@ -534,7 +535,7 @@ public class SearchResults extends Div {
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.EXCLUSION))
                 {
-                    HospitalDialog hospitalDialog = new HospitalDialog(this.solrGeneralService, this.hospitalAuditService
+                    HospitalDialog hospitalDialog = new HospitalDialog(this.esbSearchService, this.hospitalAuditService
                         , this.resubmissionRestService, this.moduleMetadataService, this.searchResultsGrid, this.dateFormatter);
                     hospitalDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
                 }
@@ -620,7 +621,7 @@ public class SearchResults extends Div {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.resubmitHospitalEventSubmissionListener = new  ResubmitHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
-            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
+            , this.moduleMetadataService, this.esbSearchService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
             , this.selectionItems, authentication, this.dateFormatter, this);
         this.resubmitHospitalEventRegistration = this.resubmitButton.addClickListener(this.resubmitHospitalEventSubmissionListener);
     }
@@ -638,7 +639,7 @@ public class SearchResults extends Div {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.ignoreHospitalEventSubmissionListener = new IgnoreHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
-            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
+            , this.moduleMetadataService, this.esbSearchService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
             , this.selectionItems, authentication, this.dateFormatter, this);
         this.ignoreHospitalEventRegistration = this.ignoreButton.addClickListener(ignoreHospitalEventSubmissionListener);
     }

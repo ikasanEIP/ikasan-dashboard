@@ -1,23 +1,24 @@
 package org.ikasan.dashboard.notification.scheduler.service;
 
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public class SchedulerNotificationService {
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanSolrDocument, IkasanDocumentSearchResults> esbSearchService;
 
-    public SchedulerNotificationService(SolrGeneralService solrGeneralService) {
-        this.solrGeneralService = solrGeneralService;
+    public SchedulerNotificationService(ESBSearchService esbSearchService) {
+        this.esbSearchService = esbSearchService;
     }
 
-    public Optional<List<IkasanSolrDocument>> getFailedScheduledJobs(String agentName, Long startTimestamp, Integer resultSize) {
+    public Optional<List<IkasanESBDocument>> getFailedScheduledJobs(String agentName, Long startTimestamp, Integer resultSize) {
 
-        IkasanSolrDocumentSearchResults results = this.solrGeneralService.search(Set.of(agentName), Set.of()
+        IkasanDocumentSearchResults results = this.esbSearchService.search(Set.of(agentName), Set.of()
             , "returnCode:0", startTimestamp, System.currentTimeMillis(), resultSize, List.of("scheduledProcessEvent")
             ,true, null, null);
 

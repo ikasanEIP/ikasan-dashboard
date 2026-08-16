@@ -19,6 +19,8 @@ import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -67,7 +69,7 @@ public class SearchResultTest extends UITest {
     public void test_no_results_found() {
         UI.getCurrent().navigate("Search");
 
-        SearchResults searchResults = new SearchResults(this.solrSearchService, this.hospitalAuditService
+        SearchResults searchResults = new SearchResults(this.esbSearchService, this.hospitalAuditService
             , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, this.dateFormatter, 50000000);
 
         Assertions.assertNotNull(searchResults);
@@ -89,12 +91,12 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(50, "wiretap"));
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "wiretap"));
@@ -123,7 +125,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "wiretap"));
@@ -137,8 +139,8 @@ public class SearchResultTest extends UITest {
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/wiretap-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -149,7 +151,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "wiretap"));
@@ -168,7 +170,7 @@ public class SearchResultTest extends UITest {
         WiretapDialog wiretapDialog = _get(WiretapDialog.class);
         Assert.assertNotNull(wiretapDialog);
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(wiretapDialog, "moduleNameTf")).getValue());
@@ -185,7 +187,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "error"));
@@ -199,8 +201,8 @@ public class SearchResultTest extends UITest {
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/error-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -211,7 +213,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "error"));
@@ -230,7 +232,7 @@ public class SearchResultTest extends UITest {
         ErrorDialog errorDialog = _get(ErrorDialog.class);
         Assert.assertNotNull(errorDialog);
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(errorDialog, "moduleNameTf")).getValue());
@@ -253,7 +255,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "exclusion"));
@@ -267,8 +269,8 @@ public class SearchResultTest extends UITest {
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/hospital-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -279,12 +281,12 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "exclusion"));
 
-        Mockito.when(this.solrSearchService.findByErrorUri(eq("error"), eq("id0")))
+        Mockito.when(this.esbSearchService.findByErrorUri(eq("error"), eq("id0")))
             .thenReturn(this.getSolrResults(1, "error").getResultList().get(0));
 
         SearchResults searchResults = _get(SearchResults.class);
@@ -301,7 +303,7 @@ public class SearchResultTest extends UITest {
         HospitalDialog hospitalDialog = _get(HospitalDialog.class);
         Assert.assertNotNull(hospitalDialog);
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(hospitalDialog, "moduleNameTf")).getValue());
@@ -320,7 +322,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "replay"));
@@ -334,8 +336,8 @@ public class SearchResultTest extends UITest {
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/replay-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -346,7 +348,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1, "replay"));
@@ -365,7 +367,7 @@ public class SearchResultTest extends UITest {
         ReplayDialog replayDialog = _get(ReplayDialog.class);
         Assert.assertNotNull(replayDialog);
 
-        IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(replayDialog, "moduleNameTf")).getValue());
@@ -380,7 +382,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(10, "replay"));
@@ -417,7 +419,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(10, "exclusion"));
@@ -454,7 +456,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(10, "wiretap"));
@@ -482,7 +484,7 @@ public class SearchResultTest extends UITest {
     {
         UI.getCurrent().navigate("Search");
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(10, "error"));
@@ -505,12 +507,12 @@ public class SearchResultTest extends UITest {
             .getField(searchResults, "buttonLayout")).getComponentCount());
     }
 
-    protected IkasanSolrDocumentSearchResults getSolrResults(int size, String type) {
+    protected IkasanDocumentSearchResults getSolrResults(int size, String type) {
 
-        ArrayList<IkasanSolrDocument> ikasanSolrDocuments = new ArrayList<>();
+        ArrayList<IkasanESBDocument> IkasanESBDocuments = new ArrayList<>();
 
         IntStream.range(0, size).forEach(i -> {
-            IkasanSolrDocument document = new IkasanSolrDocument();
+            IkasanESBDocument document = new IkasanSolrDocument();
             document.setId("id" +i);
             document.setComponentName("component"+i);
             document.setErrorAction("exclusion"+i);
@@ -525,10 +527,10 @@ public class SearchResultTest extends UITest {
             document.setEvent("event"+i);
             document.setEventId("eventId"+i);
 
-            ikasanSolrDocuments.add(document);
+            IkasanESBDocuments.add(document);
         });
 
-        return new IkasanSolrDocumentSearchResults(ikasanSolrDocuments
-            , ikasanSolrDocuments.size(), 1);
+        return new IkasanSolrDocumentSearchResults(IkasanESBDocuments
+            , IkasanESBDocuments.size(), 1);
     }
 }

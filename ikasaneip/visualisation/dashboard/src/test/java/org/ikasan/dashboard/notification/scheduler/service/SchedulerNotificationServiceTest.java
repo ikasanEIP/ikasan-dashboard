@@ -8,9 +8,10 @@ import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDaoImpl;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
 
     public static final String BUSINESS_STREAM_PAYLOAD = "/data/graph/wriggle3.json";
 
-    private SolrGeneralDaoImpl dao;
+    private SolrGeneralDao dao;
 
     private NodeConfig config;
 
@@ -69,7 +70,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
             this.initialiseOneSucceessOneFailData(server);
 
             SchedulerNotificationService schedulerNotificationService = this.initialiseService(server);
-            Optional<List<IkasanSolrDocument>> failedScheduledJobs
+            Optional<List<IkasanESBDocument>> failedScheduledJobs
                 = schedulerNotificationService.getFailedScheduledJobs("schedulerAgent1", 0L, 1000);
 
             assertTrue("Failed exclusions found!", failedScheduledJobs.isPresent());
@@ -89,7 +90,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
             this.initialiseNoFailData(server);
 
             SchedulerNotificationService schedulerNotificationService = this.initialiseService(server);
-            Optional<List<IkasanSolrDocument>> failedScheduledJobs
+            Optional<List<IkasanESBDocument>> failedScheduledJobs
                 = schedulerNotificationService.getFailedScheduledJobs("schedulerAgent1", 0L, 1000);
 
             assertFalse("Failed exclusions found!", failedScheduledJobs.isPresent());

@@ -18,9 +18,10 @@ import org.ikasan.dashboard.ui.search.component.filter.SearchFilter;
 import org.ikasan.dashboard.ui.util.SearchConstants;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,14 +30,14 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
+public class SolrSearchFilteringGrid extends Grid<IkasanESBDocument>
 {
     private Logger logger = LoggerFactory.getLogger(SolrSearchFilteringGrid.class);
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
-    private DataProvider<IkasanSolrDocument,SearchFilter> dataProvider;
-    private ConfigurableFilterDataProvider<IkasanSolrDocument,Void, SearchFilter> filteredDataProvider;
+    private DataProvider<IkasanESBDocument,SearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<IkasanESBDocument,Void, SearchFilter> filteredDataProvider;
 
     private SearchFilter searchFilter;
 
@@ -48,11 +49,11 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
     /**
      * Constructors
      */
-    public SolrSearchFilteringGrid(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService,
+    public SolrSearchFilteringGrid(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                                    SearchFilter searchFilter, NativeLabel resultsLabel)
     {
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService ==  null)
+        this.esbSearchService = esbSearchService;
+        if(this.esbSearchService ==  null)
         {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
@@ -120,7 +121,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
             // The number of items to load
             int limit = query.getLimit();
 
-            IkasanSolrDocumentSearchResults results;
+            IkasanDocumentSearchResults results;
 
             if(query.getSortOrders().size() > 0)
             {
@@ -139,7 +140,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         {
             Optional<SearchFilter> filter = query.getFilter();
 
-            IkasanSolrDocumentSearchResults results = this.getResults(authentication, filter.get(), startTime, endTime
+            IkasanDocumentSearchResults results = this.getResults(authentication, filter.get(), startTime, endTime
             , searchTerm, 0, 0, types, negateQuery, null, null);
 
             this.resultSize = results.getTotalNumberOfResults();
@@ -158,7 +159,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         this.setDataProvider(filteredDataProvider);
     }
 
-    private IkasanSolrDocumentSearchResults getResults(IkasanAuthentication authentication, SearchFilter filter, long startTime
+    private IkasanDocumentSearchResults getResults(IkasanAuthentication authentication, SearchFilter filter, long startTime
         , long endTime, String searchTerm, int offset, int limit, List<String> types, boolean negateQuery, String sortField, String sortOrder)
     {
         Set<String> allowedModuleNames = SecurityUtils.getAccessibleModules(authentication);
@@ -272,7 +273,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         }
 
         try {
-            return this.solrSearchService.search(moduleNames, flowNames, componentNames, eventId, searchTerm,
+            return this.esbSearchService.search(moduleNames, flowNames, componentNames, eventId, searchTerm,
                 startTime, endTime, offset, limit, types, negateQuery, sortField, sortOrder);
         }
         catch (Exception e) {

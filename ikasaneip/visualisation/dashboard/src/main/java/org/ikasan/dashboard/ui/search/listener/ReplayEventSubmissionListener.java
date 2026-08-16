@@ -21,11 +21,11 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.rest.client.ReplayFailException;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAuditEvent;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,7 +47,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
     private BatchInsert replayAuditService;
 
     public ReplayEventSubmissionListener(ReplayService replayRestService, BatchInsert replayAuditService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid
-        , HashMap<String, Checkbox> selectionBoxes, HashMap<String, IkasanSolrDocument> selectionItems)
+        , HashMap<String, Checkbox> selectionBoxes, HashMap<String, IkasanESBDocument> selectionItems)
     {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);
 
@@ -114,14 +114,14 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                         boolean containErrors = false;
                         if (!selected)
                         {
-                            List<IkasanSolrDocument> replayEvents = this.selectionItems.values()
+                            List<IkasanESBDocument> replayEvents = this.selectionItems.values()
                                 .stream()
                                 .filter(document -> this.shouldActionEvent(document))
                                 .collect(Collectors.toList());
 
-                            replayEvents.sort(Comparator.comparingLong(IkasanSolrDocument::getTimestamp));
+                            replayEvents.sort(Comparator.comparingLong(IkasanESBDocument::getTimestamp));
 
-                            for (IkasanSolrDocument document : this.selectionItems.values())
+                            for (IkasanESBDocument document : this.selectionItems.values())
                             {
                                 logger.info("replaying [{}]", document.getEventId());
 
@@ -152,10 +152,10 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                     return;
                                 }
 
-                                List<IkasanSolrDocument> docs = searchResultsGrid.getDataProvider().fetch
+                                List<IkasanESBDocument> docs = searchResultsGrid.getDataProvider().fetch
                                     (new Query<>(i, 100, List.of(new QuerySortOrder("timestamp", SortDirection.ASCENDING)), null, null)).collect(Collectors.toList());
 
-                                for (IkasanSolrDocument document : docs)
+                                for (IkasanESBDocument document : docs)
                                 {
                                     if (this.shouldActionEvent(document))
                                     {
@@ -219,7 +219,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
      * @param i18NProvider
      * @return
      */
-    private ReplayAuditEventImpl createReplayAuditEvent(boolean result, ReplayDialogDto replayDialogDto, IkasanSolrDocument document, UI current, I18NProvider i18NProvider)
+    private ReplayAuditEventImpl createReplayAuditEvent(boolean result, ReplayDialogDto replayDialogDto, IkasanESBDocument document, UI current, I18NProvider i18NProvider)
     {
         ReplayAuditEventImpl replayAuditEvent = new ReplayAuditEventImpl();
         replayAuditEvent.setId(document.getId());

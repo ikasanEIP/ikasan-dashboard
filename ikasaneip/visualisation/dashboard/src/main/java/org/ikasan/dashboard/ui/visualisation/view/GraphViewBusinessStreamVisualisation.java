@@ -10,16 +10,16 @@ import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamVisualisati
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeListener;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 {
     Logger logger = LoggerFactory.getLogger(GraphViewBusinessStreamVisualisation.class);
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private ModuleControlService moduleControlRestService;
 
@@ -76,7 +76,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
      * Constructs a GraphViewBusinessStreamVisualisation object to provide the visualization and
      * management of business stream data.
      *
-     * @param solrSearchService the service used for search communication with Solr. Must not be null.
+     * @param esbSearchService the service used for search communication with Solr. Must not be null.
      * @param moduleControlRestService the service for handling module control actions. Must not be null.
      * @param moduleMetadataService the service for managing module metadata. Must not be null.
      * @param configurationRestService the service for configuration management. Must not be null.
@@ -93,7 +93,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
      * @param maxDownloadBytes the maximum allowed bytes for download operations.
      * @throws IllegalArgumentException if any of the parameters are null.
      */
-    public GraphViewBusinessStreamVisualisation(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService
+    public GraphViewBusinessStreamVisualisation(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService
         , ModuleControlService moduleControlRestService, ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService, HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService
@@ -102,8 +102,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         this.setMargin(false);
         this.setSizeFull();
 
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService == null){
+        this.esbSearchService = esbSearchService;
+        if(this.esbSearchService == null){
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
         this.moduleControlRestService = moduleControlRestService;
@@ -216,7 +216,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
         this.businessStreamVisualisation = new BusinessStreamVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, this.moduleMetadataService
-            , this.configurationMetadataService, this.solrSearchService, this.hospitalAuditService,
+            , this.configurationMetadataService, this.esbSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService,
             this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath, this.dateFormatter,
             this.maxDownloadBytes);

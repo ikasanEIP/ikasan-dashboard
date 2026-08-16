@@ -1,11 +1,15 @@
 package org.ikasan.solr.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
 /**
+ * Solr implementation of IkasanDocument.
+ * This class represents an event stored in Solr with fields annotated for Solr indexing.
+ *
  * Created by Ikasan Development Team on 14/02/2017.
  */
-public class IkasanSolrDocument
+public class IkasanSolrDocument implements IkasanESBDocument
 {
     @Field("id")
     private String id;
