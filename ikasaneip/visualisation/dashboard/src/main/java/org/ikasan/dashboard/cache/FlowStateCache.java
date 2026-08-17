@@ -13,19 +13,68 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class FlowStateCache implements Consumer<FlowState>
 {
     private Logger logger = LoggerFactory.getLogger(FlowStateCache.class);
 
-    private static FlowStateCache INSTANCE;
+    private ExecutorService executor = Executors.newFixedThreadPool(10
+        , new VaadinThreadFactory("FlowStateCache"));
 
-    private ExecutorService executor = Executors.newFixedThreadPool(10, new VaadinThreadFactory("FlowStateCache"));
+    /**
+     * Throttle configuration: minimum time in milliseconds between broadcasts for the same flow.
+     * Default is 60000ms (1 minute) to prevent rapid state transitions from causing memory issues.
+     */
+    private static final long DEFAULT_THROTTLE_INTERVAL_MS = 60000;
+    private long throttleIntervalMs = DEFAULT_THROTTLE_INTERVAL_MS;
+
+    /**
+     * Oscillation detection window: maximum time in milliseconds between state changes to be considered an oscillation.
+     * Default is 5000ms (5 seconds). If states change with longer gaps, they're not considered oscillating.
+     */
+    private static final long DEFAULT_OSCILLATION_WINDOW_MS = 5000;
+    private long oscillationWindowMs = DEFAULT_OSCILLATION_WINDOW_MS;
+
+    /**
+     * Tracks the last state for each flow to detect RECOVERING <-> STOPPED oscillations.
+     * Key: moduleName+flowName, Value: last FlowState
+     */
+    private ConcurrentHashMap<String, FlowState> lastState = new ConcurrentHashMap<>();
+
+    /**
+     * Tracks the timestamp when each flow's last state was recorded.
+     * Key: moduleName+flowName, Value: timestamp of last state change
+     */
+    private ConcurrentHashMap<String, Long> lastStateTime = new ConcurrentHashMap<>();
+
+    /**
+     * Tracks whether a flow has entered oscillation mode (seen at least one RECOVERING <-> STOPPED transition).
+     * Key: moduleName+flowName, Value: true if oscillating
+     */
+    private ConcurrentHashMap<String, Boolean> inOscillation = new ConcurrentHashMap<>();
+
+    /**
+     * Tracks the last broadcast time for flows oscillating between RECOVERING and STOPPED.
+     * Key: moduleName+flowName, Value: timestamp of last broadcast
+     */
+    private ConcurrentHashMap<String, Long> lastBroadcastTime = new ConcurrentHashMap<>();
+
+    /**
+     * Scheduled executor for delayed broadcasts when throttled.
+     */
+    private ScheduledExecutorService scheduledBroadcastExecutor = Executors.newScheduledThreadPool(2,
+        new VaadinThreadFactory("FlowStateBroadcast"));
+
+    /**
+     * Tracks pending scheduled broadcasts to avoid scheduling multiple delayed broadcasts for the same flow.
+     * Key: moduleName+flowName, Value: ScheduledFuture of pending broadcast
+     */
+    private ConcurrentHashMap<String, ScheduledFuture<?>> pendingBroadcasts = new ConcurrentHashMap<>();
+
+
+    private static FlowStateCache INSTANCE = new FlowStateCache();
 
     /**
      * This method returns an instance of FlowStateCache. It follows the Singleton pattern
@@ -71,6 +120,7 @@ public class FlowStateCache implements Consumer<FlowState>
 
     /**
      * Puts a FlowState object into the cache if the key is not already present or if the state has changed.
+     * Implements throttling to prevent excessive broadcasts during rapid state transitions.
      *
      * @param flowState The FlowState object to be put into the cache
      */
@@ -91,7 +141,144 @@ public class FlowStateCache implements Consumer<FlowState>
             }
 
             this.cache.put(key, flowState);
+            broadcastWithThrottling(flowState, key);
+        }
+    }
+
+    /**
+     * Broadcasts a flow state change with throttling to prevent memory issues from rapid state transitions.
+     * Only throttles transitions between RECOVERING and STOPPED states, which cause excessive broadcasts.
+     * All other state transitions are broadcast immediately.
+     *
+     * @param flowState The FlowState to broadcast
+     * @param key The cache key (moduleName+flowName)
+     */
+    private void broadcastWithThrottling(FlowState flowState, String key) {
+        FlowState previousState = lastState.get(key);
+        State currentState = flowState.getState();
+        long currentTime = System.currentTimeMillis();
+
+        // Check if current state is RECOVERING or STOPPED (potential oscillation states)
+        boolean isOscillationState = (currentState == State.RECOVERING_STATE || currentState == State.STOPPED_STATE);
+
+        // Check time since last state change
+        Long previousStateTime = lastStateTime.get(key);
+        long timeSinceLastState = (previousStateTime != null) ? (currentTime - previousStateTime) : Long.MAX_VALUE;
+
+        // Check if previous state was also RECOVERING or STOPPED (and different from current)
+        // AND the transition occurred within the oscillation detection window
+        boolean isOscillationTransition = previousState != null &&
+            (previousState.getState() == State.RECOVERING_STATE || previousState.getState() == State.STOPPED_STATE) &&
+            previousState.getState() != currentState &&
+            isOscillationState &&
+            timeSinceLastState <= oscillationWindowMs;
+
+        // Update last state and time for future oscillation detection
+        lastState.put(key, flowState);
+        lastStateTime.put(key, currentTime);
+
+        // Check if we're already in oscillation mode
+        Boolean wasInOscillation = inOscillation.get(key);
+        boolean alreadyOscillating = (wasInOscillation != null && wasInOscillation);
+
+        // If this is an oscillation transition, mark as in oscillation
+        if (isOscillationTransition) {
+            inOscillation.put(key, true);
+            logger.debug("{} Detected oscillation for key[{}], time since last state: {}ms", this, key, timeSinceLastState);
+        } else if (!isOscillationState) {
+            // If we transition to a non-oscillation state, clear oscillation flag
+            inOscillation.remove(key);
+            logger.debug("{} Cleared oscillation flag for key[{}] - transitioned to non-oscillation state", this, key);
+        } else if (timeSinceLastState > oscillationWindowMs) {
+            // States are too far apart - not an oscillation, clear the flag
+            inOscillation.remove(key);
+            logger.debug("{} Cleared oscillation flag for key[{}] - states too far apart: {}ms > {}ms",
+                this, key, timeSinceLastState, oscillationWindowMs);
+        }
+
+        // Apply throttling only if we're ALREADY in oscillation mode
+        if (isOscillationTransition && alreadyOscillating) {
+            // We're in an ongoing oscillation - apply throttling
+            Long lastBroadcast = lastBroadcastTime.get(key);
+
+            if (lastBroadcast != null && (currentTime - lastBroadcast) < throttleIntervalMs) {
+                // Too soon since last broadcast - schedule a delayed broadcast
+                long delay = throttleIntervalMs - (currentTime - lastBroadcast);
+
+                logger.debug("{} Throttling RECOVERING<->STOPPED oscillation for key[{}], scheduling delayed broadcast in {}ms",
+                    this, key, delay);
+
+                // Cancel any existing pending broadcast for this flow
+                ScheduledFuture<?> existingFuture = pendingBroadcasts.get(key);
+                if (existingFuture != null && !existingFuture.isDone()) {
+                    existingFuture.cancel(false);
+                    logger.debug("{} Cancelled existing pending broadcast for key[{}]", this, key);
+                }
+
+                // Schedule new delayed broadcast with the latest state
+                ScheduledFuture<?> future = scheduledBroadcastExecutor.schedule(() -> {
+                    logger.debug("{} Executing delayed broadcast for key[{}]", this, key);
+                    CacheStateBroadcaster.broadcast(flowState);
+                    lastBroadcastTime.put(key, System.currentTimeMillis());
+                    pendingBroadcasts.remove(key);
+                }, delay, TimeUnit.MILLISECONDS);
+
+                pendingBroadcasts.put(key, future);
+            } else {
+                // Enough time has passed - broadcast immediately
+                logger.debug("{} Broadcasting throttled state immediately (throttle expired) for key[{}]", this, key);
+                CacheStateBroadcaster.broadcast(flowState);
+                lastBroadcastTime.put(key, currentTime);
+
+                // Cancel any pending broadcast since we just broadcast the latest state
+                ScheduledFuture<?> existingFuture = pendingBroadcasts.remove(key);
+                if (existingFuture != null && !existingFuture.isDone()) {
+                    existingFuture.cancel(false);
+                }
+            }
+        } else {
+            // First oscillation transition or non-oscillating state - broadcast immediately
+            logger.debug("{} Broadcasting state change immediately for key[{}]", this, key);
             CacheStateBroadcaster.broadcast(flowState);
+
+            // Keep track of broadcast time
+            lastBroadcastTime.put(key, System.currentTimeMillis());
+
+            // Cancel any pending broadcast since we just broadcast the latest state
+            ScheduledFuture<?> existingFuture = pendingBroadcasts.remove(key);
+            if (existingFuture != null && !existingFuture.isDone()) {
+                existingFuture.cancel(false);
+            }
+        }
+    }
+
+    /**
+     * Sets the throttle interval in milliseconds. This controls the minimum time between broadcasts
+     * for the same flow to prevent memory issues during rapid state transitions.
+     *
+     * @param throttleIntervalMs The throttle interval in milliseconds (must be > 0)
+     */
+    public void setThrottleIntervalMs(long throttleIntervalMs) {
+        if (throttleIntervalMs > 0) {
+            this.throttleIntervalMs = throttleIntervalMs;
+            logger.info("FlowStateCache throttle interval set to {}ms", throttleIntervalMs);
+        } else {
+            logger.warn("Invalid throttle interval {}ms, must be > 0", throttleIntervalMs);
+        }
+    }
+
+    /**
+     * Sets the oscillation detection window in milliseconds. State changes must occur within this window
+     * to be considered part of an oscillation pattern.
+     *
+     * @param oscillationWindowMs The oscillation window in milliseconds (must be > 0)
+     */
+    public void setOscillationWindowMs(long oscillationWindowMs) {
+        if (oscillationWindowMs > 0) {
+            this.oscillationWindowMs = oscillationWindowMs;
+            logger.info("FlowStateCache oscillation window set to {}ms", oscillationWindowMs);
+        } else {
+            logger.warn("Invalid oscillation window {}ms, must be > 0", oscillationWindowMs);
         }
     }
 
@@ -245,6 +432,7 @@ public class FlowStateCache implements Consumer<FlowState>
     }
 
     public void teardown() {
+        // Shutdown main executor
         this.executor.shutdown();
         try {
             if (!executor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
@@ -254,5 +442,23 @@ public class FlowStateCache implements Consumer<FlowState>
         catch (InterruptedException e) {
             executor.shutdownNow();
         }
+
+        // Shutdown scheduled broadcast executor
+        this.scheduledBroadcastExecutor.shutdown();
+        try {
+            if (!scheduledBroadcastExecutor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
+                scheduledBroadcastExecutor.shutdownNow();
+            }
+        }
+        catch (InterruptedException e) {
+            scheduledBroadcastExecutor.shutdownNow();
+        }
+
+        // Clear tracking maps
+        lastState.clear();
+        lastStateTime.clear();
+        inOscillation.clear();
+        lastBroadcastTime.clear();
+        pendingBroadcasts.clear();
     }
 }

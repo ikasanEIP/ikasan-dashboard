@@ -90,6 +90,12 @@ public class DashboardComponentFactory
     @Value("${module.name}")
     private String moduleName;
 
+    @Value("${flow.state.cache.throttle.interval.millis:60000}")
+    private long flowStateCacheThrottleIntervalMillis;
+
+    @Value("${flow.state.cache.oscillation.window.millis:5000}")
+    private long oscillationWindowMs;
+
     private static boolean invalidateNonLoginSessions = true;
 
 
@@ -236,6 +242,7 @@ public class DashboardComponentFactory
 
         return ModuleMetadataCache.instance();
     }
+
     @Bean
     public GlobalEventService globalEventService() {
         return new GlobalEventServiceImpl();
@@ -253,6 +260,9 @@ public class DashboardComponentFactory
         FlowStateCache flowStateCache = FlowStateCache.instance();
         flowStateCache.setModuleControlRestService(this.moduleControlRestService);
         flowStateCache.setModuleMetaDataService(moduleMetadataService);
+        flowStateCache.setThrottleIntervalMs(this.flowStateCacheThrottleIntervalMillis);
+        flowStateCache.setOscillationWindowMs(this.oscillationWindowMs);
+
         return flowStateCache;
     }
 
