@@ -7,6 +7,7 @@ import org.ikasan.security.model.SolrIkasanPrincipalLiteImpl;
 import org.ikasan.security.model.SolrIkasanPrincipalRecord;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.dao.IkasanPrincipalDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.IkasanPrincipalFilter;
 import org.ikasan.spec.security.model.IkasanPrincipalLite;
@@ -39,7 +40,7 @@ import static org.ikasan.security.dao.SolrRoleDaoImpl.ROLE_TYPE;
  *
  * @author Ikasan Development Team
  */
-public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalRecord> {
+public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalRecord> implements IkasanPrincipalDao {
 
     /** The Solr document type identifier for security principals */
     public static final String PRINCIPAL_TYPE = "securityPrincipal";
@@ -94,6 +95,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      *
      * @return a new SolrIkasanPrincipalImpl instance
      */
+    @Override
     public IkasanPrincipal createPrincipal() {
         return new SolrIkasanPrincipalImpl();
     }
@@ -114,6 +116,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param principal the principal to save or update
      * @throws RuntimeException if the principal cannot be serialized to JSON
      */
+    @Override
     public void saveOrUpdatePrincipal(IkasanPrincipal principal) {
         SolrIkasanPrincipalRecord record = new SolrIkasanPrincipalRecord();
         record.setName(principal.getName());
@@ -147,6 +150,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      *                   If an error occurs during the conversion of an IkasanPrincipal object to JSON,
      *                   a runtime exception is thrown.
      */
+    @Override
     public void saveOrUpdatePrincipals(List<IkasanPrincipal> principals) {
         List<SolrIkasanPrincipalRecord> records = new ArrayList<>();
 
@@ -182,6 +186,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      *
      * @param principal the principal to delete
      */
+    @Override
     public void deletePrincipal(IkasanPrincipal principal) {
         super.removeById(PRINCIPAL_TYPE, principal.getName() + "-" + PRINCIPAL_TYPE);
     }
@@ -194,6 +199,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      *
      * @return a list of all principals, or an empty list if no principals exist
      */
+    @Override
     public List<IkasanPrincipal> getAllPrincipals() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\"");
@@ -214,6 +220,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset the starting position in the result set
      * @return a list of principals matching the criteria
      */
+    @Override
     public List<IkasanPrincipal> getPrincipals(IkasanPrincipalFilter filter, int limit, int offset) {
         StringBuilder queryBuffer = new StringBuilder(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\"");
 
@@ -246,6 +253,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      *
      * @return a list of all principal lite objects, or an empty list if no principals exist
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalLites() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\"");
@@ -269,6 +277,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset the starting position in the result set
      * @return a list of principal lite objects matching the criteria
      */
+    @Override
     public List<IkasanPrincipalLite> getPrincipalLites(IkasanPrincipalFilter filter, int limit, int offset) {
         StringBuilder queryBuffer = new StringBuilder(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\"");
 
@@ -302,6 +311,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param id the unique ID of the principal to retrieve (format: name-securityPrincipal)
      * @return the IkasanPrincipal object if found, or {@code null} if no principal exists with the given ID
      */
+    @Override
     public IkasanPrincipal findById(String id) {
         if (id == null || id.isEmpty()) {
             return null;
@@ -329,6 +339,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param name the exact name of the principal to retrieve
      * @return the IkasanPrincipal object if found, or {@code null} if no principal exists with the given name
      */
+    @Override
     public IkasanPrincipal getPrincipalByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\" AND " + NAME + COLON + name);
@@ -354,6 +365,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param name the search term to match against principal names
      * @return a list of principals whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<IkasanPrincipal> getPrincipalByNameLike(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\" AND " + NAME + COLON + "*" + name + "*");
@@ -376,6 +388,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param roleName the name of the role
      * @return a list of principals that have the specified role, or an empty list if none found
      */
+    @Override
     public List<IkasanPrincipal> getAllPrincipalsWithRole(String roleName) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -407,6 +420,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset the starting position in the result set
      * @return a list of principal lite objects that have the specified role and match the filter criteria
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithRole(String roleName, IkasanPrincipalFilter filter, int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -449,6 +463,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset offset for pagination
      * @return a list of principal names (strings) for principals with the specified role
      */
+    @Override
     public List getAllPrincipalNamesWithRole(String roleName, IkasanPrincipalFilter filter, int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -494,6 +509,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset the starting position in the result set
      * @return a list of principal lite objects that do NOT have the specified role
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithoutRole(String roleName, IkasanPrincipalFilter filter, int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -536,6 +552,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param offset offset for pagination
      * @return a list of principal names (strings) for principals without the specified role
      */
+    @Override
     public List getAllPrincipalNamesWithoutRole(String roleName, IkasanPrincipalFilter filter, int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -578,7 +595,8 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param roleNames list of role names to search for
      * @return a list of principals that have at least one of the specified roles, or an empty list if none found
      */
-    public List<IkasanPrincipal> getPrincipalsByRoleNames(List roleNames) {
+    @Override
+    public List<IkasanPrincipal> getPrincipalsByRoleNames(List<String> roleNames) {
         if (roleNames == null || roleNames.isEmpty()) {
             return List.of();
         }
@@ -613,6 +631,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param filter the filter criteria to apply (may be null for total count)
      * @return the count of matching principals
      */
+    @Override
     public int getPrincipalCount(IkasanPrincipalFilter filter) {
         StringBuilder queryBuffer = new StringBuilder(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\"");
 
@@ -638,6 +657,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param filter the filter criteria to apply (may be null for no additional filtering)
      * @return the count of principals that have the specified role and match the filter criteria
      */
+    @Override
     public int getPrincipalsWithRoleCount(String roleName, IkasanPrincipalFilter filter) {
         if (roleName == null || roleName.isEmpty()) {
             return 0;
@@ -669,6 +689,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
      * @param filter the filter criteria to apply (may be null for no additional filtering)
      * @return the count of principals that do NOT have the specified role
      */
+    @Override
     public int getPrincipalsWithoutRoleCount(String roleName, IkasanPrincipalFilter filter) {
         if (roleName == null || roleName.isEmpty()) {
             return 0;

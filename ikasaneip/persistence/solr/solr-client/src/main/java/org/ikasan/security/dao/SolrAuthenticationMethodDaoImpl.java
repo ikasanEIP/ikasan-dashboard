@@ -6,6 +6,7 @@ import org.ikasan.security.model.SolrAuthenticationMethodImpl;
 import org.ikasan.security.model.SolrAuthenticationMethodRecord;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.dao.AuthenticationMethodDao;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticationMethodRecord> {
+public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticationMethodRecord> implements AuthenticationMethodDao {
 
     /** The Solr document type identifier for authentication methods */
     public static final String AUTHENTICATION_METHOD_TYPE = "securityAuthenticationMethod";
@@ -80,6 +81,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      *
      * @return a new SolrAuthenticationMethodImpl instance
      */
+    @Override
     public AuthenticationMethod createAuthenticationMethod() {
         return new SolrAuthenticationMethodImpl();
     }
@@ -94,6 +96,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      * @param authenticationMethod the authentication method to save or update
      * @throws RuntimeException if the authentication method cannot be serialized to JSON
      */
+    @Override
     public void saveOrUpdateAuthenticationMethod(AuthenticationMethod authenticationMethod) {
         SolrAuthenticationMethodRecord record = new SolrAuthenticationMethodRecord();
         record.setName(authenticationMethod.getName());
@@ -119,6 +122,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      * @param id the unique identifier of the authentication method
      * @return the authentication method, or null if not found
      */
+    @Override
     public AuthenticationMethod getAuthenticationMethod(Object id) {
         SolrQuery query = new SolrQuery();
         query.setQuery(ID + COLON + "\"" + id + "\"");
@@ -137,6 +141,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      *
      * @return a list of all authentication methods, ordered by their order field
      */
+    @Override
     public List<AuthenticationMethod> getAuthenticationMethods() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + AUTHENTICATION_METHOD_TYPE + "\"");
@@ -155,6 +160,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      *
      * @return the number of authentication methods
      */
+    @Override
     public long getNumberOfAuthenticationMethods() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + AUTHENTICATION_METHOD_TYPE + "\"");
@@ -174,6 +180,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      * @param order the order/priority of the authentication method
      * @return the authentication method with the specified order, or null if not found
      */
+    @Override
     public AuthenticationMethod getAuthenticationMethodByOrder(long order) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + AUTHENTICATION_METHOD_TYPE + "\"" + AND
@@ -196,6 +203,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
      *
      * @param authenticationMethod the authentication method to delete
      */
+    @Override
     public void deleteAuthenticationMethod(AuthenticationMethod authenticationMethod) {
         super.removeById(AUTHENTICATION_METHOD_TYPE, authenticationMethod.getName() + "-" + AUTHENTICATION_METHOD_TYPE);
     }
