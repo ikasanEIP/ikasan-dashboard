@@ -492,6 +492,11 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-spec-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-quartz-dashboard</artifactId>
         </dependency>
 
@@ -998,7 +1003,8 @@
                         <dashboard.uitest.solr.data.dir>${dashboard.uitest.solr.data.dir}</dashboard.uitest.solr.data.dir>
                     </systemPropertyVariables>
                     <includes>
-                        <include>**/TestSuite.class</include>
+                        <include>**/MongoIntegrationTestSuite.class</include>
+                        <include>**/SolrIntegrationTestSuite.class</include>
                     </includes>
                 </configuration>
             </plugin>
