@@ -5,6 +5,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.*;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.dao.RoleDao;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleJobPlan;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
+public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements RoleDao {
 
     /** The Solr document type identifier for security roles */
     public static final String ROLE_TYPE = "securityRole";
@@ -96,6 +97,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      *
      * @return a new SolrRoleImpl instance
      */
+    @Override
     public Role createRole() {
         return new SolrRoleImpl();
     }
@@ -116,6 +118,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param role the role to save or update
      * @throws RuntimeException if the role cannot be serialized to JSON
      */
+    @Override
     public void saveOrUpdateRole(Role role) {
         SolrRoleRecord record = new SolrRoleRecord();
         record.setName(role.getName());
@@ -154,6 +157,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      *
      * @param role the role to delete
      */
+    @Override
     public void deleteRole(Role role) {
         super.removeById(ROLE_TYPE, role.getName() + "-" + ROLE_TYPE);
     }
@@ -166,6 +170,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      *
      * @param roleModule the RoleModule to save and associate with its corresponding Role
      */
+    @Override
     public void saveRoleModule(RoleModule roleModule) {
         if(roleModule.getRole() == null) {
             throw new IllegalArgumentException("RoleModule must have a non-null Role");
@@ -184,6 +189,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      *
      * @param roleModule the RoleModule instance to be removed from its associated Role
      */
+    @Override
     public void deleteRoleModule(RoleModule roleModule) {
         if(roleModule.getRole() == null) {
             throw new IllegalArgumentException("RoleModule must have a non-null Role");
@@ -202,6 +208,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param roleJobPlan the RoleJobPlan to save and associate with its corresponding Role
      * @throws IllegalArgumentException if the RoleJobPlan does not have an associated Role
      */
+    @Override
     public void saveRoleJobPlan(RoleJobPlan roleJobPlan) {
         if(roleJobPlan.getRole() == null) {
             throw new IllegalArgumentException("RoleJobPlan must have a non-null Role");
@@ -221,6 +228,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param roleJobPlan the RoleJobPlan instance to be removed from its associated Role
      * @throws IllegalArgumentException if the RoleJobPlan does not have an associated Role
      */
+    @Override
     public void deleteRoleJobPlan(RoleJobPlan roleJobPlan) {
         if(roleJobPlan.getRole() == null) {
             throw new IllegalArgumentException("RoleJobPlan must have a non-null Role");
@@ -238,6 +246,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      *
      * @return a list of all roles, or an empty list if no roles exist
      */
+    @Override
     public List<Role> getAllRoles() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + ROLE_TYPE + "\"");
@@ -258,6 +267,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param name the exact name of the role to retrieve
      * @return the Role object if found, or {@code null} if no role exists with the given name
      */
+    @Override
     public Role getRoleByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + ROLE_TYPE + "\" AND " + NAME + COLON + name);
@@ -283,6 +293,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @return the Role object if a matching record is found, or {@code null}
      *         if no record exists for the provided identifier
      */
+    @Override
     public Role getRoleById(String id) {
         SolrQuery query = super.buildIdQuery(id, ROLE_TYPE);
 
@@ -306,6 +317,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param name the search term to match against role names
      * @return a list of roles whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<Role> getRoleByNameLike(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + ROLE_TYPE + "\" AND " + NAME + COLON + "*" + name + "*");
@@ -328,6 +340,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param jobPlanName the name of the job plan
      * @return a list of RoleJobPlan objects that match the job plan name, or an empty list if none found
      */
+    @Override
     public List<RoleJobPlan> getRoleJobPlansByJobPlanName(String jobPlanName) {
         if (jobPlanName == null || jobPlanName.isEmpty()) {
             return List.of();
@@ -358,6 +371,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
      * @param policyId the unique identifier of the policy for which associated roles need to be retrieved
      * @return a list of roles associated with the specified policy, or an empty list if no roles are found
      */
+    @Override
     public List<Role> getRolesAssociatedWithPolicy(Object policyId) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + ROLE_TYPE + "\"" + AND

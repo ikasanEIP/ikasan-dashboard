@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.security.model.MongoPolicyImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoPolicyRepository;
+import org.ikasan.spec.security.dao.PolicyDao;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoPolicyDao {
+public class MongoPolicyDao implements PolicyDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoPolicyDao.class);
 

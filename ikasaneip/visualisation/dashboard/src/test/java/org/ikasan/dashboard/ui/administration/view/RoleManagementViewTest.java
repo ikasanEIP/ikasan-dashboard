@@ -12,6 +12,10 @@ import org.ikasan.security.dao.SolrRoleDaoImpl;
 import org.ikasan.security.dao.SolrUserDaoImpl;
 import org.ikasan.solr.initialisation.core.SolrDataJobException;
 import org.ikasan.solr.initialisation.security.BaselineSecurityDataLoader;
+import org.ikasan.spec.security.dao.IkasanPrincipalDao;
+import org.ikasan.spec.security.dao.PolicyDao;
+import org.ikasan.spec.security.dao.RoleDao;
+import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
@@ -34,13 +38,13 @@ public class RoleManagementViewTest extends UITest
     @Autowired
     private SecurityService securityService;
     @Autowired
-    private SolrPolicyDaoImpl policyDao;
+    private PolicyDao policyDao;
     @Autowired
-    private SolrRoleDaoImpl roleDao;
+    private RoleDao roleDao;
     @Autowired
-    private SolrIkasanPrincipalDaoImpl principalDao;
+    private IkasanPrincipalDao principalDao;
     @Autowired
-    private SolrUserDaoImpl userDao;
+    private UserDao userDao;
 
     @Override
     public void setup_expectations() throws IOException {
