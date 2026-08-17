@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.security.model.MongoRoleImpl;
 import org.ikasan.mongo.persistence.security.model.MongoRoleJobPlanImpl;
 import org.ikasan.mongo.persistence.security.model.MongoRoleModuleImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoRoleRepository;
+import org.ikasan.spec.security.dao.RoleDao;
 import org.ikasan.spec.security.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoRoleDao {
+public class MongoRoleDao implements RoleDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoRoleDao.class);
 

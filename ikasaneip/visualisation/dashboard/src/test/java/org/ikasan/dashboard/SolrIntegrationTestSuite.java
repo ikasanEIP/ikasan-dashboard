@@ -42,6 +42,8 @@ import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamViewTest;
 import org.ikasan.dashboard.ui.visualisation.view.ModuleVisualisationViewTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 @RunWith(Suite.class)
 
@@ -105,5 +107,20 @@ import org.junit.runners.Suite;
     DurationFormatUtilsTest.class,
     LogStreamerTest.class
 })
-public class TestSuite {
+public class SolrIntegrationTestSuite {
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.autoconfigure.exclude", () -> "org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration," +
+            "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration," +
+            "org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration," +
+            "org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration," +
+            "org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration," +
+            "org.springframework.boot.actuate.autoconfigure.ldap.LdapHealthContributorAutoConfiguration," +
+            "org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration," +
+            "org.springframework.boot.actuate.autoconfigure.observation.web.client.HttpClientObservationsAutoConfiguration," +
+            "org.ikasan.backup.IkasanBackupAutoConfiguration," +
+            "org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration," +
+            "org.ikasan.solr.initialisation.SolrInitialisationAutoConfiguration");
+    }
 }

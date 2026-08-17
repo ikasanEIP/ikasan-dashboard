@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoAuthenticationMethodRepository;
+import org.ikasan.spec.security.dao.AuthenticationMethodDao;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoAuthenticationMethodDao {
+public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoAuthenticationMethodDao.class);
 

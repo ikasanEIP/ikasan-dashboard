@@ -11,6 +11,10 @@ import org.ikasan.security.model.SolrIkasanPrincipalImpl;
 import org.ikasan.security.model.SolrPolicyImpl;
 import org.ikasan.security.model.SolrRoleImpl;
 import org.ikasan.security.model.SolrUserImpl;
+import org.ikasan.spec.security.dao.IkasanPrincipalDao;
+import org.ikasan.spec.security.dao.PolicyDao;
+import org.ikasan.spec.security.dao.RoleDao;
+import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +32,10 @@ public class BaselineSecurityDataLoader implements SolrDataJob {
     private static final Logger logger = LoggerFactory.getLogger(BaselineSecurityDataLoader.class);
 
     private final JsonMapper objectMapper = JsonMapper.builder().build();
-    private final SolrPolicyDaoImpl policyDao;
-    private final SolrRoleDaoImpl roleDao;
-    private final SolrIkasanPrincipalDaoImpl principalDao;
-    private final SolrUserDaoImpl userDao;
+    private final PolicyDao policyDao;
+    private final RoleDao roleDao;
+    private final IkasanPrincipalDao principalDao;
+    private final UserDao userDao;
 
     /**
      * Constructor for BaselineSecurityDataLoader.
@@ -41,10 +45,10 @@ public class BaselineSecurityDataLoader implements SolrDataJob {
      * @param principalDao the data access object for working with principals.
      * @param userDao the data access object for retrieving and managing users.
      */
-    public BaselineSecurityDataLoader(SolrPolicyDaoImpl policyDao,
-                                     SolrRoleDaoImpl roleDao,
-                                     SolrIkasanPrincipalDaoImpl principalDao,
-                                     SolrUserDaoImpl userDao) {
+    public BaselineSecurityDataLoader(PolicyDao policyDao,
+                                     RoleDao roleDao,
+                                     IkasanPrincipalDao principalDao,
+                                     UserDao userDao) {
         this.policyDao = policyDao;
         this.roleDao = roleDao;
         this.principalDao = principalDao;

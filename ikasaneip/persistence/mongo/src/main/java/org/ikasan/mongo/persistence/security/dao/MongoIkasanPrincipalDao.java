@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.security.dao;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalLiteImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoIkasanPrincipalRepository;
+import org.ikasan.spec.security.dao.IkasanPrincipalDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.IkasanPrincipalFilter;
 import org.ikasan.spec.security.model.IkasanPrincipalLite;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoIkasanPrincipalDao {
+public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoIkasanPrincipalDao.class);
 

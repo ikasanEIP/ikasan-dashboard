@@ -6,6 +6,7 @@ import org.ikasan.security.model.SolrPolicyImpl;
 import org.ikasan.security.model.SolrPolicyRecord;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.dao.PolicyDao;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
@@ -34,7 +35,7 @@ import static org.ikasan.security.dao.SolrRoleDaoImpl.ROLE_TYPE;
  *
  * @author Ikasan Development Team
  */
-public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
+public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements PolicyDao {
 
     /** The Solr document type identifier for security policies */
     public static final String POLICY_TYPE = "securityPolicy";
@@ -82,6 +83,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      *
      * @return a new SolrPolicyImpl instance
      */
+    @Override
     public Policy createPolicy() {
         return new SolrPolicyImpl();
     }
@@ -102,6 +104,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      * @param policy the policy to save or update
      * @throws RuntimeException if the policy cannot be serialized to JSON
      */
+    @Override
     public void saveOrUpdatePolicy(Policy policy) {
         SolrPolicyRecord record = new SolrPolicyRecord();
         record.setName(policy.getName());
@@ -127,6 +130,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      *
      * @param policy the policy to delete
      */
+    @Override
     public void deletePolicy(Policy policy) {
         super.removeById(POLICY_TYPE, policy.getName() + "-" + POLICY_TYPE);
     }
@@ -139,6 +143,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      *
      * @return a list of all policies, or an empty list if no policies exist
      */
+    @Override
     public List<Policy> getAllPolicies() {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\"");
@@ -163,6 +168,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      * @return a list of policies associated with the given role, or an empty list if
      *         the role name is null/empty or no policies are associated with the role
      */
+    @Override
     public List<Policy> getAllPoliciesWithRole(String roleName) {
         if (roleName == null || roleName.isEmpty()) {
             return List.of();
@@ -188,6 +194,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      * @param name the exact name of the policy to retrieve
      * @return the Policy object if found, or {@code null} if no policy exists with the given name
      */
+    @Override
     public Policy getPolicyByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\" AND " + NAME + COLON + name);
@@ -213,6 +220,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      * @param name the search term to match against policy names
      * @return a list of policies whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<Policy> getPolicyByNameLike(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\" AND " + NAME + COLON + "*" + name + "*");
@@ -256,6 +264,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
      * @return the Policy object if a matching record is found, or {@code null}
      *         if no record exists for the provided identifier
      */
+    @Override
     public Policy getPolicyById(String id) {
         SolrQuery query = super.buildIdQuery(id, POLICY_TYPE);
 
