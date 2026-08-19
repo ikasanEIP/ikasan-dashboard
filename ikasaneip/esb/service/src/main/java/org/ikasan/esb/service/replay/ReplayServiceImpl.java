@@ -1,7 +1,7 @@
 package org.ikasan.esb.service.replay;
 
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
 
@@ -10,9 +10,9 @@ import java.util.List;
 /**
  * Created by Ikasan Development Team on 23/09/2017.
  */
-public class ReplayServiceImpl implements EsbEntityService<ReplayEvent>, BatchInsert<ReplayEvent>
+public class ReplayServiceImpl implements EntityService<ReplayEvent>, BatchInsert<ReplayEvent>
 {
-    private EsbEntityDao<ReplayEvent> replayDao;
+    private EntityDao<ReplayEvent> replayDao;
 
     /**
      * Constructor for ReplayServiceImpl.
@@ -22,7 +22,7 @@ public class ReplayServiceImpl implements EsbEntityService<ReplayEvent>, BatchIn
      * @param replayDao the data access object responsible for handling ReplayEvent entities.
      *                  Must not be null.
      */
-    public ReplayServiceImpl(EsbEntityDao<ReplayEvent> replayDao) {
+    public ReplayServiceImpl(EntityDao<ReplayEvent> replayDao) {
         this.replayDao = replayDao;
         if (this.replayDao == null) {
             throw new IllegalArgumentException("replayDao cannot be null!");

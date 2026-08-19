@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.replay.dao;
 
 import org.ikasan.mongo.persistence.replay.model.MongoReplayAuditEvent;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayAuditEventRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAudit;
 import org.ikasan.spec.replay.ReplayAuditEvent;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoReplayAuditDao implements BatchInsert<ReplayAuditEvent>, EsbEntityDao<ReplayAuditEvent> {
+public class MongoReplayAuditDao implements BatchInsert<ReplayAuditEvent>, EntityDao<ReplayAuditEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoReplayAuditDao.class);
 

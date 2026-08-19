@@ -1,15 +1,15 @@
 package org.ikasan.esb.service.hospital;
 
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 
 import java.util.List;
 
-public class HospitalServiceImpl implements HospitalAuditService, EsbEntityService<ExclusionEventAction>
+public class HospitalServiceImpl implements HospitalAuditService, EntityService<ExclusionEventAction>
 {
-    private EsbEntityDao<ExclusionEventAction> hospitalDao;
+    private EntityDao<ExclusionEventAction> hospitalDao;
 
     /**
      * Constructs a new instance of HospitalServiceImpl with the given SolrHospitalDao.
@@ -17,7 +17,7 @@ public class HospitalServiceImpl implements HospitalAuditService, EsbEntityServi
      * @param hospitalDao the data access object for managing ExclusionEventAction entities.
      *                         It cannot be null; otherwise, an IllegalArgumentException is thrown.
      */
-    public HospitalServiceImpl(EsbEntityDao<ExclusionEventAction> hospitalDao) {
+    public HospitalServiceImpl(EntityDao<ExclusionEventAction> hospitalDao) {
         this.hospitalDao = hospitalDao;
         if(this.hospitalDao == null) {
             throw new IllegalArgumentException("SolrHospitalDao cannot be null!");

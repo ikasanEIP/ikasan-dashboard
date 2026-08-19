@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.systemevent;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class SystemEventServiceImplTest {
 
     @Mock
-    private EsbEntityDao<SystemEvent> mockDao;
+    private EntityDao<SystemEvent> mockDao;
 
     @Mock
     private SystemEvent mockSystemEvent;

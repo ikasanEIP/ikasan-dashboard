@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceAuditDao {
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 

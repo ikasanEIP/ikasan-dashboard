@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
     public static final String JOB_LOCK_CACHE_TYPE = "jobLockCache";

@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 14/02/2017.
  */
@@ -32,59 +34,6 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     private static Logger logger = LoggerFactory.getLogger(SolrDaoBase.class);
 
     private static final List<String> ALL = Arrays.asList("*");
-
-    public static final String ID = "id";
-    public static final String ERROR_URI = "errorUri";
-    public static final String TYPE = "type";
-    public static final String MODULE_NAME = "moduleName";
-    public static final String FLOW_NAME = "flowName";
-    public static final String COMPONENT_NAME = "componentName";
-    public static final String CREATED_DATE_TIME = "timestamp";
-    public static final String UPDATED_DATE_TIME = "modifiedTimestamp";
-    public static final String PAYLOAD_CONTENT = "payload";
-    public static final String PAYLOAD_CONTENT_RAW = "payloadRaw";
-    public static final String EVENT = "event";
-    public static final String RELATED_EVENT = "relatedEventId";
-    public static final String EXPIRY = "expiry";
-    public static final String ERROR_DETAIL = "errorDetail";
-    public static final String ERROR_ACTION = "errorAction";
-    public static final String ERROR_MESSAGE = "errorMessage";
-    public static final String EXCEPTION_CLASS = "exceptionClass";
-    public static final String HOSPITAL_EVENT_ACTION = "hospitalEventAction";
-    public static final String STATUS = "status";
-    public static final String MODIFIED_BY = "modifiedBy";
-    public static final String MANUALLY_SUBMITTED_BY = "manuallySubmittedBy";
-    public static final String CHILD_CONTEXT_NAME = "childContextName";
-    public static final String ACCESS_GROUPS = "accessGroups";
-    public static final String ACCESS_USERS = "accessUsers";
-    public static final String HELD = "held";
-    public static final String SKIPPED = "skipped";
-    public static final String TARGET_RESIDING_CONTEXT_ONLY = "targetResidingContextOnly";
-    public static final String PARTICIPATES_IN_LOCK = "participatesInLock";
-    public static final String DISABLED = "disabled";
-    public static final String QUARTZ_SCHEDULED_JOBS_DISABLED = "quartzScheduledJobsDisabled";
-    public static final String START_TIME = "startTime";
-    public static final String END_TIME = "endTime";
-    public static final String ACTOR = "actor";
-    public static final String SYSTEM_EVENT_SUBJECT = "systemEventSubject";
-    public static final String SYSTEM_EVENT_ACTION ="systemEventAction";
-    public static final String DISPLAY_NAME ="displayName";
-    public static final String CONTAINS_REPEATING_JOBS = "containsRepeatingJobs";
-    public static final String IS_REPEATING_JOB = "isRepeatingJob";
-    public static final String JOB_TYPE = "jobType";
-    public static final String NAME = "name";
-    public static final String IKASAN_PRINCIPAL_TYPE = "ikasanPrincipalType";
-    public static final String DESCRIPTION = "description";
-    public static final String ROLES_RELATED_ENTITY_COLLECTION = "rolesRelatedEntity";
-    public static final String ROLE_JOB_PLAN_RELATED_ENTITY_COLLECTION = "roleJobPlanRelatedEntity";
-    public static final String ROLE_MODULE_RELATED_ENTITY_COLLECTION = "roleModuleRelatedEntity";
-    public static final String ROLE_POLICY_RELATED_ENTITY_COLLECTION = "policiesRelatedEntity";
-    public static final String PRINCIPAL_RELATED_ENTITY_COLLECTION = "principalRelatedEntity";
-    public static final String ORDER = "order";
-    public static final String EMAIL = "email";
-    public static final String FIRST_NAME = "firstName";
-    public static final String SURNAME = "surname";
-    public static final String DEPARTMENT = "department";
 
     public static final String AND = " AND ";
     public static final String OR = " OR ";

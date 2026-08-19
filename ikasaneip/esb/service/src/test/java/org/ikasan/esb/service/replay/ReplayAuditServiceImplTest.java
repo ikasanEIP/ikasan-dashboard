@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.replay;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.replay.ReplayAuditEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ReplayAuditServiceImplTest {
 
     @Mock
-    private EsbEntityDao<ReplayAuditEvent> mockDao;
+    private EntityDao<ReplayAuditEvent> mockDao;
 
     @Mock
     private ReplayAuditEvent mockReplayAuditEvent;

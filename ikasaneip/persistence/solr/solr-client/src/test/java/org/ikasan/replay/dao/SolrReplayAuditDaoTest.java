@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayAudit;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.replay.ReplayAudit;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,9 +34,9 @@ public class SolrReplayAuditDaoTest
 
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event);
 
-        Assert.assertEquals("replay_audit", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
+        Assert.assertEquals("replay_audit", solrInputDocument.getFieldValue(EntityFields.TYPE));
         JSONAssert.assertEquals(new ObjectMapper().writeValueAsString(event)
-            , solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT).toString(), JSONCompareMode.LENIENT);
-        Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
+            , solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT).toString(), JSONCompareMode.LENIENT);
+        Assert.assertEquals(1L, solrInputDocument.getFieldValue(EntityFields.EXPIRY));
     }
 }
