@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.exclusion.dao;
 
 import org.ikasan.mongo.persistence.exclusion.model.MongoExclusionEvent;
 import org.ikasan.mongo.persistence.exclusion.repository.MongoExclusionEventRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoExclusionEventDao implements EsbEntityDao<ExclusionEvent> {
+public class MongoExclusionEventDao implements EntityDao<ExclusionEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoExclusionEventDao.class);
 

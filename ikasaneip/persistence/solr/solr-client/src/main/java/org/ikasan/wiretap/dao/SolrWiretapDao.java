@@ -1,16 +1,18 @@
 package org.ikasan.wiretap.dao;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 14/02/2017.
  */
-public class SolrWiretapDao extends SolrDaoBase<WiretapEvent> implements EsbEntityDao<WiretapEvent>
+public class SolrWiretapDao extends SolrDaoBase<WiretapEvent> implements EntityDao<WiretapEvent>
 {
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrWiretapDao.class);

@@ -15,8 +15,8 @@ import org.ikasan.metrics.model.ComponentInvocationMetricImpl;
 import org.ikasan.metrics.model.CustomMetric;
 import org.ikasan.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.metrics.model.MetricEventImpl;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.history.FlowInvocationMetric;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
@@ -143,9 +143,9 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
 
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event.get(0));
 
-        Assert.assertEquals("My Module", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals("metric", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals("Trade Consumer Flow", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));
+        Assert.assertEquals("My Module", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals("metric", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        Assert.assertEquals("Trade Consumer Flow", solrInputDocument.getFieldValue(EntityFields.FLOW_NAME));
         JSONAssert.assertEquals("{\"id\":24271,\"moduleName\":\"My Module\",\"flowName\":\"Trade Consumer Flow\"," +
             "\"invocationStartTime\":1623325830486,\"invocationEndTime\":1623325830496,\"finalAction\":\"PUBLISH\"," +
             "\"componentInvocationMetricImpls\":[{\"componentName\":\"JMS Producer\",\"beforeEventIdentifier\":\"-1996324143\"," +
@@ -192,9 +192,9 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
             "{IkasanEventLifeIdentifier=-1996324143}, readOnlyProperties = true, readOnlyBody = true, droppable = false, jmsXGroupFirstForConsumer " +
             "= false, text = <?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalo...rade></mxml>}\",\"moduleName\":\"My Module\"," +
             "\"flowName\":\"Trade Consumer Flow\",\"componentName\":\"JMS Consumer\",\"timestamp\":1623325830486,\"expiry\":1623325830486," +
-            "\"eventId\":\"-1996324143\",\"relatedEventId\":null}}]}", (String)solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT)
+            "\"eventId\":\"-1996324143\",\"relatedEventId\":null}}]}", (String)solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT)
             , new CustomComparator(JSONCompareMode.LENIENT, new Customization("harvestedDateTime", (o1, o2) -> true)));
-        Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
+        Assert.assertEquals(1L, solrInputDocument.getFieldValue(EntityFields.EXPIRY));
     }
 
     @Test

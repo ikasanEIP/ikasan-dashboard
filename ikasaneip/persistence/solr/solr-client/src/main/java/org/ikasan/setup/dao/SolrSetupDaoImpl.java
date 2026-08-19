@@ -15,6 +15,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Solr implementation of SetupDao.
  */

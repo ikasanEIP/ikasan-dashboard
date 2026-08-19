@@ -9,6 +9,7 @@ import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEventRecord;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -20,6 +21,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.ikasan.spec.entity.EntityFields.*;
 
 public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEvent>
 {
@@ -71,13 +74,13 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
     }
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(String agent, long startTime, long endTime) {
-        StringBuffer agentQuery = super.buildFieldPredicate(addParenthesisToString(agent), SolrDaoBase.MODULE_NAME);
-        StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
-        StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
+        StringBuffer agentQuery = super.buildFieldPredicate(addParenthesisToString(agent), EntityFields.MODULE_NAME);
+        StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", EntityFields.TYPE);
+        StringBuffer betweenDates = super.buildDatePredicate(EntityFields.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
         SolrQuery query = new SolrQuery();
         query.setQuery(agentQuery.toString() + " AND " + typeQuery + " AND " + betweenDates);
-        query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+        query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
 
         query.setRows(0);
         try
@@ -104,8 +107,8 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(List<String> accessibleModules, long startTime, long endTime, String filter, boolean failuresOnly, int start, int limit,
                                                                                               String sortOrder) {
-        StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
-        StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
+        StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", EntityFields.TYPE);
+        StringBuffer betweenDates = super.buildDatePredicate(EntityFields.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
         SolrQuery query = new SolrQuery();
 
@@ -133,17 +136,17 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         {
             if(sortOrder.equals("asc"))
             {
-                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
+                query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
             }
             else
             {
-                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+                query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
             }
         }
         else
         {
             // Default
-            query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+            query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
         }
 
         query.setStart(start);
@@ -180,17 +183,17 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
             {
                 if(sortOrder.equals("asc"))
                 {
-                    query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
+                    query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
                 }
                 else
                 {
-                    query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+                    query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
                 }
             }
             else
             {
                 // Default
-                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+                query.addSort(EntityFields.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
             }
 
             query.setStart(start);

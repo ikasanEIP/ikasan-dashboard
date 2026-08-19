@@ -20,6 +20,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
     implements GlobalEventJobDao<GlobalEventJobRecord> {
 

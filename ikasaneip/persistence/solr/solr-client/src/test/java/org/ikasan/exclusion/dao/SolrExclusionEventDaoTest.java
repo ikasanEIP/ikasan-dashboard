@@ -4,7 +4,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.exclusion.model.SolrExclusionEventImpl;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
@@ -65,14 +65,14 @@ public class SolrExclusionEventDaoTest
             "event", 12345L, "uri");
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event);
 
-        Assert.assertEquals("moduleName:exclusion:uri", solrInputDocument.getFieldValue(SolrDaoBase.ID));
-        Assert.assertEquals("uri", solrInputDocument.getFieldValue(SolrDaoBase.ERROR_URI));
-        Assert.assertEquals("moduleName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals("flowName", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));
-        Assert.assertEquals("identifier", solrInputDocument.getFieldValue(SolrDaoBase.EVENT));
-        Assert.assertEquals("event", solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
-        Assert.assertEquals("exclusion", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
-        Assert.assertEquals(12345L, solrInputDocument.getFieldValue(SolrDaoBase.CREATED_DATE_TIME));
+        Assert.assertEquals("moduleName:exclusion:uri", solrInputDocument.getFieldValue(EntityFields.ID));
+        Assert.assertEquals("uri", solrInputDocument.getFieldValue(EntityFields.ERROR_URI));
+        Assert.assertEquals("moduleName", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals("flowName", solrInputDocument.getFieldValue(EntityFields.FLOW_NAME));
+        Assert.assertEquals("identifier", solrInputDocument.getFieldValue(EntityFields.EVENT));
+        Assert.assertEquals("event", solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT));
+        Assert.assertEquals("exclusion", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        Assert.assertEquals(1L, solrInputDocument.getFieldValue(EntityFields.EXPIRY));
+        Assert.assertEquals(12345L, solrInputDocument.getFieldValue(EntityFields.CREATED_DATE_TIME));
     }
 }

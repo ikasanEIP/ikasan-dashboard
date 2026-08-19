@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */

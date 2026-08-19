@@ -1,14 +1,15 @@
 package org.ikasan.module.metadata.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrModule
 {
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String rawConfigurationMetadata;
 
 

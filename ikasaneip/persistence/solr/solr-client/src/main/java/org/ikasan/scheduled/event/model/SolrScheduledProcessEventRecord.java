@@ -1,25 +1,25 @@
 package org.ikasan.scheduled.event.model;
 
 import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 
 public class SolrScheduledProcessEventRecord {
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String agentName;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(EntityFields.FLOW_NAME)
     private String jobGroupName;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String jobGroup;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String scheduledProcessEvent;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
     public String getId()

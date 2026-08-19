@@ -1,28 +1,28 @@
 package org.ikasan.security.model;
 
 import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 
 import static org.ikasan.security.dao.SolrAuthenticationMethodDaoImpl.AUTHENTICATION_METHOD_TYPE;
 
 public class SolrAuthenticationMethodRecord {
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.NAME)
+    @Field(EntityFields.NAME)
     private String name;
 
-    @Field(SolrDaoBase.ORDER)
+    @Field(EntityFields.ORDER)
     private Long order;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String authenticationMethod;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
     public String getId() {

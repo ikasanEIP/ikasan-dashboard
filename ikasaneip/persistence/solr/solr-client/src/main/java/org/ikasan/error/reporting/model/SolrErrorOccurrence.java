@@ -43,6 +43,7 @@ package org.ikasan.error.reporting.model;
 
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.harvest.HarvestEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 
 /**
@@ -55,73 +56,73 @@ import org.ikasan.spec.error.reporting.ErrorOccurrence;
 public class SolrErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEvent
 {
     /** unique identifier for this instance */
-	@Field("errorUri")
+	@Field(EntityFields.ERROR_URI)
     private String uri;
 
     /**
      * name of the module where this error occurred
      */
-	@Field("moduleName")
+	@Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     /**
      * name of the flow where this error occurred, if it was event/flow related
      */
-	@Field("flowName")
+	@Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     /**
      * name of the flow element where this error occurred, if it was event/flow related
      */
-	@Field("componentName")
+	@Field(EntityFields.COMPONENT_NAME)
     private String flowElementName;
 
     /**
      * the action associated with the error
      */
-    @Field("errorAction")
+    @Field(EntityFields.ERROR_ACTION)
     private String errorAction;
 
     /**
      * raw dump of the error as it occurred
      */
-	@Field("errorDetail")
+	@Field(EntityFields.ERROR_DETAIL)
     private String errorDetail;
 
     /**
      * the error message extracted from the errorDetail
      */
-	@Field("errorMessage")
+	@Field(EntityFields.ERROR_MESSAGE)
     private String errorMessage;
 
     /**
      * the exception class associated with the error
      */
-	@Field("exceptionClass")
+	@Field(EntityFields.EXCEPTION_CLASS)
     private String exceptionClass;
 
     /**
 	 * Id of the event associated with this error, if it was event/flow related
 	 */
-	@Field("event")
+	@Field(EntityFields.EVENT)
 	private String eventLifeIdentifier;
 
     /**
      * Related identifier
      */
-	@Field("relatedEventId")
+	@Field(EntityFields.RELATED_EVENT)
     private String eventRelatedIdentifier;
 
     /**
      * Representation of the Event as a String at the time that the error took place
      */
-	@Field("payload")
+	@Field(EntityFields.PAYLOAD_CONTENT)
     private String eventAsString;
 
     /**
 	 * Time that this error was logged
 	 */
-	@Field("timestamp")
+	@Field(EntityFields.CREATED_DATE_TIME)
 	private long timestamp;
 
 

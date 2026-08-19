@@ -11,9 +11,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.json.JsonAssert;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -318,9 +317,9 @@ public class SolrComponentConfigurationMetadataDaoImplTest extends SolrTestCaseJ
         {
             throw new RuntimeException("Unable to convert ["+event+"] to json format.");
         }
-        Assert.assertEquals("configurationId", solrInputDocument.getFieldValue(SolrDaoBase.ID));
-        Assert.assertEquals("componentConfiguration", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        JSONAssert.assertEquals(metadata, solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT).toString()
+        Assert.assertEquals("configurationId", solrInputDocument.getFieldValue(EntityFields.ID));
+        Assert.assertEquals("componentConfiguration", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        JSONAssert.assertEquals(metadata, solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT).toString()
             , JSONCompareMode.LENIENT);
     }
 

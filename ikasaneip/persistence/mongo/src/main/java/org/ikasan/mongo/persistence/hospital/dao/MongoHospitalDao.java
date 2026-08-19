@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.hospital.dao;
 
 import org.ikasan.mongo.persistence.hospital.model.MongoExclusionEventAction;
 import org.ikasan.mongo.persistence.hospital.repository.MongoExclusionEventActionRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoHospitalDao implements EsbEntityDao<ExclusionEventAction> {
+public class MongoHospitalDao implements EntityDao<ExclusionEventAction> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoHospitalDao.class);
 

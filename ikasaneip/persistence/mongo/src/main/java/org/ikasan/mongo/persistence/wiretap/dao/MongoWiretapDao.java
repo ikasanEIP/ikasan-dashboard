@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.wiretap.dao;
 
 import org.ikasan.mongo.persistence.wiretap.model.MongoWiretapEventImpl;
 import org.ikasan.mongo.persistence.wiretap.repository.MongoWiretapEventRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoWiretapDao implements EsbEntityDao<WiretapEvent> {
+public class MongoWiretapDao implements EntityDao<WiretapEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoWiretapDao.class);
 

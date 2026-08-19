@@ -1,43 +1,43 @@
 package org.ikasan.security.model;
 
 import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 
 import java.util.List;
 
 public class SolrUserRecord {
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.TYPE)
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Field(SolrDaoBase.NAME)
+    @Field(EntityFields.NAME)
     private String username;
 
-    @Field(SolrDaoBase.EMAIL)
+    @Field(EntityFields.EMAIL)
     private String email;
 
-    @Field(SolrDaoBase.FIRST_NAME)
+    @Field(EntityFields.FIRST_NAME)
     private String firstName;
 
-    @Field(SolrDaoBase.SURNAME)
+    @Field(EntityFields.SURNAME)
     private String surname;
 
-    @Field(SolrDaoBase.DEPARTMENT)
+    @Field(EntityFields.DEPARTMENT)
     private String department;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String user;
 
-    @Field(SolrDaoBase.PRINCIPAL_RELATED_ENTITY_COLLECTION)
+    @Field(EntityFields.PRINCIPAL_RELATED_ENTITY_COLLECTION)
     private List<String> relatedPrincipalIdentifiers;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
     public String getId() {

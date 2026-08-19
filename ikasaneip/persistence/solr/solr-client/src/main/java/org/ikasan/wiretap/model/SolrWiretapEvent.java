@@ -1,6 +1,7 @@
 package org.ikasan.wiretap.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.wiretap.WiretapEvent;
 
 /**
@@ -9,31 +10,31 @@ import org.ikasan.spec.wiretap.WiretapEvent;
 public class SolrWiretapEvent implements WiretapEvent<String>
 {
 
-    @Field("id")
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field("payload")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
-    @Field("moduleName")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Field("flowName")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Field("componentName")
+    @Field(EntityFields.COMPONENT_NAME)
     private String componentName;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
 
-    @Field("event")
+    @Field(EntityFields.EVENT)
     private String eventId;
 
-    @Field("relateEvent")
+    @Field(EntityFields.RELATED_EVENT)
     private String relatedEventId;
 
 
