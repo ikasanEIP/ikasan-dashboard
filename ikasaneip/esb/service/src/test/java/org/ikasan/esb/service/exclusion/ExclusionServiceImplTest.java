@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.exclusion;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ExclusionServiceImplTest {
 
     @Mock
-    private EsbEntityDao<ExclusionEvent> mockDao;
+    private EntityDao<ExclusionEvent> mockDao;
 
     @Mock
     private ExclusionEvent mockExclusionEvent;

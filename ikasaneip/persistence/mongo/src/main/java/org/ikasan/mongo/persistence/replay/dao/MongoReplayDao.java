@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.replay.dao;
 
 import org.ikasan.mongo.persistence.replay.model.MongoReplayEvent;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayEventRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +15,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * MongoDB implementation of EsbEntityDao for ReplayEvent.
+ * MongoDB implementation of EntityDao for ReplayEvent.
  *
  * @author Ikasan Development Team
  */
-public class MongoReplayDao implements EsbEntityDao<ReplayEvent> {
+public class MongoReplayDao implements EntityDao<ReplayEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoReplayDao.class);
 

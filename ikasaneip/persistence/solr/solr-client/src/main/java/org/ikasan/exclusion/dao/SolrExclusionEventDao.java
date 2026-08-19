@@ -1,16 +1,18 @@
 package org.ikasan.exclusion.dao;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 05/08/2017.
  */
-public class SolrExclusionEventDao extends SolrDaoBase<ExclusionEvent> implements EsbEntityDao<ExclusionEvent>
+public class SolrExclusionEventDao extends SolrDaoBase<ExclusionEvent> implements EntityDao<ExclusionEvent>
 {
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrExclusionEventDao.class);

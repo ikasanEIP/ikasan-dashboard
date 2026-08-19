@@ -1,7 +1,7 @@
 package org.ikasan.esb.service.wiretap;
 
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.module.ModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.wiretap.WiretapEvent;
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by amajewski on 23/09/2017.
  */
-public class WiretapServiceImpl implements BatchInsert<WiretapEvent>, EsbEntityService<WiretapEvent>
+public class WiretapServiceImpl implements BatchInsert<WiretapEvent>, EntityService<WiretapEvent>
 {
 
     /** Logger for this class */
@@ -22,7 +22,7 @@ public class WiretapServiceImpl implements BatchInsert<WiretapEvent>, EsbEntityS
     /**
      * Data access object for the persistence of <code>WiretapFlowEvent</code>
      */
-    private EsbEntityDao<WiretapEvent> wiretapDao;
+    private EntityDao<WiretapEvent> wiretapDao;
 
     /**
      * Container for modules
@@ -37,7 +37,7 @@ public class WiretapServiceImpl implements BatchInsert<WiretapEvent>, EsbEntityS
      * @param moduleService the service responsible for managing modules; must not be null
      * @throws IllegalArgumentException if wiretapDao or moduleService is null
      */
-    public WiretapServiceImpl(EsbEntityDao<WiretapEvent> wiretapDao, ModuleService moduleService) {
+    public WiretapServiceImpl(EntityDao<WiretapEvent> wiretapDao, ModuleService moduleService) {
         this.wiretapDao = wiretapDao;
         if (wiretapDao == null) {
             throw new IllegalArgumentException("wiretapDao cannot be 'null'");
@@ -57,7 +57,7 @@ public class WiretapServiceImpl implements BatchInsert<WiretapEvent>, EsbEntityS
      * @param wiretapDao the data access object for persisting WiretapEvent instances; must not be null
      * @throws IllegalArgumentException if wiretapDao is null
      */
-    public WiretapServiceImpl(EsbEntityDao<WiretapEvent> wiretapDao) {
+    public WiretapServiceImpl(EntityDao<WiretapEvent> wiretapDao) {
         this.wiretapDao = wiretapDao;
         if (wiretapDao == null) {
             throw new IllegalArgumentException("wiretapDao cannot be 'null'");

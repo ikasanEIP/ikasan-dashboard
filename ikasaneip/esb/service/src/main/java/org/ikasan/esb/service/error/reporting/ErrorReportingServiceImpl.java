@@ -1,7 +1,7 @@
 package org.ikasan.esb.service.error.reporting;
 
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.ikasan.spec.persistence.BatchInsert;
 
@@ -10,10 +10,10 @@ import java.util.List;
 /**
  * Created by Ikasan Development Team on 23/09/2017.
  */
-public class ErrorReportingServiceImpl implements EsbEntityService<ErrorOccurrence>, BatchInsert<ErrorOccurrence>
+public class ErrorReportingServiceImpl implements EntityService<ErrorOccurrence>, BatchInsert<ErrorOccurrence>
 {
 
-    private EsbEntityDao<ErrorOccurrence> errorReportingServiceDao;
+    private EntityDao<ErrorOccurrence> errorReportingServiceDao;
 
 
     /**
@@ -23,7 +23,7 @@ public class ErrorReportingServiceImpl implements EsbEntityService<ErrorOccurren
      *                                 Must not be null.
      * @throws IllegalArgumentException if the provided errorReportingServiceDao is null.
      */
-    public ErrorReportingServiceImpl(EsbEntityDao<ErrorOccurrence> errorReportingServiceDao) {
+    public ErrorReportingServiceImpl(EntityDao<ErrorOccurrence> errorReportingServiceDao) {
         this.errorReportingServiceDao = errorReportingServiceDao;
         if (this.errorReportingServiceDao == null) {
             throw new IllegalArgumentException("errorManagementDao cannot be null!");

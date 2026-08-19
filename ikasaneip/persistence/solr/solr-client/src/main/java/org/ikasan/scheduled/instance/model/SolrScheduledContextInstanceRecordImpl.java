@@ -5,46 +5,46 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
     private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     protected String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextInstanceId;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextInstance;
 
-    @Field(SolrDaoBase.STATUS)
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field(SolrDaoBase.MODIFIED_BY)
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field(SolrDaoBase.START_TIME)
+    @Field(EntityFields.START_TIME)
     private long startTime;
 
-    @Field(SolrDaoBase.END_TIME)
+    @Field(EntityFields.END_TIME)
     private long endTime;
 
-    @Field(SolrDaoBase.CONTAINS_REPEATING_JOBS)
+    @Field(EntityFields.CONTAINS_REPEATING_JOBS)
     private boolean containsRepeatingJobs = false;
 
     @Override

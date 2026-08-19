@@ -1,16 +1,18 @@
 package org.ikasan.error.reporting.dao;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */
-public class SolrErrorReportingServiceDaoImpl extends SolrDaoBase<ErrorOccurrence> implements EsbEntityDao<ErrorOccurrence>
+public class SolrErrorReportingServiceDaoImpl extends SolrDaoBase<ErrorOccurrence> implements EntityDao<ErrorOccurrence>
 {
     private static Logger logger = LoggerFactory.getLogger(SolrErrorReportingServiceDaoImpl.class);
 

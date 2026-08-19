@@ -9,9 +9,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.event.model.Outcome;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
@@ -86,19 +86,19 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
 
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event);
 
-        Assert.assertEquals("agentName-scheduledProcessEvent--652266522", solrInputDocument.getFieldValue(SolrDaoBase.ID));
-        Assert.assertEquals("agentName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals("scheduledProcessEvent", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals("jobName", solrInputDocument.getFieldValue(SolrDaoBase.COMPONENT_NAME));
-        Assert.assertEquals("agentName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals(1000L, solrInputDocument.getFieldValue(SolrDaoBase.CREATED_DATE_TIME));
+        Assert.assertEquals("agentName-scheduledProcessEvent--652266522", solrInputDocument.getFieldValue(EntityFields.ID));
+        Assert.assertEquals("agentName", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals("scheduledProcessEvent", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        Assert.assertEquals("jobName", solrInputDocument.getFieldValue(EntityFields.COMPONENT_NAME));
+        Assert.assertEquals("agentName", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals(1000L, solrInputDocument.getFieldValue(EntityFields.CREATED_DATE_TIME));
         JSONAssert.assertEquals("{\"agentName\":\"agentName\",\"agentHostname\":null,\"jobName\":\"jobName\"," +
                 "\"jobGroup\":\"jobGroup\",\"jobDescription\":\"jobDescription\",\"commandLine\":\"commandLine\"," +
                 "\"resultOutput\":\"output\",\"resultError\":\"error\",\"pid\":1234,\"user\":\"user\",\"fireTime\":1000," +
                 "\"nextFireTime\":1000,\"successful\":true,\"jobStarting\":false,\"completionTime\":1000,\"returnCode\":0," +
                 "\"outcome\":\"EXECUTION_INVOKED\",\"dryRunParameters\":null,\"executionDetails\":null,\"dryRun\":false}"
-            , (String)solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT), true);
-        Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
+            , (String)solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT), true);
+        Assert.assertEquals(1L, solrInputDocument.getFieldValue(EntityFields.EXPIRY));
     }
 
 
@@ -509,10 +509,10 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
         IntStream.range(0, num)
             .forEach(i -> {
                 SolrInputDocument event = new SolrInputDocument();
-                event.setField(SolrDaoBase.ID, "agentName"+i);
-                event.setField(SolrDaoBase.MODULE_NAME, "agentName"+i);
-                event.setField(SolrDaoBase.TYPE, "moduleMetaData");
-                event.setField(SolrDaoBase.PAYLOAD_CONTENT, "{\"type\":\"SCHEDULER_AGENT\"}");
+                event.setField(EntityFields.ID, "agentName"+i);
+                event.setField(EntityFields.MODULE_NAME, "agentName"+i);
+                event.setField(EntityFields.TYPE, "moduleMetaData");
+                event.setField(EntityFields.PAYLOAD_CONTENT, "{\"type\":\"SCHEDULER_AGENT\"}");
 
 
                 solrInputDocuments.add(event);

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobInstanceRecord> implements SchedulerJobInstanceDao {
 
     private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
@@ -361,7 +363,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(String.format(queryString.toString(), id));
             solrQuery.setFacet(true);
-            solrQuery.addFacetField(SolrDaoBase.STATUS, SolrDaoBase.FLOW_NAME);
+            solrQuery.addFacetField(STATUS, FLOW_NAME);
             solrQuery.setRows(0);
 
             QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
@@ -369,12 +371,12 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
             try {
                 QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
-                FacetField field = rsp.getFacetField(SolrDaoBase.STATUS);
+                FacetField field = rsp.getFacetField(STATUS);
                 HashMap<String, Integer> jobStatusCount = new HashMap<>();
 
                 field.getValues().forEach(count -> jobStatusCount.put(count.getName(), (int) count.getCount()));
 
-                FacetField contextName = rsp.getFacetField(SolrDaoBase.FLOW_NAME);
+                FacetField contextName = rsp.getFacetField(FLOW_NAME);
 
                 results.add(new SolrContextInstanceAggregateJobStatusImpl(id, contextName.getValues().get(0).getName(),
                     jobStatusCount, false));
@@ -418,10 +420,10 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         contextInstanceIds.forEach(id -> {
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(String.format(queryString.toString(), id));
-            solrQuery.addField(SolrDaoBase.STATUS);
-            solrQuery.addField(SolrDaoBase.FLOW_NAME);
-            solrQuery.addField(SolrDaoBase.MODULE_NAME);
-            solrQuery.addField(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY);
+            solrQuery.addField(STATUS);
+            solrQuery.addField(FLOW_NAME);
+            solrQuery.addField(MODULE_NAME);
+            solrQuery.addField(TARGET_RESIDING_CONTEXT_ONLY);
             solrQuery.setRows(50);
 
             QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
@@ -441,12 +443,12 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                 AtomicReference<String> contextName = new AtomicReference<>();
 
                 rsp.getResults().forEach(doc -> {
-                    String jobName = (String)doc.getFieldValue(SolrDaoBase.MODULE_NAME);
-                    contextName.set((String) doc.getFieldValue(SolrDaoBase.FLOW_NAME));
-                    String status = (String)doc.getFieldValue(SolrDaoBase.STATUS);
+                    String jobName = (String)doc.getFieldValue(MODULE_NAME);
+                    contextName.set((String) doc.getFieldValue(FLOW_NAME));
+                    String status = (String)doc.getFieldValue(STATUS);
                     boolean targetResidingContextOnly
-                        = doc.getFieldValue(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY) != null
-                            ? (boolean)doc.getFieldValue(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
+                        = doc.getFieldValue(TARGET_RESIDING_CONTEXT_ONLY) != null
+                            ? (boolean)doc.getFieldValue(TARGET_RESIDING_CONTEXT_ONLY)
                             : false;
 
                     if(statusCounts.containsKey(status)) {

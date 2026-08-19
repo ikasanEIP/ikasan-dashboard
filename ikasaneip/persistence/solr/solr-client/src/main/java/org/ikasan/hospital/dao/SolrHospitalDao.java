@@ -1,16 +1,18 @@
 package org.ikasan.hospital.dao;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team on 14/02/2017.
  */
-public class SolrHospitalDao extends SolrDaoBase<ExclusionEventAction> implements EsbEntityDao<ExclusionEventAction>
+public class SolrHospitalDao extends SolrDaoBase<ExclusionEventAction> implements EntityDao<ExclusionEventAction>
 {
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrHospitalDao.class);

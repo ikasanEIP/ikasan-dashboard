@@ -41,6 +41,7 @@
 package org.ikasan.replay.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.replay.ReplayEvent;
 
 import java.util.Date;
@@ -52,31 +53,31 @@ import java.util.Date;
  */
 public class SolrReplayEvent implements ReplayEvent
 {
-	@Field("id")
+	@Field(EntityFields.ID)
 	private String id;
 
-	@Field("moduleName")
+	@Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-	@Field("flowName")
+	@Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-	@Field("event")
+	@Field(EntityFields.EVENT)
 	private String eventId;
 
-	@Field("payloadRaw")
+	@Field(EntityFields.PAYLOAD_CONTENT_RAW)
     private byte[] payloadRaw;
 
-	@Field("payload")
+	@Field(EntityFields.PAYLOAD_CONTENT)
 	private String eventAsString;
 
-    @Field("relatedEventId")
+    @Field(EntityFields.RELATED_EVENT)
     private String relatedEventIdentifier;
 
-	@Field("timestamp")
+	@Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-	@Field("expiry")
+	@Field(EntityFields.EXPIRY)
     private long expiry;
 
 

@@ -18,6 +18,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJobRecord>
     implements FileEventDrivenJobDao<FileEventDrivenJobRecord> {
 

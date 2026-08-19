@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.systemevent.dao;
 
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchDao;
@@ -24,11 +24,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * MongoDB implementation of SystemEventSearchDao and EsbEntityDao.
+ * MongoDB implementation of SystemEventSearchDao and EntityDao.
  *
  * @author Ikasan Development Team
  */
-public class MongoSystemEventDao implements SystemEventSearchDao, EsbEntityDao<SystemEvent> {
+public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<SystemEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSystemEventDao.class);
 

@@ -41,6 +41,7 @@
 package org.ikasan.exclusion.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 
 /**
@@ -51,27 +52,27 @@ import org.ikasan.spec.exclusion.ExclusionEvent;
 public class SolrExclusionEventImpl implements ExclusionEvent<String>
 {
     /** surrogate id assigned from ORM */
-    @Field("id")
+    @Field(EntityFields.ID)
     private String id;
 
     /** module name */
-    @Field("moduleName")
+    @Field(EntityFields.MODULE_NAME)
     String moduleName;
 
     /** flowName */
-    @Field("flowName")
+    @Field(EntityFields.FLOW_NAME)
     String flowName;
 
     /** identifier for this event */
-    @Field("event")
+    @Field(EntityFields.EVENT)
     String identifier;
 
     /** original form of the event being excluded */
-    @Field("payload")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     String event;
 
     /** timestamp indicating when this event was created */
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     long timestamp;
 
     /** error uri reported as part of this excluded event */

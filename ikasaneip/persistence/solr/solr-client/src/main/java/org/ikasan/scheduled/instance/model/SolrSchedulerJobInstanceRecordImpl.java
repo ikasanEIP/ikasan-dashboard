@@ -5,9 +5,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -16,55 +16,55 @@ import java.util.Objects;
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
     private static final JsonMapper objectMapper  = ScheduledObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.TYPE)
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String jobName;
 
-    @Field(SolrDaoBase.DISPLAY_NAME)
+    @Field(EntityFields.DISPLAY_NAME)
     private String displayName;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(EntityFields.FLOW_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextInstanceId;
 
-    @Field(SolrDaoBase.CHILD_CONTEXT_NAME)
+    @Field(EntityFields.CHILD_CONTEXT_NAME)
     private String childContextName;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String schedulerJobInstance;
 
-    @Field(SolrDaoBase.STATUS)
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
+    @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
-    @Field(SolrDaoBase.PARTICIPATES_IN_LOCK)
+    @Field(EntityFields.PARTICIPATES_IN_LOCK)
     boolean participatesInLock;
 
-    @Field(SolrDaoBase.START_TIME)
+    @Field(EntityFields.START_TIME)
     private long startTime;
 
-    @Field(SolrDaoBase.END_TIME)
+    @Field(EntityFields.END_TIME)
     private long endTime;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field(SolrDaoBase.MODIFIED_BY)
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field(SolrDaoBase.MANUALLY_SUBMITTED_BY)
+    @Field(EntityFields.MANUALLY_SUBMITTED_BY)
     private String manuallySubmittedBy;
 
     @Override

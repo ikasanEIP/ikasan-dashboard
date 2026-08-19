@@ -3,7 +3,7 @@ package org.ikasan.wiretap.dao;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.wiretap.model.SolrWiretapEvent;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -64,13 +64,13 @@ public class SolrWiretapDaoTest
 
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event);
 
-        Assert.assertEquals("moduleName-wiretap-1", solrInputDocument.getFieldValue(SolrDaoBase.ID));
-        Assert.assertEquals("moduleName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals("wiretap", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals("flowName", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));
-        Assert.assertEquals("componentName", solrInputDocument.getFieldValue(SolrDaoBase.COMPONENT_NAME));
-        Assert.assertEquals("eventId", solrInputDocument.getFieldValue(SolrDaoBase.EVENT));
-        Assert.assertEquals("event", solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
-        Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
+        Assert.assertEquals("moduleName-wiretap-1", solrInputDocument.getFieldValue(EntityFields.ID));
+        Assert.assertEquals("moduleName", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals("wiretap", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        Assert.assertEquals("flowName", solrInputDocument.getFieldValue(EntityFields.FLOW_NAME));
+        Assert.assertEquals("componentName", solrInputDocument.getFieldValue(EntityFields.COMPONENT_NAME));
+        Assert.assertEquals("eventId", solrInputDocument.getFieldValue(EntityFields.EVENT));
+        Assert.assertEquals("event", solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT));
+        Assert.assertEquals(1L, solrInputDocument.getFieldValue(EntityFields.EXPIRY));
     }
 }

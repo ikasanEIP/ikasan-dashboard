@@ -416,7 +416,7 @@ public class MongoPersistenceAutoConfiguration {
         return new MongoComponentConfigurationMetadataDaoImpl(repository, mongoTemplate);
     }
 
-    @Bean("errorReportingServiceEsbEntityDao")
+    @Bean("errorReportingServiceEntityDao")
     public MongoErrorReportingServiceDaoImpl errorReportingServiceDao(
             MongoErrorOccurrenceRepository repository,
             MongoTemplate mongoTemplate) {
@@ -467,7 +467,7 @@ public class MongoPersistenceAutoConfiguration {
         return new MongoSystemEventDao(repository, mongoTemplate);
     }
 
-    @Bean("wiretapEsbEntityDao")
+    @Bean("wiretapEntityDao")
     public MongoWiretapDao wiretapDao(
             MongoWiretapEventRepository repository,
             MongoTemplate mongoTemplate,

@@ -3,9 +3,9 @@ package org.ikasan.scheduled.notification.model;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -13,28 +13,28 @@ public class SolrEmailNotificationDetailsRecord implements EmailNotificationDeta
 
     private static final JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String jobName;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.RELATED_EVENT)
+    @Field(EntityFields.RELATED_EVENT)
     private String monitorType;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String emailNotificationDetails;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field(SolrDaoBase.MODIFIED_BY)
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     public String getId() {

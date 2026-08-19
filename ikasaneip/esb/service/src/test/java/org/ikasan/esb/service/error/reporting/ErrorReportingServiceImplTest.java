@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.error.reporting;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ErrorReportingServiceImplTest {
 
     @Mock
-    private EsbEntityDao<ErrorOccurrence> mockDao;
+    private EntityDao<ErrorOccurrence> mockDao;
 
     @Mock
     private ErrorOccurrence mockErrorOccurrence;

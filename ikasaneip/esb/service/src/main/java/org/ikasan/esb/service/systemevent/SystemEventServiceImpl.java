@@ -1,7 +1,7 @@
 package org.ikasan.esb.service.systemevent;
 
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.systemevent.SystemEvent;
 
@@ -11,9 +11,9 @@ import java.util.List;
  * Created by Ikasan Development Team on 23/09/2017.
  */
 public class SystemEventServiceImpl
-    implements BatchInsert<SystemEvent>, EsbEntityService<SystemEvent>
+    implements BatchInsert<SystemEvent>, EntityService<SystemEvent>
 {
-    private EsbEntityDao<SystemEvent> systemEventDao;
+    private EntityDao<SystemEvent> systemEventDao;
 
     /**
      * Constructor for SystemEventServiceImpl, which initializes the service
@@ -24,7 +24,7 @@ public class SystemEventServiceImpl
      *                       Must not be null, otherwise an IllegalArgumentException
      *                       will be thrown.
      */
-    public SystemEventServiceImpl(EsbEntityDao<SystemEvent> systemEventDao) {
+    public SystemEventServiceImpl(EntityDao<SystemEvent> systemEventDao) {
         this.systemEventDao = systemEventDao;
         if(this.systemEventDao == null) {
             throw new IllegalArgumentException("systemEventDao cannot be null!");

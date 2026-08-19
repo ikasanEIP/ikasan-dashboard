@@ -3,9 +3,9 @@ package org.ikasan.scheduled.profile.model;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -15,34 +15,34 @@ import java.util.List;
 public class SolrContextProfileRecordImpl implements ContextProfileRecord {
     private static final JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String profileName;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(EntityFields.FLOW_NAME)
     private String owner;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextProfile;
 
-    @Field(SolrDaoBase.ACCESS_GROUPS)
+    @Field(EntityFields.ACCESS_GROUPS)
     private String accessGroups;
 
-    @Field(SolrDaoBase.ACCESS_USERS)
+    @Field(EntityFields.ACCESS_USERS)
     private String accessUsers;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long createdDateTime;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedDateTime;
 
-    @Field(SolrDaoBase.MODIFIED_BY)
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Override

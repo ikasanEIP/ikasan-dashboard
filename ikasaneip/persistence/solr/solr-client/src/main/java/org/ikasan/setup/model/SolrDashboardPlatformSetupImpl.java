@@ -2,7 +2,7 @@ package org.ikasan.setup.model;
 
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.setup.util.SolrSetupObjectMapperFactory;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.entity.EntityFields;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -15,19 +15,19 @@ import java.util.List;
 public class SolrDashboardPlatformSetupImpl implements DashboardPlatformSetup {
     private final JsonMapper objectMapper = SolrSetupObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.TYPE)
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String platformSetupItems;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
     @Override

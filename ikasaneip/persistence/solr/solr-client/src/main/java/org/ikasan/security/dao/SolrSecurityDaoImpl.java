@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrSecurityDaoImpl implements SecurityDao {
 
     private static final Logger logger = LoggerFactory.getLogger(SolrSecurityDaoImpl.class);
