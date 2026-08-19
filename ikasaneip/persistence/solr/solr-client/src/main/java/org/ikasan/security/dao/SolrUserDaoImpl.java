@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Solr-based Data Access Object implementation for managing users.
  *

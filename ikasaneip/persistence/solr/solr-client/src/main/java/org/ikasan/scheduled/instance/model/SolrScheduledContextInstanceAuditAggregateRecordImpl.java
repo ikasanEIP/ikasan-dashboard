@@ -5,9 +5,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -15,34 +15,34 @@ public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements Sch
 
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(EntityFields.FLOW_NAME)
     private String contextInstanceId;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextInstanceAudit;
 
-    @Field(SolrDaoBase.COMPONENT_NAME)
+    @Field(EntityFields.COMPONENT_NAME)
     private String scheduledProcessEventName;
 
-    @Field(SolrDaoBase.EVENT)
+    @Field(EntityFields.EVENT)
     private String raisedEvents;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.STATUS)
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field(SolrDaoBase.IS_REPEATING_JOB)
+    @Field(EntityFields.IS_REPEATING_JOB)
     private boolean isRepeatingJob;
 
-    @Field(SolrDaoBase.JOB_TYPE)
+    @Field(EntityFields.JOB_TYPE)
     private String jobType;
 
     @Override

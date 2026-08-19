@@ -16,9 +16,9 @@ import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrTransitionImpl;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.spec.metadata.model.*;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -391,11 +391,11 @@ public class SolrBusinessStreamMetadataDaoImplTest extends SolrTestCaseJ4
         SolrBusinessStreamMetadataDaoImpl dao = new SolrBusinessStreamMetadataDaoImpl();
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, solrBusinessStream);
 
-        Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(SolrDaoBase.ID));
-        Assert.assertEquals("businessStreamMetaData", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
-        Assert.assertEquals("businessStream1Description", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));
-        Assert.assertEquals(businessStream, solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
+        Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(EntityFields.ID));
+        Assert.assertEquals("businessStreamMetaData", solrInputDocument.getFieldValue(EntityFields.TYPE));
+        Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(EntityFields.MODULE_NAME));
+        Assert.assertEquals("businessStream1Description", solrInputDocument.getFieldValue(EntityFields.FLOW_NAME));
+        Assert.assertEquals(businessStream, solrInputDocument.getFieldValue(EntityFields.PAYLOAD_CONTENT));
     }
 
     public static String TEST_HOME() {

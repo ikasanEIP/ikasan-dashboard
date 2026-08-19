@@ -5,37 +5,37 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
     private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String context;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field(SolrDaoBase.MODIFIED_BY)
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field(SolrDaoBase.DISABLED)
+    @Field(EntityFields.DISABLED)
     private boolean disabled = false;
 
-    @Field(SolrDaoBase.QUARTZ_SCHEDULED_JOBS_DISABLED)
+    @Field(EntityFields.QUARTZ_SCHEDULED_JOBS_DISABLED)
     private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
 
     @Override

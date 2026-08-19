@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrInternalEventDrivenJobTemplateDaoImpl extends SolrInternalEventDrivenJobDaoImpl {
 
     private static Logger logger = LoggerFactory.getLogger(SolrInternalEventDrivenJobTemplateDaoImpl.class);

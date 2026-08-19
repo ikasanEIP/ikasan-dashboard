@@ -15,6 +15,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.UUID;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditRecord> implements JobLockCacheAuditDao {
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE = "jockLockCacheRecordAudit";
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE_ID = "jockLockCacheRecordAuditID";

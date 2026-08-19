@@ -21,6 +21,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord> implements ContextProfileDao {
 
     public static final String CONTEXT_PROFILE_TYPE = "contextProfile";

@@ -30,7 +30,7 @@ import org.ikasan.setup.service.SolrSetupServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.housekeeping.HousekeepService;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
 import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
@@ -280,16 +280,16 @@ public class SolrClientAutoConfiguration {
         return esbSearchService();
     }
 
-    @Bean("wiretapEsbEntityDao")
-    public EsbEntityDao wiretapEsbEntityDao() {
+    @Bean("wiretapEntityDao")
+    public EntityDao wiretapEntityDao() {
         SolrWiretapDao dao = new SolrWiretapDao();
         initializeDao(dao, this.solrRetentionDays);
 
         return dao;
     }
 
-    @Bean("errorReportingServiceEsbEntityDao")
-    public EsbEntityDao errorReportingServiceEsbEntityDao() {
+    @Bean("errorReportingServiceEntityDao")
+    public EntityDao errorReportingServiceEntityDao() {
         SolrErrorReportingServiceDaoImpl dao = new SolrErrorReportingServiceDaoImpl();
         initializeDao(dao, this.solrRetentionDays);
 
@@ -297,7 +297,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean("exclusionEventEntityDao")
-    public EsbEntityDao exclusionEventEntityDao() {
+    public EntityDao exclusionEventEntityDao() {
         SolrExclusionEventDao dao = new SolrExclusionEventDao();
         initializeDao(dao, this.solrRetentionDays);
 
@@ -305,7 +305,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean("replayEntityDao")
-    public EsbEntityDao replayEntityDao() {
+    public EntityDao replayEntityDao() {
         SolrReplayDao dao = new SolrReplayDao();
         initializeDao(dao, this.solrRetentionDays);
 
@@ -321,7 +321,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean("hospitalEntityDao")
-    public EsbEntityDao hospitalEntityDao() {
+    public EntityDao hospitalEntityDao() {
         SolrHospitalDao dao = new SolrHospitalDao();
         initializeDao(dao, this.solrRetentionDays);
 
@@ -345,7 +345,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean("replayAuditEntityDao")
-    public EsbEntityDao replayAuditEntityDao() {
+    public EntityDao replayAuditEntityDao() {
         SolrReplayAuditDao dao = new SolrReplayAuditDao();
         initializeDao(dao, this.solrRetentionDays);
 
@@ -361,7 +361,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean("systemEventEntityDao")
-    public EsbEntityDao systemEventEntityDao() {
+    public EntityDao systemEventEntityDao() {
         SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
         initializeDao(dao, this.solrRetentionDays);
 

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBase<ScheduledContextInstanceAuditAggregateRecord> implements ScheduledContextInstanceAuditAggregateDao {
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
@@ -147,7 +149,7 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(String.format(queryString.toString(), id));
             solrQuery.setFacet(true);
-            solrQuery.addFacetField(SolrDaoBase.STATUS);
+            solrQuery.addFacetField(STATUS);
             solrQuery.setRows(0);
 
             QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
@@ -155,7 +157,7 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
 
             try {
                 QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
-                FacetField field = rsp.getFacetField(SolrDaoBase.STATUS);
+                FacetField field = rsp.getFacetField(STATUS);
                 HashMap<String, Integer> jobStatusCount = new HashMap<>();
 
                 field.getValues().forEach(count -> jobStatusCount.put(count.getName(), (int) count.getCount()));

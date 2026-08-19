@@ -3,7 +3,7 @@ package org.ikasan.replay.dao;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -13,8 +13,10 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
-    implements BatchInsert<SolrReplayAuditEvent>, EsbEntityDao<SolrReplayAuditEvent>
+    implements BatchInsert<SolrReplayAuditEvent>, EntityDao<SolrReplayAuditEvent>
 {
     private static Logger logger = LoggerFactory.getLogger(SolrReplayAuditDao.class);
 

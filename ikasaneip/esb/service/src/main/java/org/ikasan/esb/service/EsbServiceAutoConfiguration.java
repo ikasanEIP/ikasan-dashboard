@@ -12,8 +12,8 @@ import org.ikasan.esb.service.replay.ReplayServiceImpl;
 import org.ikasan.esb.service.systemevent.SystemEventSearchServiceImpl;
 import org.ikasan.esb.service.systemevent.SystemEventServiceImpl;
 import org.ikasan.esb.service.wiretap.WiretapServiceImpl;
-import org.ikasan.spec.entity.EsbEntityDao;
-import org.ikasan.spec.entity.EsbEntityService;
+import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityService;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.ikasan.spec.history.FlowInvocationMetric;
@@ -58,32 +58,32 @@ public class EsbServiceAutoConfiguration {
     }
 
     @Bean
-    public EsbEntityService<ErrorOccurrence> errorReportingEntityService(@Qualifier("errorReportingServiceEsbEntityDao") EsbEntityDao<ErrorOccurrence> errorReportingServiceDao) {
+    public EntityService<ErrorOccurrence> errorReportingEntityService(@Qualifier("errorReportingServiceEntityDao") EntityDao<ErrorOccurrence> errorReportingServiceDao) {
         return new ErrorReportingServiceImpl(errorReportingServiceDao);
     }
 
     @Bean("errorOccurrenceBatchInsert")
-    public BatchInsert errorOccurrenceBatchInsert(@Qualifier("errorReportingServiceEsbEntityDao") EsbEntityDao<ErrorOccurrence> errorReportingServiceDao) {
+    public BatchInsert errorOccurrenceBatchInsert(@Qualifier("errorReportingServiceEntityDao") EntityDao<ErrorOccurrence> errorReportingServiceDao) {
         return new ErrorReportingServiceImpl(errorReportingServiceDao);
     }
 
     @Bean("exclusionEntityService")
-    public EsbEntityService<ExclusionEvent> exclusionEntityService(@Qualifier("exclusionEventEntityDao")EsbEntityDao<ExclusionEvent> exclusionEventDao) {
+    public EntityService<ExclusionEvent> exclusionEntityService(@Qualifier("exclusionEventEntityDao")EntityDao<ExclusionEvent> exclusionEventDao) {
         return new ExclusionServiceImpl(exclusionEventDao);
     }
 
     @Bean("exclusionEventBatchInsert")
-    public BatchInsert<ExclusionEvent> exclusionEventBatchInsert(@Qualifier("exclusionEventEntityDao")EsbEntityDao<ExclusionEvent> exclusionEventDao) {
+    public BatchInsert<ExclusionEvent> exclusionEventBatchInsert(@Qualifier("exclusionEventEntityDao")EntityDao<ExclusionEvent> exclusionEventDao) {
         return new ExclusionServiceImpl(exclusionEventDao);
     }
 
     @Bean("hospitalEntityService")
-    public EsbEntityService<ExclusionEventAction> hospitalEntityService(@Qualifier("hospitalEntityDao") EsbEntityDao<ExclusionEventAction> hospitalDao) {
+    public EntityService<ExclusionEventAction> hospitalEntityService(@Qualifier("hospitalEntityDao") EntityDao<ExclusionEventAction> hospitalDao) {
         return new HospitalServiceImpl(hospitalDao);
     }
 
     @Bean("hospitalAuditService")
-    public HospitalAuditService hospitalAuditService(@Qualifier("hospitalEntityDao") EsbEntityDao<ExclusionEventAction> hospitalDao) {
+    public HospitalAuditService hospitalAuditService(@Qualifier("hospitalEntityDao") EntityDao<ExclusionEventAction> hospitalDao) {
         return new HospitalServiceImpl(hospitalDao);
     }
 
@@ -108,17 +108,17 @@ public class EsbServiceAutoConfiguration {
     }
 
     @Bean("replayAuditService")
-    public BatchInsert replayAuditService(@Qualifier("replayAuditEntityDao") EsbEntityDao<ReplayAuditEvent> replayAuditDao) {
+    public BatchInsert replayAuditService(@Qualifier("replayAuditEntityDao") EntityDao<ReplayAuditEvent> replayAuditDao) {
         return new ReplayAuditServiceImpl(replayAuditDao);
     }
 
     @Bean("replayEntityService")
-    public EsbEntityService<ReplayEvent> replayEntityService(@Qualifier("replayEntityDao") EsbEntityDao<ReplayEvent> replayDao) {
+    public EntityService<ReplayEvent> replayEntityService(@Qualifier("replayEntityDao") EntityDao<ReplayEvent> replayDao) {
         return new ReplayServiceImpl(replayDao);
     }
 
     @Bean("replayEventBatchInsert")
-    public BatchInsert<ReplayEvent> solrReplayService(@Qualifier("replayEntityDao") EsbEntityDao<ReplayEvent> replayDao) {
+    public BatchInsert<ReplayEvent> solrReplayService(@Qualifier("replayEntityDao") EntityDao<ReplayEvent> replayDao) {
         return new ReplayServiceImpl(replayDao);
     }
 
@@ -128,24 +128,24 @@ public class EsbServiceAutoConfiguration {
     }
 
     @Bean("systemEventEntityService")
-    public EsbEntityService<SystemEvent> systemEventEntityService(@Qualifier("systemEventEntityDao") EsbEntityDao<SystemEvent> systemEventDao) {
+    public EntityService<SystemEvent> systemEventEntityService(@Qualifier("systemEventEntityDao") EntityDao<SystemEvent> systemEventDao) {
         return new SystemEventServiceImpl(systemEventDao);
     }
 
     @Bean("systemEventBatchInsert")
-    public BatchInsert systemEventBatchInsertService(@Qualifier("systemEventEntityDao") EsbEntityDao<SystemEvent> systemEventDao) {
+    public BatchInsert systemEventBatchInsertService(@Qualifier("systemEventEntityDao") EntityDao<SystemEvent> systemEventDao) {
         return new SystemEventServiceImpl(systemEventDao);
     }
 
     @Bean("wiretapEventEntity")
-    public EsbEntityService<WiretapEvent> wiretapEventEntityService(@Qualifier("wiretapEsbEntityDao") EsbEntityDao wiretapEsbEntityDao
+    public EntityService<WiretapEvent> wiretapEventEntityService(@Qualifier("wiretapEntityDao") EntityDao wiretapEntityDao
         , ModuleService moduleService) {
-        return new WiretapServiceImpl(wiretapEsbEntityDao, moduleService);
+        return new WiretapServiceImpl(wiretapEntityDao, moduleService);
     }
 
     @Bean("wiretapEventBatchInsert")
-    public BatchInsert wiretapSBatchInsertService(@Qualifier("wiretapEsbEntityDao") EsbEntityDao wiretapEsbEntityDao
+    public BatchInsert wiretapSBatchInsertService(@Qualifier("wiretapEntityDao") EntityDao wiretapEntityDao
         , ModuleService moduleService) {
-        return new WiretapServiceImpl(wiretapEsbEntityDao, moduleService);
+        return new WiretapServiceImpl(wiretapEntityDao, moduleService);
     }
 }

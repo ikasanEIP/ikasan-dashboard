@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Created by Ikasan Development Team.
  */

@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceDao {
 
     private static JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();

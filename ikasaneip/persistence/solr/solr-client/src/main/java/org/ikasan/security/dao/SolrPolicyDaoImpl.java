@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import static org.ikasan.security.dao.SolrRoleDaoImpl.ROLE_TYPE;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 /**
  * Solr-based Data Access Object implementation for managing security policies.
  *

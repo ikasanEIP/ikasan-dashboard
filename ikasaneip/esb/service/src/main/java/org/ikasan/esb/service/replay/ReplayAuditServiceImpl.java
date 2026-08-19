@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.replay;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAuditEvent;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ReplayAuditServiceImpl implements BatchInsert<ReplayAuditEvent>
 {
-    private EsbEntityDao<ReplayAuditEvent> solrReplayAuditDao;
+    private EntityDao<ReplayAuditEvent> solrReplayAuditDao;
 
     /**
      * Constructor for ReplayAuditServiceImpl.
@@ -18,7 +18,7 @@ public class ReplayAuditServiceImpl implements BatchInsert<ReplayAuditEvent>
      * @param solrReplayAuditDao the data access object responsible for handling ReplayAuditEvent entities.
      *                           Must not be null.
      */
-    public ReplayAuditServiceImpl(EsbEntityDao<ReplayAuditEvent> solrReplayAuditDao)
+    public ReplayAuditServiceImpl(EntityDao<ReplayAuditEvent> solrReplayAuditDao)
     {
         this.solrReplayAuditDao = solrReplayAuditDao;
         if(this.solrReplayAuditDao == null)

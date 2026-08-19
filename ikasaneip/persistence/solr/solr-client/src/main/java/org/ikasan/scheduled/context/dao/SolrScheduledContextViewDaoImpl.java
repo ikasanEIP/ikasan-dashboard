@@ -10,6 +10,8 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrScheduledContextViewDaoImpl extends SolrDaoBase<ScheduledContextViewRecord> implements ScheduledContextViewDao {
     /**
      * Logger for this class

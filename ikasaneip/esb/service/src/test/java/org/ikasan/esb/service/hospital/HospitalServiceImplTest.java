@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.hospital;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class HospitalServiceImplTest {
 
     @Mock
-    private EsbEntityDao<ExclusionEventAction> mockDao;
+    private EntityDao<ExclusionEventAction> mockDao;
 
     @Mock
     private ExclusionEventAction mockExclusionEventAction;

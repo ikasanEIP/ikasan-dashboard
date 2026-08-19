@@ -1,20 +1,21 @@
 package org.ikasan.business.stream.metadata.model;
 
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrBusinessStream
 {
-    @Field(SolrDaoBase.ID)
+    @Field(EntityFields.ID)
     private String id;
 
-    @Field(SolrDaoBase.MODULE_NAME)
+    @Field(EntityFields.MODULE_NAME)
     private String name;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(EntityFields.FLOW_NAME)
     private String description;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String businessStreamMetadata;
 
 

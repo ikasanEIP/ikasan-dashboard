@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.replay;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ReplayServiceImplTest {
 
     @Mock
-    private EsbEntityDao<ReplayEvent> mockDao;
+    private EntityDao<ReplayEvent> mockDao;
 
     @Mock
     private ReplayEvent mockReplayEvent;

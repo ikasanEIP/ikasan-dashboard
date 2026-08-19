@@ -2,7 +2,7 @@ package org.ikasan.mongo.persistence.error.reporting.dao;
 
 import org.ikasan.mongo.persistence.error.reporting.model.MongoErrorOccurrence;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class MongoErrorReportingServiceDaoImpl implements EsbEntityDao<ErrorOccurrence> {
+public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurrence> {
     private static final Logger logger = LoggerFactory.getLogger(MongoErrorReportingServiceDaoImpl.class);
 
     private final MongoErrorOccurrenceRepository repository;

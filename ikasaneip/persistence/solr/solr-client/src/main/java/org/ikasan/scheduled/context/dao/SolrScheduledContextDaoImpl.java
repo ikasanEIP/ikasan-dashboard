@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.*;
+
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
     private static JsonMapper objectMapper = JsonMapper.builder().build();

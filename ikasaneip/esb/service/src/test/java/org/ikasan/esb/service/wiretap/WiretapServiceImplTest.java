@@ -1,6 +1,6 @@
 package org.ikasan.esb.service.wiretap;
 
-import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.module.ModuleService;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.junit.Before;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class WiretapServiceImplTest {
 
     @Mock
-    private EsbEntityDao<WiretapEvent> mockDao;
+    private EntityDao<WiretapEvent> mockDao;
 
     @Mock
     private ModuleService mockModuleService;
