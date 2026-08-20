@@ -39,6 +39,7 @@
  * ====================================================================
  */
 package org.ikasan.mongo.persistence.security.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.security.model.Policy;
 import org.springframework.data.annotation.Id;
@@ -54,7 +55,7 @@ import java.util.Objects;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "policies")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoPolicyImpl implements Policy {
 
     @Id

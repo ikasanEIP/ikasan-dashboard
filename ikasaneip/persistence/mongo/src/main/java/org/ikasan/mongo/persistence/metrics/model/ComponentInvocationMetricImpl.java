@@ -38,7 +38,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package org.ikasan.metrics.model;
+package org.ikasan.mongo.persistence.metrics.model;
 
 import org.ikasan.spec.history.ComponentInvocationMetric;
 

@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.context.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -11,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * MongoDB implementation of ScheduledContextViewRecord.
  * This class represents a scheduled context view stored in MongoDB.
  */
-@Document(collection = "scheduledContextView")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoScheduledContextViewRecordImpl implements ScheduledContextViewRecord {
 
     @Id

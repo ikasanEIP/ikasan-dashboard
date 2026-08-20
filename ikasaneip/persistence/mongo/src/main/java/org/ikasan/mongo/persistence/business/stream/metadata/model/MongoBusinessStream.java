@@ -1,9 +1,13 @@
 package org.ikasan.mongo.persistence.business.stream.metadata.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.StringJoiner;
 
 /**
  * MongoDB implementation of BusinessStream entity.
@@ -13,25 +17,25 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * - Indexing capabilities for search operations
  * - Text search on business stream metadata JSON payload
  */
-@Document(collection = "business_stream_metadata")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoBusinessStream {
 
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("name")
+    @Field(EntityFields.MODULE_NAME)
     private String name;
 
-    @Field("description")
+    @Field(EntityFields.FLOW_NAME)
     private String description;
 
     @Indexed
-    @Field("business_stream_metadata")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String businessStreamMetadata;
-
-    @Field("created_timestamp")
-    private long createdTimestamp;
 
     /**
      * Default constructor for MongoDB
@@ -44,7 +48,6 @@ public class MongoBusinessStream {
      */
     public MongoBusinessStream(String id) {
         this.id = id;
-        this.createdTimestamp = System.currentTimeMillis();
     }
 
     public String getId() {
@@ -53,6 +56,14 @@ public class MongoBusinessStream {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -79,21 +90,14 @@ public class MongoBusinessStream {
         this.businessStreamMetadata = businessStreamMetadata;
     }
 
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
-    }
-
     @Override
     public String toString() {
-        return "MongoBusinessStream{" +
-            "id='" + id + '\'' +
-            ", name='" + name + '\'' +
-            ", description='" + description + '\'' +
-            ", createdTimestamp=" + createdTimestamp +
-            '}';
+        return new StringJoiner(", ", MongoBusinessStream.class.getSimpleName() + "[", "]")
+            .add("id='" + id + "'")
+            .add("type='" + type + "'")
+            .add("name='" + name + "'")
+            .add("description='" + description + "'")
+            .add("businessStreamMetadata='" + businessStreamMetadata + "'")
+            .toString();
     }
 }

@@ -1,6 +1,8 @@
 package org.ikasan.mongo.persistence.hospital.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.harvest.HarvestEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -12,8 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "exclusion_event_actions")
-public class MongoExclusionEventAction implements ExclusionEventAction<String>, HarvestEvent {
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
+public class MongoExclusionEventAction implements ExclusionEventAction<String> {
 
     public static final String RESUBMIT = "re-submitted";
     public static final String IGNORED = "ignored";
@@ -21,43 +23,38 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String>, 
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("flow_name")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("error_uri")
+    @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
-    @Field("actioned_by")
+    @Field(EntityFields.ACTOR)
     private String actionedBy;
 
-    @Field("action")
+    @Field(EntityFields.HOSPITAL_EVENT_ACTION)
     private String action;
 
-    @Field("event")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
     @Indexed
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("comment")
     private String comment;
 
-    @Field("harvested")
-    private boolean harvested;
-
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
-
-    @Indexed
-    @Field("created_timestamp")
-    private long createdTimestamp;
 
     /**
      * Default constructor
@@ -96,6 +93,14 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String>, 
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -178,29 +183,12 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String>, 
         this.comment = comment;
     }
 
-    public boolean isHarvested() {
-        return harvested;
-    }
-
-    @Override
-    public void setHarvested(boolean harvested) {
-        this.harvested = harvested;
-    }
-
     public long getExpiry() {
         return expiry;
     }
 
     public void setExpiry(long expiry) {
         this.expiry = expiry;
-    }
-
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
     }
 
     @Override
@@ -215,9 +203,7 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String>, 
         sb.append(", event=").append(event).append('\'');
         sb.append(", timestamp=").append(timestamp);
         sb.append(", comment='").append(comment).append('\'');
-        sb.append(", harvested=").append(harvested);
         sb.append(", expiry=").append(expiry);
-        sb.append(", createdTimestamp=").append(createdTimestamp);
         sb.append('}');
         return sb.toString();
     }

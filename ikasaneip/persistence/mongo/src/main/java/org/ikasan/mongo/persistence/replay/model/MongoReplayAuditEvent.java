@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.replay.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.replay.ReplayAudit;
 import org.ikasan.spec.replay.ReplayAuditEvent;
@@ -12,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "replay_audit_events")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoReplayAuditEvent implements ReplayAuditEvent<String> {
 
     @Id

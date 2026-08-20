@@ -16,12 +16,6 @@ public class SolrErrorReportingServiceDaoImpl extends SolrDaoBase<ErrorOccurrenc
 {
     private static Logger logger = LoggerFactory.getLogger(SolrErrorReportingServiceDaoImpl.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String ERROR = "error";
-
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ErrorOccurrence errorOccurrence)
     {

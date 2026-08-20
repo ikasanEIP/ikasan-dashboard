@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.configuration.metadata.dao;
 import org.ikasan.mongo.persistence.configuration.metadata.model.MongoComponentConfigurationMetadata;
 import org.ikasan.mongo.persistence.configuration.metadata.model.MongoConfigurationMetaData;
 import org.ikasan.mongo.persistence.configuration.metadata.repository.MongoComponentConfigurationMetadataRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.slf4j.Logger;
@@ -59,6 +60,7 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
             for (ConfigurationMetaData configurationMetaData : configurationMetaDataList) {
                 MongoComponentConfigurationMetadata entity = new MongoComponentConfigurationMetadata(
                     configurationMetaData.getConfigurationId());
+                entity.setType(COMPONENT_CONFIGURATION);
                 entity.setConfigurationMetadataJson(objectMapper.writeValueAsString(configurationMetaData));
                 entity.setCreatedTimestamp(System.currentTimeMillis());
 
@@ -75,7 +77,11 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
     public ConfigurationMetaData findById(String id) {
         logger.debug("Finding ConfigurationMetaData by id: {}", id);
 
-        MongoComponentConfigurationMetadata entity = repository.findById(id).orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(COMPONENT_CONFIGURATION));
+
+        MongoComponentConfigurationMetadata entity = mongoTemplate.findOne(query, MongoComponentConfigurationMetadata.class);
 
         if (entity != null && entity.getConfigurationMetadataJson() != null) {
             return convert(entity.getConfigurationMetadataJson());
@@ -89,8 +95,11 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
     public List<ConfigurationMetaData> findAll() {
         logger.debug("Finding all ConfigurationMetaData");
 
-        List<MongoComponentConfigurationMetadata> results = repository.findAll(
-            Sort.by(Sort.Direction.ASC, "configuration_id"));
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(COMPONENT_CONFIGURATION));
+        query.with(Sort.by(Sort.Direction.ASC, EntityFields.ID));
+
+        List<MongoComponentConfigurationMetadata> results = mongoTemplate.find(query, MongoComponentConfigurationMetadata.class);
 
         logger.debug("Found {} ConfigurationMetaData records", results.size());
 
@@ -109,7 +118,8 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("configuration_id").in(configurationIds));
+        query.addCriteria(Criteria.where(EntityFields.ID).in(configurationIds));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(COMPONENT_CONFIGURATION));
 
         List<MongoComponentConfigurationMetadata> results = mongoTemplate.find(
             query, MongoComponentConfigurationMetadata.class);

@@ -55,7 +55,7 @@ public class MongoHospitalDaoTest {
 
     @Autowired
     public void setDao(MongoExclusionEventActionRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoHospitalDao(repository, mongoTemplate);
+        this.dao = new MongoHospitalDao(repository, mongoTemplate, 7);
     }
 
     @After
@@ -266,33 +266,6 @@ public class MongoHospitalDaoTest {
     }
 
     @Test
-    public void testRemoveExpired() {
-        // Given
-        long currentTime = System.currentTimeMillis();
-        long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
-
-        MongoExclusionEventAction expiredAction = createExclusionEventAction("module1", "flow1", "uri1", "user1",
-                MongoExclusionEventAction.RESUBMIT, "payload1", "comment1");
-        expiredAction.setExpiry(oneDayAgo); // Already expired
-        dao.save(expiredAction);
-
-        MongoExclusionEventAction validAction = createExclusionEventAction("module2", "flow2", "uri2", "user2",
-                MongoExclusionEventAction.IGNORED, "payload2", "comment2");
-        validAction.setExpiry(currentTime + (24 * 60 * 60 * 1000)); // Expires tomorrow
-        dao.save(validAction);
-
-        assertEquals(2, repository.count());
-
-        // When
-        dao.removeExpired();
-
-        // Then
-        assertEquals(1, repository.count());
-        ExclusionEventAction remaining = dao.findByErrorUri("uri2");
-        assertNotNull(remaining);
-    }
-
-    @Test
     public void testExclusionEventActionUsesMongoModel() {
         // Given
         MongoExclusionEventAction action = createExclusionEventAction(
@@ -332,7 +305,6 @@ public class MongoHospitalDaoTest {
                 moduleName, flowName, errorUri, actionedBy, action, event, System.currentTimeMillis(), comment
         );
         exclusionEventAction.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
-        exclusionEventAction.setHarvested(false);
         return exclusionEventAction;
     }
 }
