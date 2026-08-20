@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.job.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.job.ContextTerminalJobImpl;
@@ -15,7 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
  * MongoDB implementation of ContextTerminalJobRecord.
  * Stores the ContextTerminalJob as a JSON string in MongoDB.
  */
-@Document(collection = "contextTerminalJobRecord")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoContextTerminalJobRecordImpl implements ContextTerminalJobRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();

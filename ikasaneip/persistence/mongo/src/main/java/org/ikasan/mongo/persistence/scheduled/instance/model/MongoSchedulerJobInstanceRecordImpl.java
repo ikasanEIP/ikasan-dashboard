@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -20,7 +21,7 @@ import tools.jackson.databind.json.JsonMapper;
  * - Indexing capabilities for key fields (contextInstanceId, contextName, status, etc.)
  * - Flexible schema for polymorphic job instance types
  */
-@Document(collection = "scheduler_job_instance_record")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSchedulerJobInstanceRecordImpl.class);

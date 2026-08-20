@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.error.reporting.dao;
 import org.ikasan.mongo.persistence.error.reporting.model.MongoErrorOccurrence;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
 import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurrence> {
@@ -22,15 +24,19 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
     private final MongoErrorOccurrenceRepository repository;
     private final MongoTemplate mongoTemplate;
     private final JsonMapper objectMapper;
+    private final int daysToKeep;
 
-    public MongoErrorReportingServiceDaoImpl(MongoErrorOccurrenceRepository repository, MongoTemplate mongoTemplate) {
+    public MongoErrorReportingServiceDaoImpl(MongoErrorOccurrenceRepository repository
+        , MongoTemplate mongoTemplate, int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.daysToKeep = daysToKeep;
         this.objectMapper = JsonMapper.builder().build();
     }
 
     public void save(ErrorOccurrence errorOccurrence) {
         MongoErrorOccurrence entity = convertToEntity(errorOccurrence);
+        entity.setType(ERROR);
         repository.save(entity);
         logger.debug("Saved error occurrence with URI: {}", errorOccurrence.getUri());
     }
@@ -39,27 +45,38 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
         List<MongoErrorOccurrence> entities = errorOccurrences.stream()
             .map(this::convertToEntity)
             .collect(Collectors.toList());
+        entities.forEach(entity -> entity.setType(ERROR));
         repository.saveAll(entities);
         logger.debug("Saved {} error occurrences", errorOccurrences.size());
     }
 
     public ErrorOccurrence findByUri(String uri) {
-        Optional<MongoErrorOccurrence> entity = repository.findByErrorUri(uri);
-        if (entity.isPresent()) {
-            return (ErrorOccurrence) entity.get();
-        }
-        return null;
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ERROR_URI).is(uri));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ERROR));
+
+        MongoErrorOccurrence entity = mongoTemplate.findOne(query, MongoErrorOccurrence.class);
+        return entity;
     }
 
     public List<ErrorOccurrence> findByModuleName(String moduleName) {
-        List<MongoErrorOccurrence> entities = repository.findByModuleName(moduleName);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ERROR));
+
+        List<MongoErrorOccurrence> entities = mongoTemplate.find(query, MongoErrorOccurrence.class);
         return entities.stream()
             .map(entity -> (ErrorOccurrence)entity)
             .collect(Collectors.toList());
     }
 
     public List<ErrorOccurrence> findByModuleNameAndFlowName(String moduleName, String flowName) {
-        List<MongoErrorOccurrence> entities = repository.findByModuleNameAndFlowName(moduleName, flowName);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName));
+        query.addCriteria(Criteria.where(EntityFields.FLOW_NAME).is(flowName));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ERROR));
+
+        List<MongoErrorOccurrence> entities = mongoTemplate.find(query, MongoErrorOccurrence.class);
         return entities.stream()
             .map(entity -> (ErrorOccurrence)entity)
             .collect(Collectors.toList());
@@ -70,35 +87,37 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
+        criteriaList.add(Criteria.where(EntityFields.TYPE).is(ERROR));
+
         if (moduleNames != null && !moduleNames.isEmpty()) {
-            criteriaList.add(Criteria.where("module_name").in(moduleNames));
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
         }
 
         if (flowNames != null && !flowNames.isEmpty()) {
-            criteriaList.add(Criteria.where("flow_name").in(flowNames));
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
         }
 
         if (componentNames != null && !componentNames.isEmpty()) {
-            criteriaList.add(Criteria.where("component_name").in(componentNames));
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
         }
 
         if (searchString != null && !searchString.trim().isEmpty()) {
             String searchPattern = ".*" + searchString + ".*";
             Criteria searchCriteria = new Criteria().orOperator(
-                Criteria.where("error_detail").regex(searchPattern, "i"),
-                Criteria.where("error_message").regex(searchPattern, "i"),
-                Criteria.where("error_uri").regex(searchPattern, "i"),
-                Criteria.where("event_life_identifier").regex(searchPattern, "i")
+                Criteria.where(EntityFields.ERROR_DETAIL).regex(searchPattern, "i"),
+                Criteria.where(EntityFields.ERROR_MESSAGE).regex(searchPattern, "i"),
+                Criteria.where(EntityFields.ERROR_URI).regex(searchPattern, "i"),
+                Criteria.where(EntityFields.EVENT).regex(searchPattern, "i")
             );
             criteriaList.add(searchCriteria);
         }
 
         if (fromTimestamp > 0 && untilTimestamp > 0) {
-            criteriaList.add(Criteria.where("timestamp").gte(fromTimestamp).lte(untilTimestamp));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp).lte(untilTimestamp));
         } else if (fromTimestamp > 0) {
-            criteriaList.add(Criteria.where("timestamp").gte(fromTimestamp));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp));
         } else if (untilTimestamp > 0) {
-            criteriaList.add(Criteria.where("timestamp").lte(untilTimestamp));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(untilTimestamp));
         }
 
         if (!criteriaList.isEmpty()) {
@@ -114,15 +133,12 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
     }
 
     public void deleteByUri(String uri) {
-        Optional<MongoErrorOccurrence> entity = repository.findByErrorUri(uri);
-        entity.ifPresent(repository::delete);
-        logger.debug("Deleted error occurrence with URI: {}", uri);
-    }
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ERROR_URI).is(uri));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ERROR));
 
-    public void removeExpired() {
-        long currentTime = System.currentTimeMillis();
-        repository.deleteByExpiryLessThan(currentTime);
-        logger.debug("Removed expired error occurrences before timestamp: {}", currentTime);
+        mongoTemplate.remove(query, MongoErrorOccurrence.class);
+        logger.debug("Deleted error occurrence with URI: {}", uri);
     }
 
     /**
@@ -138,7 +154,6 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
             MongoErrorOccurrence mongoError = (MongoErrorOccurrence) errorOccurrence;
             String id = errorOccurrence.getModuleName() + "-error-" + errorOccurrence.getUri();
             mongoError.setId(id);
-            mongoError.setCreatedTimestamp(System.currentTimeMillis());
             return mongoError;
         }
 
@@ -166,9 +181,7 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
         entity.setUserAction(errorOccurrence.getUserAction());
         entity.setActionedBy(errorOccurrence.getActionedBy());
         entity.setUserActionTimestamp(errorOccurrence.getUserActionTimestamp());
-        entity.setExpiry(errorOccurrence.getExpiry());
-        entity.setHarvested(((MongoErrorOccurrence)errorOccurrence).isHarvested());
-        entity.setCreatedTimestamp(System.currentTimeMillis());
+        entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
 
         return entity;
     }

@@ -12,7 +12,7 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.metrics.model.ComponentInvocationMetricImpl;
-import org.ikasan.metrics.model.CustomMetric;
+import org.ikasan.metrics.model.CustomMetricImpl;
 import org.ikasan.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.metrics.model.MetricEventImpl;
 import org.ikasan.spec.entity.EntityFields;
@@ -117,7 +117,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         metricEvent.setEvent("event payload");
         metricEvent.setTimestamp(1001l);
         componentInvocationMetric.setWiretapFlowEvent(metricEvent);
-        CustomMetric customMetric = new CustomMetric();
+        CustomMetricImpl customMetric = new CustomMetricImpl();
         customMetric.setName("name");
         customMetric.setValue("value");
         componentInvocationMetric.setMetrics(Set.of(customMetric));

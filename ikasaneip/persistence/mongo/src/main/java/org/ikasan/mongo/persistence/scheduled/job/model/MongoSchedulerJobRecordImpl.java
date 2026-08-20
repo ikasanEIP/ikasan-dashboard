@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.scheduled.job.model;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -12,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
-@Document(collection = "schedulerJobRecord")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoSchedulerJobRecordImpl implements SchedulerJobRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();

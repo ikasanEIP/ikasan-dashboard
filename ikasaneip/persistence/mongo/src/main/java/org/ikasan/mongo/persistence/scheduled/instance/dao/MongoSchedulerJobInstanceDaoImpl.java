@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoSchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
@@ -162,7 +163,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
         Aggregation aggregation = Aggregation.newAggregation(matchStage, groupStage);
 
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "scheduler_job_instance_record", Map.class);
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, MongoConstants.IKASAN_COLLECTION_NAME, Map.class);
 
         // Process results into ContextInstanceAggregateJobStatus objects
         Map<String, ContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();
@@ -221,7 +222,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
         Aggregation aggregation = Aggregation.newAggregation(matchStage, groupStage);
 
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "scheduler_job_instance_record", Map.class);
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, MongoConstants.IKASAN_COLLECTION_NAME, Map.class);
 
         // Process results into ContextInstanceAggregateJobStatus objects
         Map<String, ContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();

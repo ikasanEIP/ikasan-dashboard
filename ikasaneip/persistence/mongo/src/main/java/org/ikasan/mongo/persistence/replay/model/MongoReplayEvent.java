@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.replay.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.replay.ReplayEvent;
 import org.springframework.data.annotation.Id;
@@ -11,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "esb")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoReplayEvent implements ReplayEvent {
 
     @Id

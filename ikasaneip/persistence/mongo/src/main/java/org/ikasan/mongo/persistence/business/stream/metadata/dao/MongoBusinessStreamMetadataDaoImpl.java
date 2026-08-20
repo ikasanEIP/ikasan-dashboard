@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.business.stream.metadata.dao;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.MongoBusinessStream;
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
@@ -48,10 +49,11 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
 
         MongoBusinessStream mongoBusinessStream = new MongoBusinessStream();
         mongoBusinessStream.setId(metaData.getId());
+        mongoBusinessStream.setType(BUSINESS_STREAM_METADATA);
         mongoBusinessStream.setName(metaData.getName());
         mongoBusinessStream.setDescription(metaData.getDescription());
         mongoBusinessStream.setBusinessStreamMetadata(metaData.getJson());
-        mongoBusinessStream.setCreatedTimestamp(System.currentTimeMillis());
+
 
         repository.save(mongoBusinessStream);
 
@@ -62,7 +64,11 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
     public BusinessStreamMetaData findById(String id) {
         logger.debug("Finding BusinessStreamMetaData by id: {}", id);
 
-        MongoBusinessStream result = repository.findById(id).orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(BUSINESS_STREAM_METADATA));
+
+        MongoBusinessStream result = mongoTemplate.findOne(query, MongoBusinessStream.class);
 
         if (result != null) {
             return convert(result);
@@ -77,10 +83,11 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         logger.debug("Finding BusinessStreamMetaData with names filter");
 
         Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(BUSINESS_STREAM_METADATA));
 
         // Add name filter if provided
         if (businessStreamNames != null && !businessStreamNames.isEmpty()) {
-            Criteria criteria = Criteria.where("name").in(businessStreamNames);
+            Criteria criteria = Criteria.where(EntityFields.MODULE_NAME).in(businessStreamNames);
             query.addCriteria(criteria);
         }
 
@@ -110,10 +117,11 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         logger.debug("Finding BusinessStreams containing flow: {}.{}", moduleName, flowName);
 
         Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(BUSINESS_STREAM_METADATA));
 
         // Search for module.flow pattern in the business stream metadata JSON
         String searchPattern = Pattern.quote(moduleName + "." + flowName);
-        Criteria criteria = Criteria.where("business_stream_metadata").regex(searchPattern, "i");
+        Criteria criteria = Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchPattern, "i");
         query.addCriteria(criteria);
 
         // Apply pagination
@@ -140,6 +148,8 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         }
 
         Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(BUSINESS_STREAM_METADATA));
+
         List<Criteria> criteriaList = new ArrayList<>();
 
         // Build criteria for each module and its flows
@@ -147,7 +157,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
             if (module.getFlows() != null && !module.getFlows().isEmpty()) {
                 module.getFlows().forEach(flowMetaData -> {
                     String searchPattern = Pattern.quote(module.getName() + "." + flowMetaData.getName());
-                    criteriaList.add(Criteria.where("business_stream_metadata").regex(searchPattern, "i"));
+                    criteriaList.add(Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchPattern, "i"));
                 });
             }
         }
@@ -160,7 +170,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
 
         // Add filter on business stream name if provided
         if (filter != null && !filter.isEmpty()) {
-            Criteria filterCriteria = Criteria.where("name").regex(Pattern.quote(filter), "i");
+            Criteria filterCriteria = Criteria.where(EntityFields.MODULE_NAME).regex(Pattern.quote(filter), "i");
             query.addCriteria(filterCriteria);
         }
 
@@ -188,16 +198,20 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
     public List<BusinessStreamMetaData> findAll(Integer startOffset, Integer resultSize) {
         logger.debug("Finding all BusinessStreamMetaData with startOffset={}, resultSize={}", startOffset, resultSize);
 
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(BUSINESS_STREAM_METADATA));
+
         List<MongoBusinessStream> results;
 
         if (resultSize != null && resultSize > 0) {
             int offset = startOffset != null ? startOffset : 0;
             int page = offset > 0 ? offset / resultSize : 0;
-            Pageable pageable = PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, "name"));
-            results = repository.findAll(pageable).getContent();
+            query.with(PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME)));
         } else {
-            results = repository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+            query.with(Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME));
         }
+
+        results = mongoTemplate.find(query, MongoBusinessStream.class);
 
         logger.debug("Found {} BusinessStreamMetaData records", results.size());
 

@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.context.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -20,7 +21,7 @@ import tools.jackson.databind.json.JsonMapper;
  * - Indexing capabilities for key fields
  * - Flexible schema for JSON data
  */
-@Document(collection = "scheduled_context_record")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoScheduledContextRecordImpl.class);

@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.metrics.dao;
 
+import org.ikasan.mongo.persistence.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.mongo.persistence.metrics.model.MongoFlowInvocationMetric;
 import org.ikasan.mongo.persistence.metrics.repository.MongoFlowInvocationMetricRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -97,15 +98,16 @@ public class MongoMetricsDaoImplTest {
     }
 
     @Test
-    public void testGetMetricsByTimeRange() {
+    public void testGetMetricsByTimeRange() throws InterruptedException {
         // Given
         long baseTime = System.currentTimeMillis();
         dao.save(createMetric("module1", "flow1", baseTime, baseTime + 1000, "success"));
         dao.save(createMetric("module2", "flow2", baseTime + 5000, baseTime + 6000, "success"));
+        Thread.sleep(1000);
         dao.save(createMetric("module3", "flow3", baseTime + 10000, baseTime + 11000, "success"));
 
         // When
-        List<FlowInvocationMetric> results = dao.getMetrics(baseTime, baseTime + 7000);
+        List<FlowInvocationMetric> results = dao.getMetrics(baseTime-1000, baseTime + 500);
 
         // Then
         assertNotNull(results);
@@ -132,15 +134,16 @@ public class MongoMetricsDaoImplTest {
     }
 
     @Test
-    public void testCountByTimeRange() {
+    public void testCountByTimeRange() throws InterruptedException {
         // Given
         long baseTime = System.currentTimeMillis();
         dao.save(createMetric("module1", "flow1", baseTime, baseTime + 1000, "success"));
         dao.save(createMetric("module2", "flow2", baseTime + 5000, baseTime + 6000, "success"));
+        Thread.sleep(1000);
         dao.save(createMetric("module3", "flow3", baseTime + 10000, baseTime + 11000, "success"));
 
         // When
-        long count = dao.count(baseTime, baseTime + 7000);
+        long count = dao.count(baseTime-1000, baseTime + 500);
 
         // Then
         assertEquals(2, count);
@@ -315,7 +318,7 @@ public class MongoMetricsDaoImplTest {
     }
 
     private FlowInvocationMetric createMetric(String moduleName, String flowName, long startTime, long endTime, String finalAction) {
-        MongoFlowInvocationMetric metric = new MongoFlowInvocationMetric();
+        FlowInvocationMetric metric = new FlowInvocationMetricImpl();
         metric.setModuleName(moduleName);
         metric.setFlowName(flowName);
         metric.setInvocationStartTime(startTime);

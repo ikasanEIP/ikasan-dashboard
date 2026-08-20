@@ -32,11 +32,6 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrMetricsDaoImpl.class);
 
-    /**
-     * We need to give this document it's context.
-     */
-    public static final String METRIC_ENTITY_TYPE = "metric";
-
     private final int solrMetricsQueryLimit;
 
     private final JsonMapper mapper;
@@ -62,7 +57,6 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             document.addField(PAYLOAD_CONTENT, this.mapper.writeValueAsString(flowInvocationMetric));
         }
         catch (JacksonException e) {
-            e.printStackTrace();
             logger.warn(String.format("Could not set metric payload content[%s]", flowInvocationMetric), e);
         }
 

@@ -1,7 +1,8 @@
 package org.ikasan.mongo.persistence.configuration.metadata.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -9,20 +10,19 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * MongoDB entity for storing component configuration metadata.
  * Stores the configuration metadata as a JSON string for efficient storage and retrieval.
  */
-@Document(collection = "component_configuration_metadata")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoComponentConfigurationMetadata {
 
     @Id
     private String id;
 
-    @Indexed(unique = true)
-    @Field("configuration_id")
-    private String configurationId;
+    @Field(EntityFields.TYPE)
+    private String type;
 
-    @Field("configuration_metadata_json")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String configurationMetadataJson;
 
-    @Field("created_timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long createdTimestamp;
 
     /**
@@ -36,7 +36,6 @@ public class MongoComponentConfigurationMetadata {
      */
     public MongoComponentConfigurationMetadata(String configurationId) {
         this.id = configurationId;
-        this.configurationId = configurationId;
         this.createdTimestamp = System.currentTimeMillis();
     }
 
@@ -48,12 +47,12 @@ public class MongoComponentConfigurationMetadata {
         this.id = id;
     }
 
-    public String getConfigurationId() {
-        return configurationId;
+    public String getType() {
+        return type;
     }
 
-    public void setConfigurationId(String configurationId) {
-        this.configurationId = configurationId;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getConfigurationMetadataJson() {
@@ -75,8 +74,8 @@ public class MongoComponentConfigurationMetadata {
     @Override
     public String toString() {
         return "MongoComponentConfigurationMetadata{" +
-            "id='" + id + '\'' +
-            ", configurationId='" + configurationId + '\'' +
+            "type='" + type + '\'' +
+            ", configurationId='" + id + '\'' +
             ", createdTimestamp=" + createdTimestamp +
             '}';
     }

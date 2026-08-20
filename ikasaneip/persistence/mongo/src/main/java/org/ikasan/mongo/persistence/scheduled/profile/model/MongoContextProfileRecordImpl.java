@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.profile.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
@@ -6,14 +7,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * MongoDB implementation of ContextProfileRecord.
  * This class represents a context profile stored in MongoDB.
  */
-@Document(collection = "contextProfile")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoContextProfileRecordImpl implements ContextProfileRecord {
 
     @Id

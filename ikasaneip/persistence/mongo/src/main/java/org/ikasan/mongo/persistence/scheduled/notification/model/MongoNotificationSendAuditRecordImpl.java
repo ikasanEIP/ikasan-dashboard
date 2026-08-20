@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.notification.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
@@ -10,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
-@Document(collection = "notificationSendAuditRecord")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoNotificationSendAuditRecordImpl implements NotificationSendAuditRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ConcurrentObjectMapperFactory.newInstance();
