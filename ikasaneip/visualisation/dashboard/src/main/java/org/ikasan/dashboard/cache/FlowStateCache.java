@@ -31,13 +31,6 @@ public class FlowStateCache implements Consumer<FlowState>
     private long throttleIntervalMs = DEFAULT_THROTTLE_INTERVAL_MS;
 
     /**
-     * Oscillation detection window: maximum time in milliseconds between state changes to be considered an oscillation.
-     * Default is 5000ms (5 seconds). If states change with longer gaps, they're not considered oscillating.
-     */
-    private static final long DEFAULT_OSCILLATION_WINDOW_MS = 5000;
-    private long oscillationWindowMs = DEFAULT_OSCILLATION_WINDOW_MS;
-
-    /**
      * Tracks the last state for each flow to detect RECOVERING <-> STOPPED <-> RUNNING oscillations.
      * Key: moduleName+flowName, Value: last FlowState
      */
@@ -175,8 +168,7 @@ public class FlowStateCache implements Consumer<FlowState>
              previousState.getState() == State.STOPPED_STATE ||
              previousState.getState() == State.RUNNING_STATE) &&
             previousState.getState() != currentState &&
-            isOscillationState &&
-            timeSinceLastState <= oscillationWindowMs;
+            isOscillationState;
 
         // Update last state and time for future oscillation detection
         lastState.put(key, flowState);
@@ -194,11 +186,6 @@ public class FlowStateCache implements Consumer<FlowState>
             // If we transition to a non-oscillation state, clear oscillation flag
             inOscillation.remove(key);
             logger.debug("{} Cleared oscillation flag for key[{}] - transitioned to non-oscillation state", this, key);
-        } else if (timeSinceLastState > oscillationWindowMs) {
-            // States are too far apart - not an oscillation, clear the flag
-            inOscillation.remove(key);
-            logger.debug("{} Cleared oscillation flag for key[{}] - states too far apart: {}ms > {}ms",
-                this, key, timeSinceLastState, oscillationWindowMs);
         }
 
         // Apply throttling only if we're ALREADY in oscillation mode
@@ -271,22 +258,6 @@ public class FlowStateCache implements Consumer<FlowState>
             logger.warn("Invalid throttle interval {}ms, must be > 0", throttleIntervalMs);
         }
     }
-
-    /**
-     * Sets the oscillation detection window in milliseconds. State changes must occur within this window
-     * to be considered part of an oscillation pattern.
-     *
-     * @param oscillationWindowMs The oscillation window in milliseconds (must be > 0)
-     */
-    public void setOscillationWindowMs(long oscillationWindowMs) {
-        if (oscillationWindowMs > 0) {
-            this.oscillationWindowMs = oscillationWindowMs;
-            logger.info("FlowStateCache oscillation window set to {}ms", oscillationWindowMs);
-        } else {
-            logger.warn("Invalid oscillation window {}ms, must be > 0", oscillationWindowMs);
-        }
-    }
-
 
     /**
      * Retrieves the FlowState object for the given Module and Flowimpl.
