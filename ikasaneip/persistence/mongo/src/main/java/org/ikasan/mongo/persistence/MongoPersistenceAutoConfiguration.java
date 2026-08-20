@@ -133,6 +133,9 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 })
 public class MongoPersistenceAutoConfiguration {
 
+    @Value("${entity.retention.days:30}")
+    private int entityRetentionDays;
+
     @Bean
     public MongoClient mongoClient(
             @Value("${spring.data.mongodb.uri}") String connectionString,
@@ -420,21 +423,21 @@ public class MongoPersistenceAutoConfiguration {
     public MongoErrorReportingServiceDaoImpl errorReportingServiceDao(
             MongoErrorOccurrenceRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate);
+        return new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("exclusionEventEntityDao")
     public MongoExclusionEventDao exclusionEventDao(
             MongoExclusionEventRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoExclusionEventDao(repository, mongoTemplate);
+        return new MongoExclusionEventDao(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("hospitalEntityDao")
     public MongoHospitalDao hospitalDao(
             MongoExclusionEventActionRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoHospitalDao(repository, mongoTemplate);
+        return new MongoHospitalDao(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("metricsDao")

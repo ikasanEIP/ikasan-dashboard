@@ -1,7 +1,9 @@
 package org.ikasan.mongo.persistence.metrics.dao;
 
+import org.ikasan.mongo.persistence.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.mongo.persistence.metrics.model.MongoFlowInvocationMetric;
 import org.ikasan.mongo.persistence.metrics.repository.MongoFlowInvocationMetricRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.history.FlowInvocationMetric;
 import org.ikasan.spec.metrics.MetricsDao;
 import org.slf4j.Logger;
@@ -9,10 +11,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.ikasan.spec.entity.EntityFields.PAYLOAD_CONTENT;
 
 /**
  * MongoDB implementation of MetricsDao.
@@ -27,10 +34,16 @@ public class MongoMetricsDaoImpl implements MetricsDao {
     private final MongoTemplate mongoTemplate;
     private final int metricsQueryLimit;
 
+    private final JsonMapper mapper;
+
     public MongoMetricsDaoImpl(MongoFlowInvocationMetricRepository repository, MongoTemplate mongoTemplate, int metricsQueryLimit) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.metricsQueryLimit = metricsQueryLimit;
+
+        this.mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 
     @Override
@@ -65,7 +78,8 @@ public class MongoMetricsDaoImpl implements MetricsDao {
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("invocation_start_time").gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
         query.skip(offset).limit(limit);
 
         List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
@@ -76,7 +90,11 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public long count(long startTime, long endTime) {
-        return repository.countByInvocationStartTimeBetween(startTime, endTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
+
+        return mongoTemplate.count(query, MongoFlowInvocationMetric.class);
     }
 
     @Override
@@ -94,8 +112,9 @@ public class MongoMetricsDaoImpl implements MetricsDao {
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("module_name").is(moduleName)
-                .and("invocation_start_time").gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
+                .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
+                .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
         query.skip(offset).limit(limit);
 
         List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
@@ -106,7 +125,12 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public long count(String moduleName, long startTime, long endTime) {
-        return repository.countByModuleNameAndInvocationStartTimeBetween(moduleName, startTime, endTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
+                .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
+                .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
+
+        return mongoTemplate.count(query, MongoFlowInvocationMetric.class);
     }
 
     @Override
@@ -124,9 +148,10 @@ public class MongoMetricsDaoImpl implements MetricsDao {
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("module_name").is(moduleName)
-                .and("flow_name").is(flowName)
-                .and("invocation_start_time").gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
+                .and(EntityFields.FLOW_NAME).is(flowName)
+                .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
+                .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
         query.skip(offset).limit(limit);
 
         List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
@@ -137,12 +162,22 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public long count(String moduleName, String flowName, long startTime, long endTime) {
-        return repository.countByModuleNameAndFlowNameAndInvocationStartTimeBetween(moduleName, flowName, startTime, endTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
+                .and(EntityFields.FLOW_NAME).is(flowName)
+                .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
+                .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
+
+        return mongoTemplate.count(query, MongoFlowInvocationMetric.class);
     }
 
     public void removeExpired() {
         long currentTime = System.currentTimeMillis();
-        repository.deleteByExpiryLessThan(currentTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
+
+        mongoTemplate.remove(query, MongoFlowInvocationMetric.class);
         logger.debug("Removed expired flow invocation metrics before timestamp: {}", currentTime);
     }
 
@@ -153,39 +188,23 @@ public class MongoMetricsDaoImpl implements MetricsDao {
      * @return the {@link MongoFlowInvocationMetric} representation
      */
     private MongoFlowInvocationMetric convertToEntity(FlowInvocationMetric flowInvocationMetric) {
-        if (flowInvocationMetric instanceof MongoFlowInvocationMetric) {
-            MongoFlowInvocationMetric mongoMetric = (MongoFlowInvocationMetric) flowInvocationMetric;
-            if (mongoMetric.getId() == null) {
-                String id = flowInvocationMetric.getModuleName() + "-metric-" + UUID.randomUUID();
-                mongoMetric.setId(id);
-            }
-            if (mongoMetric.getCreatedTimestamp() == 0) {
-                mongoMetric.setCreatedTimestamp(System.currentTimeMillis());
-            }
-            if (mongoMetric.getHarvestedDateTime() == 0) {
-                mongoMetric.setHarvestedDateTime(System.currentTimeMillis());
-            }
-            return mongoMetric;
-        }
 
         MongoFlowInvocationMetric entity = new MongoFlowInvocationMetric();
 
         String id = flowInvocationMetric.getModuleName() + "-metric-" + UUID.randomUUID();
         entity.setId(id);
+        entity.setType(METRIC_ENTITY_TYPE);
         entity.setModuleName(flowInvocationMetric.getModuleName());
         entity.setFlowName(flowInvocationMetric.getFlowName());
-        entity.setInvocationStartTime(flowInvocationMetric.getInvocationStartTime());
-        entity.setInvocationEndTime(flowInvocationMetric.getInvocationEndTime());
-        entity.setFinalAction(flowInvocationMetric.getFinalAction());
-        entity.setErrorUri(flowInvocationMetric.getErrorUri());
-        entity.setHarvested(flowInvocationMetric.getHarvested());
+        entity.setTimestamp(System.currentTimeMillis());
+        flowInvocationMetric.setHarvestedDateTime(System.currentTimeMillis());
+        try {
+            entity.setRawFlowInvocationMetric(this.mapper.writeValueAsString(flowInvocationMetric));
+        }
+        catch (JacksonException e) {
+            logger.warn(String.format("Could not set metric payload content[%s]", flowInvocationMetric), e);
+        }
         entity.setExpiry(flowInvocationMetric.getExpiry());
-
-        long currentTime = System.currentTimeMillis();
-        entity.setHarvestedDateTime(flowInvocationMetric.getHarvestedDateTime() > 0
-                ? flowInvocationMetric.getHarvestedDateTime()
-                : currentTime);
-        entity.setCreatedTimestamp(currentTime);
 
         return entity;
     }
@@ -197,8 +216,17 @@ public class MongoMetricsDaoImpl implements MetricsDao {
      * @return the {@link FlowInvocationMetric} representation
      */
     private FlowInvocationMetric convertFromEntity(MongoFlowInvocationMetric entity) {
-        // MongoFlowInvocationMetric already implements FlowInvocationMetric,
-        // so we can return the entity directly
-        return entity;
+        try
+        {
+            FlowInvocationMetric solrModuleMetaData
+                = mapper.readValue(entity.getRawFlowInvocationMetric(), FlowInvocationMetricImpl.class);
+
+            return solrModuleMetaData;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(String.format("Unable to deserialise FlowInvocationMetric [%s]"
+                , entity.getRawFlowInvocationMetric()), e);
+        }
     }
 }

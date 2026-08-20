@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.metrics.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.history.FlowInvocationMetric;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -14,50 +16,32 @@ import java.util.Set;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "flow_invocation_metrics")
-public class MongoFlowInvocationMetric implements FlowInvocationMetric<Object> {
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
+public class MongoFlowInvocationMetric {
 
     @Id
     private String id;
 
-    @Indexed
-    @Field("module_name")
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Field(EntityFields.PAYLOAD_CONTENT)
+    private String rawFlowInvocationMetric;
+
+    /** module name */
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Indexed
-    @Field("flow_name")
+    /** flowName */
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("invocation_start_time")
-    private long invocationStartTime;
+    @Field(EntityFields.CREATED_DATE_TIME)
+    private long timestamp;
 
-    @Indexed
-    @Field("invocation_end_time")
-    private long invocationEndTime;
-
-    @Field("final_action")
-    private String finalAction;
-
-    @Field("error_uri")
-    private String errorUri;
-
-    @Field("harvested")
-    private Boolean harvested;
-
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
-
-    @Indexed
-    @Field("harvested_date_time")
-    private long harvestedDateTime;
-
-    @Indexed
-    @Field("created_timestamp")
-    private long createdTimestamp;
-
-    public MongoFlowInvocationMetric() {
-    }
 
     public String getId() {
         return id;
@@ -65,6 +49,22 @@ public class MongoFlowInvocationMetric implements FlowInvocationMetric<Object> {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getRawFlowInvocationMetric() {
+        return rawFlowInvocationMetric;
+    }
+
+    public void setRawFlowInvocationMetric(String rawFlowInvocationMetric) {
+        this.rawFlowInvocationMetric = rawFlowInvocationMetric;
     }
 
     public String getModuleName() {
@@ -83,56 +83,12 @@ public class MongoFlowInvocationMetric implements FlowInvocationMetric<Object> {
         this.flowName = flowName;
     }
 
-    public long getInvocationStartTime() {
-        return invocationStartTime;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setInvocationStartTime(long invocationStartTime) {
-        this.invocationStartTime = invocationStartTime;
-    }
-
-    public long getInvocationEndTime() {
-        return invocationEndTime;
-    }
-
-    public void setInvocationEndTime(long invocationEndTime) {
-        this.invocationEndTime = invocationEndTime;
-    }
-
-    public String getFinalAction() {
-        return finalAction;
-    }
-
-    public void setFinalAction(String finalAction) {
-        this.finalAction = finalAction;
-    }
-
-    @Override
-    public String getErrorUri() {
-        return errorUri;
-    }
-
-    @Override
-    public void setErrorUri(String errorUri) {
-        this.errorUri = errorUri;
-    }
-
-    public Boolean getHarvested() {
-        return harvested;
-    }
-
-    public void setHarvested(Boolean harvested) {
-        this.harvested = harvested;
-    }
-
-    @Override
-    public Set<Object> getFlowInvocationEvents() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void setFlowInvocationEvents(Set<Object> flowInvocationEvents) {
-        // Not stored separately in MongoDB - stored as JSON
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public long getExpiry() {
@@ -141,38 +97,5 @@ public class MongoFlowInvocationMetric implements FlowInvocationMetric<Object> {
 
     public void setExpiry(long expiry) {
         this.expiry = expiry;
-    }
-
-    public long getHarvestedDateTime() {
-        return harvestedDateTime;
-    }
-
-    public void setHarvestedDateTime(long harvestedDateTime) {
-        this.harvestedDateTime = harvestedDateTime;
-    }
-
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
-    }
-
-    @Override
-    public String toString() {
-        return "MongoFlowInvocationMetric{" +
-                "id='" + id + '\'' +
-                ", moduleName='" + moduleName + '\'' +
-                ", flowName='" + flowName + '\'' +
-                ", invocationStartTime=" + invocationStartTime +
-                ", invocationEndTime=" + invocationEndTime +
-                ", finalAction='" + finalAction + '\'' +
-                ", errorUri='" + errorUri + '\'' +
-                ", harvested=" + harvested +
-                ", expiry=" + expiry +
-                ", harvestedDateTime=" + harvestedDateTime +
-                ", createdTimestamp=" + createdTimestamp +
-                '}';
     }
 }

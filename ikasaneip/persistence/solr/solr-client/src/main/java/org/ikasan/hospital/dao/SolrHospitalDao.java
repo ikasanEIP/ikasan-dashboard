@@ -17,11 +17,6 @@ public class SolrHospitalDao extends SolrDaoBase<ExclusionEventAction> implement
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrHospitalDao.class);
 
-    /**
-     * We need to give this document it's context.
-     */
-    public static final String EXCLUSION_EVENT_ACTION = "exclusionEventAction";
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ExclusionEventAction exclusionEventAction)
     {

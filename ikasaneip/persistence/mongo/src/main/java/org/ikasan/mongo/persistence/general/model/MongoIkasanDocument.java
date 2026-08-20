@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.general.model;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,52 +10,52 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * MongoDB implementation of IkasanESBDocument.
  * This class represents an event stored in MongoDB.
  */
-@Document(collection = "ikasanDocument")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Id
     private String id;
 
-    @Field("payload")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
-    @Field("type")
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Field("moduleName")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Field("flowName")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Field("componentName")
+    @Field(EntityFields.COMPONENT_NAME)
     private String componentName;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timeStamp;
 
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
 
-    @Field("event")
+    @Field(EntityFields.EVENT)
     private String eventId;
 
-    @Field("errorAction")
+    @Field(EntityFields.ERROR_ACTION)
     private String errorAction;
 
-    @Field("errorUri")
+    @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
-    @Field("errorDetail")
+    @Field(EntityFields.ERROR_DETAIL)
     private String errorDetail;
 
-    @Field("errorMessage")
+    @Field(EntityFields.ERROR_MESSAGE)
     private String errorMessage;
 
-    @Field("exceptionClass")
+    @Field(EntityFields.EXCEPTION_CLASS)
     private String exceptionClass;
 
-    @Field("payloadRaw")
+    @Field(EntityFields.PAYLOAD_CONTENT_RAW)
     private byte[] payloadRaw;
 
     @Override

@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.module.metadata.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,11 +11,14 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * MongoDB entity for storing module metadata.
  * Stores the module metadata as a JSON string for efficient storage and retrieval.
  */
-@Document(collection = "module_metadata")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoModuleMetadata {
 
     @Id
     private String id;
+
+    @Field(EntityFields.TYPE)
+    private String type;
 
     @Indexed(unique = true)
     @Field("module_name")
@@ -47,6 +52,14 @@ public class MongoModuleMetadata {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getModuleName() {

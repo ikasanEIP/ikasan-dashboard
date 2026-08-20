@@ -55,7 +55,7 @@ public class MongoErrorReportingServiceDaoImplTest {
 
     @Autowired
     public void setDao(MongoErrorOccurrenceRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate);
+        this.dao = new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate, 7);
     }
 
     @After
@@ -277,39 +277,6 @@ public class MongoErrorReportingServiceDaoImplTest {
     }
 
     @Test
-    public void testRemoveExpired() {
-        // Given
-        long currentTime = System.currentTimeMillis();
-        long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
-
-        ErrorOccurrence expiredError = createErrorOccurrence(
-            "expired-error", "module1", "flow1", "component1",
-            "Retry", "Error detail", "Error message", "java.lang.Exception",
-            "event-id-1", "related-event-1", "event-payload", currentTime
-        );
-        expiredError.setExpiry(oneDayAgo); // Already expired
-
-        ErrorOccurrence validError = createErrorOccurrence(
-            "valid-error", "module2", "flow2", "component2",
-            "Retry", "Error detail", "Error message", "java.lang.Exception",
-            "event-id-2", "related-event-2", "event-payload", currentTime
-        );
-        validError.setExpiry(currentTime + (24 * 60 * 60 * 1000)); // Expires tomorrow
-
-        dao.save(expiredError);
-        dao.save(validError);
-        assertEquals(2, repository.count());
-
-        // When
-        dao.removeExpired();
-
-        // Then
-        assertEquals(1, repository.count());
-        ErrorOccurrence remaining = dao.findByUri("valid-error");
-        assertNotNull(remaining);
-    }
-
-    @Test
     public void testErrorOccurrenceUsesMongoModel() {
         // Given
         ErrorOccurrence errorOccurrence = createErrorOccurrence(
@@ -372,7 +339,7 @@ public class MongoErrorReportingServiceDaoImplTest {
             errorDetail, errorMessage, exceptionClass, eventLifeIdentifier,
             eventRelatedIdentifier, eventAsString, timestamp
         );
-        errorOccurrence.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+
         return errorOccurrence;
     }
 }

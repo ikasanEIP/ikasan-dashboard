@@ -32,11 +32,6 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrComponentConfigurationMetadataDaoImpl.class);
 
-    /**
-     * We need to give this hibernate it's context.
-     */
-    public static final String COMPONENT_CONFIGURATION = "componentConfiguration";
-
     private JsonMapper objectMapper;
 
     public SolrComponentConfigurationMetadataDaoImpl()

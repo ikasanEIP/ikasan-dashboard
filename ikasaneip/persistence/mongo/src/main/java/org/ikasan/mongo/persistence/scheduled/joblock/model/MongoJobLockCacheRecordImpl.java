@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.joblock.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
@@ -11,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
-@Document(collection = "jobLockCacheRecord")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoJobLockCacheRecordImpl implements JobLockCacheRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ConcurrentObjectMapperFactory.newInstance();

@@ -30,10 +30,6 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrBusinessStreamMetadataDaoImpl.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String BUSINESS_STREAM_METADATA = "businessStreamMetaData";
 
     public SolrBusinessStreamMetadataDaoImpl() {
     }

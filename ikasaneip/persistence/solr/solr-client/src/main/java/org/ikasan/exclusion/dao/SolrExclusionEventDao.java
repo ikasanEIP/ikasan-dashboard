@@ -17,11 +17,6 @@ public class SolrExclusionEventDao extends SolrDaoBase<ExclusionEvent> implement
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrExclusionEventDao.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String EXCLUSION = "exclusion";
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ExclusionEvent exclusionEvent)
     {

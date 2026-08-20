@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
@@ -17,7 +18,7 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "scheduledContextInstanceAuditAggregate")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements ScheduledContextInstanceAuditAggregateRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ConcurrentObjectMapperFactory.newInstance();

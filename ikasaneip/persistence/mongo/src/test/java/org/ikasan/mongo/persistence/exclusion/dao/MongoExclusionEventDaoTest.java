@@ -55,7 +55,7 @@ public class MongoExclusionEventDaoTest {
 
     @Autowired
     public void setDao(MongoExclusionEventRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoExclusionEventDao(repository, mongoTemplate);
+        this.dao = new MongoExclusionEventDao(repository, mongoTemplate, 7);
     }
 
     @After
@@ -256,31 +256,6 @@ public class MongoExclusionEventDaoTest {
     }
 
     @Test
-    public void testRemoveExpired() {
-        // Given
-        long currentTime = System.currentTimeMillis();
-        long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
-
-        MongoExclusionEvent expiredEvent = createExclusionEvent("module1", "flow1", "id1", "payload1", "uri1");
-        expiredEvent.setExpiry(oneDayAgo); // Already expired
-        dao.save(expiredEvent);
-
-        MongoExclusionEvent validEvent = createExclusionEvent("module2", "flow2", "id2", "payload2", "uri2");
-        validEvent.setExpiry(currentTime + (24 * 60 * 60 * 1000)); // Expires tomorrow
-        dao.save(validEvent);
-
-        assertEquals(2, repository.count());
-
-        // When
-        dao.removeExpired();
-
-        // Then
-        assertEquals(1, repository.count());
-        ExclusionEvent remaining = dao.findByErrorUri("uri2");
-        assertNotNull(remaining);
-    }
-
-    @Test
     public void testExclusionEventUsesMongoModel() {
         // Given
         MongoExclusionEvent exclusionEvent = createExclusionEvent(
@@ -299,7 +274,7 @@ public class MongoExclusionEventDaoTest {
         assertEquals("module1", mongoExclusion.getModuleName());
         assertEquals("flow1", mongoExclusion.getFlowName());
         assertEquals("event-id-1", mongoExclusion.getIdentifier());
-        assertEquals("event-payload-1", mongoExclusion.getEventAsString());
+        assertEquals("event-payload-1", new String(mongoExclusion.getEvent()));
         assertEquals("error-uri-1", mongoExclusion.getErrorUri());
     }
 
@@ -318,7 +293,7 @@ public class MongoExclusionEventDaoTest {
         // Then
         assertNotNull(retrieved);
         assertEquals(eventPayload, new String(retrieved.getEvent()));
-        assertEquals(eventPayload, ((MongoExclusionEvent) retrieved).getEventAsString());
+        assertEquals(eventPayload, new String(retrieved.getEvent()));
     }
 
     private MongoExclusionEvent createExclusionEvent(String moduleName, String flowName,

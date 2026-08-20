@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.metrics.repository;
 
 import org.ikasan.mongo.persistence.metrics.model.MongoFlowInvocationMetric;
+import org.ikasan.spec.entity.EntityFields;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -20,12 +21,12 @@ public interface MongoFlowInvocationMetricRepository extends MongoRepository<Mon
 
     void deleteByExpiryLessThan(long currentTime);
 
-    @Query(value = "{ 'invocation_start_time': { $gte: ?0, $lte: ?1 } }", count = true)
-    long countByInvocationStartTimeBetween(long startTime, long endTime);
+    @Query(value = "{ '" + EntityFields.CREATED_DATE_TIME + "': { $gte: ?0, $lte: ?1 } }", count = true)
+    long countByTimestampBetween(long startTime, long endTime);
 
-    @Query(value = "{ 'module_name': ?0, 'invocation_start_time': { $gte: ?1, $lte: ?2 } }", count = true)
-    long countByModuleNameAndInvocationStartTimeBetween(String moduleName, long startTime, long endTime);
+    @Query(value = "{ '" + EntityFields.MODULE_NAME + "': ?0, '" + EntityFields.CREATED_DATE_TIME + "': { $gte: ?1, $lte: ?2 } }", count = true)
+    long countByModuleNameAndTimestampBetween(String moduleName, long startTime, long endTime);
 
-    @Query(value = "{ 'module_name': ?0, 'flow_name': ?1, 'invocation_start_time': { $gte: ?2, $lte: ?3 } }", count = true)
-    long countByModuleNameAndFlowNameAndInvocationStartTimeBetween(String moduleName, String flowName, long startTime, long endTime);
+    @Query(value = "{ '"+ EntityFields.MODULE_NAME +"': ?0, '"+ EntityFields.FLOW_NAME +"': ?1, '"+ EntityFields.CREATED_DATE_TIME +"': { $gte: ?2, $lte: ?3 } }", count = true)
+    long countByModuleNameAndFlowNameAndTimestampBetween(String moduleName, String flowName, long startTime, long endTime);
 }
