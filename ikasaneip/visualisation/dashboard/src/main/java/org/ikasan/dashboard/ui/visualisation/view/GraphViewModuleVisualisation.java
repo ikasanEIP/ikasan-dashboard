@@ -192,7 +192,8 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
 
         this.flowComboBox.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<Flow>, Flow>>) comboBoxFlowComponentValueChangeEvent ->
         {
-            if (comboBoxFlowComponentValueChangeEvent.getValue() != null) {
+            if (comboBoxFlowComponentValueChangeEvent.getValue() != null && this.currentFlow != null
+                && !comboBoxFlowComponentValueChangeEvent.getValue().getName().equals(this.currentFlow.getName())) {
                 logger.debug("Switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
                 this.currentFlow = comboBoxFlowComponentValueChangeEvent.getValue();
 
