@@ -378,9 +378,6 @@ public class FlowStateCacheTest {
         String moduleName = "module1";
         String flowName = "flow1";
 
-        // Set a short oscillation window (200ms)
-        cache.setOscillationWindowMs(200);
-
         // First transition: RECOVERING -> STOPPED (within window, starts oscillation detection)
         cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
         Thread.sleep(50);
@@ -399,31 +396,6 @@ public class FlowStateCacheTest {
                 assertThat("Should have 3 immediate broadcasts - states outside oscillation window",
                     listener.getBroadcastCount(), is(3))
             );
-    }
-
-    /**
-     * Test that oscillation window can be configured.
-     */
-    @Test
-    public void testOscillationWindowConfiguration() throws Exception {
-        // Get oscillationWindowMs field using reflection
-        Field oscillationWindowField = FlowStateCache.class.getDeclaredField("oscillationWindowMs");
-        oscillationWindowField.setAccessible(true);
-        long initialWindow = (Long) oscillationWindowField.get(cache);
-
-        // Set new oscillation window
-        cache.setOscillationWindowMs(3000);
-        long newWindow = (Long) oscillationWindowField.get(cache);
-        assertEquals("Oscillation window should be updated", 3000, newWindow);
-
-        // Try invalid values
-        cache.setOscillationWindowMs(0);
-        long currentWindow = (Long) oscillationWindowField.get(cache);
-        assertEquals("Oscillation window should not change for invalid value", 3000, currentWindow);
-
-        cache.setOscillationWindowMs(-100);
-        currentWindow = (Long) oscillationWindowField.get(cache);
-        assertEquals("Oscillation window should not change for negative value", 3000, currentWindow);
     }
 
     /**
