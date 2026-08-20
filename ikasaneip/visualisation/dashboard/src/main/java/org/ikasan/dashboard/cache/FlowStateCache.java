@@ -167,8 +167,7 @@ public class FlowStateCache implements Consumer<FlowState>
              previousState.getState() == State.STOPPED_STATE ||
              previousState.getState() == State.RUNNING_STATE) &&
             previousState.getState() != currentState &&
-            isOscillationState;// &&
-            //timeSinceLastState <= oscillationWindowMs;
+            isOscillationState;
 
         // Update last state and time for future oscillation detection
         lastState.put(key, flowState);
