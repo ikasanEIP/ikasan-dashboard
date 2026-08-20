@@ -51,33 +51,6 @@ flow.state.cache.throttle.interval.millis=30000
 
 ---
 
-#### `flow.state.cache.oscillation.window.millis`
-
-**Purpose**: Defines the time window (in milliseconds) within which state changes must occur to be considered part of an oscillation. If state transitions occur with gaps longer than this window, they are NOT considered oscillating and are broadcast immediately.
-
-**Default**: `5000` (5 seconds)
-
-**Example**:
-```properties
-# application.properties
-flow.state.cache.oscillation.window.millis=10000
-```
-
-**Behavior**:
-- State changes within the window → Treated as oscillation, throttling applies
-- State changes outside the window → Treated as independent events, broadcast immediately
-
-**Recommended Values**:
-- **Fast-failing systems**: `3000` (3 seconds) - Tight oscillation detection
-- **Standard**: `5000` (5 seconds) - Default, works for most scenarios
-- **Slow recovery systems**: `10000` (10 seconds) - Allows longer gaps between oscillating states
-
-**Impact**:
-- **Lower values**: Stricter oscillation detection, fewer states throttled
-- **Higher values**: More lenient oscillation detection, more states throttled
-
----
-
 ### Complete Example Configuration
 
 ```properties
