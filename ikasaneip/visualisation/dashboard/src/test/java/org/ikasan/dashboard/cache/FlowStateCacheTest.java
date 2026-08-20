@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * Comprehensive unit tests for FlowStateCache throttling functionality.
  *
- * These tests verify that rapid RECOVERING <-> STOPPED oscillations are properly throttled
+ * These tests verify that rapid RECOVERING <-> STOPPED <-> RUNNING oscillations are properly throttled
  * to prevent memory issues from excessive broadcasts, while all other state transitions
  * are broadcast immediately.
  */
@@ -542,6 +542,216 @@ public class FlowStateCacheTest {
         assertTrue("inOscillation should be cleared after teardown", inOscillation.isEmpty());
         assertTrue("lastBroadcastTime should be cleared after teardown", lastBroadcastTime.isEmpty());
         assertTrue("pendingBroadcasts should be cleared after teardown", pendingBroadcasts.isEmpty());
+    }
+
+    /**
+     * Test that rapid RUNNING <-> STOPPED oscillations are throttled.
+     */
+    @Test
+    public void testRunningStoppedOscillationsAreThrottled() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Simulate rapid RUNNING <-> STOPPED oscillations
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.STOPPED_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.STOPPED_STATE));
+
+        // Wait for immediate broadcasts (first 2)
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 2 immediate broadcasts (before throttling starts)",
+                    listener.getBroadcastCount(), is(2));
+                assertEquals("First broadcast should be RUNNING", State.RUNNING_STATE,
+                    listener.getBroadcasts().get(0).getState());
+                assertEquals("Second broadcast should be STOPPED (starts oscillation detection)", State.STOPPED_STATE,
+                    listener.getBroadcasts().get(1).getState());
+            });
+
+        // Wait for throttle interval to pass and delayed broadcast to execute
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 3 broadcasts total (2 immediate + 1 delayed)",
+                    listener.getBroadcastCount(), is(3));
+                assertEquals("Final broadcast should be STOPPED (latest state)", State.STOPPED_STATE,
+                    listener.getLastBroadcast().getState());
+            });
+    }
+
+    /**
+     * Test that rapid RUNNING <-> RECOVERING oscillations are throttled.
+     */
+    @Test
+    public void testRunningRecoveringOscillationsAreThrottled() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Simulate rapid RUNNING <-> RECOVERING oscillations
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+
+        // Wait for immediate broadcasts (first 2)
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 2 immediate broadcasts (before throttling starts)",
+                    listener.getBroadcastCount(), is(2));
+                assertEquals("First broadcast should be RUNNING", State.RUNNING_STATE,
+                    listener.getBroadcasts().get(0).getState());
+                assertEquals("Second broadcast should be RECOVERING (starts oscillation detection)", State.RECOVERING_STATE,
+                    listener.getBroadcasts().get(1).getState());
+            });
+
+        // Wait for throttle interval to pass and delayed broadcast to execute
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 3 broadcasts total (2 immediate + 1 delayed)",
+                    listener.getBroadcastCount(), is(3));
+                assertEquals("Final broadcast should be RECOVERING (latest state)", State.RECOVERING_STATE,
+                    listener.getLastBroadcast().getState());
+            });
+    }
+
+    /**
+     * Test that rapid three-way oscillations (RUNNING <-> RECOVERING <-> STOPPED) are throttled.
+     */
+    @Test
+    public void testThreeWayOscillationsAreThrottled() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Simulate rapid three-way oscillations
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.STOPPED_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(50);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+
+        // Wait for immediate broadcasts (first 2)
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 2 immediate broadcasts (before throttling starts)",
+                    listener.getBroadcastCount(), is(2));
+            });
+
+        // Wait for throttle interval to pass and delayed broadcast to execute
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 3 broadcasts total (2 immediate + 1 delayed)",
+                    listener.getBroadcastCount(), is(3));
+                assertEquals("Final broadcast should be RECOVERING (latest state)", State.RECOVERING_STATE,
+                    listener.getLastBroadcast().getState());
+            });
+    }
+
+    /**
+     * Test that RUNNING state transitions to non-oscillating states are broadcast immediately.
+     */
+    @Test
+    public void testRunningToNonOscillatingStateIsBroadcastImmediately() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Start with RUNNING <-> STOPPED oscillations (throttled)
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.STOPPED_STATE));
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(20);
+
+        // Now switch to a non-oscillating state (should broadcast immediately)
+        cache.put(new FlowState(moduleName, flowName, State.PAUSED_STATE));
+
+        // Wait for broadcasts using Awaitility
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 3 broadcasts", listener.getBroadcastCount(), is(3));
+                assertEquals("Last broadcast should be PAUSED", State.PAUSED_STATE,
+                    listener.getLastBroadcast().getState());
+            });
+    }
+
+    /**
+     * Test that oscillations involving RUNNING state clear when transition to non-oscillating state.
+     */
+    @Test
+    public void testRunningOscillationClearsOnNonOscillatingState() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Create RUNNING <-> RECOVERING oscillation
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+
+        // Transition to PAUSED (non-oscillating)
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.PAUSED_STATE));
+
+        // Wait for broadcasts
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 3 immediate broadcasts", listener.getBroadcastCount(), is(3));
+            });
+
+        // Now return to RECOVERING - should NOT be throttled because oscillation was cleared
+        Thread.sleep(20);
+        cache.put(new FlowState(moduleName, flowName, State.RECOVERING_STATE));
+
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have 4 broadcasts (oscillation was cleared)",
+                    listener.getBroadcastCount(), is(4));
+                assertEquals("Last broadcast should be RECOVERING", State.RECOVERING_STATE,
+                    listener.getLastBroadcast().getState());
+            });
+    }
+
+    /**
+     * Test extremely rapid RUNNING <-> STOPPED oscillations (stress test).
+     */
+    @Test
+    public void testExtremelyRapidRunningStoppedOscillations() throws InterruptedException {
+        String moduleName = "module1";
+        String flowName = "flow1";
+
+        // Simulate 20 rapid RUNNING <-> STOPPED oscillations within 50ms
+        for (int i = 0; i < 10; i++) {
+            cache.put(new FlowState(moduleName, flowName, State.RUNNING_STATE));
+            cache.put(new FlowState(moduleName, flowName, State.STOPPED_STATE));
+            Thread.sleep(2); // Very short delay between changes
+        }
+
+        // Wait for immediate broadcasts
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() ->
+                assertThat("Should have 2 immediate broadcasts before throttling kicks in",
+                    listener.getBroadcastCount(), is(2))
+            );
+
+        // Wait for delayed broadcast
+        await().atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat("Should have exactly 3 broadcasts despite 20 oscillations (2 immediate + 1 delayed)",
+                    listener.getBroadcastCount(), is(3));
+                assertEquals("Final state should be STOPPED", State.STOPPED_STATE,
+                    listener.getLastBroadcast().getState());
+            });
     }
 
     /**
