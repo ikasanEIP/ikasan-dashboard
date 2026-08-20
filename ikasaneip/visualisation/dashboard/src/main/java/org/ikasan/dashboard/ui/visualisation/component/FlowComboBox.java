@@ -53,17 +53,17 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
         if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
-            ui.access(() ->
-            {
-                logger.debug("Received flow state: " + flowState);
+            if (this.currentModule != null && this.currentModule.getName().equals(flowState.getModuleName())) {
+                ui.access(() ->
+                {
+                    logger.debug("Received flow state: " + flowState);
 
-                if (this.currentModule != null) {
                     Flow flow = this.getValue();
                     setItems(currentModule.getFlows());
                     this.getDataProvider().refreshAll();
                     this.setValue(flow);
-                }
-            });
+                });
+            }
         }
         else {
             FlowStateBroadcaster.instance().unregister(this);

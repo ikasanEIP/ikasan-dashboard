@@ -38,7 +38,7 @@ public class FlowStateCache implements Consumer<FlowState>
     private long oscillationWindowMs = DEFAULT_OSCILLATION_WINDOW_MS;
 
     /**
-     * Tracks the last state for each flow to detect RECOVERING <-> STOPPED oscillations.
+     * Tracks the last state for each flow to detect RECOVERING <-> STOPPED <-> RUNNING oscillations.
      * Key: moduleName+flowName, Value: last FlowState
      */
     private ConcurrentHashMap<String, FlowState> lastState = new ConcurrentHashMap<>();
@@ -148,7 +148,7 @@ public class FlowStateCache implements Consumer<FlowState>
 
     /**
      * Broadcasts a flow state change with throttling to prevent memory issues from rapid state transitions.
-     * Only throttles transitions between RECOVERING and STOPPED states, which cause excessive broadcasts.
+     * Only throttles transitions between RECOVERING, STOPPED, and RUNNING states, which cause excessive broadcasts.
      * All other state transitions are broadcast immediately.
      *
      * @param flowState The FlowState to broadcast
@@ -159,17 +159,21 @@ public class FlowStateCache implements Consumer<FlowState>
         State currentState = flowState.getState();
         long currentTime = System.currentTimeMillis();
 
-        // Check if current state is RECOVERING or STOPPED (potential oscillation states)
-        boolean isOscillationState = (currentState == State.RECOVERING_STATE || currentState == State.STOPPED_STATE);
+        // Check if current state is RECOVERING, STOPPED, or RUNNING (potential oscillation states)
+        boolean isOscillationState = (currentState == State.RECOVERING_STATE ||
+                                      currentState == State.STOPPED_STATE ||
+                                      currentState == State.RUNNING_STATE);
 
         // Check time since last state change
         Long previousStateTime = lastStateTime.get(key);
         long timeSinceLastState = (previousStateTime != null) ? (currentTime - previousStateTime) : Long.MAX_VALUE;
 
-        // Check if previous state was also RECOVERING or STOPPED (and different from current)
+        // Check if previous state was also RECOVERING, STOPPED, or RUNNING (and different from current)
         // AND the transition occurred within the oscillation detection window
         boolean isOscillationTransition = previousState != null &&
-            (previousState.getState() == State.RECOVERING_STATE || previousState.getState() == State.STOPPED_STATE) &&
+            (previousState.getState() == State.RECOVERING_STATE ||
+             previousState.getState() == State.STOPPED_STATE ||
+             previousState.getState() == State.RUNNING_STATE) &&
             previousState.getState() != currentState &&
             isOscillationState &&
             timeSinceLastState <= oscillationWindowMs;
@@ -206,7 +210,7 @@ public class FlowStateCache implements Consumer<FlowState>
                 // Too soon since last broadcast - schedule a delayed broadcast
                 long delay = throttleIntervalMs - (currentTime - lastBroadcast);
 
-                logger.debug("{} Throttling RECOVERING<->STOPPED oscillation for key[{}], scheduling delayed broadcast in {}ms",
+                logger.debug("{} Throttling RECOVERING<->STOPPED<->RUNNING oscillation for key[{}], scheduling delayed broadcast in {}ms",
                     this, key, delay);
 
                 // Cancel any existing pending broadcast for this flow
