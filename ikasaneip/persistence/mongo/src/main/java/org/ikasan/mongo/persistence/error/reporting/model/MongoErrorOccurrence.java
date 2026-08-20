@@ -1,80 +1,67 @@
 package org.ikasan.mongo.persistence.error.reporting.model;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.harvest.HarvestEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "error_occurrences")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEvent {
     @Id
     private String id;
 
     @Indexed
-    @Field("error_uri")
+    @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("flow_name")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("component_name")
+    @Field(EntityFields.COMPONENT_NAME)
     private String flowElementName;
 
-    @Field("error_action")
+    @Field(EntityFields.ERROR_ACTION)
     private String errorAction;
 
-    @Field("error_detail")
+    @Field(EntityFields.ERROR_DETAIL)
     private String errorDetail;
 
-    @Field("error_message")
+    @Field(EntityFields.ERROR_MESSAGE)
     private String errorMessage;
 
-    @Field("exception_class")
+    @Field(EntityFields.EXCEPTION_CLASS)
     private String exceptionClass;
 
     @Indexed
-    @Field("event_life_identifier")
+    @Field(EntityFields.EVENT)
     private String eventLifeIdentifier;
 
-    @Field("event_related_identifier")
+    @Field(EntityFields.RELATED_EVENT)
     private String eventRelatedIdentifier;
 
-    @Field("event_as_string")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String eventAsString;
 
     @Indexed
-    @Field("timestamp")
-    private long timestamp;
-
-    @Field("user_action")
-    private String userAction;
-
-    @Field("actioned_by")
-    private String actionedBy;
-
-    @Field("user_action_timestamp")
-    private long userActionTimestamp;
-
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
 
-    @Field("harvested")
-    private boolean harvested;
-
-    @Field("error_occurrence_json")
-    private String errorOccurrenceJson;
-
     @Indexed
-    @Field("created_timestamp")
-    private long createdTimestamp;
+    @Field(EntityFields.CREATED_DATE_TIME)
+    private long timestamp;
 
     public MongoErrorOccurrence() {
     }
@@ -103,6 +90,14 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -239,74 +234,81 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
     }
 
     @Override
-    public String getUserAction() {
-        return userAction;
-    }
-
-    @Override
-    public void setUserAction(String userAction) {
-        this.userAction = userAction;
-    }
-
-    @Override
-    public String getActionedBy() {
-        return actionedBy;
-    }
-
-    @Override
-    public void setActionedBy(String actionedBy) {
-        this.actionedBy = actionedBy;
-    }
-
-    @Override
-    public long getUserActionTimestamp() {
-        return userActionTimestamp;
-    }
-
-    @Override
-    public void setUserActionTimestamp(long userActionTimestamp) {
-        this.userActionTimestamp = userActionTimestamp;
-    }
-
-    @Override
     public long getExpiry() {
-        return expiry;
+        return this.expiry;
     }
 
     @Override
-    public void setExpiry(long expiry) {
+    public void setExpiry(long expiry)
+    {
         this.expiry = expiry;
     }
 
-    public boolean isHarvested() {
-        return harvested;
+    /**
+     * @return the userAction
+     */
+    @Override
+    public String getUserAction()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @param userAction the userAction to set
+     */
+    @Override
+    public void setUserAction(String userAction)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @return the actionedBy
+     */
+    @Override
+    public String getActionedBy()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @param actionedBy the actionedBy to set
+     */
+    @Override
+    public void setActionedBy(String actionedBy)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @return the userActionTimestamp
+     */
+    @Override
+    public long getUserActionTimestamp()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @param userActionTimestamp the userActionTimestamp to set
+     */
+    @Override
+    public void setUserActionTimestamp(long userActionTimestamp)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setHarvested(boolean harvested) {
-        this.harvested = harvested;
-    }
-
-    public String getErrorOccurrenceJson() {
-        return errorOccurrenceJson;
-    }
-
-    public void setErrorOccurrenceJson(String errorOccurrenceJson) {
-        this.errorOccurrenceJson = errorOccurrenceJson;
-    }
-
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
+    public void setHarvested(boolean harvested)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("MongoErrorOccurrence{");
         sb.append("id='").append(id).append('\'');
+        sb.append(", type='").append(type).append('\'');
         sb.append(", errorUri='").append(errorUri).append('\'');
         sb.append(", moduleName='").append(moduleName).append('\'');
         sb.append(", flowName='").append(flowName).append('\'');
@@ -315,7 +317,6 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
         sb.append(", exceptionClass='").append(exceptionClass).append('\'');
         sb.append(", eventLifeIdentifier='").append(eventLifeIdentifier).append('\'');
         sb.append(", timestamp=").append(timestamp);
-        sb.append(", createdTimestamp=").append(createdTimestamp);
         sb.append('}');
         return sb.toString();
     }

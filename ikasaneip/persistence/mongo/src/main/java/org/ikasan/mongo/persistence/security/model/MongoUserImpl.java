@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.security.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.ikasan.spec.security.model.IkasanPrincipal;
@@ -19,7 +20,7 @@ import java.util.*;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "users")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoUserImpl implements User, UserLite {
 
     @Id

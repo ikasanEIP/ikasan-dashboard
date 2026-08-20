@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
@@ -265,7 +266,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
 
         AggregationResults<AgentNameResult> results = mongoTemplate.aggregate(
             aggregation,
-            "schedulerJobRecord",
+            MongoConstants.IKASAN_COLLECTION_NAME,
             AgentNameResult.class
         );
 

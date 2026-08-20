@@ -39,6 +39,7 @@
  * ====================================================================
  */
 package org.ikasan.mongo.persistence.security.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.ikasan.spec.security.model.Policy;
@@ -57,7 +58,7 @@ import java.util.*;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "roles")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoRoleImpl implements Role {
 
     @Id

@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.general.dao;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocument;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocumentSearchResults;
 import org.ikasan.mongo.persistence.general.repository.MongoIkasanDocumentRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.persistence.dao.EntityDeleteDao;
 import org.ikasan.spec.search.dao.ESBSearchDao;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
@@ -122,7 +123,7 @@ public class MongoGeneralDaoImpl implements
             }
         } else {
             // Default sort by timestamp descending
-            query.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
         }
 
         try {
@@ -167,44 +168,44 @@ public class MongoGeneralDaoImpl implements
 
         // Module names filter
         if (moduleNames != null && !moduleNames.isEmpty()) {
-            criteriaList.add(Criteria.where("moduleName").in(moduleNames));
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
         }
 
         // Flow names filter
         if (flowNames != null && !flowNames.isEmpty()) {
-            criteriaList.add(Criteria.where("flowName").in(flowNames));
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
         }
 
         // Component names filter
         if (componentNames != null && !componentNames.isEmpty()) {
-            criteriaList.add(Criteria.where("componentName").in(componentNames));
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
         }
 
         // Event ID filter
         if (eventId != null && !eventId.isEmpty()) {
-            criteriaList.add(Criteria.where("event").is(eventId));
+            criteriaList.add(Criteria.where(EntityFields.EVENT).is(eventId));
         }
 
         // Timestamp range filter
         if (startTime > 0 && endTime > 0) {
-            criteriaList.add(Criteria.where("timestamp").gte(startTime).lte(endTime));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
         } else if (startTime > 0) {
-            criteriaList.add(Criteria.where("timestamp").gte(startTime));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime));
         } else if (endTime > 0) {
-            criteriaList.add(Criteria.where("timestamp").lte(endTime));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(endTime));
         }
 
         // Entity types filter
         if (entityTypes != null && !entityTypes.isEmpty()) {
-            criteriaList.add(Criteria.where("type").in(entityTypes));
+            criteriaList.add(Criteria.where(EntityFields.TYPE).in(entityTypes));
         }
 
         // Search string filter - search in payload and error details
         if (searchString != null && !searchString.isEmpty()) {
             Criteria searchCriteria = new Criteria().orOperator(
-                Criteria.where("payload").regex(searchString, "i"),
-                Criteria.where("errorDetail").regex(searchString, "i"),
-                Criteria.where("errorMessage").regex(searchString, "i")
+                Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchString, "i"),
+                Criteria.where(EntityFields.ERROR_DETAIL).regex(searchString, "i"),
+                Criteria.where(EntityFields.ERROR_MESSAGE).regex(searchString, "i")
             );
 
             if (negateQuery) {
@@ -227,7 +228,7 @@ public class MongoGeneralDaoImpl implements
     @Override
     public MongoIkasanDocument findById(String type, String id) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("id").is(id).and("type").is(type));
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id).and(EntityFields.TYPE).is(type));
 
         List<MongoIkasanDocument> results = mongoTemplate.find(query, MongoIkasanDocument.class);
         return results.stream().findFirst().orElse(null);
@@ -236,7 +237,7 @@ public class MongoGeneralDaoImpl implements
     @Override
     public MongoIkasanDocument findByErrorUri(String type, String uri) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("errorUri").is(uri).and("type").is(type));
+        query.addCriteria(Criteria.where(EntityFields.ERROR_URI).is(uri).and(EntityFields.TYPE).is(type));
 
         List<MongoIkasanDocument> results = mongoTemplate.find(query, MongoIkasanDocument.class);
         return results.stream().findFirst().orElse(null);
@@ -264,7 +265,7 @@ public class MongoGeneralDaoImpl implements
     public void removeExpired() {
         long currentTime = System.currentTimeMillis();
         Query query = new Query();
-        query.addCriteria(Criteria.where("expiry").lt(currentTime));
+        query.addCriteria(Criteria.where(EntityFields.EXPIRY).lt(currentTime));
 
         long deletedCount = mongoTemplate.remove(query, MongoIkasanDocument.class).getDeletedCount();
         logger.info("Deleted {} expired documents", deletedCount);
@@ -273,7 +274,7 @@ public class MongoGeneralDaoImpl implements
     @Override
     public void removeById(String type, String id) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("id").is(id).and("type").is(type));
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id).and(EntityFields.TYPE).is(type));
 
         mongoTemplate.remove(query, MongoIkasanDocument.class);
     }

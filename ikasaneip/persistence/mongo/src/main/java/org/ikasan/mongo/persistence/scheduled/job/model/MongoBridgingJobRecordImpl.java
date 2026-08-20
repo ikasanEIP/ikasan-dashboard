@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.job.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.job.BridgingJobImpl;
@@ -15,7 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
  * MongoDB implementation of BridgingJobRecord.
  * Stores the BridgingJob as a JSON string in MongoDB.
  */
-@Document(collection = "bridgingJobRecord")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoBridgingJobRecordImpl implements BridgingJobRecord {
 
     private static final JsonMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();

@@ -1,6 +1,8 @@
 package org.ikasan.mongo.persistence.exclusion.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.harvest.HarvestEvent;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -12,44 +14,40 @@ import org.springframework.data.mongodb.core.mapping.Field;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "exclusion_events")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent {
 
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("flow_name")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("identifier")
+    @Field(EntityFields.EVENT)
     private String identifier;
 
-    @Field("event")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
     @Indexed
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
     @Indexed
-    @Field("error_uri")
+    @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
-    @Field("harvested")
-    private boolean harvested;
-
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
-
-    @Indexed
-    @Field("created_timestamp")
-    private long createdTimestamp;
 
     /**
      * Default constructor
@@ -83,6 +81,14 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -130,14 +136,6 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
         }
     }
 
-    public String getEventAsString() {
-        return event;
-    }
-
-    public void setEventAsString(String event) {
-        this.event = event;
-    }
-
     @Override
     public long getTimestamp() {
         return timestamp;
@@ -160,12 +158,13 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
 
     @Override
     public boolean isHarvested() {
-        return harvested;
+        // Not relevant for mongo implementation.
+        return true;
     }
 
     @Override
     public void setHarvested(boolean harvested) {
-        this.harvested = harvested;
+        // Not relevant for mongo implementation.
     }
 
     public long getExpiry() {
@@ -174,14 +173,6 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
 
     public void setExpiry(long expiry) {
         this.expiry = expiry;
-    }
-
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
     }
 
     @Override
@@ -211,15 +202,14 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
     public String toString() {
         return "MongoExclusionEvent{" +
                 "id='" + id + '\'' +
+                ", type='" + type + '\'' +
                 ", moduleName='" + moduleName + '\'' +
                 ", flowName='" + flowName + '\'' +
                 ", identifier='" + identifier + '\'' +
                 ", event=" + event +
                 ", timestamp=" + timestamp +
                 ", errorUri='" + errorUri + '\'' +
-                ", harvested=" + harvested +
                 ", expiry=" + expiry +
-                ", createdTimestamp=" + createdTimestamp +
                 '}';
     }
 }

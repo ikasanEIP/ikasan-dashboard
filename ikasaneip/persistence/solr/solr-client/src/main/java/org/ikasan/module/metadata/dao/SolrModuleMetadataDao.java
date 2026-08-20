@@ -37,11 +37,6 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrModuleMetadataDao.class);
 
-    /**
-     * We need to give this hibernate it's context.
-     */
-    public static final String MODULE_METADATA = "moduleMetaData";
-
     private final JsonMapper objectMapper;
 
     public SolrModuleMetadataDao()

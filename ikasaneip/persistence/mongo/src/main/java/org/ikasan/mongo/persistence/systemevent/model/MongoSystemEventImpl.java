@@ -1,4 +1,5 @@
 package org.ikasan.mongo.persistence.systemevent.model;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.springframework.data.annotation.Id;
@@ -15,7 +16,7 @@ import java.util.StringJoiner;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = "system_events")
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoSystemEventImpl implements SystemEvent {
 
     @Id

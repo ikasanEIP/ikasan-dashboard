@@ -1,9 +1,9 @@
-package org.ikasan.metrics.model;
+package org.ikasan.mongo.persistence.metrics.model;
 
 
 import java.io.Serializable;
 
-public class CustomMetric implements Serializable
+public class CustomMetricImpl implements Serializable
 {
 	private Long id;
 	private ComponentInvocationMetricImpl componentInvocationMetricImpl;
@@ -11,7 +11,7 @@ public class CustomMetric implements Serializable
 	private String value;
 
 
-	public CustomMetric()
+	public CustomMetricImpl()
 	{
 		super();
 	}
