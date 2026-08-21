@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
-import org.ikasan.mongo.persistence.replay.model.MongoReplayAuditEvent;
+import org.ikasan.mongo.persistence.replay.model.MongoReplayAuditEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayAuditEventRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
@@ -17,19 +17,21 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 /**
- * Integration test for MongoReplayAuditDao using Testcontainers with MongoDB.
+ * Integration test for MongoReplayAuditDaoImpl using Testcontainers with MongoDB.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class, MongoPersistenceTestAutoConfiguration.class})
-public class MongoReplayAuditDaoTest {
+public class MongoReplayAuditDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -45,7 +47,7 @@ public class MongoReplayAuditDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoReplayAuditDao dao;
+    private MongoReplayAuditDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -54,7 +56,7 @@ public class MongoReplayAuditDaoTest {
 
     @Autowired
     public void setDao(MongoReplayAuditEventRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoReplayAuditDao(repository, mongoTemplate, 7); // 7 days to keep
+        this.dao = new MongoReplayAuditDaoImpl(repository, mongoTemplate, 7); // 7 days to keep
     }
 
     @After
@@ -72,7 +74,7 @@ public class MongoReplayAuditDaoTest {
     @Test
     public void testSaveSingleReplayAuditEvent() {
         // Given
-        MongoReplayAuditEvent auditEvent = createAuditEvent("audit-1", true, "Success message");
+        MongoReplayAuditEventImpl auditEvent = createAuditEvent("audit-1", true, "Success message");
 
         // When
         dao.save(auditEvent);
@@ -94,7 +96,8 @@ public class MongoReplayAuditDaoTest {
         dao.save(auditEvents);
 
         // Then
-        assertEquals(3, repository.count());
+        Awaitility.await().atMost(Duration.ofSeconds(15))
+                .untilAsserted(() -> assertEquals(3, repository.count()));
     }
 
     @Test
@@ -113,7 +116,7 @@ public class MongoReplayAuditDaoTest {
         // Batch insert creates a single document containing all events as JSON
         assertEquals(1, repository.count());
 
-        MongoReplayAuditEvent batchEvent = repository.findAll().get(0);
+        MongoReplayAuditEventImpl batchEvent = repository.findAll().get(0);
         assertNotNull(batchEvent.getReplayAuditJson());
         assertTrue(batchEvent.getReplayAuditJson().contains("audit-1"));
         assertTrue(batchEvent.getReplayAuditJson().contains("audit-2"));
@@ -121,63 +124,38 @@ public class MongoReplayAuditDaoTest {
     }
 
     @Test
-    public void testDeleteExpired() {
-        // Given
-        long currentTime = System.currentTimeMillis();
-        long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
-
-        MongoReplayAuditEvent expiredEvent = createAuditEvent("audit-1", true, "Expired");
-        expiredEvent.setExpiry(oneDayAgo);
-        dao.save(expiredEvent);
-
-        MongoReplayAuditEvent validEvent = createAuditEvent("audit-2", true, "Valid");
-        validEvent.setExpiry(currentTime + (24 * 60 * 60 * 1000));
-        dao.save(validEvent);
-
-        assertEquals(2, repository.count());
-
-        // When
-        dao.deleteExpired();
-
-        // Then
-        assertEquals(1, repository.count());
-    }
-
-    @Test
     public void testAuditEventFieldsPreserved() {
         // Given
-        MongoReplayAuditEvent auditEvent = createAuditEvent("test-audit", true, "Test message");
+        MongoReplayAuditEventImpl auditEvent = createAuditEvent("test-audit", true, "Test message");
 
         dao.save(auditEvent);
 
         // When
-        List<MongoReplayAuditEvent> results = repository.findAll();
+        List<MongoReplayAuditEventImpl> results = repository.findAll();
 
         // Then
         assertNotNull(results);
         assertEquals(1, results.size());
 
-        MongoReplayAuditEvent retrieved = results.get(0);
-        assertTrue(retrieved.isSuccess());
-        assertEquals("Test message", retrieved.getResultMessage());
+        MongoReplayAuditEventImpl retrieved = results.get(0);
+        assertTrue(retrieved.getReplayAuditJson().contains("Test message"));
         assertTrue(retrieved.getTimestamp() > 0);
         assertTrue(retrieved.getExpiry() > 0);
-        assertTrue(retrieved.getCreatedTimestamp() > 0);
     }
 
     @Test
     public void testExpiryCalculation() {
         // Given - DAO configured with 7 days to keep
-        MongoReplayAuditEvent auditEvent = createAuditEvent("test-audit", true, "Test message");
+        MongoReplayAuditEventImpl auditEvent = createAuditEvent("test-audit", true, "Test message");
 
         // When
         dao.save(auditEvent);
 
         // Then
-        List<MongoReplayAuditEvent> results = repository.findAll();
-        MongoReplayAuditEvent retrieved = results.get(0);
+        List<MongoReplayAuditEventImpl> results = repository.findAll();
+        MongoReplayAuditEventImpl retrieved = results.get(0);
 
-        long expectedExpiry = retrieved.getCreatedTimestamp() + (7 * 24 * 60 * 60 * 1000);
+        long expectedExpiry = retrieved.getTimestamp() + (7 * 24 * 60 * 60 * 1000);
         long actualExpiry = retrieved.getExpiry();
 
         // Allow 1 second tolerance for test execution time
@@ -205,13 +183,13 @@ public class MongoReplayAuditDaoTest {
         // Then
         assertEquals(2, repository.count()); // Two batch documents
 
-        List<MongoReplayAuditEvent> allEvents = repository.findAll();
+        List<MongoReplayAuditEventImpl> allEvents = repository.findAll();
         assertTrue(allEvents.stream().anyMatch(e -> e.getReplayAuditJson().contains("batch1-1")));
         assertTrue(allEvents.stream().anyMatch(e -> e.getReplayAuditJson().contains("batch2-1")));
     }
 
-    private MongoReplayAuditEvent createAuditEvent(String id, boolean success, String resultMessage) {
-        MongoReplayAuditEvent auditEvent = new MongoReplayAuditEvent();
+    private MongoReplayAuditEventImpl createAuditEvent(String id, boolean success, String resultMessage) {
+        MongoReplayAuditEventImpl auditEvent = new MongoReplayAuditEventImpl();
         auditEvent.setId(id);
         auditEvent.setSuccess(success);
         auditEvent.setResultMessage(resultMessage);

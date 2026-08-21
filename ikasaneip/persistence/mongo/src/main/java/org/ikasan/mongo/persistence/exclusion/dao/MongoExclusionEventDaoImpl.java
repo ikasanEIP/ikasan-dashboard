@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -22,16 +21,16 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoExclusionEventDao implements EntityDao<ExclusionEvent> {
+public class MongoExclusionEventDaoImpl implements EntityDao<ExclusionEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoExclusionEventDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoExclusionEventDaoImpl.class);
 
     private final MongoExclusionEventRepository repository;
     private final MongoTemplate mongoTemplate;
     private final int daysToKeep;
 
-    public MongoExclusionEventDao(MongoExclusionEventRepository repository, MongoTemplate mongoTemplate,
-                                  int daysToKeep) {
+    public MongoExclusionEventDaoImpl(MongoExclusionEventRepository repository, MongoTemplate mongoTemplate,
+                                      int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.daysToKeep = daysToKeep;
