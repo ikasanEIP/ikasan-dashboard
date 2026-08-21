@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.module.metadata.dao;
 
 import org.ikasan.mongo.persistence.module.metadata.model.*;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
 import org.ikasan.spec.metadata.model.*;
@@ -9,7 +10,6 @@ import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -64,6 +64,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
             for (ModuleMetaData moduleMetaData : moduleMetaDataList) {
                 MongoModuleMetadata entity = new MongoModuleMetadata(moduleMetaData.getName());
                 entity.setModuleMetadataJson(objectMapper.writeValueAsString(moduleMetaData));
+                entity.setType(MODULE_METADATA);
                 entity.setCreatedTimestamp(System.currentTimeMillis());
 
                 repository.save(entity);
@@ -79,7 +80,11 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
     public ModuleMetaData findById(String id) {
         logger.debug("Finding ModuleMetaData by id: {}", id);
 
-        MongoModuleMetadata entity = repository.findById(id).orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("module_name").is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
+
+        MongoModuleMetadata entity = mongoTemplate.findOne(query, MongoModuleMetadata.class);
 
         if (entity != null && entity.getModuleMetadataJson() != null) {
             return convert(entity.getModuleMetadataJson());
@@ -93,7 +98,11 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
     public void deleteById(String id) {
         logger.debug("Deleting ModuleMetaData with id: {}", id);
 
-        repository.deleteById(id);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("module_name").is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
+
+        mongoTemplate.remove(query, MongoModuleMetadata.class);
 
         logger.debug("Successfully deleted ModuleMetaData: {}", id);
     }
@@ -102,16 +111,20 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
     public List<ModuleMetaData> findAll(Integer startOffset, Integer resultSize) {
         logger.debug("Finding all ModuleMetaData with startOffset={}, resultSize={}", startOffset, resultSize);
 
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
+
         List<MongoModuleMetadata> results;
 
         if (resultSize != null && resultSize > 0) {
             int offset = startOffset != null ? startOffset : 0;
             int page = offset > 0 ? offset / resultSize : 0;
-            Pageable pageable = PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, "module_name"));
-            results = repository.findAll(pageable).getContent();
+            query.with(PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, "module_name")));
         } else {
-            results = repository.findAll(Sort.by(Sort.Direction.ASC, "module_name"));
+            query.with(Sort.by(Sort.Direction.ASC, "module_name"));
         }
+
+        results = mongoTemplate.find(query, MongoModuleMetadata.class);
 
         logger.debug("Found {} ModuleMetaData records", results.size());
 
@@ -125,6 +138,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         logger.debug("Finding ModuleMetaData with module names filter");
 
         Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         // Add module name filter if provided
         if (moduleNames != null && !moduleNames.isEmpty()) {
@@ -158,6 +172,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         logger.debug("Finding ModuleMetaData with module names filter and moduleType: {}", moduleType);
 
         Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         // Add module name filter if provided
         if (moduleNames != null && !moduleNames.isEmpty()) {

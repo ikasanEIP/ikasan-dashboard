@@ -26,11 +26,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Integration test for MongoHospitalDao using Testcontainers with MongoDB.
+ * Integration test for MongoHospitalDaoImpl using Testcontainers with MongoDB.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class, MongoPersistenceTestAutoConfiguration.class})
-public class MongoHospitalDaoTest {
+public class MongoHospitalDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -46,7 +46,7 @@ public class MongoHospitalDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoHospitalDao dao;
+    private MongoHospitalDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -55,7 +55,7 @@ public class MongoHospitalDaoTest {
 
     @Autowired
     public void setDao(MongoExclusionEventActionRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoHospitalDao(repository, mongoTemplate, 7);
+        this.dao = new MongoHospitalDaoImpl(repository, mongoTemplate, 7);
     }
 
     @After

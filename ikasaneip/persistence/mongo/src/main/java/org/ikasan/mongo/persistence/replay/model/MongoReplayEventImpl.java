@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.replay.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -13,47 +14,43 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * @author Ikasan Development Team
  */
 @Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
-public class MongoReplayEvent implements ReplayEvent {
+public class MongoReplayEventImpl implements ReplayEvent {
 
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("flow_name")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("event_id")
+    @Field(EntityFields.EVENT)
     private String eventId;
 
-    @Field("payload_raw")
+    @Field(EntityFields.PAYLOAD_CONTENT_RAW)
     private byte[] payloadRaw;
 
-    @Field("event_as_string")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String eventAsString;
 
-    @Field("related_event_identifier")
-    private String relatedEventIdentifier;
-
     @Indexed
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
-
-    @Indexed
-    @Field("created_timestamp")
-    private long createdTimestamp;
 
     /**
      * Default constructor
      */
-    public MongoReplayEvent() {
+    public MongoReplayEventImpl() {
     }
 
     /**
@@ -66,8 +63,8 @@ public class MongoReplayEvent implements ReplayEvent {
      * @param flowName
      * @param timeToLiveDays
      */
-    public MongoReplayEvent(String eventId, byte[] event, String eventAsString,
-                            String moduleName, String flowName, int timeToLiveDays) {
+    public MongoReplayEventImpl(String eventId, byte[] event, String eventAsString,
+                                String moduleName, String flowName, int timeToLiveDays) {
         this.eventId = eventId;
         this.payloadRaw = event;
         this.eventAsString = eventAsString;
@@ -89,6 +86,14 @@ public class MongoReplayEvent implements ReplayEvent {
         if (id != null) {
             this.id = id.toString();
         }
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void setId(String id) {
@@ -169,32 +174,16 @@ public class MongoReplayEvent implements ReplayEvent {
         this.eventAsString = eventAsString;
     }
 
-    public String getRelatedEventIdentifier() {
-        return relatedEventIdentifier;
-    }
-
-    public void setRelatedEventIdentifier(String relatedEventIdentifier) {
-        this.relatedEventIdentifier = relatedEventIdentifier;
-    }
-
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long createdTimestamp) {
-        this.createdTimestamp = createdTimestamp;
-    }
-
     @Override
     public String toString() {
-        return "MongoReplayEvent{" +
+        return "MongoReplayEventImpl{" +
                 "id='" + id + '\'' +
                 ", moduleName='" + moduleName + '\'' +
                 ", flowName='" + flowName + '\'' +
                 ", eventId='" + eventId + '\'' +
                 ", timestamp=" + timestamp +
                 ", expiry=" + expiry +
-                ", createdTimestamp=" + createdTimestamp +
+                ", createdTimestamp=" + timestamp +
                 '}';
     }
 }

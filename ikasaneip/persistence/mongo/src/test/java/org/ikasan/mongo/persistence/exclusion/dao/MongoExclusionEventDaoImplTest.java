@@ -26,11 +26,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Integration test for MongoExclusionEventDao using Testcontainers with MongoDB.
+ * Integration test for MongoExclusionEventDaoImpl using Testcontainers with MongoDB.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class, MongoPersistenceTestAutoConfiguration.class})
-public class MongoExclusionEventDaoTest {
+public class MongoExclusionEventDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -46,7 +46,7 @@ public class MongoExclusionEventDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoExclusionEventDao dao;
+    private MongoExclusionEventDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -55,7 +55,7 @@ public class MongoExclusionEventDaoTest {
 
     @Autowired
     public void setDao(MongoExclusionEventRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoExclusionEventDao(repository, mongoTemplate, 7);
+        this.dao = new MongoExclusionEventDaoImpl(repository, mongoTemplate, 7);
     }
 
     @After

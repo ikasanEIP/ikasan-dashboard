@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -22,22 +21,22 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoHospitalDao implements EntityDao<ExclusionEventAction> {
+public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoHospitalDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoHospitalDaoImpl.class);
 
     private final MongoExclusionEventActionRepository repository;
     private final MongoTemplate mongoTemplate;
     private final int daysToKeep;
 
     /**
-     * Constructs a new instance of {@code MongoHospitalDao}.
+     * Constructs a new instance of {@code MongoHospitalDaoImpl}.
      *
      * @param repository the {@link MongoExclusionEventActionRepository} used to interact with MongoDB for exclusion event actions
      * @param mongoTemplate the {@link MongoTemplate} used for custom queries and database operations
      * @param daysToKeep the number of days to retain records in the database
      */
-    public MongoHospitalDao(MongoExclusionEventActionRepository repository
+    public MongoHospitalDaoImpl(MongoExclusionEventActionRepository repository
         , MongoTemplate mongoTemplate, int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
