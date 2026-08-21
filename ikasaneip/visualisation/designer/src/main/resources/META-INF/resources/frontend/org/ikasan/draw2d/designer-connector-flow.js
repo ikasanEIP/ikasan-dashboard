@@ -1358,13 +1358,14 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.setReadOnly = function (readonly) {
-
+            console.log("Setting readonly - " + readonly);
             if(readonly === true){
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.FadeoutDecorationPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.SnapToGeometryEditPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.SnapToCenterEditPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.SnapToInBetweenEditPolicy());
                 designer.$connector.designer.installEditPolicy( new draw2d.policy.canvas.ReadOnlySelectionPolicy());
+                console.log("Successfully set readonly - " + readonly);
             }
             else {
                 designer.$connector.designer.installEditPolicy( new draw2d.policy.canvas.FadeoutDecorationPolicy());
@@ -1372,27 +1373,8 @@ window.Vaadin.Flow.designerConnector = {
                 designer.$connector.designer.installEditPolicy( new draw2d.policy.canvas.SnapToCenterEditPolicy());
                 designer.$connector.designer.installEditPolicy( new draw2d.policy.canvas.SnapToInBetweenEditPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.ReadOnlySelectionPolicy());
+                console.log("Successfully set readonly - " + readonly);
             }
         }
-
-        $(document).addEventListener("DOMContentLoaded",function () {
-
-            setTimeout(function() {
-                _this.exportPng();
-            },1);
-
-            // add an event listener to the Canvas for change notifications.
-            // We just dump the current canvas document into the IMG
-            //
-            designer.$connector.designer.getCommandStack().addEventListener(function(e){
-
-                // let element = document.getElementById(canvasName);
-                // element.$server.stackEvent(JSON.stringify(e));
-                if(e.isPostChangeEvent()){
-                    _this.exportPng();
-                }
-            });
-        });
-
     }
 }
