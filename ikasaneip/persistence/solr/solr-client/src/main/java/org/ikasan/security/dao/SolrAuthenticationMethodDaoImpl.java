@@ -36,9 +36,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
  */
 public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticationMethodRecord> implements AuthenticationMethodDao {
 
-    /** The Solr document type identifier for authentication methods */
-    public static final String AUTHENTICATION_METHOD_TYPE = "securityAuthenticationMethod";
-
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 

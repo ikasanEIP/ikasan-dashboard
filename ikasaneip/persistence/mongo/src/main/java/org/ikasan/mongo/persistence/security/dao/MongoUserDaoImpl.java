@@ -1,7 +1,11 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalFilterImpl;
 import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
+import org.ikasan.mongo.persistence.security.model.MongoUserRecord;
 import org.ikasan.mongo.persistence.security.repository.MongoUserRepository;
+import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.security.model.*;
 import org.slf4j.Logger;
@@ -11,8 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,24 +29,26 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoUserDao implements UserDao {
+public class MongoUserDaoImpl implements UserDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoUserDao.class);
+    private static final JsonMapper OBJECT_MAPPER = MongoSecurityObjectMapperFactory.newInstance();
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoUserDaoImpl.class);
     private static final long DO_NOT_EXPIRE = -1L;
 
     private final MongoUserRepository repository;
     private final MongoTemplate mongoTemplate;
-    private final MongoIkasanPrincipalDao ikasanPrincipalDao;
+    private final MongoIkasanPrincipalDaoImpl ikasanPrincipalDao;
 
     /**
-     * Constructor for MongoUserDao.
+     * Constructor for MongoUserDaoImpl.
      *
      * @param repository the MongoDB repository for user persistence
      * @param mongoTemplate the MongoTemplate for custom queries
      * @param ikasanPrincipalDao the IkasanPrincipal DAO for querying principals
      */
-    public MongoUserDao(MongoUserRepository repository, MongoTemplate mongoTemplate,
-                        MongoIkasanPrincipalDao ikasanPrincipalDao) {
+    public MongoUserDaoImpl(MongoUserRepository repository, MongoTemplate mongoTemplate,
+                            MongoIkasanPrincipalDaoImpl ikasanPrincipalDao) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.ikasanPrincipalDao = ikasanPrincipalDao;
@@ -83,7 +90,11 @@ public class MongoUserDao implements UserDao {
             return Collections.emptyList();
         }
 
-        List<MongoUserImpl> users = repository.findByPrincipalIdsContaining(principalId);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.PRINCIPAL_RELATED_ENTITY_COLLECTION).in(principalId));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        List<MongoUserRecord> users = mongoTemplate.find(query, MongoUserRecord.class);
         return users.stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
@@ -104,9 +115,10 @@ public class MongoUserDao implements UserDao {
             .collect(Collectors.toList());
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
-        return (int) mongoTemplate.count(query, MongoUserImpl.class);
+        return (int) mongoTemplate.count(query, MongoUserRecord.class);
     }
 
     @Override
@@ -137,21 +149,25 @@ public class MongoUserDao implements UserDao {
             .collect(Collectors.toList());
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
-        return (int) mongoTemplate.count(query, MongoUserImpl.class);
+        return (int) mongoTemplate.count(query, MongoUserRecord.class);
     }
 
     @Override
     public int getUserCount(UserFilter userFilter) {
         Query query = new Query();
         addUserFilterCriteria(query, userFilter);
-        return (int) mongoTemplate.count(query, MongoUserImpl.class);
+        return (int) mongoTemplate.count(query, MongoUserRecord.class);
     }
 
     @Override
     public List<User> getUsers() {
-        return repository.findAll().stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
@@ -168,78 +184,94 @@ public class MongoUserDao implements UserDao {
             query.skip(offset);
         }
 
-        return mongoTemplate.find(query, MongoUserImpl.class).stream()
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
 
     @Override
     public List<UserLite> getUserLites() {
-        return repository.findAll().stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+            .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
             .map(user -> (UserLite) user)
             .collect(Collectors.toList());
     }
 
     @Override
     public List<UserLite> getUserLites(int limit, int offset) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        return repository.findAll(pageable).stream()
+        query.with(pageable);
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+            .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
             .map(user -> (UserLite) user)
             .collect(Collectors.toList());
     }
 
     @Override
     public User getUser(String username) {
-        return repository.findByUsername(username)
-            .map(this::loadPrincipals)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(username));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        MongoUserRecord result = mongoTemplate.findOne(query, MongoUserRecord.class);
+        if (result == null) {
+            return null;
+        }
+        return loadPrincipals(result);
     }
 
     @Override
     public List<User> getUserByUsernameLike(String username) {
-        return repository.findByUsernameContainingIgnoreCase(username).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").regex(".*" + username + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
 
     @Override
     public List<User> getUserByFirstnameLike(String firstname) {
-        return repository.findByFirstNameContainingIgnoreCase(firstname).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where("firstName").regex(".*" + firstname + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
 
     @Override
     public List<User> getUserBySurnameLike(String surname) {
-        return repository.findBySurnameContainingIgnoreCase(surname).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where("surname").regex(".*" + surname + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
 
     @Override
     public void save(User user) {
-        MongoUserImpl mongoUser;
-
-        if (user instanceof MongoUserImpl) {
-            mongoUser = (MongoUserImpl) user;
-        } else {
-            // Convert from another User implementation
-            mongoUser = convertToMongoUser(user);
-        }
-
-        // Set id to username if not set
-        if (mongoUser.getId() == null) {
-            mongoUser.setId(user.getUsername());
-        }
+        MongoUserRecord mongoUser = convertToMongoUser(user);
 
         long currentTime = System.currentTimeMillis();
         mongoUser.setModifiedTimestamp(currentTime);
 
         // Set created timestamp only if this is a new user
-        if (mongoUser.getCreatedTimestamp() == 0) {
+        if (mongoUser.getTimestamp() == 0) {
             repository.findByUsername(user.getUsername()).ifPresentOrElse(
-                existing -> mongoUser.setCreatedTimestamp(existing.getCreatedTimestamp()),
-                () -> mongoUser.setCreatedTimestamp(currentTime)
+                existing -> mongoUser.setTimestamp(existing.getTimestamp()),
+                () -> mongoUser.setTimestamp(currentTime)
             );
         }
 
@@ -250,7 +282,7 @@ public class MongoUserDao implements UserDao {
             List<String> principalIds = user.getPrincipals().stream()
                 .map(p -> p.getId().toString())
                 .collect(Collectors.toList());
-            mongoUser.setPrincipalIds(principalIds);
+            mongoUser.setRelatedPrincipalIdentifiers(principalIds);
         }
 
         repository.save(mongoUser);
@@ -259,7 +291,11 @@ public class MongoUserDao implements UserDao {
 
     @Override
     public void delete(User user) {
-        repository.deleteByUsername(user.getUsername());
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(user.getUsername()));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        mongoTemplate.remove(query, MongoUserRecord.class);
         logger.debug("Deleted user with username: {}", user.getUsername());
     }
 
@@ -268,17 +304,23 @@ public class MongoUserDao implements UserDao {
      */
     public void deleteExpired() {
         long currentTime = System.currentTimeMillis();
-        repository.deleteByExpiryLessThan(currentTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
+        mongoTemplate.remove(query, MongoUserRecord.class);
         logger.debug("Deleted expired users before timestamp: {}", currentTime);
     }
 
+
     /**
-     * Loads principals for a user from the principal DAO.
+     * Loads and associates principals to a user based on the provided MongoUserRecord.
      *
-     * @param user the user to load principals for
-     * @return the user with principals loaded
+     * @param userRecord the MongoUserRecord containing the user data and principal identifiers
+     * @return a User object with the associated principals
      */
-    private User loadPrincipals(MongoUserImpl user) {
+    private User loadPrincipals(MongoUserRecord userRecord) {
+        MongoUserImpl user = OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class);
         if (user.getPrincipalIds() != null && !user.getPrincipalIds().isEmpty()) {
             user.getPrincipalIds().forEach(principalId -> {
                 IkasanPrincipal principal = this.ikasanPrincipalDao.findById(principalId);
@@ -287,6 +329,7 @@ public class MongoUserDao implements UserDao {
                 }
             });
         }
+
         return user;
     }
 
@@ -296,23 +339,30 @@ public class MongoUserDao implements UserDao {
      * @param user the user to convert
      * @return the MongoUserImpl
      */
-    private MongoUserImpl convertToMongoUser(User user) {
-        MongoUserImpl mongoUser = new MongoUserImpl();
-        mongoUser.setId((String)user.getId());
-        mongoUser.setUsername(user.getUsername());
-        mongoUser.setPassword(user.getPassword());
-        mongoUser.setEmail(user.getEmail());
-        mongoUser.setFirstName(user.getFirstName());
-        mongoUser.setSurname(user.getSurname());
-        mongoUser.setDepartment(user.getDepartment());
-        mongoUser.setEnabled(user.isEnabled());
-        mongoUser.setAccountNonExpired(user.isAccountNonExpired());
-        mongoUser.setAccountNonLocked(user.isAccountNonLocked());
-        mongoUser.setCredentialsNonExpired(user.isCredentialsNonExpired());
-        mongoUser.setRequiresPasswordChange(user.isRequiresPasswordChange());
-        mongoUser.setPreviousAccessTimestamp(user.getPreviousAccessTimestamp());
-        mongoUser.setPrincipals(user.getPrincipals());
-        return mongoUser;
+    private MongoUserRecord convertToMongoUser(User user) {
+        MongoUserRecord record = new MongoUserRecord();
+        record.setId(user.getUsername() + "-" + USER_TYPE);
+        record.setType(USER_TYPE);
+        record.setUsername(user.getUsername());
+        record.setEmail(user.getEmail());
+        record.setFirstName(user.getFirstName());
+        record.setSurname(user.getSurname());
+        record.setDepartment(user.getDepartment());
+        record.setTimestamp(System.currentTimeMillis());
+        record.setModifiedTimestamp(System.currentTimeMillis());
+        record.setExpiry(DO_NOT_EXPIRE);
+        record.setRelatedPrincipalIdentifiers(user.getPrincipals().stream()
+            .map(IkasanPrincipal::getId)
+            .map(String::valueOf)
+            .collect(Collectors.toList()));
+
+        try {
+            record.setUser(OBJECT_MAPPER.writeValueAsString(user));
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
+        }
+
+        return record;
     }
 
     /**
@@ -323,9 +373,11 @@ public class MongoUserDao implements UserDao {
      */
     private List<UserLite> getUsersByPrincipalNames(List<String> principalNames) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
-        return mongoTemplate.find(query, MongoUserImpl.class).stream()
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+            .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
             .map(user -> (UserLite) user)
             .collect(Collectors.toList());
     }
@@ -338,8 +390,9 @@ public class MongoUserDao implements UserDao {
      */
     private List<String> getUserNamesByPrincipalNames(List<String> principalNames) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").in(principalNames));
-        query.fields().include("username");
+        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+        query.fields().include(EntityFields.NAME);
 
         return mongoTemplate.find(query, MongoUserImpl.class).stream()
             .map(MongoUserImpl::getUsername)
@@ -353,64 +406,10 @@ public class MongoUserDao implements UserDao {
      * @return an IkasanPrincipalFilter
      */
     private IkasanPrincipalFilter createPrincipalFilter(String type) {
-        // Simple filter implementation
-        return new IkasanPrincipalFilter() {
-            private String typeFilter = type;
-            private String nameFilter;
-            private String descriptionFilter;
-            private String sortOrder;
-            private String sortColumn;
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
+        filter.setTypeFilter(type);
 
-            @Override
-            public void setTypeFilter(String typeFilter) {
-                this.typeFilter = typeFilter;
-            }
-
-            @Override
-            public String getTypeFilter() {
-                return typeFilter;
-            }
-
-            @Override
-            public String getNameFilter() {
-                return nameFilter;
-            }
-
-            @Override
-            public void setNameFilter(String nameFilter) {
-                this.nameFilter = nameFilter;
-            }
-
-            @Override
-            public String getDescriptionFilter() {
-                return descriptionFilter;
-            }
-
-            @Override
-            public void setDescriptionFilter(String descriptionFilter) {
-                this.descriptionFilter = descriptionFilter;
-            }
-
-            @Override
-            public String getSortOrder() {
-                return sortOrder;
-            }
-
-            @Override
-            public void setSortOrder(String sortOrder) {
-                this.sortOrder = sortOrder;
-            }
-
-            @Override
-            public String getSortColumn() {
-                return sortColumn;
-            }
-
-            @Override
-            public void setSortColumn(String sortColumn) {
-                this.sortColumn = sortColumn;
-            }
-        };
+        return filter;
     }
 
     /**
@@ -420,28 +419,31 @@ public class MongoUserDao implements UserDao {
      * @param filter the user filter
      */
     private void addUserFilterCriteria(Query query, UserFilter filter) {
+        // Always add type filter to ensure we only query user documents
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
+
         if (filter == null) {
             return;
         }
 
         if (filter.getUsernameFilter() != null && !filter.getUsernameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("username").regex(filter.getUsernameFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.NAME).regex(filter.getUsernameFilter(), "i"));
         }
 
         if (filter.getEmailFilter() != null && !filter.getEmailFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("email").regex(filter.getEmailFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.EMAIL).regex(filter.getEmailFilter(), "i"));
         }
 
         if (filter.getNameFilter() != null && !filter.getNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("firstName").regex(filter.getNameFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.FIRST_NAME).regex(filter.getNameFilter(), "i"));
         }
 
         if (filter.getLastNameFilter() != null && !filter.getLastNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("surname").regex(filter.getLastNameFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.SURNAME).regex(filter.getLastNameFilter(), "i"));
         }
 
         if (filter.getDepartmentFilter() != null && !filter.getDepartmentFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("department").regex(filter.getDepartmentFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.DEPARTMENT).regex(filter.getDepartmentFilter(), "i"));
         }
     }
 }

@@ -39,9 +39,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
  */
 public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements PolicyDao {
 
-    /** The Solr document type identifier for security policies */
-    public static final String POLICY_TYPE = "securityPolicy";
-
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 

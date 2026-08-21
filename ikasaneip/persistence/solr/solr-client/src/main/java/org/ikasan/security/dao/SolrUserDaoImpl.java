@@ -42,9 +42,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
  */
 public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements UserDao {
 
-    /** The Solr document type identifier for users */
-    public static final String USER_TYPE = "securityUser";
-
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 

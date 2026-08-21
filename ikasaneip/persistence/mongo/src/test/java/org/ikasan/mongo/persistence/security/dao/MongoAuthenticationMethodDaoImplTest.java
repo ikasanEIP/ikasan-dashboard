@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.security.dao;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoAuthenticationMethodRepository;
+import org.ikasan.spec.security.dao.AuthenticationMethodDao;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -24,7 +25,7 @@ import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoAuthenticationMethodDaoTest {
+public class MongoAuthenticationMethodDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -40,7 +41,7 @@ public class MongoAuthenticationMethodDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoAuthenticationMethodDao dao;
+    private MongoAuthenticationMethodDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -49,7 +50,7 @@ public class MongoAuthenticationMethodDaoTest {
 
     @Autowired
     public void setDao(MongoAuthenticationMethodRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoAuthenticationMethodDao(repository, mongoTemplate);
+        this.dao = new MongoAuthenticationMethodDaoImpl(repository, mongoTemplate);
     }
 
     @After
@@ -82,7 +83,7 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("LDAP", found.getName());
@@ -105,7 +106,8 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod
+            ("LOCAL-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("LOCAL", found.getName());
@@ -227,12 +229,14 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod
+            ("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
         Assert.assertNotNull(found);
 
         dao.deleteAuthenticationMethod(authMethod);
 
-        AuthenticationMethod notFound = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod notFound = dao.getAuthenticationMethod
+            ("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
         Assert.assertNull(notFound);
     }
 
@@ -254,8 +258,8 @@ public class MongoAuthenticationMethodDaoTest {
         dao.deleteAuthenticationMethod(authMethod1);
 
         Assert.assertEquals(1, dao.getNumberOfAuthenticationMethods());
-        Assert.assertNull(dao.getAuthenticationMethod(authMethod1.getId()));
-        Assert.assertNotNull(dao.getAuthenticationMethod(authMethod2.getId()));
+        Assert.assertNull(dao.getAuthenticationMethod("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE));
+        Assert.assertNotNull(dao.getAuthenticationMethod("LOCAL-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE));
     }
 
     @Test
@@ -268,7 +272,8 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod
+            ("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("LDAP", found.getName());
@@ -317,8 +322,10 @@ public class MongoAuthenticationMethodDaoTest {
         dao.saveOrUpdateAuthenticationMethod(authMethod2);
 
         // Both should be retrievable
-        AuthenticationMethod found1 = dao.getAuthenticationMethod(authMethod1.getId());
-        AuthenticationMethod found2 = dao.getAuthenticationMethod(authMethod2.getId());
+        AuthenticationMethod found1 = dao.getAuthenticationMethod
+            ("LDAP-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
+        AuthenticationMethod found2 = dao.getAuthenticationMethod
+            ("LOCAL-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found1);
         Assert.assertNotNull(found2);
@@ -335,7 +342,8 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod
+            ("ComplexAuth-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("ComplexAuth", found.getName());
@@ -351,7 +359,8 @@ public class MongoAuthenticationMethodDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod
+            ("Auth-Method_1-" + AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("Auth-Method_1", found.getName());

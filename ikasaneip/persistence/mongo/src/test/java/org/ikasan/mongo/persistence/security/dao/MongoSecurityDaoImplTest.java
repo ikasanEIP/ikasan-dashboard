@@ -21,9 +21,11 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.*;
 
+import static org.ikasan.spec.security.dao.AuthenticationMethodDao.AUTHENTICATION_METHOD_TYPE;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoSecurityDaoTest {
+public class MongoSecurityDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -51,12 +53,12 @@ public class MongoSecurityDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoSecurityDao dao;
-    private MongoIkasanPrincipalDao mongoIkasanPrincipalDao;
-    private MongoRoleDao mongoRoleDao;
-    private MongoPolicyDao mongoPolicyDao;
-    private MongoAuthenticationMethodDao mongoAuthenticationMethodDao;
-    private MongoUserDao mongoUserDao;
+    private MongoSecurityDaoImpl dao;
+    private MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl;
+    private MongoRoleDaoImpl mongoRoleDaoImpl;
+    private MongoPolicyDaoImpl mongoPolicyDaoImpl;
+    private MongoAuthenticationMethodDaoImpl mongoAuthenticationMethodDaoImpl;
+    private MongoUserDaoImpl mongoUserDaoImpl;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -70,25 +72,25 @@ public class MongoSecurityDaoTest {
                        MongoAuthenticationMethodRepository authMethodRepository,
                        MongoUserRepository userRepository,
                        MongoTemplate mongoTemplate) {
-        // Step 1: Create MongoPolicyDao first (no dependencies)
-        this.mongoPolicyDao = new MongoPolicyDao(policyRepository, mongoTemplate);
+        // Step 1: Create MongoPolicyDaoImpl first (no dependencies)
+        this.mongoPolicyDaoImpl = new MongoPolicyDaoImpl(policyRepository, mongoTemplate);
 
-        // Step 2: Create MongoRoleDao with MongoPolicyDao
-        this.mongoRoleDao = new MongoRoleDao(roleRepository, mongoTemplate, this.mongoPolicyDao);
+        // Step 2: Create MongoRoleDaoImpl with MongoPolicyDaoImpl
+        this.mongoRoleDaoImpl = new MongoRoleDaoImpl(roleRepository, mongoTemplate, this.mongoPolicyDaoImpl);
 
         // Step 3: Set circular reference
-        this.mongoPolicyDao.setMongoRoleDao(this.mongoRoleDao);
+        this.mongoPolicyDaoImpl.setMongoRoleDao(this.mongoRoleDaoImpl);
 
-        // Step 4: Create MongoIkasanPrincipalDao with MongoRoleDao
-        this.mongoIkasanPrincipalDao = new MongoIkasanPrincipalDao(principalRepository, mongoTemplate, this.mongoRoleDao);
+        // Step 4: Create MongoIkasanPrincipalDaoImpl with MongoRoleDaoImpl
+        this.mongoIkasanPrincipalDaoImpl = new MongoIkasanPrincipalDaoImpl(principalRepository, mongoTemplate, this.mongoRoleDaoImpl);
 
-        // Step 5: Create MongoUserDao with MongoIkasanPrincipalDao
-        this.mongoUserDao = new MongoUserDao(userRepository, mongoTemplate, this.mongoIkasanPrincipalDao);
+        // Step 5: Create MongoUserDaoImpl with MongoIkasanPrincipalDaoImpl
+        this.mongoUserDaoImpl = new MongoUserDaoImpl(userRepository, mongoTemplate, this.mongoIkasanPrincipalDaoImpl);
 
-        this.mongoAuthenticationMethodDao = new MongoAuthenticationMethodDao(authMethodRepository, mongoTemplate);
+        this.mongoAuthenticationMethodDaoImpl = new MongoAuthenticationMethodDaoImpl(authMethodRepository, mongoTemplate);
 
-        this.dao = new MongoSecurityDao(mongoIkasanPrincipalDao, mongoPolicyDao, mongoRoleDao,
-            mongoAuthenticationMethodDao, mongoUserDao);
+        this.dao = new MongoSecurityDaoImpl(mongoIkasanPrincipalDaoImpl, mongoPolicyDaoImpl, mongoRoleDaoImpl,
+            mongoAuthenticationMethodDaoImpl, mongoUserDaoImpl);
     }
 
     @After
@@ -650,10 +652,10 @@ public class MongoSecurityDaoTest {
 
         dao.saveOrUpdateAuthenticationMethod(authMethod);
 
-        AuthenticationMethod saved = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod saved = dao.getAuthenticationMethod(authMethod.getName() +"-" + AUTHENTICATION_METHOD_TYPE);
         Assert.assertNotNull(saved);
 
-        AuthenticationMethod found = dao.getAuthenticationMethod(saved.getId());
+        AuthenticationMethod found = dao.getAuthenticationMethod(saved.getName() +"-" + AUTHENTICATION_METHOD_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("LDAP", found.getName());
@@ -683,7 +685,7 @@ public class MongoSecurityDaoTest {
         authMethod.setOrder(1L);
         authMethod.setMethod("delete");
         dao.saveOrUpdateAuthenticationMethod(authMethod);
-        AuthenticationMethod saved = dao.getAuthenticationMethod(authMethod.getId());
+        AuthenticationMethod saved = dao.getAuthenticationMethod(authMethod.getName() +"-" + AUTHENTICATION_METHOD_TYPE);
         Assert.assertNotNull(saved);
 
         dao.deleteAuthenticationMethod(authMethod);
@@ -834,7 +836,7 @@ public class MongoSecurityDaoTest {
             user.setEmail("user" + i + "@example.com");
             user.setEnabled(true);
             user.setPrincipals(principals);
-            mongoUserDao.save(user);
+            mongoUserDaoImpl.save(user);
         }
 
         List<User> users = dao.getUsersAssociatedWithPrincipal("testGroup-securityPrincipal");

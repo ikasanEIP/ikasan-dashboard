@@ -42,6 +42,7 @@ package org.ikasan.mongo.persistence.security.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleJobPlan;
@@ -58,37 +59,15 @@ import java.util.*;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoRoleImpl implements Role {
 
-    @Id
     private String id;
-
-    @Indexed(unique = true)
-    @Field("name")
     private String name;
-
-    @Field("description")
     private String description;
-
-    @Indexed
-    @Field("created_date_time")
     private Date createdDateTime;
-
-    @Indexed
-    @Field("updated_date_time")
     private Date updatedDateTime;
-
-    @JsonIgnore
-    @Field("policy_ids")
     private List<String> policyIds = new ArrayList<>();
-
-    @JsonIgnore
-    @Field("role_module_ids")
     private List<String> roleModuleIds = new ArrayList<>();
-
-    @JsonIgnore
-    @Field("role_job_plan_ids")
     private List<String> roleJobPlanIds = new ArrayList<>();
 
     @JsonIgnore

@@ -44,9 +44,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
  */
 public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalRecord> implements IkasanPrincipalDao {
 
-    /** The Solr document type identifier for security principals */
-    public static final String PRINCIPAL_TYPE = "securityPrincipal";
-
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 

@@ -1,7 +1,9 @@
 package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.security.model.MongoPolicyImpl;
+import org.ikasan.mongo.persistence.security.model.MongoPolicyRecord;
 import org.ikasan.mongo.persistence.security.repository.MongoPolicyRepository;
+import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
 import org.ikasan.spec.security.dao.PolicyDao;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
@@ -10,12 +12,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.ikasan.spec.entity.EntityFields.*;
 
 /**
  * MongoDB implementation of Policy DAO.
@@ -34,33 +39,36 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoPolicyDao implements PolicyDao {
+public class MongoPolicyDaoImpl implements PolicyDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoPolicyDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoPolicyDaoImpl.class);
+
+    private static final JsonMapper OBJECT_MAPPER = MongoSecurityObjectMapperFactory.newInstance();
+    private static final long DO_NOT_EXPIRE = -1L;
 
     private final MongoPolicyRepository repository;
     private final MongoTemplate mongoTemplate;
-    private MongoRoleDao mongoRoleDao; // Circular dependency - will be set via setter
+    private MongoRoleDaoImpl mongoRoleDaoImpl; // Circular dependency - will be set via setter
 
     /**
-     * Constructor for MongoPolicyDao.
+     * Constructor for MongoPolicyDaoImpl.
      *
      * @param repository the MongoDB repository for policy persistence
      * @param mongoTemplate the MongoTemplate for custom queries
      */
-    public MongoPolicyDao(MongoPolicyRepository repository, MongoTemplate mongoTemplate) {
+    public MongoPolicyDaoImpl(MongoPolicyRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }
 
     /**
-     * Sets the MongoRoleDao for querying role relationships.
+     * Sets the MongoRoleDaoImpl for querying role relationships.
      * This is needed to avoid circular dependency issues.
      *
-     * @param mongoRoleDao the role DAO
+     * @param mongoRoleDaoImpl the role DAO
      */
-    public void setMongoRoleDao(MongoRoleDao mongoRoleDao) {
-        this.mongoRoleDao = mongoRoleDao;
+    public void setMongoRoleDao(MongoRoleDaoImpl mongoRoleDaoImpl) {
+        this.mongoRoleDaoImpl = mongoRoleDaoImpl;
     }
 
     /**
@@ -68,6 +76,7 @@ public class MongoPolicyDao implements PolicyDao {
      *
      * @return a new MongoPolicyImpl instance
      */
+    @Override
     public Policy createPolicy() {
         return new MongoPolicyImpl();
     }
@@ -87,28 +96,25 @@ public class MongoPolicyDao implements PolicyDao {
      *
      * @param policy the policy to save or update
      */
+    @Override
     public void saveOrUpdatePolicy(Policy policy) {
-        MongoPolicyImpl mongoPolicy;
-
-        if (policy instanceof MongoPolicyImpl) {
-            mongoPolicy = (MongoPolicyImpl) policy;
-        } else {
-            mongoPolicy = convertToMongoPolicy(policy);
-        }
-
-        // Generate ID from name if not set
-        if (mongoPolicy.getId() == null && mongoPolicy.getName() != null) {
-            mongoPolicy.setId(mongoPolicy.getName());
-        }
-
-        // Set timestamps
-        Date now = new Date();
-        if (mongoPolicy.getCreatedDateTime() == null) {
-            mongoPolicy.setCreatedDateTime(now);
-        }
-        mongoPolicy.setUpdatedDateTime(now);
+        MongoPolicyRecord mongoPolicy = convertToMongoPolicy(policy);
 
         repository.save(mongoPolicy);
+        logger.debug("Saved policy with name: {}", policy.getName());
+    }
+
+    /**
+     * Saves or updates a policy in the MongoDB database.
+     *
+     * This method persists the provided MongoPolicyRecord object to the database.
+     * If the policy already exists (based on its unique identifier or name), it
+     * updates the existing record. Otherwise, it creates a new policy record.
+     *
+     * @param policy the MongoPolicyRecord instance to be saved or updated
+     */
+    public void saveOrUpdatePolicy(MongoPolicyRecord policy) {
+        repository.save(policy);
         logger.debug("Saved policy with name: {}", policy.getName());
     }
 
@@ -120,8 +126,13 @@ public class MongoPolicyDao implements PolicyDao {
      *
      * @param policy the policy to delete
      */
+    @Override
     public void deletePolicy(Policy policy) {
-        repository.deleteByName(policy.getName());
+        Query query = new Query();
+        query.addCriteria(Criteria.where(NAME).is(policy.getName()));
+        query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
+
+        mongoTemplate.remove(query, MongoPolicyRecord.class);
         logger.debug("Deleted policy with name: {}", policy.getName());
     }
 
@@ -132,8 +143,14 @@ public class MongoPolicyDao implements PolicyDao {
      *
      * @return a list of all policies, or an empty list if no policies exist
      */
+    @Override
     public List<Policy> getAllPolicies() {
-        return repository.findAll().stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
+
+        return mongoTemplate.find(query, MongoPolicyRecord.class).stream()
+            .map(mongoPolicyRecord
+                -> OBJECT_MAPPER.readValue(mongoPolicyRecord.getPolicy(), MongoPolicyImpl.class))
             .map(policy -> (Policy) policy)
             .collect(Collectors.toList());
     }
@@ -148,18 +165,19 @@ public class MongoPolicyDao implements PolicyDao {
      * @param roleName the name of the role to filter policies by
      * @return a list of policies associated with the given role, or an empty list
      */
+    @Override
     public List<Policy> getAllPoliciesWithRole(String roleName) {
         if (roleName == null || roleName.isEmpty()) {
             return Collections.emptyList();
         }
 
-        if (mongoRoleDao == null) {
-            logger.warn("MongoRoleDao not set, cannot query policies by role");
+        if (mongoRoleDaoImpl == null) {
+            logger.warn("MongoRoleDaoImpl not set, cannot query policies by role");
             return Collections.emptyList();
         }
 
         // Get the role to find its policy IDs
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null || role.getPolicies() == null) {
             return Collections.emptyList();
         }
@@ -176,10 +194,17 @@ public class MongoPolicyDao implements PolicyDao {
      * @param name the exact name of the policy to retrieve
      * @return the Policy object if found, or null if no policy exists with the given name
      */
+    @Override
     public Policy getPolicyByName(String name) {
-        return repository.findByName(name)
-            .map(policy -> (Policy) policy)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(NAME).is(name));
+        query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
+
+        MongoPolicyRecord result = mongoTemplate.findOne(query, MongoPolicyRecord.class);
+        if (result != null) {
+            return OBJECT_MAPPER.readValue(result.getPolicy(), MongoPolicyImpl.class);
+        }
+        return null;
     }
 
     /**
@@ -191,8 +216,15 @@ public class MongoPolicyDao implements PolicyDao {
      * @param name the search term to match against policy names
      * @return a list of policies whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<Policy> getPolicyByNameLike(String name) {
-        return repository.findByNameContainingIgnoreCase(name).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(NAME).regex(name, "i"));
+        query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
+
+        return mongoTemplate.find(query, MongoPolicyRecord.class).stream()
+            .map(mongoPolicyRecord
+                -> OBJECT_MAPPER.readValue(mongoPolicyRecord.getPolicy(), MongoPolicyImpl.class))
             .map(policy -> (Policy) policy)
             .collect(Collectors.toList());
     }
@@ -205,14 +237,33 @@ public class MongoPolicyDao implements PolicyDao {
      * @param id the unique identifier of the policy to retrieve
      * @return the Policy object if a matching record is found, or null if no record exists for the provided identifier
      */
+    @Override
     public Policy getPolicyById(String id) {
+        MongoPolicyRecord result = this.getPolicyRecordById(id);
+        if (result != null) {
+            return OBJECT_MAPPER.readValue(result.getPolicy(), MongoPolicyImpl.class);
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves a MongoPolicyRecord from the database using its unique identifier.
+     * The method queries the database for a record with the specified ID and
+     * verifies that the record is of type POLICY_TYPE before returning it.
+     *
+     * @param id the unique identifier of the MongoPolicyRecord to retrieve. It must not be null or empty.
+     * @return the MongoPolicyRecord object if a matching record is found, or null if no record exists with the given ID or if the ID is invalid.
+     */
+    public MongoPolicyRecord getPolicyRecordById(String id) {
         if (id == null || id.isEmpty()) {
             return null;
         }
 
-        return repository.findById(id)
-            .map(policy -> (Policy) policy)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
+
+        return mongoTemplate.findOne(query, MongoPolicyRecord.class);
     }
 
     /**
@@ -221,13 +272,23 @@ public class MongoPolicyDao implements PolicyDao {
      * @param policy the policy to convert
      * @return the MongoPolicyImpl
      */
-    private MongoPolicyImpl convertToMongoPolicy(Policy policy) {
-        MongoPolicyImpl mongoPolicy = new MongoPolicyImpl();
-        mongoPolicy.setId(policy.getId());
-        mongoPolicy.setName(policy.getName());
-        mongoPolicy.setDescription(policy.getDescription());
-        mongoPolicy.setCreatedDateTime(policy.getCreatedDateTime());
-        mongoPolicy.setUpdatedDateTime(policy.getUpdatedDateTime());
-        return mongoPolicy;
+    private MongoPolicyRecord convertToMongoPolicy(Policy policy) {
+        MongoPolicyRecord record = new MongoPolicyRecord();
+        record.setId(policy.getName() + "-" + POLICY_TYPE);
+        policy.setId(policy.getName() + "-" + POLICY_TYPE);
+        record.setType(POLICY_TYPE);
+        record.setName(policy.getName());
+        record.setTimestamp(policy.getCreatedDateTime() != null ? policy.getCreatedDateTime().getTime()
+            : System.currentTimeMillis());
+        record.setModifiedTimestamp(policy.getUpdatedDateTime() != null ? policy.getUpdatedDateTime().getTime()
+            : System.currentTimeMillis());
+        record.setExpiry(DO_NOT_EXPIRE);
+
+        try {
+            record.setPolicy(OBJECT_MAPPER.writeValueAsString(policy));
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert Policy to string! [" + policy.getName() + "]", e);
+        }
+        return record;
     }
 }

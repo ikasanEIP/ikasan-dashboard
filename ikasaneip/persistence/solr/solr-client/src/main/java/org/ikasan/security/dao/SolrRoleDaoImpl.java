@@ -40,9 +40,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
  */
 public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements RoleDao {
 
-    /** The Solr document type identifier for security roles */
-    public static final String ROLE_TYPE = "securityRole";
-
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 

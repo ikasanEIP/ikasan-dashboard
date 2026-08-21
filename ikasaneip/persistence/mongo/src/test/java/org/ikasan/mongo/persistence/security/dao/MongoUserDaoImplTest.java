@@ -52,7 +52,7 @@ import java.util.Set;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoUserDaoTest {
+public class MongoUserDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -77,10 +77,10 @@ public class MongoUserDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoUserDao dao;
-    private MongoIkasanPrincipalDao mongoIkasanPrincipalDao;
-    private MongoRoleDao mongoRoleDao;
-    private MongoPolicyDao mongoPolicyDao;
+    private MongoUserDaoImpl dao;
+    private MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl;
+    private MongoRoleDaoImpl mongoRoleDaoImpl;
+    private MongoPolicyDaoImpl mongoPolicyDaoImpl;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -93,20 +93,20 @@ public class MongoUserDaoTest {
                        MongoRoleRepository roleRepository,
                        MongoPolicyRepository policyRepository,
                        MongoTemplate mongoTemplate) {
-        // Step 1: Create MongoPolicyDao first (no dependencies)
-        this.mongoPolicyDao = new MongoPolicyDao(policyRepository, mongoTemplate);
+        // Step 1: Create MongoPolicyDaoImpl first (no dependencies)
+        this.mongoPolicyDaoImpl = new MongoPolicyDaoImpl(policyRepository, mongoTemplate);
 
-        // Step 2: Create MongoRoleDao with MongoPolicyDao
-        this.mongoRoleDao = new MongoRoleDao(roleRepository, mongoTemplate, this.mongoPolicyDao);
+        // Step 2: Create MongoRoleDaoImpl with MongoPolicyDaoImpl
+        this.mongoRoleDaoImpl = new MongoRoleDaoImpl(roleRepository, mongoTemplate, this.mongoPolicyDaoImpl);
 
         // Step 3: Set circular reference
-        this.mongoPolicyDao.setMongoRoleDao(this.mongoRoleDao);
+        this.mongoPolicyDaoImpl.setMongoRoleDao(this.mongoRoleDaoImpl);
 
-        // Step 4: Create MongoIkasanPrincipalDao with MongoRoleDao
-        this.mongoIkasanPrincipalDao = new MongoIkasanPrincipalDao(principalRepository, mongoTemplate, this.mongoRoleDao);
+        // Step 4: Create MongoIkasanPrincipalDaoImpl with MongoRoleDaoImpl
+        this.mongoIkasanPrincipalDaoImpl = new MongoIkasanPrincipalDaoImpl(principalRepository, mongoTemplate, this.mongoRoleDaoImpl);
 
-        // Step 5: Create MongoUserDao with MongoIkasanPrincipalDao
-        this.dao = new MongoUserDao(repository, mongoTemplate, this.mongoIkasanPrincipalDao);
+        // Step 5: Create MongoUserDaoImpl with MongoIkasanPrincipalDaoImpl
+        this.dao = new MongoUserDaoImpl(repository, mongoTemplate, this.mongoIkasanPrincipalDaoImpl);
     }
 
     @After
@@ -666,7 +666,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("TestRole");
         role.setDescription("Test role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create principals and users
         for (int i = 0; i < 5; i++) {
@@ -691,7 +691,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         List<UserLite> users = dao.getUsersWithRole("TestRole", null, 100, 0);
@@ -705,7 +705,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("PaginationRole");
         role.setDescription("Pagination test role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 20 users with the role
         for (int i = 0; i < 20; i++) {
@@ -728,7 +728,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         // Get first page
@@ -745,7 +745,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("LargeDatasetRole");
         role.setDescription("Large dataset test role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 1500 users with the role (more than 1024)
         int totalUsers = 1500;
@@ -781,7 +781,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         // Get all users with role using large limit
         List<UserLite> allUsers = dao.getUsersWithRole("LargeDatasetRole", null, Integer.MAX_VALUE, 0);
@@ -820,11 +820,11 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRole_multiple_roles_per_user() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role1 = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role1.setName("Role1");
-        mongoRoleDao.saveOrUpdateRole(role1);
+        mongoRoleDaoImpl.saveOrUpdateRole(role1);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role2 = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role2.setName("Role2");
-        mongoRoleDao.saveOrUpdateRole(role2);
+        mongoRoleDaoImpl.saveOrUpdateRole(role2);
 
         // User with both roles
         MongoUserImpl user = new MongoUserImpl();
@@ -847,7 +847,7 @@ public class MongoUserDaoTest {
         user.setPrincipals(principals);
 
         dao.save(user);
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Should find user with role1
         List<UserLite> usersRole1 = dao.getUsersWithRole("Role1", null, 100, 0);
@@ -864,7 +864,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRole_boundary_at_1024() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("BoundaryRole");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create exactly 1024 users
         int exactBoundary = 1024;
@@ -898,7 +898,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         List<UserLite> result = dao.getUsersWithRole("BoundaryRole", null, Integer.MAX_VALUE, 0);
 
@@ -910,7 +910,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRole_with_filter() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("FilterTestRole");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         for (int i = 0; i < 10; i++) {
             MongoUserImpl user = new MongoUserImpl();
@@ -932,7 +932,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         TestUserFilter filter = new TestUserFilter();
@@ -950,12 +950,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl adminRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         adminRole.setName("AdminRole");
         adminRole.setDescription("Admin role");
-        mongoRoleDao.saveOrUpdateRole(adminRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl userRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         userRole.setName("UserRole");
         userRole.setDescription("User role");
-        mongoRoleDao.saveOrUpdateRole(userRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(userRole);
 
         // Create 3 users with AdminRole and 2 users without AdminRole
         for (int i = 0; i < 5; i++) {
@@ -984,7 +984,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         List<UserLite> usersWithoutAdminRole = dao.getUsersWithoutRole("AdminRole", null, 100, 0);
@@ -1000,7 +1000,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("UniversalRole");
         role.setDescription("Role that all users have");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 5 users all with the role
         for (int i = 0; i < 5; i++) {
@@ -1023,7 +1023,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         List<UserLite> usersWithoutRole = dao.getUsersWithoutRole("UniversalRole", null, 100, 0);
@@ -1053,7 +1053,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("RestrictedRole");
         role.setDescription("Restricted role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 20 users: 5 with role, 15 without role
         for (int i = 0; i < 20; i++) {
@@ -1075,7 +1075,7 @@ public class MongoUserDaoTest {
                 // Create a different role for the rest
                 org.ikasan.mongo.persistence.security.model.MongoRoleImpl otherRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
                 otherRole.setName("OtherRole" + i);
-                mongoRoleDao.saveOrUpdateRole(otherRole);
+                mongoRoleDaoImpl.saveOrUpdateRole(otherRole);
                 roles.add(otherRole);
             }
             principal.setRoles(roles);
@@ -1085,7 +1085,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         // Get first page
@@ -1102,12 +1102,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl restrictedRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         restrictedRole.setName("VIPRole");
         restrictedRole.setDescription("VIP role");
-        mongoRoleDao.saveOrUpdateRole(restrictedRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(restrictedRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl regularRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         regularRole.setName("RegularRole");
         regularRole.setDescription("Regular user role");
-        mongoRoleDao.saveOrUpdateRole(regularRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(regularRole);
 
         // Create 1500 users: 100 with VIP role, 1400 without VIP role (more than 1024)
         int totalUsers = 1500;
@@ -1150,7 +1150,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         // Get all users without VIP role using large limit
         List<UserLite> usersWithoutVip = dao.getUsersWithoutRole("VIPRole", null, Integer.MAX_VALUE, 0);
@@ -1174,12 +1174,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl specialRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         specialRole.setName("SpecialRole");
         specialRole.setDescription("Special role");
-        mongoRoleDao.saveOrUpdateRole(specialRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(specialRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl normalRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         normalRole.setName("NormalRole");
         normalRole.setDescription("Normal role");
-        mongoRoleDao.saveOrUpdateRole(normalRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(normalRole);
 
         // Create exactly 1024 users without the special role
         int exactBoundary = 1024;
@@ -1213,7 +1213,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         List<UserLite> usersWithoutSpecialRole = dao.getUsersWithoutRole("SpecialRole-securityRole", null, Integer.MAX_VALUE, 0);
 
@@ -1226,12 +1226,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl premiumRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         premiumRole.setName("PremiumRole");
         premiumRole.setDescription("Premium role");
-        mongoRoleDao.saveOrUpdateRole(premiumRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(premiumRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl basicRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         basicRole.setName("BasicRole");
         basicRole.setDescription("Basic role");
-        mongoRoleDao.saveOrUpdateRole(basicRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(basicRole);
 
         // Create 1025 users without premium role (just over boundary)
         int justOverBoundary = 1025;
@@ -1265,7 +1265,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         List<UserLite> usersWithoutPremiumRole = dao.getUsersWithoutRole("PremiumRole-securityRole", null, Integer.MAX_VALUE, 0);
 
@@ -1277,15 +1277,15 @@ public class MongoUserDaoTest {
     public void test_getUsersWithoutRole_multiple_roles_per_user() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role1 = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role1.setName("MultiRole1");
-        mongoRoleDao.saveOrUpdateRole(role1);
+        mongoRoleDaoImpl.saveOrUpdateRole(role1);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role2 = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role2.setName("MultiRole2");
-        mongoRoleDao.saveOrUpdateRole(role2);
+        mongoRoleDaoImpl.saveOrUpdateRole(role2);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role3 = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role3.setName("MultiRole3");
-        mongoRoleDao.saveOrUpdateRole(role3);
+        mongoRoleDaoImpl.saveOrUpdateRole(role3);
 
         // User with role1 and role2
         MongoUserImpl user1 = new MongoUserImpl();
@@ -1308,7 +1308,7 @@ public class MongoUserDaoTest {
         user1.setPrincipals(principals1);
 
         dao.save(user1);
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal1);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal1);
 
         // User with only role3
         MongoUserImpl user2 = new MongoUserImpl();
@@ -1330,7 +1330,7 @@ public class MongoUserDaoTest {
         user2.setPrincipals(principals2);
 
         dao.save(user2);
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal2);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal2);
 
         // Query for users without role1 - should only return user2
         List<UserLite> usersWithoutRole1 = dao.getUsersWithoutRole("MultiRole1", null, 100, 0);
@@ -1345,15 +1345,17 @@ public class MongoUserDaoTest {
 
     @Test
     public void test_getUsersWithoutRole_with_filter() {
-        org.ikasan.mongo.persistence.security.model.MongoRoleImpl restrictedRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
+        org.ikasan.mongo.persistence.security.model.MongoRoleImpl restrictedRole
+            = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         restrictedRole.setName("FilterWithoutTestRole");
         restrictedRole.setDescription("Filter test role");
-        mongoRoleDao.saveOrUpdateRole(restrictedRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(restrictedRole);
 
-        org.ikasan.mongo.persistence.security.model.MongoRoleImpl openRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
+        org.ikasan.mongo.persistence.security.model.MongoRoleImpl openRole
+            = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         openRole.setName("OpenRole");
         openRole.setDescription("Open role");
-        mongoRoleDao.saveOrUpdateRole(openRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(openRole);
 
         for (int i = 0; i < 10; i++) {
             MongoUserImpl user = new MongoUserImpl();
@@ -1380,7 +1382,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         TestUserFilter filter = new TestUserFilter();
@@ -1405,7 +1407,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithoutRole_nonexistent_role() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl someRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         someRole.setName("SomeExistingRole");
-        mongoRoleDao.saveOrUpdateRole(someRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(someRole);
 
         // Create users with the existing role
         for (int i = 0; i < 3; i++) {
@@ -1428,7 +1430,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         // Query for users without a nonexistent role
@@ -1446,7 +1448,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("CountRole");
         role.setDescription("Count test role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 7 users with the role
         for (int i = 0; i < 7; i++) {
@@ -1469,7 +1471,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         int count = dao.getUsersWithRoleCount("CountRole", null);
@@ -1481,7 +1483,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRoleCount_zero_users() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("EmptyRole");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         int count = dao.getUsersWithRoleCount("EmptyRole", null);
 
@@ -1500,7 +1502,7 @@ public class MongoUserDaoTest {
         // Create some users with different roles
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl someRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         someRole.setName("SomeRole");
-        mongoRoleDao.saveOrUpdateRole(someRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(someRole);
 
         for (int i = 0; i < 3; i++) {
             MongoUserImpl user = new MongoUserImpl();
@@ -1522,7 +1524,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         int count = dao.getUsersWithRoleCount("NonExistentRole-securityRole", null);
@@ -1535,7 +1537,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("MassCountRole");
         role.setDescription("Mass count role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         List<IkasanPrincipal> principals = new ArrayList<>();
         List<User> users = new ArrayList<>();
@@ -1570,7 +1572,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithRoleCount("MassCountRole", null);
 
@@ -1581,7 +1583,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRoleCount_boundary_at_1024() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("Boundary1024Role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create exactly 1024 users with the role
         int exactBoundary = 1024;
@@ -1615,7 +1617,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithRoleCount("Boundary1024Role", null);
 
@@ -1626,7 +1628,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRoleCount_boundary_at_1025() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("Boundary1025Role");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 1025 users with the role (just over boundary)
         int justOverBoundary = 1025;
@@ -1660,7 +1662,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithRoleCount("Boundary1025Role", null);
 
@@ -1671,7 +1673,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithRoleCount_single_user() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("SingleUserRole");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         MongoUserImpl user = new MongoUserImpl();
         user.setUsername("singleuser");
@@ -1692,7 +1694,7 @@ public class MongoUserDaoTest {
         user.setPrincipals(principals);
 
         dao.save(user);
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         int count = dao.getUsersWithRoleCount("SingleUserRole", null);
 
@@ -1707,12 +1709,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl adminRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         adminRole.setName("CountAdminRole");
         adminRole.setDescription("Count admin role");
-        mongoRoleDao.saveOrUpdateRole(adminRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl userRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         userRole.setName("CountUserRole");
         userRole.setDescription("Count user role");
-        mongoRoleDao.saveOrUpdateRole(userRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(userRole);
 
         // Create 3 users with AdminRole and 5 users without AdminRole
         for (int i = 0; i < 8; i++) {
@@ -1741,7 +1743,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         int count = dao.getUsersWithoutRoleCount("CountAdminRole", null);
@@ -1754,7 +1756,7 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl role = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         role.setName("UniversalCountRole");
         role.setDescription("Role that all users have");
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create 5 users all with the role
         for (int i = 0; i < 5; i++) {
@@ -1777,7 +1779,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         int count = dao.getUsersWithoutRoleCount("UniversalCountRole", null);
@@ -1804,12 +1806,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl restrictedRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         restrictedRole.setName("CountVIPRole");
         restrictedRole.setDescription("Count VIP role");
-        mongoRoleDao.saveOrUpdateRole(restrictedRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(restrictedRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl regularRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         regularRole.setName("CountRegularRole");
         regularRole.setDescription("Count regular user role");
-        mongoRoleDao.saveOrUpdateRole(regularRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(regularRole);
 
         // Create 1500 users: 100 with VIP role, 1400 without VIP role (more than 1024)
         int totalUsers = 1500;
@@ -1852,7 +1854,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithoutRoleCount("CountVIPRole", null);
 
@@ -1864,12 +1866,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl specialRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         specialRole.setName("CountSpecialRole");
         specialRole.setDescription("Count special role");
-        mongoRoleDao.saveOrUpdateRole(specialRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(specialRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl normalRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         normalRole.setName("CountNormalRole");
         normalRole.setDescription("Count normal role");
-        mongoRoleDao.saveOrUpdateRole(normalRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(normalRole);
 
         // Create exactly 1024 users without the special role
         int exactBoundary = 1024;
@@ -1903,7 +1905,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithoutRoleCount("CountSpecialRole", null);
 
@@ -1915,12 +1917,12 @@ public class MongoUserDaoTest {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl premiumRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         premiumRole.setName("CountPremiumRole");
         premiumRole.setDescription("Count premium role");
-        mongoRoleDao.saveOrUpdateRole(premiumRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(premiumRole);
 
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl basicRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         basicRole.setName("CountBasicRole");
         basicRole.setDescription("Count basic role");
-        mongoRoleDao.saveOrUpdateRole(basicRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(basicRole);
 
         // Create 1025 users without premium role (just over boundary)
         int justOverBoundary = 1025;
@@ -1954,7 +1956,7 @@ public class MongoUserDaoTest {
         for (User user : users) {
             dao.save(user);
         }
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipals(principals);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipals(principals);
 
         int count = dao.getUsersWithoutRoleCount("CountPremiumRole", null);
 
@@ -1965,7 +1967,7 @@ public class MongoUserDaoTest {
     public void test_getUsersWithoutRoleCount_nonexistent_role() {
         org.ikasan.mongo.persistence.security.model.MongoRoleImpl someRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
         someRole.setName("CountSomeRole");
-        mongoRoleDao.saveOrUpdateRole(someRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(someRole);
 
         // Create users with the existing role
         for (int i = 0; i < 3; i++) {
@@ -1988,7 +1990,7 @@ public class MongoUserDaoTest {
             user.setPrincipals(principals);
 
             dao.save(user);
-            mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
         }
 
         // Query for count of users without a nonexistent role
@@ -2014,7 +2016,7 @@ public class MongoUserDaoTest {
         principal.setName("testGroup");
         principal.setType("group");
         principal.setDescription("Test group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Create users associated with the principal
         Set<IkasanPrincipal> principals = new HashSet<>();
@@ -2080,7 +2082,7 @@ public class MongoUserDaoTest {
         principal.setName("emptyGroup");
         principal.setType("group");
         principal.setDescription("Group with no users");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Create users NOT associated with the principal
         MongoUserImpl user = new MongoUserImpl();
@@ -2103,13 +2105,13 @@ public class MongoUserDaoTest {
         principal1.setName("group1");
         principal1.setType("group");
         principal1.setDescription("Group 1");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal1);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal1);
 
         org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl principal2 = new org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl();
         principal2.setName("group2");
         principal2.setType("group");
         principal2.setDescription("Group 2");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal2);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal2);
 
         // Create user associated with both principals
         Set<IkasanPrincipal> principals = new HashSet<>();
@@ -2142,7 +2144,7 @@ public class MongoUserDaoTest {
         principal.setName("largeGroup");
         principal.setType("group");
         principal.setDescription("Large group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Create 100 users associated with the principal
         Set<IkasanPrincipal> principals = new HashSet<>();
@@ -2178,7 +2180,7 @@ public class MongoUserDaoTest {
         principal.setName("detailGroup");
         principal.setType("group");
         principal.setDescription("Detail group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Create user with full details
         Set<IkasanPrincipal> principals = new HashSet<>();
@@ -2216,14 +2218,14 @@ public class MongoUserDaoTest {
         userPrincipal.setName("userPrincipal1");
         userPrincipal.setType("user");
         userPrincipal.setDescription("User principal");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(userPrincipal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(userPrincipal);
 
         // Create group-type principal
         org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl groupPrincipal = new org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl();
         groupPrincipal.setName("groupPrincipal1");
         groupPrincipal.setType("group");
         groupPrincipal.setDescription("Group principal");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(groupPrincipal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(groupPrincipal);
 
         // Create user associated with user principal
         Set<IkasanPrincipal> userPrincipals = new HashSet<>();
@@ -2265,7 +2267,7 @@ public class MongoUserDaoTest {
         principal.setName("mixedGroup");
         principal.setType("group");
         principal.setDescription("Mixed group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         Set<IkasanPrincipal> principals = new HashSet<>();
         principals.add(principal);
@@ -2306,7 +2308,7 @@ public class MongoUserDaoTest {
         principal.setName("group-with_special.chars@test");
         principal.setType("group");
         principal.setDescription("Group with special chars");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         // Create user associated with the principal
         Set<IkasanPrincipal> principals = new HashSet<>();
@@ -2334,7 +2336,7 @@ public class MongoUserDaoTest {
         principal.setName("statusGroup");
         principal.setType("group");
         principal.setDescription("Status group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         Set<IkasanPrincipal> principals = new HashSet<>();
         principals.add(principal);
@@ -2376,10 +2378,10 @@ public class MongoUserDaoTest {
         principal.setName("deleteGroup");
         principal.setType("group");
         principal.setDescription("Delete group");
-        mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
 
         Set<IkasanPrincipal> principals = new HashSet<>();
-        principals.add(principal);
+        principals.add(mongoIkasanPrincipalDaoImpl.getPrincipalByName("deleteGroup"));
 
         // Create user associated with principal
         MongoUserImpl user = new MongoUserImpl();
@@ -2394,7 +2396,7 @@ public class MongoUserDaoTest {
         Assert.assertEquals(1, users.size());
 
         // Delete the principal
-        mongoIkasanPrincipalDao.deletePrincipal(principal);
+        mongoIkasanPrincipalDaoImpl.deletePrincipal(principal);
 
         // After deletion, should return empty list
         users = dao.getUsersAssociatedWithPrincipal("deleteGroup-securityPrincipal");
