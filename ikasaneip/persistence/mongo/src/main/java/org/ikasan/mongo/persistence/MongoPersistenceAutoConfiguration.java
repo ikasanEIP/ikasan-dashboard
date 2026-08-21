@@ -14,16 +14,16 @@ import org.ikasan.mongo.persistence.configuration.metadata.dao.MongoComponentCon
 import org.ikasan.mongo.persistence.configuration.metadata.repository.MongoComponentConfigurationMetadataRepository;
 import org.ikasan.mongo.persistence.error.reporting.dao.MongoErrorReportingServiceDaoImpl;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
-import org.ikasan.mongo.persistence.exclusion.dao.MongoExclusionEventDao;
+import org.ikasan.mongo.persistence.exclusion.dao.MongoExclusionEventDaoImpl;
 import org.ikasan.mongo.persistence.exclusion.repository.MongoExclusionEventRepository;
-import org.ikasan.mongo.persistence.hospital.dao.MongoHospitalDao;
+import org.ikasan.mongo.persistence.hospital.dao.MongoHospitalDaoImpl;
 import org.ikasan.mongo.persistence.hospital.repository.MongoExclusionEventActionRepository;
 import org.ikasan.mongo.persistence.metrics.dao.MongoMetricsDaoImpl;
 import org.ikasan.mongo.persistence.metrics.repository.MongoFlowInvocationMetricRepository;
 import org.ikasan.mongo.persistence.module.metadata.dao.MongoModuleMetadataDaoImpl;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
-import org.ikasan.mongo.persistence.replay.dao.MongoReplayAuditDao;
-import org.ikasan.mongo.persistence.replay.dao.MongoReplayDao;
+import org.ikasan.mongo.persistence.replay.dao.MongoReplayAuditDaoImpl;
+import org.ikasan.mongo.persistence.replay.dao.MongoReplayDaoImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayAuditEventRepository;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayEventRepository;
 import org.ikasan.mongo.persistence.scheduled.context.dao.MongoScheduledContextDaoImpl;
@@ -427,17 +427,17 @@ public class MongoPersistenceAutoConfiguration {
     }
 
     @Bean("exclusionEventEntityDao")
-    public MongoExclusionEventDao exclusionEventDao(
+    public MongoExclusionEventDaoImpl exclusionEventDao(
             MongoExclusionEventRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoExclusionEventDao(repository, mongoTemplate, this.entityRetentionDays);
+        return new MongoExclusionEventDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("hospitalEntityDao")
-    public MongoHospitalDao hospitalDao(
+    public MongoHospitalDaoImpl hospitalDao(
             MongoExclusionEventActionRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoHospitalDao(repository, mongoTemplate, this.entityRetentionDays);
+        return new MongoHospitalDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("metricsDao")
@@ -449,18 +449,18 @@ public class MongoPersistenceAutoConfiguration {
     }
 
     @Bean("replayEntityDao")
-    public MongoReplayDao replayDao(
+    public MongoReplayDaoImpl replayDao(
             MongoReplayEventRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoReplayDao(repository, mongoTemplate);
+        return new MongoReplayDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("replayAuditEntityDao")
-    public MongoReplayAuditDao replayAuditDao(
+    public MongoReplayAuditDaoImpl replayAuditDao(
             MongoReplayAuditEventRepository repository,
             MongoTemplate mongoTemplate,
             @Value("${mongo.replay.audit.days.to.keep:7}") int daysToKeep) {
-        return new MongoReplayAuditDao(repository, mongoTemplate, daysToKeep);
+        return new MongoReplayAuditDaoImpl(repository, mongoTemplate, daysToKeep);
     }
 
     @Bean("systemEventEntityDao")

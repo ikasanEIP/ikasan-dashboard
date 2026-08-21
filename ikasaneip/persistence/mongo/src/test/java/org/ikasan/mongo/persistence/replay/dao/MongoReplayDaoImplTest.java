@@ -1,14 +1,11 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
-import org.ikasan.mongo.persistence.replay.model.MongoReplayEvent;
+import org.ikasan.mongo.persistence.replay.model.MongoReplayEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayEventRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.spec.replay.ReplayEvent;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,11 +22,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Integration test for MongoReplayDao using Testcontainers with MongoDB.
+ * Integration test for MongoReplayDaoImpl using Testcontainers with MongoDB.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class, MongoPersistenceTestAutoConfiguration.class})
-public class MongoReplayDaoTest {
+public class MongoReplayDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -45,7 +42,7 @@ public class MongoReplayDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoReplayDao dao;
+    private MongoReplayDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -54,7 +51,7 @@ public class MongoReplayDaoTest {
 
     @Autowired
     public void setDao(MongoReplayEventRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoReplayDao(repository, mongoTemplate);
+        this.dao = new MongoReplayDaoImpl(repository, mongoTemplate);
     }
 
     @After
@@ -72,7 +69,7 @@ public class MongoReplayDaoTest {
     @Test
     public void testSaveSingleReplayEvent() {
         // Given
-        MongoReplayEvent replayEvent = createReplayEvent(
+        MongoReplayEventImpl replayEvent = createReplayEvent(
                 "module1", "flow1", "event-id-1", "payload-1".getBytes(), "payload-1"
         );
 
@@ -174,15 +171,15 @@ public class MongoReplayDaoTest {
     public void testFindWithTimestampRange() {
         // Given
         long baseTime = System.currentTimeMillis();
-        MongoReplayEvent event1 = createReplayEvent("module1", "flow1", "event-id-1", "payload-1".getBytes(), "payload-1");
+        MongoReplayEventImpl event1 = createReplayEvent("module1", "flow1", "event-id-1", "payload-1".getBytes(), "payload-1");
         event1.setTimestamp(baseTime);
         dao.save(event1);
 
-        MongoReplayEvent event2 = createReplayEvent("module2", "flow2", "event-id-2", "payload-2".getBytes(), "payload-2");
+        MongoReplayEventImpl event2 = createReplayEvent("module2", "flow2", "event-id-2", "payload-2".getBytes(), "payload-2");
         event2.setTimestamp(baseTime + 5000);
         dao.save(event2);
 
-        MongoReplayEvent event3 = createReplayEvent("module3", "flow3", "event-id-3", "payload-3".getBytes(), "payload-3");
+        MongoReplayEventImpl event3 = createReplayEvent("module3", "flow3", "event-id-3", "payload-3".getBytes(), "payload-3");
         event3.setTimestamp(baseTime + 10000);
         dao.save(event3);
 
@@ -224,13 +221,17 @@ public class MongoReplayDaoTest {
     @Test
     public void testDelete() {
         // Given
-        MongoReplayEvent replayEvent = createReplayEvent("module1", "flow1", "event-id-1",
+        MongoReplayEventImpl replayEvent = createReplayEvent("module1", "flow1", "event-id-1",
                 "payload-1".getBytes(), "payload-1");
         dao.save(replayEvent);
         assertEquals(1, repository.count());
 
+        List<ReplayEvent> results = dao.find(List.of(), List.of(), null, 0, System.currentTimeMillis() + 100000, 0, 10);
+
+        Assert.assertEquals(1, results.size());
+
         // When
-        dao.delete(replayEvent.getIdAsString());
+        dao.delete(((MongoReplayEventImpl)results.get(0)).getIdAsString());
 
         // Then
         assertEquals(0, repository.count());
@@ -242,12 +243,12 @@ public class MongoReplayDaoTest {
         long currentTime = System.currentTimeMillis();
         long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
 
-        MongoReplayEvent expiredEvent = createReplayEvent("module1", "flow1", "event-id-1",
+        MongoReplayEventImpl expiredEvent = createReplayEvent("module1", "flow1", "event-id-1",
                 "payload-1".getBytes(), "payload-1");
         expiredEvent.setExpiry(oneDayAgo);
         dao.save(expiredEvent);
 
-        MongoReplayEvent validEvent = createReplayEvent("module2", "flow2", "event-id-2",
+        MongoReplayEventImpl validEvent = createReplayEvent("module2", "flow2", "event-id-2",
                 "payload-2".getBytes(), "payload-2");
         validEvent.setExpiry(currentTime + (24 * 60 * 60 * 1000));
         dao.save(validEvent);
@@ -265,9 +266,8 @@ public class MongoReplayDaoTest {
     public void testEventFieldsPreserved() {
         // Given
         byte[] eventBytes = "test-payload".getBytes();
-        MongoReplayEvent replayEvent = createReplayEvent("testModule", "testFlow", "test-event-id",
+        MongoReplayEventImpl replayEvent = createReplayEvent("testModule", "testFlow", "test-event-id",
                 eventBytes, "test-payload-string");
-        replayEvent.setRelatedEventIdentifier("related-event-123");
 
         dao.save(replayEvent);
 
@@ -294,16 +294,11 @@ public class MongoReplayDaoTest {
         assertEquals("test-payload-string", retrieved.getEventAsString());
         assertTrue(retrieved.getTimestamp() > 0);
         assertTrue(retrieved.getExpiry() > 0);
-
-        // Also check MongoDB-specific field if instance is MongoReplayEvent
-        if (retrieved instanceof MongoReplayEvent) {
-            assertEquals("related-event-123", ((MongoReplayEvent) retrieved).getRelatedEventIdentifier());
-        }
     }
 
-    private MongoReplayEvent createReplayEvent(String moduleName, String flowName, String eventId,
-                                               byte[] event, String eventAsString) {
-        MongoReplayEvent replayEvent = new MongoReplayEvent();
+    private MongoReplayEventImpl createReplayEvent(String moduleName, String flowName, String eventId,
+                                                   byte[] event, String eventAsString) {
+        MongoReplayEventImpl replayEvent = new MongoReplayEventImpl();
         replayEvent.setModuleName(moduleName);
         replayEvent.setFlowName(flowName);
         replayEvent.setEventId(eventId);

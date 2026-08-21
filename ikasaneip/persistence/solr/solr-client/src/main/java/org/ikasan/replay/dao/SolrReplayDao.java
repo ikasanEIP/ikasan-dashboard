@@ -16,12 +16,6 @@ public class SolrReplayDao extends SolrDaoBase<ReplayEvent> implements EntityDao
 {
     private static Logger logger = LoggerFactory.getLogger(SolrReplayDao.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String REPLAY = "replay";
-
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ReplayEvent replayEvent)
     {
