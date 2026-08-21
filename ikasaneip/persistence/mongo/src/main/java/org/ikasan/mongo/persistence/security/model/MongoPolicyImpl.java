@@ -41,6 +41,7 @@
 package org.ikasan.mongo.persistence.security.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.model.Policy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -55,25 +56,13 @@ import java.util.Objects;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoPolicyImpl implements Policy {
 
-    @Id
     private String id;
-
-    @Indexed(unique = true)
-    @Field("name")
+    private String type;
     private String name;
-
-    @Indexed
-    @Field("created_date_time")
     private Date createdDateTime;
-
-    @Indexed
-    @Field("updated_date_time")
     private Date updatedDateTime;
-
-    @Field("description")
     private String description;
 
     /**

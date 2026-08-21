@@ -41,6 +41,7 @@
 package org.ikasan.mongo.persistence.security.repository;
 
 import org.ikasan.mongo.persistence.security.model.MongoRoleImpl;
+import org.ikasan.mongo.persistence.security.model.MongoRoleRecord;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -55,7 +56,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoRoleRepository extends MongoRepository<MongoRoleImpl, String> {
+public interface MongoRoleRepository extends MongoRepository<MongoRoleRecord, String> {
 
     /**
      * Find a role by name.
@@ -63,7 +64,7 @@ public interface MongoRoleRepository extends MongoRepository<MongoRoleImpl, Stri
      * @param name the name to search for
      * @return Optional containing the role if found
      */
-    Optional<MongoRoleImpl> findByName(String name);
+    Optional<MongoRoleRecord> findByName(String name);
 
     /**
      * Find roles whose name contains the search term (case-insensitive).
@@ -71,15 +72,7 @@ public interface MongoRoleRepository extends MongoRepository<MongoRoleImpl, Stri
      * @param name the search term
      * @return list of matching roles
      */
-    List<MongoRoleImpl> findByNameContainingIgnoreCase(String name);
-
-    /**
-     * Find roles whose description contains the search term (case-insensitive).
-     *
-     * @param description the search term
-     * @return list of matching roles
-     */
-    List<MongoRoleImpl> findByDescriptionContainingIgnoreCase(String description);
+    List<MongoRoleRecord> findByNameContainingIgnoreCase(String name);
 
     /**
      * Find roles associated with a specific policy.
@@ -87,23 +80,7 @@ public interface MongoRoleRepository extends MongoRepository<MongoRoleImpl, Stri
      * @param policyId the policy identifier
      * @return list of roles associated with the policy
      */
-    List<MongoRoleImpl> findByPolicyIdsContaining(String policyId);
-
-    /**
-     * Find roles associated with a specific role module.
-     *
-     * @param roleModuleId the role module identifier
-     * @return list of roles associated with the role module
-     */
-    List<MongoRoleImpl> findByRoleModuleIdsContaining(String roleModuleId);
-
-    /**
-     * Find roles associated with a specific role job plan.
-     *
-     * @param roleJobPlanId the role job plan identifier
-     * @return list of roles associated with the role job plan
-     */
-    List<MongoRoleImpl> findByRoleJobPlanIdsContaining(String roleJobPlanId);
+    List<MongoRoleRecord> findByRelatedPoliciesContaining(String policyId);
 
     /**
      * Delete a role by name.

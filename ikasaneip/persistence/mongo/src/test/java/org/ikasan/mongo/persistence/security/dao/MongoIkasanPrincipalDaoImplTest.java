@@ -1,13 +1,13 @@
 package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalFilterImpl;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl;
 import org.ikasan.mongo.persistence.security.model.MongoRoleImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoIkasanPrincipalRepository;
 import org.ikasan.mongo.persistence.security.repository.MongoPolicyRepository;
 import org.ikasan.mongo.persistence.security.repository.MongoRoleRepository;
 import org.ikasan.spec.security.model.IkasanPrincipal;
-import org.ikasan.spec.security.model.IkasanPrincipalFilter;
 import org.ikasan.spec.security.model.IkasanPrincipalLite;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -53,13 +53,13 @@ import java.util.List;
  * - Replace SolrIkasanPrincipalImpl → MongoIkasanPrincipalImpl
  * - Replace SolrRoleImpl → MongoRoleImpl
  * - Replace solrIkasanPrincipalDao → mongoIkasanPrincipalDao/dao
- * - Replace solrRoleDao → mongoRoleDao
+ * - Replace solrRoleDao → mongoRoleDaoImpl
  * - Remove try-with-resources EmbeddedSolrServer blocks and init(server) calls
  * - Keep all assertions identical
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoIkasanPrincipalDaoTest {
+public class MongoIkasanPrincipalDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -81,9 +81,9 @@ public class MongoIkasanPrincipalDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoIkasanPrincipalDao dao;
-    private MongoRoleDao mongoRoleDao;
-    private MongoPolicyDao mongoPolicyDao;
+    private MongoIkasanPrincipalDaoImpl dao;
+    private MongoRoleDaoImpl mongoRoleDaoImpl;
+    private MongoPolicyDaoImpl mongoPolicyDaoImpl;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -95,17 +95,17 @@ public class MongoIkasanPrincipalDaoTest {
                        MongoRoleRepository mongoRoleRepository,
                        MongoPolicyRepository mongoPolicyRepository,
                        MongoTemplate mongoTemplate) {
-        // Step 1: Create MongoPolicyDao first (no dependencies)
-        this.mongoPolicyDao = new MongoPolicyDao(mongoPolicyRepository, mongoTemplate);
+        // Step 1: Create MongoPolicyDaoImpl first (no dependencies)
+        this.mongoPolicyDaoImpl = new MongoPolicyDaoImpl(mongoPolicyRepository, mongoTemplate);
 
-        // Step 2: Create MongoRoleDao with MongoPolicyDao
-        this.mongoRoleDao = new MongoRoleDao(mongoRoleRepository, mongoTemplate, this.mongoPolicyDao);
+        // Step 2: Create MongoRoleDaoImpl with MongoPolicyDaoImpl
+        this.mongoRoleDaoImpl = new MongoRoleDaoImpl(mongoRoleRepository, mongoTemplate, this.mongoPolicyDaoImpl);
 
         // Step 3: Set circular reference
-        this.mongoPolicyDao.setMongoRoleDao(this.mongoRoleDao);
+        this.mongoPolicyDaoImpl.setMongoRoleDao(this.mongoRoleDaoImpl);
 
-        // Step 4: Create MongoIkasanPrincipalDao with MongoRoleDao
-        this.dao = new MongoIkasanPrincipalDao(repository, mongoTemplate, this.mongoRoleDao);
+        // Step 4: Create MongoIkasanPrincipalDaoImpl with MongoRoleDaoImpl
+        this.dao = new MongoIkasanPrincipalDaoImpl(repository, mongoTemplate, this.mongoRoleDaoImpl);
     }
 
     @After
@@ -198,18 +198,18 @@ public class MongoIkasanPrincipalDaoTest {
         adminRole.setDescription("Administrator role");
         adminRole.setCreatedDateTime(new Date());
         adminRole.setUpdatedDateTime(new Date());
-        mongoRoleDao.saveOrUpdateRole(adminRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
         MongoRoleImpl userRole = new MongoRoleImpl();
         userRole.setName("UserRole");
         userRole.setDescription("User role");
         userRole.setCreatedDateTime(new Date());
         userRole.setUpdatedDateTime(new Date());
-        mongoRoleDao.saveOrUpdateRole(userRole);
+        mongoRoleDaoImpl.saveOrUpdateRole(userRole);
 
         // Retrieve roles to get their IDs
-        adminRole = (MongoRoleImpl) mongoRoleDao.getRoleByName("AdminRole");
-        userRole = (MongoRoleImpl) mongoRoleDao.getRoleByName("UserRole");
+        adminRole = (MongoRoleImpl) mongoRoleDaoImpl.getRoleByName("AdminRole");
+        userRole = (MongoRoleImpl) mongoRoleDaoImpl.getRoleByName("UserRole");
 
         // Create principal with roles
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -434,27 +434,27 @@ public class MongoIkasanPrincipalDaoTest {
     @Test
     public void test_saveOrUpdatePrincipal_update_existing() throws Exception {
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-            principal.setName("testuser");
-            principal.setType("user");
-            principal.setDescription("Original description");
-            principal.setCreatedDateTime(new Date(1000000L));
-            principal.setUpdatedDateTime(new Date(2000000L));
+        principal.setName("testuser");
+        principal.setType("user");
+        principal.setDescription("Original description");
+        principal.setCreatedDateTime(new Date(1000000L));
+        principal.setUpdatedDateTime(new Date(2000000L));
 
-            dao.saveOrUpdatePrincipal(principal);
+        dao.saveOrUpdatePrincipal(principal);
 
         IkasanPrincipal found = dao.getPrincipalByName("testuser");
-            Assert.assertEquals("Original description", found.getDescription());
+        Assert.assertEquals("Original description", found.getDescription());
 
-            // Update the principal
-            principal.setDescription("Updated description");
-            principal.setUpdatedDateTime(new Date(3000000L));
-            dao.saveOrUpdatePrincipal(principal);
+        // Update the principal
+        principal.setDescription("Updated description");
+        principal.setUpdatedDateTime(new Date(3000000L));
+        dao.saveOrUpdatePrincipal(principal);
 
-            found = dao.getPrincipalByName("testuser");
+        found = dao.getPrincipalByName("testuser");
 
-            Assert.assertNotNull(found);
-            Assert.assertEquals("testuser", found.getName());
-            Assert.assertEquals("Updated description", found.getDescription());
+        Assert.assertNotNull(found);
+        Assert.assertEquals("testuser", found.getName());
+        Assert.assertEquals("Updated description", found.getDescription());
     }
 
     @Test
@@ -556,8 +556,8 @@ public class MongoIkasanPrincipalDaoTest {
             role.setName("AdminRole");
             role.setDescription("Administrator role");
 
-            this.mongoRoleDao.saveOrUpdateRole(role);
-            role = (MongoRoleImpl) mongoRoleDao.getRoleByName(role.getName());
+            this.mongoRoleDaoImpl.saveOrUpdateRole(role);
+            role = (MongoRoleImpl) mongoRoleDaoImpl.getRoleByName(role.getName());
 
             principal.addRole(role);
 
@@ -565,8 +565,8 @@ public class MongoIkasanPrincipalDaoTest {
             role.setName("MonitorRole");
             role.setDescription("Monitor role");
 
-            this.mongoRoleDao.saveOrUpdateRole(role);
-            role = (MongoRoleImpl) mongoRoleDao.getRoleByName(role.getName());
+            this.mongoRoleDaoImpl.saveOrUpdateRole(role);
+            role = (MongoRoleImpl) mongoRoleDaoImpl.getRoleByName(role.getName());
 
             principal.addRole(role);
 
@@ -697,40 +697,40 @@ public class MongoIkasanPrincipalDaoTest {
     public void test_multiple_operations_in_sequence() throws Exception {
         // Create
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-            principal.setName("sequenceUser");
-            principal.setType("user");
-            principal.setDescription("Initial description");
-            principal.setCreatedDateTime(new Date());
-            principal.setUpdatedDateTime(new Date());
-            dao.saveOrUpdatePrincipal(principal);
+        principal.setName("sequenceUser");
+        principal.setType("user");
+        principal.setDescription("Initial description");
+        principal.setCreatedDateTime(new Date());
+        principal.setUpdatedDateTime(new Date());
+        dao.saveOrUpdatePrincipal(principal);
 
             // Read
         IkasanPrincipal found = dao.getPrincipalByName("sequenceUser");
-            Assert.assertNotNull(found);
-            Assert.assertEquals("Initial description", found.getDescription());
+        Assert.assertNotNull(found);
+        Assert.assertEquals("Initial description", found.getDescription());
 
-            // Update
-            principal.setDescription("Updated description");
-            dao.saveOrUpdatePrincipal(principal);
-            found = dao.getPrincipalByName("sequenceUser");
-            Assert.assertEquals("Updated description", found.getDescription());
+        // Update
+        principal.setDescription("Updated description");
+        dao.saveOrUpdatePrincipal(principal);
+        found = dao.getPrincipalByName("sequenceUser");
+        Assert.assertEquals("Updated description", found.getDescription());
 
-            // List
-            List<IkasanPrincipal> principals = dao.getAllPrincipals();
-            Assert.assertEquals(1, principals.size());
+        // List
+        List<IkasanPrincipal> principals = dao.getAllPrincipals();
+        Assert.assertEquals(1, principals.size());
 
-            // Count
-            int count = dao.getPrincipalCount(null);
-            Assert.assertEquals(1, count);
+        // Count
+        int count = dao.getPrincipalCount(null);
+        Assert.assertEquals(1, count);
 
-            // Delete
-            dao.deletePrincipal(principal);
-            found = dao.getPrincipalByName("sequenceUser");
-            Assert.assertNull(found);
+        // Delete
+        dao.deletePrincipal(principal);
+        found = dao.getPrincipalByName("sequenceUser");
+        Assert.assertNull(found);
 
-            // Verify empty
-            principals = dao.getAllPrincipals();
-            Assert.assertTrue(principals.isEmpty());
+        // Verify empty
+        principals = dao.getAllPrincipals();
+        Assert.assertTrue(principals.isEmpty());
     }
 
     @Test
@@ -741,14 +741,14 @@ public class MongoIkasanPrincipalDaoTest {
             role1.setDescription("First role");
             role1.setCreatedDateTime(new Date());
             role1.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role1);
+            mongoRoleDaoImpl.saveOrUpdateRole(role1);
 
         MongoRoleImpl role2 = new MongoRoleImpl();
             role2.setName("Role2");
             role2.setDescription("Second role");
             role2.setCreatedDateTime(new Date());
             role2.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role2);
+            mongoRoleDaoImpl.saveOrUpdateRole(role2);
 
             // Create principal with both roles
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -779,7 +779,7 @@ public class MongoIkasanPrincipalDaoTest {
             role.setDescription("Test role");
             role.setCreatedDateTime(new Date());
             role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+            mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principal without the role
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -812,21 +812,21 @@ public class MongoIkasanPrincipalDaoTest {
             role1.setDescription("First role");
             role1.setCreatedDateTime(new Date());
             role1.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role1);
+            mongoRoleDaoImpl.saveOrUpdateRole(role1);
 
         MongoRoleImpl role2 = new MongoRoleImpl();
             role2.setName("Role2");
             role2.setDescription("Second role");
             role2.setCreatedDateTime(new Date());
             role2.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role2);
+            mongoRoleDaoImpl.saveOrUpdateRole(role2);
 
         MongoRoleImpl role3 = new MongoRoleImpl();
             role3.setName("Role3");
             role3.setDescription("Third role");
             role3.setCreatedDateTime(new Date());
             role3.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role3);
+            mongoRoleDaoImpl.saveOrUpdateRole(role3);
 
             // Create principal with multiple roles
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -860,7 +860,7 @@ public class MongoIkasanPrincipalDaoTest {
             role.setDescription("Existing role");
             role.setCreatedDateTime(new Date());
             role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+            mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principal with the role
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -898,21 +898,21 @@ public class MongoIkasanPrincipalDaoTest {
             role1.setDescription("Read access");
             role1.setCreatedDateTime(new Date());
             role1.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role1);
+            mongoRoleDaoImpl.saveOrUpdateRole(role1);
 
         MongoRoleImpl role2 = new MongoRoleImpl();
             role2.setName("WriteRole");
             role2.setDescription("Write access");
             role2.setCreatedDateTime(new Date());
             role2.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role2);
+            mongoRoleDaoImpl.saveOrUpdateRole(role2);
 
         MongoRoleImpl role3 = new MongoRoleImpl();
             role3.setName("ExecuteRole");
             role3.setDescription("Execute access");
             role3.setCreatedDateTime(new Date());
             role3.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role3);
+            mongoRoleDaoImpl.saveOrUpdateRole(role3);
 
             // Create principals with different combinations
         MongoIkasanPrincipalImpl p1 = new MongoIkasanPrincipalImpl();
@@ -981,23 +981,23 @@ public class MongoIkasanPrincipalDaoTest {
             role.setDescription("Role with special chars");
             role.setCreatedDateTime(new Date());
             role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+            mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principal with this role
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-            principal.setName("testuser");
-            principal.setType("user");
-            principal.setDescription("Test user");
-            principal.setCreatedDateTime(new Date());
-            principal.setUpdatedDateTime(new Date());
-            principal.getRoles().add(role);
-            dao.saveOrUpdatePrincipal(principal);
+        principal.setName("testuser");
+        principal.setType("user");
+        principal.setDescription("Test user");
+        principal.setCreatedDateTime(new Date());
+        principal.setUpdatedDateTime(new Date());
+        principal.getRoles().add(role);
+        dao.saveOrUpdatePrincipal(principal);
 
-            // Should handle special characters in role name
-            List<IkasanPrincipal> results = dao.getAllPrincipalsWithRole("Admin-Role@2024");
+        // Should handle special characters in role name
+        List<IkasanPrincipal> results = dao.getAllPrincipalsWithRole("Admin-Role@2024");
 
-            Assert.assertEquals(1, results.size());
-            Assert.assertEquals("testuser", results.get(0).getName());
+        Assert.assertEquals(1, results.size());
+        Assert.assertEquals("testuser", results.get(0).getName());
     }
 
     @Test
@@ -1012,7 +1012,7 @@ public class MongoIkasanPrincipalDaoTest {
             dao.saveOrUpdatePrincipal(principal);
 
             // Test with filter containing special characters that might break Solr query
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setNameFilter("test*user");  // Wildcard in filter
 
             // Should handle special characters gracefully
@@ -1192,22 +1192,22 @@ public class MongoIkasanPrincipalDaoTest {
     @Test
     public void test_getPrincipalCount() throws Exception {
         // Initially no principals
-            int count = dao.getPrincipalCount(null);
-            Assert.assertEquals(0, count);
+        int count = dao.getPrincipalCount(null);
+        Assert.assertEquals(0, count);
 
-            // Add 7 principals
-            for (int i = 0; i < 7; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("user" + i);
-                principal.setType("user");
-                principal.setDescription("Description " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Add 7 principals
+        for (int i = 0; i < 7; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("user" + i);
+            principal.setType("user");
+            principal.setDescription("Description " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            count = dao.getPrincipalCount(null);
-            Assert.assertEquals(7, count);
+        count = dao.getPrincipalCount(null);
+        Assert.assertEquals(7, count);
     }
 
     @Test
@@ -1235,7 +1235,7 @@ public class MongoIkasanPrincipalDaoTest {
             }
 
             // Create filter for "user" in name
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setNameFilter("user");
 
             List<IkasanPrincipal> filtered = dao.getPrincipals(filter, 100, 0);
@@ -1272,7 +1272,7 @@ public class MongoIkasanPrincipalDaoTest {
             }
 
             // Filter by type "user"
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setTypeFilter("user");
 
             List<IkasanPrincipal> filtered = dao.getPrincipals(filter, 100, 0);
@@ -1307,7 +1307,7 @@ public class MongoIkasanPrincipalDaoTest {
             }
 
             // Filter by description containing "Manager"
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setDescriptionFilter("Manager");
 
             List<IkasanPrincipal> filtered = dao.getPrincipals(filter, 100, 0);
@@ -1354,7 +1354,7 @@ public class MongoIkasanPrincipalDaoTest {
             dao.saveOrUpdatePrincipal(p4);
 
             // Filter by name containing "admin" AND type "user"
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setNameFilter("admin");
             filter.setTypeFilter("user");
 
@@ -1391,7 +1391,7 @@ public class MongoIkasanPrincipalDaoTest {
                 dao.saveOrUpdatePrincipal(principal);
             }
 
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setTypeFilter("useR");
 
             // Get first page
@@ -1434,7 +1434,7 @@ public class MongoIkasanPrincipalDaoTest {
                 dao.saveOrUpdatePrincipal(principal);
             }
 
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setNameFilter("maNAger");
 
             List<IkasanPrincipalLite> filtered = dao.getPrincipalLites(filter, 100, 0);
@@ -1468,7 +1468,7 @@ public class MongoIkasanPrincipalDaoTest {
                 dao.saveOrUpdatePrincipal(principal);
             }
 
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setDescriptionFilter("AcTive");
 
             int count = dao.getPrincipalCount(filter);
@@ -1480,187 +1480,187 @@ public class MongoIkasanPrincipalDaoTest {
     public void test_getAllPrincipalsWithRole_basic() throws Exception {
         // Create roles
         MongoRoleImpl adminRole = new MongoRoleImpl();
-            adminRole.setName("AdminRole");
-            adminRole.setDescription("Administrator role");
-            adminRole.setCreatedDateTime(new Date());
-            adminRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(adminRole);
+        adminRole.setName("AdminRole");
+        adminRole.setDescription("Administrator role");
+        adminRole.setCreatedDateTime(new Date());
+        adminRole.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
         MongoRoleImpl userRole = new MongoRoleImpl();
-            userRole.setName("UserRole");
-            userRole.setDescription("User role");
-            userRole.setCreatedDateTime(new Date());
-            userRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(userRole);
+        userRole.setName("UserRole");
+        userRole.setDescription("User role");
+        userRole.setCreatedDateTime(new Date());
+        userRole.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(userRole);
 
-            // Create principals with AdminRole
-            for (int i = 0; i < 3; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("admin" + i);
-                principal.setType("user");
-                principal.setDescription("Admin user " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(adminRole);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with AdminRole
+        for (int i = 0; i < 3; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("admin" + i);
+            principal.setType("user");
+            principal.setDescription("Admin user " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(adminRole);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create principals with UserRole
-            for (int i = 0; i < 2; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("user" + i);
-                principal.setType("user");
-                principal.setDescription("Regular user " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(userRole);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with UserRole
+        for (int i = 0; i < 2; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("user" + i);
+            principal.setType("user");
+            principal.setDescription("Regular user " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(userRole);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Test getAllPrincipalsWithRole
-            List<IkasanPrincipal> admins = dao.getAllPrincipalsWithRole("AdminRole");
+        // Test getAllPrincipalsWithRole
+        List<IkasanPrincipal> admins = dao.getAllPrincipalsWithRole("AdminRole");
 
-            Assert.assertEquals(3, admins.size());
-            for (IkasanPrincipal principal : admins) {
-                Assert.assertTrue(principal.getName().startsWith("admin"));
-                Assert.assertTrue(principal.getRoles().stream()
-                    .anyMatch(role -> role.getName().equals("AdminRole")));
-            }
+        Assert.assertEquals(3, admins.size());
+        for (IkasanPrincipal principal : admins) {
+            Assert.assertTrue(principal.getName().startsWith("admin"));
+            Assert.assertTrue(principal.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("AdminRole")));
+        }
 
-            // Test with UserRole
-            List<IkasanPrincipal> users = dao.getAllPrincipalsWithRole("UserRole");
-            Assert.assertEquals(2, users.size());
+        // Test with UserRole
+        List<IkasanPrincipal> users = dao.getAllPrincipalsWithRole("UserRole");
+        Assert.assertEquals(2, users.size());
     }
 
     @Test
     public void test_getAllPrincipalsWithRole_with_filter_and_pagination() throws Exception {
         // Create role
         MongoRoleImpl role = new MongoRoleImpl();
-            role.setName("DeveloperRole");
-            role.setDescription("Developer role");
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+        role.setName("DeveloperRole");
+        role.setDescription("Developer role");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
-            // Create 10 principals with the role
-            for (int i = 0; i < 10; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("developer" + i);
-                principal.setType("user");
-                principal.setDescription("Developer " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(role);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create 10 principals with the role
+        for (int i = 0; i < 10; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("developer" + i);
+            principal.setType("user");
+            principal.setDescription("Developer " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.getRoles().add(role);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Test pagination
-            List<IkasanPrincipalLite> page1 = dao.getAllPrincipalsWithRole("DeveloperRole", null, 5, 0);
-            Assert.assertEquals(5, page1.size());
+        // Test pagination
+        List<IkasanPrincipalLite> page1 = dao.getAllPrincipalsWithRole("DeveloperRole", null, 5, 0);
+        Assert.assertEquals(5, page1.size());
 
-            List<IkasanPrincipalLite> page2 = dao.getAllPrincipalsWithRole("DeveloperRole", null, 5, 5);
-            Assert.assertEquals(5, page2.size());
+        List<IkasanPrincipalLite> page2 = dao.getAllPrincipalsWithRole("DeveloperRole", null, 5, 5);
+        Assert.assertEquals(5, page2.size());
 
-            // Verify all have the role
-            for (IkasanPrincipalLite principal : page1) {
-                Assert.assertTrue(principal.getName().startsWith("developer"));
-            }
+        // Verify all have the role
+        for (IkasanPrincipalLite principal : page1) {
+            Assert.assertTrue(principal.getName().startsWith("developer"));
+        }
     }
 
     @Test
     public void test_getAllPrincipalsWithRole_with_name_filter() throws Exception {
         // Create role
         MongoRoleImpl role = new MongoRoleImpl();
-            role.setName("ManagerRole");
-            role.setDescription("Manager role");
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+        role.setName("ManagerRole");
+        role.setDescription("Manager role");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principals with the role
         MongoIkasanPrincipalImpl p1 = new MongoIkasanPrincipalImpl();
-            p1.setName("senior_manager");
-            p1.setType("user");
-            p1.setDescription("Senior manager");
-            p1.setCreatedDateTime(new Date());
-            p1.setUpdatedDateTime(new Date());
-            p1.getRoles().add(role);
-            dao.saveOrUpdatePrincipal(p1);
+        p1.setName("senior_manager");
+        p1.setType("user");
+        p1.setDescription("Senior manager");
+        p1.setCreatedDateTime(new Date());
+        p1.setUpdatedDateTime(new Date());
+        p1.getRoles().add(role);
+        dao.saveOrUpdatePrincipal(p1);
 
         MongoIkasanPrincipalImpl p2 = new MongoIkasanPrincipalImpl();
-            p2.setName("junior_manager");
-            p2.setType("user");
-            p2.setDescription("Junior manager");
-            p2.setCreatedDateTime(new Date());
-            p2.setUpdatedDateTime(new Date());
-            p2.getRoles().add(role);
-            dao.saveOrUpdatePrincipal(p2);
+        p2.setName("junior_manager");
+        p2.setType("user");
+        p2.setDescription("Junior manager");
+        p2.setCreatedDateTime(new Date());
+        p2.setUpdatedDateTime(new Date());
+        p2.getRoles().add(role);
+        dao.saveOrUpdatePrincipal(p2);
 
         MongoIkasanPrincipalImpl p3 = new MongoIkasanPrincipalImpl();
-            p3.setName("senior_developer");
-            p3.setType("user");
-            p3.setDescription("Senior developer");
-            p3.setCreatedDateTime(new Date());
-            p3.setUpdatedDateTime(new Date());
-            p3.getRoles().add(role);
-            dao.saveOrUpdatePrincipal(p3);
+        p3.setName("senior_developer");
+        p3.setType("user");
+        p3.setDescription("Senior developer");
+        p3.setCreatedDateTime(new Date());
+        p3.setUpdatedDateTime(new Date());
+        p3.getRoles().add(role);
+        dao.saveOrUpdatePrincipal(p3);
 
             // Filter by name containing "senior"
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
-            filter.setNameFilter("senior");
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
+        filter.setNameFilter("senior");
 
-            List<IkasanPrincipalLite> filtered = dao.getAllPrincipalsWithRole("ManagerRole", filter, 100, 0);
+        List<IkasanPrincipalLite> filtered = dao.getAllPrincipalsWithRole("ManagerRole", filter, 100, 0);
 
-            Assert.assertEquals(2, filtered.size());
-            for (IkasanPrincipalLite principal : filtered) {
-                Assert.assertTrue(principal.getName().contains("senior"));
-            }
+        Assert.assertEquals(2, filtered.size());
+        for (IkasanPrincipalLite principal : filtered) {
+            Assert.assertTrue(principal.getName().contains("senior"));
+        }
     }
 
     @Test
     public void test_getAllPrincipalsWithRole_with_type_filter() throws Exception {
         // Create role
         MongoRoleImpl role = new MongoRoleImpl();
-            role.setName("AccessRole");
-            role.setDescription("Access role");
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+        role.setName("AccessRole");
+        role.setDescription("Access role");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
-            // Create user principals
-            for (int i = 0; i < 3; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("user" + i);
-                principal.setType("user");
-                principal.setDescription("User " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(role);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create user principals
+        for (int i = 0; i < 3; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("user" + i);
+            principal.setType("user");
+            principal.setDescription("User " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.getRoles().add(role);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create application principals
-            for (int i = 0; i < 2; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("app" + i);
-                principal.setType("application");
-                principal.setDescription("Application " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(role);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create application principals
+        for (int i = 0; i < 2; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("app" + i);
+            principal.setType("application");
+            principal.setDescription("Application " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.getRoles().add(role);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
             // Filter by type "user"
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
-            filter.setTypeFilter("user");
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
+        filter.setTypeFilter("user");
 
-            List<IkasanPrincipalLite> users = dao.getAllPrincipalsWithRole("AccessRole", filter, 100, 0);
+        List<IkasanPrincipalLite> users = dao.getAllPrincipalsWithRole("AccessRole", filter, 100, 0);
 
-            Assert.assertEquals(3, users.size());
-            for (IkasanPrincipalLite principal : users) {
-                Assert.assertEquals("user", principal.getType());
-            }
+        Assert.assertEquals(3, users.size());
+        for (IkasanPrincipalLite principal : users) {
+            Assert.assertEquals("user", principal.getType());
+        }
     }
 
     @Test
@@ -1671,7 +1671,7 @@ public class MongoIkasanPrincipalDaoTest {
             adminRole.setDescription("Administrator role");
             adminRole.setCreatedDateTime(new Date());
             adminRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(adminRole);
+            mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
             // Create principals with AdminRole
             for (int i = 0; i < 3; i++) {
@@ -1709,41 +1709,41 @@ public class MongoIkasanPrincipalDaoTest {
     public void test_getPrincipalsWithRoleCount() throws Exception {
         // Create role
         MongoRoleImpl role = new MongoRoleImpl();
-            role.setName("CountTestRole");
-            role.setDescription("Role for count test");
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+        role.setName("CountTestRole");
+        role.setDescription("Role for count test");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
-            // Create principals with the role
-            for (int i = 0; i < 7; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("user" + i);
-                principal.setType("user");
-                principal.setDescription("User " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(role);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with the role
+        for (int i = 0; i < 7; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("user" + i);
+            principal.setType("user");
+            principal.setDescription("User " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(role);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create principals without the role
-            for (int i = 0; i < 3; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("other" + i);
-                principal.setType("user");
-                principal.setDescription("Other user " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals without the role
+        for (int i = 0; i < 3; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("other" + i);
+            principal.setType("user");
+            principal.setDescription("Other user " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Test count
-            int count = dao.getPrincipalsWithRoleCount("CountTestRole", null);
-            Assert.assertEquals(7, count);
+        // Test count
+        int count = dao.getPrincipalsWithRoleCount("CountTestRole", null);
+        Assert.assertEquals(7, count);
 
             // Test count with filter
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
             filter.setNameFilter("user");
             int filteredCount = dao.getPrincipalsWithRoleCount("CountTestRole", filter);
             Assert.assertEquals(7, filteredCount);
@@ -1753,44 +1753,49 @@ public class MongoIkasanPrincipalDaoTest {
     public void test_getPrincipalsWithoutRoleCount() throws Exception {
         // Create role
         MongoRoleImpl role = new MongoRoleImpl();
-            role.setName("ExclusionRole");
-            role.setDescription("Role for exclusion test");
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+        role.setName("ExclusionRole");
+        role.setDescription("Role for exclusion test");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
-            // Create principals with the role
-            for (int i = 0; i < 4; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("included" + i);
-                principal.setType("user");
-                principal.setDescription("Included user " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(role);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with the role
+        for (int i = 0; i < 4; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("included" + i);
+            principal.setType("user");
+            principal.setDescription("Included user " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.getRoles().add(role);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create principals without the role
-            for (int i = 0; i < 6; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("excluded" + i);
-                principal.setType("user");
-                principal.setDescription("Excluded user " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals without the role
+        for (int i = 0; i < 6; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("excluded" + i);
+            principal.setType("user");
+            principal.setDescription("Excluded user " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Test count of principals without the role
-            int count = dao.getPrincipalsWithoutRoleCount("ExclusionRole", null);
-            Assert.assertEquals(6, count);
+        // Test count of principals without the role
+        int count = dao.getPrincipalsWithoutRoleCount("ExclusionRole", new MongoIkasanPrincipalFilterImpl());
+        Assert.assertEquals(6, count);
 
             // Test count with filter
-        TestIkasanPrincipalFilter filter = new TestIkasanPrincipalFilter();
-            filter.setNameFilter("excluded");
-            int filteredCount = dao.getPrincipalsWithoutRoleCount("ExclusionRole", filter);
-            Assert.assertEquals(6, filteredCount);
+        MongoIkasanPrincipalFilterImpl filter = new MongoIkasanPrincipalFilterImpl();
+        filter.setNameFilter("excluded");
+        int filteredCount = dao.getPrincipalsWithoutRoleCount("ExclusionRole", filter);
+        Assert.assertEquals(6, filteredCount);
+
+        filter = new MongoIkasanPrincipalFilterImpl();
+        filter.setNameFilter("included");
+        filteredCount = dao.getPrincipalsWithoutRoleCount("ExclusionRole", filter);
+        Assert.assertEquals(0, filteredCount);
     }
 
     @Test
@@ -1801,7 +1806,7 @@ public class MongoIkasanPrincipalDaoTest {
             role.setDescription("Test role");
             role.setCreatedDateTime(new Date());
             role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+            mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principals with the role
             for (int i = 0; i < 3; i++) {
@@ -1839,84 +1844,84 @@ public class MongoIkasanPrincipalDaoTest {
     public void test_getPrincipalsByRoleNames_multiple_roles() throws Exception {
         // Create three roles
         MongoRoleImpl adminRole = new MongoRoleImpl();
-            adminRole.setName("AdminRole");
-            adminRole.setDescription("Admin role");
-            adminRole.setCreatedDateTime(new Date());
-            adminRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(adminRole);
+        adminRole.setName("AdminRole");
+        adminRole.setDescription("Admin role");
+        adminRole.setCreatedDateTime(new Date());
+        adminRole.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(adminRole);
 
         MongoRoleImpl devRole = new MongoRoleImpl();
-            devRole.setName("DeveloperRole");
-            devRole.setDescription("Developer role");
-            devRole.setCreatedDateTime(new Date());
-            devRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(devRole);
+        devRole.setName("DeveloperRole");
+        devRole.setDescription("Developer role");
+        devRole.setCreatedDateTime(new Date());
+        devRole.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(devRole);
 
         MongoRoleImpl managerRole = new MongoRoleImpl();
-            managerRole.setName("ManagerRole");
-            managerRole.setDescription("Manager role");
-            managerRole.setCreatedDateTime(new Date());
-            managerRole.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(managerRole);
+        managerRole.setName("ManagerRole");
+        managerRole.setDescription("Manager role");
+        managerRole.setCreatedDateTime(new Date());
+        managerRole.setUpdatedDateTime(new Date());
+        mongoRoleDaoImpl.saveOrUpdateRole(managerRole);
 
-            // Create principals with AdminRole
-            for (int i = 0; i < 2; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("admin" + i);
-                principal.setType("user");
-                principal.setDescription("Admin " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(adminRole);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with AdminRole
+        for (int i = 0; i < 2; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("admin" + i);
+            principal.setType("user");
+            principal.setDescription("Admin " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(adminRole);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create principals with DeveloperRole
-            for (int i = 0; i < 3; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("dev" + i);
-                principal.setType("user");
-                principal.setDescription("Developer " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(devRole);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with DeveloperRole
+        for (int i = 0; i < 3; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("dev" + i);
+            principal.setType("user");
+            principal.setDescription("Developer " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(devRole);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
-            // Create principals with ManagerRole
-            for (int i = 0; i < 1; i++) {
-                MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
-                principal.setName("manager" + i);
-                principal.setType("user");
-                principal.setDescription("Manager " + i);
-                principal.setCreatedDateTime(new Date());
-                principal.setUpdatedDateTime(new Date());
-                principal.getRoles().add(managerRole);
-                dao.saveOrUpdatePrincipal(principal);
-            }
+        // Create principals with ManagerRole
+        for (int i = 0; i < 1; i++) {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("manager" + i);
+            principal.setType("user");
+            principal.setDescription("Manager " + i);
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+            principal.addRole(managerRole);
+            dao.saveOrUpdatePrincipal(principal);
+        }
 
             // Create principals with no roles
         MongoIkasanPrincipalImpl noRole = new MongoIkasanPrincipalImpl();
-            noRole.setName("norole");
-            noRole.setType("user");
-            noRole.setDescription("No role user");
-            noRole.setCreatedDateTime(new Date());
-            noRole.setUpdatedDateTime(new Date());
-            dao.saveOrUpdatePrincipal(noRole);
+        noRole.setName("norole");
+        noRole.setType("user");
+        noRole.setDescription("No role user");
+        noRole.setCreatedDateTime(new Date());
+        noRole.setUpdatedDateTime(new Date());
+        dao.saveOrUpdatePrincipal(noRole);
 
-            // Test with multiple roles (AdminRole OR DeveloperRole)
-            List<IkasanPrincipal> principals = dao.getPrincipalsByRoleNames(
-                Arrays.asList("AdminRole", "DeveloperRole"));
+        // Test with multiple roles (AdminRole OR DeveloperRole)
+        List<IkasanPrincipal> principals = dao.getPrincipalsByRoleNames(
+            Arrays.asList("AdminRole", "DeveloperRole"));
 
-            // Should return 2 admins + 3 developers = 5 principals
-            Assert.assertEquals(5, principals.size());
+        // Should return 2 admins + 3 developers = 5 principals
+        Assert.assertEquals(5, principals.size());
 
-            // Verify each principal has either AdminRole or DeveloperRole
-            for (IkasanPrincipal principal : principals) {
-                boolean hasAdminOrDev = principal.getRoles().stream()
-                    .anyMatch(role -> role.getName().equals("AdminRole") || role.getName().equals("DeveloperRole"));
-                Assert.assertTrue(hasAdminOrDev);
-            }
+        // Verify each principal has either AdminRole or DeveloperRole
+        for (IkasanPrincipal principal : principals) {
+            boolean hasAdminOrDev = principal.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("AdminRole") || role.getName().equals("DeveloperRole"));
+            Assert.assertTrue(hasAdminOrDev);
+        }
     }
 
     @Test(expected = RuntimeException.class)
@@ -1991,7 +1996,7 @@ public class MongoIkasanPrincipalDaoTest {
             role.setDescription("Test role");
             role.setCreatedDateTime(new Date());
             role.setUpdatedDateTime(new Date());
-            mongoRoleDao.saveOrUpdateRole(role);
+            mongoRoleDaoImpl.saveOrUpdateRole(role);
 
             // Create principals without role
             for (int i = 0; i < 3; i++) {
@@ -2082,7 +2087,7 @@ public class MongoIkasanPrincipalDaoTest {
         role.setDescription("Role with quotes");
         role.setCreatedDateTime(new Date());
         role.setUpdatedDateTime(new Date());
-        mongoRoleDao.saveOrUpdateRole(role);
+        mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Create principal with this role
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
@@ -2103,67 +2108,6 @@ public class MongoIkasanPrincipalDaoTest {
             Assert.assertTrue(e.getMessage().contains("parse") ||
                             e.getMessage().contains("query") ||
                             e.getMessage().contains("syntax"));
-        }
-    }
-
-    /**
-     * Test implementation of IkasanPrincipalFilter for testing purposes.
-     */
-    private static class TestIkasanPrincipalFilter implements IkasanPrincipalFilter {
-        private String nameFilter;
-        private String descriptionFilter;
-        private String typeFilter;
-        private String sortColumn;
-        private String sortOrder;
-
-        @Override
-        public String getNameFilter() {
-            return nameFilter;
-        }
-
-        @Override
-        public void setNameFilter(String nameFilter) {
-            this.nameFilter = nameFilter;
-        }
-
-        @Override
-        public String getDescriptionFilter() {
-            return descriptionFilter;
-        }
-
-        @Override
-        public void setDescriptionFilter(String descriptionFilter) {
-            this.descriptionFilter = descriptionFilter;
-        }
-
-        @Override
-        public String getTypeFilter() {
-            return typeFilter;
-        }
-
-        @Override
-        public void setTypeFilter(String typeFilter) {
-            this.typeFilter = typeFilter;
-        }
-
-        @Override
-        public String getSortColumn() {
-            return sortColumn;
-        }
-
-        @Override
-        public void setSortColumn(String sortColumn) {
-            this.sortColumn = sortColumn;
-        }
-
-        @Override
-        public String getSortOrder() {
-            return sortOrder;
-        }
-
-        @Override
-        public void setSortOrder(String sortOrder) {
-            this.sortOrder = sortOrder;
         }
     }
 }

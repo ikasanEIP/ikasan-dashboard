@@ -39,15 +39,10 @@
  * ====================================================================
  */
 package org.ikasan.mongo.persistence.security.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Role;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.*;
 
@@ -56,35 +51,15 @@ import java.util.*;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoIkasanPrincipalImpl implements IkasanPrincipal {
 
-    @Id
     private String id;
-
-    @Indexed(unique = true)
-    @Field("name")
-    private String name;
-
-    @Field("type")
     private String type;
-
-    @Indexed
-    @Field("created_date_time")
+    private String name;
     private Date createdDateTime;
-
-    @Indexed
-    @Field("updated_date_time")
     private Date updatedDateTime;
-
-    @Field("description")
     private String description;
-
-    @Field("application_security_base_dn")
     private String applicationSecurityBaseDn;
-
-    @JsonIgnore
-    @Field("role_ids")
     private List<String> roleIds = new ArrayList<>();
 
     @JsonIgnore

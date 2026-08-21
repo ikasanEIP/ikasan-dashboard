@@ -41,6 +41,7 @@
 package org.ikasan.mongo.persistence.security.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -55,91 +56,34 @@ import java.util.Objects;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoAuthenticationMethodImpl implements AuthenticationMethod {
 
-    @Id
     private String id;
-
-    @Field("method")
     private String method;
-
-    @Field("ldap_server_url")
     private String ldapServerUrl;
-
-    @Field("ldap_bind_user_dn")
     private String ldapBindUserDn;
-
-    @Field("ldap_bind_user_password")
     private String ldapBindUserPassword;
-
-    @Field("ldap_user_search_base_dn")
     private String ldapUserSearchBaseDn;
-
-    @Field("ldap_user_search_filter")
     private String ldapUserSearchFilter;
-
-    @Field("application_security_base_dn")
     private String applicationSecurityBaseDn;
-
-    @Field("account_type_attribute_name")
     private String accountTypeAttributeName;
-
-    @Field("user_account_mapping_attribute_name")
     private String userAccountMappingAttributeName;
-
-    @Field("user_account_name_attribute_name")
     private String userAccountNameAttributeName;
-
-    @Field("email_attribute_name")
     private String emailAttributeName;
-
-    @Field("application_security_group_attribute_name")
     private String applicationSecurityGroupAttributeName;
-
-    @Field("first_name_attribute_name")
     private String firstNameAttributeName;
-
-    @Field("surname_attribute_name")
     private String surnameAttributeName;
-
-    @Field("department_attribute_name")
     private String departmentAttributeName;
-
-    @Field("ldap_user_description_attribute_name")
     private String ldapUserDescriptionAttributeName;
-
-    @Field("application_security_description_attribute_name")
     private String applicationSecurityDescriptionAttributeName;
-
-    @Field("memberof_attribute_name")
     private String memberofAttributeName;
-
-    @Indexed(unique = true)
-    @Field("name")
     private String name;
-
-    @Indexed
-    @Field("order")
     private Long order;
-
-    @Indexed
-    @Field("last_synchronised")
     private Date lastSynchronised;
-
-    @Field("enabled")
     private boolean enabled = true;
-
-    @Field("user_synchronisation_filter")
     private String userSynchronisationFilter;
-
-    @Field("group_synchronisation_filter")
     private String groupSynchronisationFilter;
-
-    @Field("scheduled")
     private boolean scheduled = false;
-
-    @Field("synchronisation_cron_expression")
     private String synchronisationCronExpression;
 
     /**

@@ -19,59 +19,59 @@ import java.util.List;
  *
  * The facade delegates to:
  * <ul>
- *   <li>MongoIkasanPrincipalDao - for principal operations</li>
- *   <li>MongoRoleDao - for role operations</li>
- *   <li>MongoPolicyDao - for policy operations</li>
- *   <li>MongoAuthenticationMethodDao - for authentication method operations</li>
- *   <li>MongoUserDao - for user operations</li>
+ *   <li>MongoIkasanPrincipalDaoImpl - for principal operations</li>
+ *   <li>MongoRoleDaoImpl - for role operations</li>
+ *   <li>MongoPolicyDaoImpl - for policy operations</li>
+ *   <li>MongoAuthenticationMethodDaoImpl - for authentication method operations</li>
+ *   <li>MongoUserDaoImpl - for user operations</li>
  * </ul>
  *
  * @author Ikasan Development Team
  */
-public class MongoSecurityDao implements SecurityDao {
+public class MongoSecurityDaoImpl implements SecurityDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSecurityDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoSecurityDaoImpl.class);
 
-    private final MongoIkasanPrincipalDao mongoIkasanPrincipalDao;
-    private final MongoRoleDao mongoRoleDao;
-    private final MongoPolicyDao mongoPolicyDao;
-    private final MongoAuthenticationMethodDao mongoAuthenticationMethodDao;
+    private final MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl;
+    private final MongoRoleDaoImpl mongoRoleDaoImpl;
+    private final MongoPolicyDaoImpl mongoPolicyDaoImpl;
+    private final MongoAuthenticationMethodDaoImpl mongoAuthenticationMethodDaoImpl;
     private final UserDao mongoUserDao;
 
     /**
-     * Constructor for MongoSecurityDao that initializes its dependencies.
+     * Constructor for MongoSecurityDaoImpl that initializes its dependencies.
      *
-     * @param mongoIkasanPrincipalDao the DAO implementation for managing IkasanPrincipal entities
-     * @param mongoPolicyDao the DAO implementation for managing Policy entities
-     * @param mongoRoleDao the DAO implementation for managing Role entities
-     * @param mongoAuthenticationMethodDao the DAO implementation for managing AuthenticationMethod entities
+     * @param mongoIkasanPrincipalDaoImpl the DAO implementation for managing IkasanPrincipal entities
+     * @param mongoPolicyDaoImpl the DAO implementation for managing Policy entities
+     * @param mongoRoleDaoImpl the DAO implementation for managing Role entities
+     * @param mongoAuthenticationMethodDaoImpl the DAO implementation for managing AuthenticationMethod entities
      * @param mongoUserDao the DAO implementation for managing User entities
      */
-    public MongoSecurityDao(MongoIkasanPrincipalDao mongoIkasanPrincipalDao,
-                            MongoPolicyDao mongoPolicyDao,
-                            MongoRoleDao mongoRoleDao,
-                            MongoAuthenticationMethodDao mongoAuthenticationMethodDao,
-                            UserDao mongoUserDao) {
-        this.mongoIkasanPrincipalDao = mongoIkasanPrincipalDao;
-        this.mongoPolicyDao = mongoPolicyDao;
-        this.mongoRoleDao = mongoRoleDao;
-        this.mongoAuthenticationMethodDao = mongoAuthenticationMethodDao;
+    public MongoSecurityDaoImpl(MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl,
+                                MongoPolicyDaoImpl mongoPolicyDaoImpl,
+                                MongoRoleDaoImpl mongoRoleDaoImpl,
+                                MongoAuthenticationMethodDaoImpl mongoAuthenticationMethodDaoImpl,
+                                UserDao mongoUserDao) {
+        this.mongoIkasanPrincipalDaoImpl = mongoIkasanPrincipalDaoImpl;
+        this.mongoPolicyDaoImpl = mongoPolicyDaoImpl;
+        this.mongoRoleDaoImpl = mongoRoleDaoImpl;
+        this.mongoAuthenticationMethodDaoImpl = mongoAuthenticationMethodDaoImpl;
         this.mongoUserDao = mongoUserDao;
     }
 
     @Override
     public IkasanPrincipal createPrincipal() {
-        return this.mongoIkasanPrincipalDao.createPrincipal();
+        return this.mongoIkasanPrincipalDaoImpl.createPrincipal();
     }
 
     @Override
     public Role createRole() {
-        return this.mongoRoleDao.createRole();
+        return this.mongoRoleDaoImpl.createRole();
     }
 
     @Override
     public Policy createPolicy() {
-        return this.mongoPolicyDao.createPolicy();
+        return this.mongoPolicyDaoImpl.createPolicy();
     }
 
     @Override
@@ -86,224 +86,224 @@ public class MongoSecurityDao implements SecurityDao {
 
     @Override
     public AuthenticationMethod createAuthenticationMethod() {
-        return this.mongoAuthenticationMethodDao.createAuthenticationMethod();
+        return this.mongoAuthenticationMethodDaoImpl.createAuthenticationMethod();
     }
 
     @Override
     public void saveOrUpdateRole(Role role) {
-        this.mongoRoleDao.saveOrUpdateRole(role);
+        this.mongoRoleDaoImpl.saveOrUpdateRole(role);
     }
 
     @Override
     public void deleteRole(Role role) {
-        this.mongoRoleDao.deleteRole(role);
+        this.mongoRoleDaoImpl.deleteRole(role);
     }
 
     @Override
     public void saveOrUpdatePolicy(Policy policy) {
-        this.mongoPolicyDao.saveOrUpdatePolicy(policy);
+        this.mongoPolicyDaoImpl.saveOrUpdatePolicy(policy);
     }
 
     @Override
     public void deletePolicy(Policy policy) {
-        this.mongoPolicyDao.deletePolicy(policy);
+        this.mongoPolicyDaoImpl.deletePolicy(policy);
     }
 
     @Override
     public void deleteRoleModule(RoleModule roleModule) {
-        this.mongoRoleDao.deleteRoleModule(roleModule);
+        this.mongoRoleDaoImpl.deleteRoleModule(roleModule);
     }
 
     @Override
     public void saveRoleModule(RoleModule roleModule) {
-        this.mongoRoleDao.saveRoleModule(roleModule);
+        this.mongoRoleDaoImpl.saveRoleModule(roleModule);
     }
 
     @Override
     public void deleteRoleJobPlan(RoleJobPlan roleJobPlan) {
-        this.mongoRoleDao.deleteRoleJobPlan(roleJobPlan);
+        this.mongoRoleDaoImpl.deleteRoleJobPlan(roleJobPlan);
     }
 
     @Override
     public void saveRoleJobPlan(RoleJobPlan roleJobPlan) {
-        this.mongoRoleDao.saveRoleJobPlan(roleJobPlan);
+        this.mongoRoleDaoImpl.saveRoleJobPlan(roleJobPlan);
     }
 
     @Override
     public void saveOrUpdatePrincipal(IkasanPrincipal principal) {
-        this.mongoIkasanPrincipalDao.saveOrUpdatePrincipal(principal);
+        this.mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
     }
 
     @Override
     public void deletePrincipal(IkasanPrincipal principal) {
-        this.mongoIkasanPrincipalDao.deletePrincipal(principal);
+        this.mongoIkasanPrincipalDaoImpl.deletePrincipal(principal);
     }
 
     @Override
     public IkasanPrincipal getPrincipalByName(String name) {
-        return this.mongoIkasanPrincipalDao.getPrincipalByName(name);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalByName(name);
     }
 
     @Override
     public List<IkasanPrincipal> getPrincipalsByRoleNames(List<String> names) {
-        return this.mongoIkasanPrincipalDao.getPrincipalsByRoleNames(names);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalsByRoleNames(names);
     }
 
     @Override
     public int getPrincipalCount(IkasanPrincipalFilter filter) {
-        return this.mongoIkasanPrincipalDao.getPrincipalCount(filter);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalCount(filter);
     }
 
     @Override
     public int getPrincipalsWithRoleCount(String roleName, IkasanPrincipalFilter filter) {
-        return this.mongoIkasanPrincipalDao.getPrincipalsWithRoleCount(roleName, filter);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalsWithRoleCount(roleName, filter);
     }
 
     @Override
     public int getPrincipalsWithoutRoleCount(String roleName, IkasanPrincipalFilter filter) {
-        return this.mongoIkasanPrincipalDao.getPrincipalsWithoutRoleCount(roleName, filter);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalsWithoutRoleCount(roleName, filter);
     }
 
     @Override
     public List<Policy> getAllPolicies() {
-        return this.mongoPolicyDao.getAllPolicies();
+        return this.mongoPolicyDaoImpl.getAllPolicies();
     }
 
     @Override
     public List<Role> getAllRoles() {
-        return this.mongoRoleDao.getAllRoles();
+        return this.mongoRoleDaoImpl.getAllRoles();
     }
 
     @Override
     public List<IkasanPrincipal> getAllPrincipals() {
-        return this.mongoIkasanPrincipalDao.getAllPrincipals();
+        return this.mongoIkasanPrincipalDaoImpl.getAllPrincipals();
     }
 
     @Override
     public List<IkasanPrincipal> getPrincipals(IkasanPrincipalFilter filter, int limit, int offset) {
-        return this.mongoIkasanPrincipalDao.getPrincipals(filter, limit, offset);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipals(filter, limit, offset);
     }
 
     @Override
     public List<IkasanPrincipalLite> getAllPrincipalLites() {
-        return this.mongoIkasanPrincipalDao.getAllPrincipalLites();
+        return this.mongoIkasanPrincipalDaoImpl.getAllPrincipalLites();
     }
 
     @Override
     public List<IkasanPrincipalLite> getPrincipalLites(IkasanPrincipalFilter filter, int limit, int offset) {
-        return this.mongoIkasanPrincipalDao.getPrincipalLites(filter, limit, offset);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalLites(filter, limit, offset);
     }
 
     @Override
     public List<IkasanPrincipal> getAllPrincipalsWithRole(String roleName) {
-        return this.mongoIkasanPrincipalDao.getAllPrincipalsWithRole(roleName);
+        return this.mongoIkasanPrincipalDaoImpl.getAllPrincipalsWithRole(roleName);
     }
 
     @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithRole(String roleName, IkasanPrincipalFilter filter,
                                                               int limit, int offset) {
-        return this.mongoIkasanPrincipalDao.getAllPrincipalsWithRole(roleName, filter, limit, offset);
+        return this.mongoIkasanPrincipalDaoImpl.getAllPrincipalsWithRole(roleName, filter, limit, offset);
     }
 
     @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithoutRole(String roleName, IkasanPrincipalFilter filter,
                                                                  int limit, int offset) {
-        return this.mongoIkasanPrincipalDao.getAllPrincipalsWithoutRole(roleName, filter, limit, offset);
+        return this.mongoIkasanPrincipalDaoImpl.getAllPrincipalsWithoutRole(roleName, filter, limit, offset);
     }
 
     @Override
     public List<Policy> getAllPoliciesWithRole(String roleName) {
-        return this.mongoPolicyDao.getAllPoliciesWithRole(roleName);
+        return this.mongoPolicyDaoImpl.getAllPoliciesWithRole(roleName);
     }
 
     @Override
     public Policy getPolicyByName(String name) {
-        return this.mongoPolicyDao.getPolicyByName(name);
+        return this.mongoPolicyDaoImpl.getPolicyByName(name);
     }
 
     @Override
     public Role getRoleByName(String name) {
-        return this.mongoRoleDao.getRoleByName(name);
+        return this.mongoRoleDaoImpl.getRoleByName(name);
     }
 
     @Override
     public Role getRoleById(Object id) {
-        return this.mongoRoleDao.getRoleById(String.valueOf(id));
+        return this.mongoRoleDaoImpl.getRoleById(String.valueOf(id));
     }
 
     @Override
     public void saveOrUpdateAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        this.mongoAuthenticationMethodDao.saveOrUpdateAuthenticationMethod(authenticationMethod);
+        this.mongoAuthenticationMethodDaoImpl.saveOrUpdateAuthenticationMethod(authenticationMethod);
     }
 
     @Override
     public AuthenticationMethod getAuthenticationMethod(Object id) {
-        return this.mongoAuthenticationMethodDao.getAuthenticationMethod(id);
+        return this.mongoAuthenticationMethodDaoImpl.getAuthenticationMethod(id);
     }
 
     @Override
     public List<AuthenticationMethod> getAuthenticationMethods() {
-        return this.mongoAuthenticationMethodDao.getAuthenticationMethods();
+        return this.mongoAuthenticationMethodDaoImpl.getAuthenticationMethods();
     }
 
     @Override
     public List<IkasanPrincipal> getPrincipalByNameLike(String name) {
-        return this.mongoIkasanPrincipalDao.getPrincipalByNameLike(name);
+        return this.mongoIkasanPrincipalDaoImpl.getPrincipalByNameLike(name);
     }
 
     @Override
     public void deleteAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        this.mongoAuthenticationMethodDao.deleteAuthenticationMethod(authenticationMethod);
+        this.mongoAuthenticationMethodDaoImpl.deleteAuthenticationMethod(authenticationMethod);
     }
 
     @Override
     public List<Policy> getPolicyByNameLike(String name) {
-        return this.mongoPolicyDao.getPolicyByNameLike(name);
+        return this.mongoPolicyDaoImpl.getPolicyByNameLike(name);
     }
 
     @Override
     public List<Role> getRoleByNameLike(String name) {
-        return this.mongoRoleDao.getRoleByNameLike(name);
+        return this.mongoRoleDaoImpl.getRoleByNameLike(name);
     }
 
     @Override
     public long getNumberOfAuthenticationMethods() {
-        return this.mongoAuthenticationMethodDao.getNumberOfAuthenticationMethods();
+        return this.mongoAuthenticationMethodDaoImpl.getNumberOfAuthenticationMethods();
     }
 
     @Override
     public AuthenticationMethod getAuthenticationMethodByOrder(long order) {
-        return this.mongoAuthenticationMethodDao.getAuthenticationMethodByOrder(order);
+        return this.mongoAuthenticationMethodDaoImpl.getAuthenticationMethodByOrder(order);
     }
 
     @Override
     public List<User> getUsersAssociatedWithPrincipal(Object principalId) {
-        if (this.mongoUserDao instanceof MongoUserDao) {
-            return ((MongoUserDao) this.mongoUserDao).getUsersAssociatedWithPrincipal(String.valueOf(principalId));
+        if (this.mongoUserDao instanceof MongoUserDaoImpl) {
+            return ((MongoUserDaoImpl) this.mongoUserDao).getUsersAssociatedWithPrincipal(String.valueOf(principalId));
         }
-        throw new UnsupportedOperationException("getUsersAssociatedWithPrincipal is only supported for MongoUserDao");
+        throw new UnsupportedOperationException("getUsersAssociatedWithPrincipal is only supported for MongoUserDaoImpl");
     }
 
     @Override
     public Policy getPolicyById(Object id) {
-        return this.mongoPolicyDao.getPolicyById(String.valueOf(id));
+        return this.mongoPolicyDaoImpl.getPolicyById(String.valueOf(id));
     }
 
     @Override
     public List<RoleJobPlan> getRoleJobPlansByJobPlanName(String jobPlanName) {
-        return this.mongoRoleDao.getRoleJobPlansByJobPlanName(jobPlanName);
+        return this.mongoRoleDaoImpl.getRoleJobPlansByJobPlanName(jobPlanName);
     }
 
     /**
      * Retrieves a list of roles associated with the specified policy identifier.
      *
-     * This method delegates to the MongoRoleDao to find all roles that have
+     * This method delegates to the MongoRoleDaoImpl to find all roles that have
      * the specified policy.
      *
      * @param policyId the unique identifier of the policy
      * @return a list of roles associated with the specified policy
      */
     public List<Role> getRolesAssociatedWithPolicy(Object policyId) {
-        return this.mongoRoleDao.getRolesAssociatedWithPolicy(policyId);
+        return this.mongoRoleDaoImpl.getRolesAssociatedWithPolicy(policyId);
     }
 }

@@ -28,9 +28,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Date;
 import java.util.List;
 
+import static org.ikasan.spec.security.dao.RoleDao.ROLE_TYPE;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoRoleDaoTest {
+public class MongoRoleDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -49,8 +51,8 @@ public class MongoRoleDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoRoleDao dao;
-    private MongoPolicyDao mongoPolicyDao;
+    private MongoRoleDaoImpl dao;
+    private MongoPolicyDaoImpl mongoPolicyDaoImpl;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -59,14 +61,14 @@ public class MongoRoleDaoTest {
 
     @Autowired
     public void setDao(MongoRoleRepository repository, MongoPolicyRepository mongoPolicyRepository, MongoTemplate mongoTemplate) {
-        // Step 1: Create MongoPolicyDao first (no dependencies)
-        this.mongoPolicyDao = new MongoPolicyDao(mongoPolicyRepository, mongoTemplate);
+        // Step 1: Create MongoPolicyDaoImpl first (no dependencies)
+        this.mongoPolicyDaoImpl = new MongoPolicyDaoImpl(mongoPolicyRepository, mongoTemplate);
 
-        // Step 2: Create MongoRoleDao with MongoPolicyDao
-        this.dao = new MongoRoleDao(repository, mongoTemplate, this.mongoPolicyDao);
+        // Step 2: Create MongoRoleDaoImpl with MongoPolicyDaoImpl
+        this.dao = new MongoRoleDaoImpl(repository, mongoTemplate, this.mongoPolicyDaoImpl);
 
         // Step 3: Set circular reference
-        this.mongoPolicyDao.setMongoRoleDao(this.dao);
+        this.mongoPolicyDaoImpl.setMongoRoleDao(this.dao);
     }
 
     @After
@@ -241,11 +243,11 @@ public class MongoRoleDaoTest {
 
         dao.saveOrUpdateRole(role);
 
-        Role found = dao.getRoleById("TestRole");
+        Role found = dao.getRoleById("TestRole" + "-" + ROLE_TYPE);
 
         Assert.assertNotNull(found);
         Assert.assertEquals("TestRole", found.getName());
-        Assert.assertEquals("TestRole", found.getId());
+        Assert.assertEquals("TestRole" + "-" + ROLE_TYPE, found.getId());
     }
 
     @Test
@@ -578,7 +580,7 @@ public class MongoRoleDaoTest {
 
         MongoPolicyImpl policy = new MongoPolicyImpl();
         policy.setName("TestPolicy");
-        this.mongoPolicyDao.saveOrUpdatePolicy(policy);
+        this.mongoPolicyDaoImpl.saveOrUpdatePolicy(policy);
 
         role.addPolicy(policy);
 
@@ -1130,7 +1132,7 @@ public class MongoRoleDaoTest {
         MongoPolicyImpl policy = new MongoPolicyImpl();
         policy.setName("TestPolicy");
         policy.setDescription("Test policy");
-        this.mongoPolicyDao.saveOrUpdatePolicy(policy);
+        this.mongoPolicyDaoImpl.saveOrUpdatePolicy(policy);
         role.addPolicy(policy);
 
         dao.saveOrUpdateRole(role);

@@ -489,58 +489,58 @@ public class MongoPersistenceAutoConfiguration {
     // Security DAOs
 
     @Bean("mongoPolicyDao")
-    public MongoPolicyDao mongoPolicyDao(
+    public MongoPolicyDaoImpl mongoPolicyDao(
             MongoPolicyRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoPolicyDao(repository, mongoTemplate);
+        return new MongoPolicyDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("mongoRoleDao")
-    public MongoRoleDao mongoRoleDao(
+    public MongoRoleDaoImpl mongoRoleDao(
             MongoRoleRepository repository,
             MongoTemplate mongoTemplate,
-            MongoPolicyDao mongoPolicyDao) {
-        MongoRoleDao roleDao = new MongoRoleDao(repository, mongoTemplate, mongoPolicyDao);
+            MongoPolicyDaoImpl mongoPolicyDaoImpl) {
+        MongoRoleDaoImpl roleDao = new MongoRoleDaoImpl(repository, mongoTemplate, mongoPolicyDaoImpl);
         // Set circular dependency
-        mongoPolicyDao.setMongoRoleDao(roleDao);
+        mongoPolicyDaoImpl.setMongoRoleDao(roleDao);
         return roleDao;
     }
 
     @Bean("mongoIkasanPrincipalDao")
-    public MongoIkasanPrincipalDao mongoIkasanPrincipalDao(
+    public MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDao(
             MongoIkasanPrincipalRepository repository,
             MongoTemplate mongoTemplate,
-            MongoRoleDao mongoRoleDao) {
-        return new MongoIkasanPrincipalDao(repository, mongoTemplate, mongoRoleDao);
+            MongoRoleDaoImpl mongoRoleDaoImpl) {
+        return new MongoIkasanPrincipalDaoImpl(repository, mongoTemplate, mongoRoleDaoImpl);
     }
 
     @Bean("mongoAuthenticationMethodDao")
-    public MongoAuthenticationMethodDao mongoAuthenticationMethodDao(
+    public MongoAuthenticationMethodDaoImpl mongoAuthenticationMethodDao(
             MongoAuthenticationMethodRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoAuthenticationMethodDao(repository, mongoTemplate);
+        return new MongoAuthenticationMethodDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("mongoUserDao")
     public UserDao mongoUserDao(
             MongoUserRepository repository,
             MongoTemplate mongoTemplate,
-            MongoIkasanPrincipalDao mongoIkasanPrincipalDao) {
-        return new MongoUserDao(repository, mongoTemplate, mongoIkasanPrincipalDao);
+            MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl) {
+        return new MongoUserDaoImpl(repository, mongoTemplate, mongoIkasanPrincipalDaoImpl);
     }
 
     @Bean("mongoSecurityDao")
     public SecurityDao mongoSecurityDao(
-            MongoIkasanPrincipalDao mongoIkasanPrincipalDao,
-            MongoPolicyDao mongoPolicyDao,
-            MongoRoleDao mongoRoleDao,
-            MongoAuthenticationMethodDao mongoAuthenticationMethodDao,
+            MongoIkasanPrincipalDaoImpl mongoIkasanPrincipalDaoImpl,
+            MongoPolicyDaoImpl mongoPolicyDaoImpl,
+            MongoRoleDaoImpl mongoRoleDaoImpl,
+            MongoAuthenticationMethodDaoImpl mongoAuthenticationMethodDaoImpl,
             UserDao mongoUserDao) {
-        return new MongoSecurityDao(
-            mongoIkasanPrincipalDao,
-            mongoPolicyDao,
-            mongoRoleDao,
-            mongoAuthenticationMethodDao,
+        return new MongoSecurityDaoImpl(
+            mongoIkasanPrincipalDaoImpl,
+            mongoPolicyDaoImpl,
+            mongoRoleDaoImpl,
+            mongoAuthenticationMethodDaoImpl,
             mongoUserDao
         );
     }
