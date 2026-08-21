@@ -20,11 +20,6 @@ public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
 {
     private static Logger logger = LoggerFactory.getLogger(SolrReplayAuditDao.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String REPLAY_AUDIT = "replay_audit";
-
     JsonMapper mapper = JsonMapper.builder().build();
 
     @Override

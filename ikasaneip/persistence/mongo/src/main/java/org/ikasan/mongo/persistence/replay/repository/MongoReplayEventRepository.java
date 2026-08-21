@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.replay.repository;
 
-import org.ikasan.mongo.persistence.replay.model.MongoReplayEvent;
+import org.ikasan.mongo.persistence.replay.model.MongoReplayEventImpl;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -14,11 +14,11 @@ import java.util.List;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoReplayEventRepository extends MongoRepository<MongoReplayEvent, String> {
+public interface MongoReplayEventRepository extends MongoRepository<MongoReplayEventImpl, String> {
 
-    List<MongoReplayEvent> findByModuleName(String moduleName);
+    List<MongoReplayEventImpl> findByModuleName(String moduleName);
 
-    List<MongoReplayEvent> findByModuleNameAndFlowName(String moduleName, String flowName);
+    List<MongoReplayEventImpl> findByModuleNameAndFlowName(String moduleName, String flowName);
 
     void deleteByExpiryLessThan(long currentTime);
 }
