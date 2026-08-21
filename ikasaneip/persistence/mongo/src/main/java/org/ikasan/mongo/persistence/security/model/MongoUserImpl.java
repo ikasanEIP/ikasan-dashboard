@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.security.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
@@ -20,65 +21,34 @@ import java.util.*;
  *
  * @author Ikasan Development Team
  */
-@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoUserImpl implements User, UserLite {
 
-    @Id
     private String id;
-
-    @Indexed(unique = true)
-    @Field("username")
+    private String type;
     private String username;
-
-    @Field("password")
     private String password;
-
-    @Field("email")
     private String email;
-
-    @Field("first_name")
     private String firstName;
-
-    @Field("surname")
     private String surname;
-
-    @Field("department")
     private String department;
-
-    @Field("enabled")
     private boolean enabled = true;
-
-    @Field("account_non_expired")
     private boolean accountNonExpired = true;
-
-    @Field("account_non_locked")
     private boolean accountNonLocked = true;
-
-    @Field("credentials_non_expired")
     private boolean credentialsNonExpired = true;
-
-    @Field("requires_password_change")
     private boolean requiresPasswordChange = false;
-
-    @Field("previous_access_timestamp")
     private long previousAccessTimestamp;
 
     @JsonIgnore
-    @Field("principal_ids")
     private List<String> principalIds = new ArrayList<>();
 
     @JsonIgnore
     private transient Set<IkasanPrincipal> principals = new HashSet<>();
 
     @Indexed
-    @Field("created_timestamp")
     private long createdTimestamp;
 
     @Indexed
-    @Field("modified_timestamp")
     private long modifiedTimestamp;
-
-    @Field("expiry")
     private long expiry;
 
     /**

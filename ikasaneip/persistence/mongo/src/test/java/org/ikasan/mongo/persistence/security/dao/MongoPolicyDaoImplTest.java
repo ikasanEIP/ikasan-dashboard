@@ -25,9 +25,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Date;
 import java.util.List;
 
+import static org.ikasan.spec.security.dao.PolicyDao.POLICY_TYPE;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoPolicyDaoTest {
+public class MongoPolicyDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -46,8 +48,8 @@ public class MongoPolicyDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private MongoPolicyDao dao;
-    private MongoRoleDao mongoRoleDao;
+    private MongoPolicyDaoImpl dao;
+    private MongoRoleDaoImpl mongoRoleDaoImpl;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -56,14 +58,14 @@ public class MongoPolicyDaoTest {
 
     @Autowired
     public void setDao(MongoPolicyRepository repository, MongoRoleRepository mongoRoleRepository, MongoTemplate mongoTemplate) {
-        // Step 1: Create MongoPolicyDao first (no dependencies)
-        this.dao = new MongoPolicyDao(repository, mongoTemplate);
+        // Step 1: Create MongoPolicyDaoImpl first (no dependencies)
+        this.dao = new MongoPolicyDaoImpl(repository, mongoTemplate);
 
-        // Step 2: Create MongoRoleDao with MongoPolicyDao
-        this.mongoRoleDao = new MongoRoleDao(mongoRoleRepository, mongoTemplate, this.dao);
+        // Step 2: Create MongoRoleDaoImpl with MongoPolicyDaoImpl
+        this.mongoRoleDaoImpl = new MongoRoleDaoImpl(mongoRoleRepository, mongoTemplate, this.dao);
 
         // Step 3: Set circular reference
-        this.dao.setMongoRoleDao(this.mongoRoleDao);
+        this.dao.setMongoRoleDao(this.mongoRoleDaoImpl);
     }
 
     @After
@@ -240,18 +242,19 @@ public class MongoPolicyDaoTest {
         jobPlan.setJobPlanName("ExistingJobPlan");
         role.addRoleJobPlan(jobPlan);
 
-        this.mongoRoleDao.saveOrUpdateRole(role);
+        this.mongoRoleDaoImpl.saveOrUpdateRole(role);
 
         // Save policies
         for (int i = 0; i < 3; i++) {
             MongoPolicyImpl policy = new MongoPolicyImpl();
             policy.setName("Policy" + i);
+            policy.setId(policy.getName()+ "-" + POLICY_TYPE);
             policy.setDescription("Description " + i);
             policy.setCreatedDateTime(new Date());
             policy.setUpdatedDateTime(new Date());
             role.addPolicy(policy);
             dao.saveOrUpdatePolicy(policy);
-            this.mongoRoleDao.saveOrUpdateRole(role);
+            this.mongoRoleDaoImpl.saveOrUpdateRole(role);
         }
 
         for (int i = 3; i < 6; i++) {
@@ -280,11 +283,11 @@ public class MongoPolicyDaoTest {
 
         dao.saveOrUpdatePolicy(policy);
 
-        Policy record = dao.getPolicyById("TestPolicy");
+        Policy record = dao.getPolicyById("TestPolicy" + "-" + POLICY_TYPE);
 
         Assert.assertNotNull(record);
         Assert.assertEquals("TestPolicy", record.getName());
-        Assert.assertEquals("TestPolicy", record.getId());
+        Assert.assertEquals("TestPolicy"+ "-" + POLICY_TYPE, record.getId());
     }
 
     @Test

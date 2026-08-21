@@ -2,7 +2,10 @@ package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalLiteImpl;
+import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalRecord;
 import org.ikasan.mongo.persistence.security.repository.MongoIkasanPrincipalRepository;
+import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.dao.IkasanPrincipalDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.IkasanPrincipalFilter;
@@ -16,6 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,26 +44,30 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
+public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoIkasanPrincipalDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoIkasanPrincipalDaoImpl.class);
+
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = MongoSecurityObjectMapperFactory.newInstance();
+    private static final long DO_NOT_EXPIRE = -1L;
 
     private final MongoIkasanPrincipalRepository repository;
     private final MongoTemplate mongoTemplate;
-    private final MongoRoleDao mongoRoleDao;
+    private final MongoRoleDaoImpl mongoRoleDaoImpl;
 
     /**
-     * Constructor for MongoIkasanPrincipalDao.
+     * Constructor for MongoIkasanPrincipalDaoImpl.
      *
      * @param repository the MongoDB repository for principal persistence
      * @param mongoTemplate the MongoTemplate for custom queries
-     * @param mongoRoleDao the role DAO for loading role relationships
+     * @param mongoRoleDaoImpl the role DAO for loading role relationships
      */
-    public MongoIkasanPrincipalDao(MongoIkasanPrincipalRepository repository, MongoTemplate mongoTemplate,
-                                   MongoRoleDao mongoRoleDao) {
+    public MongoIkasanPrincipalDaoImpl(MongoIkasanPrincipalRepository repository, MongoTemplate mongoTemplate,
+                                       MongoRoleDaoImpl mongoRoleDaoImpl) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
-        this.mongoRoleDao = mongoRoleDao;
+        this.mongoRoleDaoImpl = mongoRoleDaoImpl;
     }
 
     /**
@@ -66,6 +75,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @return a new MongoIkasanPrincipalImpl instance
      */
+    @Override
     public IkasanPrincipal createPrincipal() {
         return new MongoIkasanPrincipalImpl();
     }
@@ -85,36 +95,9 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @param principal the principal to save or update
      */
+    @Override
     public void saveOrUpdatePrincipal(IkasanPrincipal principal) {
-        MongoIkasanPrincipalImpl mongoPrincipal;
-
-        if (principal instanceof MongoIkasanPrincipalImpl) {
-            mongoPrincipal = (MongoIkasanPrincipalImpl) principal;
-        } else {
-            mongoPrincipal = convertToMongoPrincipal(principal);
-        }
-
-        // Generate ID from name if not set
-        if (mongoPrincipal.getId() == null && mongoPrincipal.getName() != null) {
-            mongoPrincipal.setId(mongoPrincipal.getName() + "-securityPrincipal");
-        }
-
-        // Set timestamps
-        Date now = new Date();
-        if (mongoPrincipal.getCreatedDateTime() == null) {
-            mongoPrincipal.setCreatedDateTime(now);
-        }
-        mongoPrincipal.setUpdatedDateTime(now);
-
-        // Update role IDs from roles
-        if (principal.getRoles() != null) {
-            List<String> roleIds = principal.getRoles().stream()
-                .map(role -> role.getId().toString())
-                .collect(Collectors.toList());
-            mongoPrincipal.setRoleIds(roleIds);
-        }
-
-        repository.save(mongoPrincipal);
+        repository.save(this.convertToMongoIkasanPrincipalRecord(principal));
         logger.debug("Saved principal with name: {}", principal.getName());
     }
 
@@ -123,8 +106,11 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @param principals the list of principals to save or update
      */
+    @Override
     public void saveOrUpdatePrincipals(List<IkasanPrincipal> principals) {
-        principals.forEach(this::saveOrUpdatePrincipal);
+        repository.saveAll(principals.stream()
+            .map(this::convertToMongoIkasanPrincipalRecord)
+            .toList());
         logger.debug("Saved {} principals", principals.size());
     }
 
@@ -136,8 +122,13 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @param principal the principal to delete
      */
+    @Override
     public void deletePrincipal(IkasanPrincipal principal) {
-        repository.deleteByName(principal.getName());
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).is(principal.getName()));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        mongoTemplate.remove(query, MongoIkasanPrincipalRecord.class);
         logger.debug("Deleted principal with name: {}", principal.getName());
     }
 
@@ -149,8 +140,13 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @return a list of all principals, or an empty list if no principals exist
      */
+    @Override
     public List<IkasanPrincipal> getAllPrincipals() {
-        return repository.findAll().stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::loadRoles)
             .collect(Collectors.toList());
     }
@@ -163,12 +159,14 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset the starting position in the result set (-1 for no offset)
      * @return a list of principals matching the criteria
      */
+    @Override
     public List<IkasanPrincipal> getPrincipals(IkasanPrincipalFilter filter, int limit, int offset) {
         Query query = new Query();
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::loadRoles)
             .collect(Collectors.toList());
     }
@@ -181,8 +179,13 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      *
      * @return a list of all principal lite objects, or an empty list if no principals exist
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalLites() {
-        return repository.findAll().stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
     }
@@ -198,12 +201,14 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset the starting position in the result set (-1 for no offset)
      * @return a list of principal lite objects matching the criteria
      */
+    @Override
     public List<IkasanPrincipalLite> getPrincipalLites(IkasanPrincipalFilter filter, int limit, int offset) {
         Query query = new Query();
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
     }
@@ -216,14 +221,21 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param id the unique ID of the principal to retrieve
      * @return the IkasanPrincipal object if found, or null if no principal exists with the given ID
      */
+    @Override
     public IkasanPrincipal findById(String id) {
         if (id == null || id.isEmpty()) {
             return null;
         }
 
-        return repository.findById(id)
-            .map(this::loadRoles)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        MongoIkasanPrincipalRecord result = mongoTemplate.findOne(query, MongoIkasanPrincipalRecord.class);
+        if (result == null) {
+            return null;
+        }
+        return loadRoles(OBJECT_MAPPER.readValue(result.getPrincipal(), MongoIkasanPrincipalImpl.class));
     }
 
     /**
@@ -234,10 +246,17 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param name the exact name of the principal to retrieve
      * @return the IkasanPrincipal object if found, or null if no principal exists with the given name
      */
+    @Override
     public IkasanPrincipal getPrincipalByName(String name) {
-        return repository.findByName(name)
-            .map(this::loadRoles)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).is(name));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        MongoIkasanPrincipalRecord result = mongoTemplate.findOne(query, MongoIkasanPrincipalRecord.class);
+        if (result == null) {
+            return null;
+        }
+        return loadRoles(OBJECT_MAPPER.readValue(result.getPrincipal(), MongoIkasanPrincipalImpl.class));
     }
 
     /**
@@ -249,8 +268,14 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param name the search term to match against principal names
      * @return a list of principals whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<IkasanPrincipal> getPrincipalByNameLike(String name) {
-        return repository.findByNameContainingIgnoreCase(name).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).regex(".*" + name + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::loadRoles)
             .collect(Collectors.toList());
     }
@@ -264,19 +289,25 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param roleName the name of the role
      * @return a list of principals that have the specified role, or an empty list if none found
      */
+    @Override
     public List<IkasanPrincipal> getAllPrincipalsWithRole(String roleName) {
         if (roleName == null || roleName.isEmpty()) {
             return Collections.emptyList();
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             return Collections.emptyList();
         }
 
         String roleId = role.getId().toString();
-        return repository.findByRoleIdsContaining(roleId).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::loadRoles)
             .collect(Collectors.toList());
     }
@@ -294,6 +325,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset the starting position in the result set (-1 for no offset)
      * @return a list of principal lite objects that have the specified role and match the filter criteria
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithRole(String roleName, IkasanPrincipalFilter filter,
                                                               int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
@@ -301,18 +333,19 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             return Collections.emptyList();
         }
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").in(roleId));
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
     }
@@ -329,6 +362,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset offset for pagination (-1 for no offset)
      * @return a list of principal names for principals with the specified role
      */
+    @Override
     public List<String> getAllPrincipalNamesWithRole(String roleName, IkasanPrincipalFilter filter,
                                                      int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
@@ -336,19 +370,20 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             return Collections.emptyList();
         }
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").in(roleId));
-        query.fields().include("name");
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
+        query.fields().include(EntityFields.PAYLOAD_CONTENT).include(EntityFields.NAME);
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(MongoIkasanPrincipalImpl::getName)
             .collect(Collectors.toList());
     }
@@ -365,6 +400,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset the starting position in the result set (-1 for no offset)
      * @return a list of principal lite objects that do NOT have the specified role
      */
+    @Override
     public List<IkasanPrincipalLite> getAllPrincipalsWithoutRole(String roleName, IkasanPrincipalFilter filter,
                                                                  int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
@@ -372,7 +408,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             // If role doesn't exist, all principals don't have it
             return getPrincipalLites(filter, limit, offset);
@@ -380,11 +416,12 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").nin(roleId));
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).nin(roleId));
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
     }
@@ -401,6 +438,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param offset offset for pagination (-1 for no offset)
      * @return a list of principal names for principals without the specified role
      */
+    @Override
     public List<String> getAllPrincipalNamesWithoutRole(String roleName, IkasanPrincipalFilter filter,
                                                         int limit, int offset) {
         if (roleName == null || roleName.isEmpty()) {
@@ -408,27 +446,31 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             // If role doesn't exist, all principals don't have it
             Query query = new Query();
-            query.fields().include("name");
+            query.fields().include(EntityFields.NAME).include(EntityFields.PAYLOAD_CONTENT);
             addFilterCriteria(query, filter);
             addSortingAndPaging(query, filter, limit, offset);
 
-            return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+            return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+                .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
                 .map(MongoIkasanPrincipalImpl::getName)
                 .collect(Collectors.toList());
         }
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").nin(roleId));
-        query.fields().include("name");
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).nin(roleId));
+        query.fields().include(EntityFields.NAME).include(EntityFields.PAYLOAD_CONTENT);
         addFilterCriteria(query, filter);
         addSortingAndPaging(query, filter, limit, offset);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        this.getAllPrincipals();
+
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(MongoIkasanPrincipalImpl::getName)
             .collect(Collectors.toList());
     }
@@ -443,6 +485,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param roleNames list of role names to search for
      * @return a list of principals that have at least one of the specified roles, or an empty list if none found
      */
+    @Override
     public List<IkasanPrincipal> getPrincipalsByRoleNames(List<String> roleNames) {
         if (roleNames == null || roleNames.isEmpty()) {
             return Collections.emptyList();
@@ -450,7 +493,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
 
         // Get role IDs for all role names
         List<String> roleIds = roleNames.stream()
-            .map(mongoRoleDao::getRoleByName)
+            .map(mongoRoleDaoImpl::getRoleByName)
             .filter(Objects::nonNull)
             .map(role -> role.getId().toString())
             .collect(Collectors.toList());
@@ -460,9 +503,11 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").in(roleIds));
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleIds));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalImpl.class).stream()
+        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::loadRoles)
             .collect(Collectors.toList());
     }
@@ -476,10 +521,11 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param filter the filter criteria to apply (may be null for total count)
      * @return the count of matching principals
      */
+    @Override
     public int getPrincipalCount(IkasanPrincipalFilter filter) {
         Query query = new Query();
         addFilterCriteria(query, filter);
-        return (int) mongoTemplate.count(query, MongoIkasanPrincipalImpl.class);
+        return (int) mongoTemplate.count(query, MongoIkasanPrincipalRecord.class);
     }
 
     /**
@@ -493,23 +539,24 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param filter the filter criteria to apply (may be null for no additional filtering)
      * @return the count of principals that have the specified role and match the filter criteria
      */
+    @Override
     public int getPrincipalsWithRoleCount(String roleName, IkasanPrincipalFilter filter) {
         if (roleName == null || roleName.isEmpty()) {
             return 0;
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             return 0;
         }
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").in(roleId));
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
         addFilterCriteria(query, filter);
 
-        return (int) mongoTemplate.count(query, MongoIkasanPrincipalImpl.class);
+        return (int) mongoTemplate.count(query, MongoIkasanPrincipalRecord.class);
     }
 
     /**
@@ -522,13 +569,14 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param filter the filter criteria to apply (may be null for no additional filtering)
      * @return the count of principals that do NOT have the specified role
      */
+    @Override
     public int getPrincipalsWithoutRoleCount(String roleName, IkasanPrincipalFilter filter) {
         if (roleName == null || roleName.isEmpty()) {
             return 0;
         }
 
         // Get the role to find its ID
-        Role role = mongoRoleDao.getRoleByName(roleName);
+        Role role = mongoRoleDaoImpl.getRoleByName(roleName);
         if (role == null) {
             // If role doesn't exist, all principals don't have it
             return getPrincipalCount(filter);
@@ -536,10 +584,10 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
 
         String roleId = role.getId().toString();
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleIds").nin(roleId));
+        query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).nin(roleId));
         addFilterCriteria(query, filter);
 
-        return (int) mongoTemplate.count(query, MongoIkasanPrincipalImpl.class);
+        return (int) mongoTemplate.count(query, MongoIkasanPrincipalRecord.class);
     }
 
     /**
@@ -552,7 +600,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
         if (principal.getRoleIds() != null && !principal.getRoleIds().isEmpty()) {
             Set<Role> roles = new HashSet<>();
             for (String roleId : principal.getRoleIds()) {
-                Role role = mongoRoleDao.getRoleById(roleId);
+                Role role = mongoRoleDaoImpl.getRoleById(roleId);
                 if (role != null) {
                     roles.add(role);
                 }
@@ -583,17 +631,28 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param principal the principal to convert
      * @return the MongoIkasanPrincipalImpl
      */
-    private MongoIkasanPrincipalImpl convertToMongoPrincipal(IkasanPrincipal principal) {
-        MongoIkasanPrincipalImpl mongoPrincipal = new MongoIkasanPrincipalImpl();
-        mongoPrincipal.setId(principal.getId());
-        mongoPrincipal.setName(principal.getName());
-        mongoPrincipal.setType(principal.getType());
-        mongoPrincipal.setDescription(principal.getDescription());
-        mongoPrincipal.setCreatedDateTime(principal.getCreatedDateTime());
-        mongoPrincipal.setUpdatedDateTime(principal.getUpdatedDateTime());
-        mongoPrincipal.setApplicationSecurityBaseDn(principal.getApplicationSecurityBaseDn());
-        mongoPrincipal.setRoles(principal.getRoles());
-        return mongoPrincipal;
+    private MongoIkasanPrincipalRecord convertToMongoIkasanPrincipalRecord(IkasanPrincipal principal) {
+        MongoIkasanPrincipalRecord record = new MongoIkasanPrincipalRecord();
+        record.setId(principal.getName() + "-" + PRINCIPAL_TYPE);
+        principal.setId(principal.getName() + "-" + PRINCIPAL_TYPE);
+        record.setType(PRINCIPAL_TYPE);
+        record.setName(principal.getName());
+        record.setDescription(principal.getDescription());
+        record.setPrincipalType(principal.getType());
+        record.setTimestamp(principal.getCreatedDateTime() != null ? principal.getCreatedDateTime().getTime()
+            : System.currentTimeMillis());
+        record.setModifiedTimestamp(principal.getUpdatedDateTime() != null ? principal.getUpdatedDateTime().getTime()
+            : System.currentTimeMillis());
+        record.setRelatedRoleIdentifiers(principal.getRoles().stream()
+            .map(Role::getId).map(String::valueOf).collect(Collectors.toList()));
+        record.setExpiry(DO_NOT_EXPIRE);
+        try {
+            record.setPrincipal(OBJECT_MAPPER.writeValueAsString(principal));
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]", e);
+        }
+
+        return record;
     }
 
     /**
@@ -603,20 +662,23 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
      * @param filter the filter criteria
      */
     private void addFilterCriteria(Query query, IkasanPrincipalFilter filter) {
+        // Always add type filter to ensure we only query principal documents
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
+
         if (filter == null) {
             return;
         }
 
         if (filter.getTypeFilter() != null && !filter.getTypeFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("type").regex(filter.getTypeFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.IKASAN_PRINCIPAL_TYPE).regex(filter.getTypeFilter(), "i"));
         }
 
         if (filter.getNameFilter() != null && !filter.getNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("name").regex(filter.getNameFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.NAME).regex(filter.getNameFilter(), "i"));
         }
 
         if (filter.getDescriptionFilter() != null && !filter.getDescriptionFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("description").regex(filter.getDescriptionFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.DESCRIPTION).regex(filter.getDescriptionFilter(), "i"));
         }
     }
 
@@ -636,7 +698,7 @@ public class MongoIkasanPrincipalDao implements IkasanPrincipalDao {
             query.with(Sort.by(direction, filter.getSortColumn()));
         } else {
             // Default sort by name ascending
-            query.with(Sort.by(Sort.Direction.ASC, "name"));
+            query.with(Sort.by(Sort.Direction.ASC, EntityFields.NAME));
         }
 
         // Add paging

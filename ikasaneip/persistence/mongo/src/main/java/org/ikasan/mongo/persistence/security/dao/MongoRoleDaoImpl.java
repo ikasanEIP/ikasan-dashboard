@@ -1,9 +1,9 @@
 package org.ikasan.mongo.persistence.security.dao;
 
-import org.ikasan.mongo.persistence.security.model.MongoRoleImpl;
-import org.ikasan.mongo.persistence.security.model.MongoRoleJobPlanImpl;
-import org.ikasan.mongo.persistence.security.model.MongoRoleModuleImpl;
+import org.ikasan.mongo.persistence.security.model.*;
 import org.ikasan.mongo.persistence.security.repository.MongoRoleRepository;
+import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.dao.RoleDao;
 import org.ikasan.spec.security.model.*;
 import org.slf4j.Logger;
@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,26 +36,29 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoRoleDao implements RoleDao {
+public class MongoRoleDaoImpl implements RoleDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoRoleDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoRoleDaoImpl.class);
+
+    private static final JsonMapper OBJECT_MAPPER = MongoSecurityObjectMapperFactory.newInstance();
+    private static final long DO_NOT_EXPIRE = -1L;
 
     private final MongoRoleRepository repository;
     private final MongoTemplate mongoTemplate;
-    private final MongoPolicyDao mongoPolicyDao;
+    private final MongoPolicyDaoImpl mongoPolicyDaoImpl;
 
     /**
-     * Constructor for MongoRoleDao.
+     * Constructor for MongoRoleDaoImpl.
      *
      * @param repository the MongoDB repository for role persistence
      * @param mongoTemplate the MongoTemplate for custom queries
-     * @param mongoPolicyDao the policy DAO for loading policy relationships
+     * @param mongoPolicyDaoImpl the policy DAO for loading policy relationships
      */
-    public MongoRoleDao(MongoRoleRepository repository, MongoTemplate mongoTemplate,
-                        MongoPolicyDao mongoPolicyDao) {
+    public MongoRoleDaoImpl(MongoRoleRepository repository, MongoTemplate mongoTemplate,
+                            MongoPolicyDaoImpl mongoPolicyDaoImpl) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
-        this.mongoPolicyDao = mongoPolicyDao;
+        this.mongoPolicyDaoImpl = mongoPolicyDaoImpl;
     }
 
     /**
@@ -61,6 +66,7 @@ public class MongoRoleDao implements RoleDao {
      *
      * @return a new MongoRoleImpl instance
      */
+    @Override
     public Role createRole() {
         return new MongoRoleImpl();
     }
@@ -85,33 +91,16 @@ public class MongoRoleDao implements RoleDao {
      *
      * @param role the role to save or update
      */
+    @Override
     public void saveOrUpdateRole(Role role) {
-        MongoRoleImpl mongoRole;
-
-        if (role instanceof MongoRoleImpl) {
-            mongoRole = (MongoRoleImpl) role;
-        } else {
-            mongoRole = convertToMongoRole(role);
-        }
-
-        // Generate ID from name if not set
-        if (mongoRole.getId() == null && mongoRole.getName() != null) {
-            mongoRole.setId(mongoRole.getName());
-        }
-
-        // Set timestamps
-        Date now = new Date();
-        if (mongoRole.getCreatedDateTime() == null) {
-            mongoRole.setCreatedDateTime(now);
-        }
-        mongoRole.setUpdatedDateTime(now);
+        MongoRoleRecord mongoRole = convertToMongoRole(role);
 
         // Update policy IDs from policies
         if (role.getPolicies() != null) {
             List<String> policyIds = role.getPolicies().stream()
                 .map(policy -> policy.getId().toString())
                 .collect(Collectors.toList());
-            mongoRole.setPolicyIds(policyIds);
+            mongoRole.setRelatedPolicies(policyIds);
         }
 
         // Update role module IDs from role modules
@@ -119,7 +108,7 @@ public class MongoRoleDao implements RoleDao {
             List<String> roleModuleIds = role.getRoleModules().stream()
                 .map(RoleModule::getModuleName)
                 .collect(Collectors.toList());
-            mongoRole.setRoleModuleIds(roleModuleIds);
+            mongoRole.setRelatedModules(roleModuleIds);
         }
 
         // Update role job plan IDs from role job plans
@@ -127,7 +116,7 @@ public class MongoRoleDao implements RoleDao {
             List<String> roleJobPlanIds = role.getRoleJobPlans().stream()
                 .map(RoleJobPlan::getJobPlanName)
                 .collect(Collectors.toList());
-            mongoRole.setRoleJobPlanIds(roleJobPlanIds);
+            mongoRole.setRelatedJobPlans(roleJobPlanIds);
         }
 
         repository.save(mongoRole);
@@ -142,8 +131,13 @@ public class MongoRoleDao implements RoleDao {
      *
      * @param role the role to delete
      */
+    @Override
     public void deleteRole(Role role) {
-        repository.deleteByName(role.getName());
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).is(role.getName()));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        mongoTemplate.remove(query, MongoRoleRecord.class);
         logger.debug("Deleted role with name: {}", role.getName());
     }
 
@@ -156,6 +150,7 @@ public class MongoRoleDao implements RoleDao {
      * @param roleModule the RoleModule to save and associate with its corresponding Role
      * @throws IllegalArgumentException if the RoleModule does not have an associated Role
      */
+    @Override
     public void saveRoleModule(RoleModule roleModule) {
         if (roleModule.getRole() == null) {
             throw new IllegalArgumentException("RoleModule must have a non-null Role");
@@ -178,6 +173,7 @@ public class MongoRoleDao implements RoleDao {
      * @param roleModule the RoleModule instance to be removed from its associated Role
      * @throws IllegalArgumentException if the RoleModule does not have an associated Role
      */
+    @Override
     public void deleteRoleModule(RoleModule roleModule) {
         if (roleModule.getRole() == null) {
             throw new IllegalArgumentException("RoleModule must have a non-null Role");
@@ -200,6 +196,7 @@ public class MongoRoleDao implements RoleDao {
      * @param roleJobPlan the RoleJobPlan to save and associate with its corresponding Role
      * @throws IllegalArgumentException if the RoleJobPlan does not have an associated Role
      */
+    @Override
     public void saveRoleJobPlan(RoleJobPlan roleJobPlan) {
         if (roleJobPlan.getRole() == null) {
             throw new IllegalArgumentException("RoleJobPlan must have a non-null Role");
@@ -222,6 +219,7 @@ public class MongoRoleDao implements RoleDao {
      * @param roleJobPlan the RoleJobPlan instance to be removed from its associated Role
      * @throws IllegalArgumentException if the RoleJobPlan does not have an associated Role
      */
+    @Override
     public void deleteRoleJobPlan(RoleJobPlan roleJobPlan) {
         if (roleJobPlan.getRole() == null) {
             throw new IllegalArgumentException("RoleJobPlan must have a non-null Role");
@@ -242,9 +240,13 @@ public class MongoRoleDao implements RoleDao {
      *
      * @return a list of all roles, or an empty list if no roles exist
      */
+    @Override
     public List<Role> getAllRoles() {
-        return repository.findAll().stream()
-            .map(this::loadRelationships)
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        return mongoTemplate.find(query, MongoRoleRecord.class).stream()
+            .map(this::convertRecordToRole)
             .collect(Collectors.toList());
     }
 
@@ -256,10 +258,17 @@ public class MongoRoleDao implements RoleDao {
      * @param name the exact name of the role to retrieve
      * @return the Role object if found, or null if no role exists with the given name
      */
+    @Override
     public Role getRoleByName(String name) {
-        return repository.findByName(name)
-            .map(this::loadRelationships)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).is(name));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        MongoRoleRecord result = mongoTemplate.findOne(query, MongoRoleRecord.class);
+        if (result != null) {
+            return convertRecordToRole(result);
+        }
+        return null;
     }
 
     /**
@@ -270,14 +279,21 @@ public class MongoRoleDao implements RoleDao {
      * @param id the unique identifier of the role to retrieve
      * @return the Role object if a matching record is found, or null if no record exists for the provided identifier
      */
+    @Override
     public Role getRoleById(String id) {
         if (id == null || id.isEmpty()) {
             return null;
         }
 
-        return repository.findById(id)
-            .map(this::loadRelationships)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        MongoRoleRecord result = mongoTemplate.findOne(query, MongoRoleRecord.class);
+        if (result != null) {
+            return convertRecordToRole(result);
+        }
+        return null;
     }
 
     /**
@@ -289,9 +305,14 @@ public class MongoRoleDao implements RoleDao {
      * @param name the search term to match against role names
      * @return a list of roles whose names contain the search term, or an empty list if no matches found
      */
+    @Override
     public List<Role> getRoleByNameLike(String name) {
-        return repository.findByNameContainingIgnoreCase(name).stream()
-            .map(this::loadRelationships)
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.NAME).regex(name, "i"));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        return mongoTemplate.find(query, MongoRoleRecord.class).stream()
+            .map(this::convertRecordToRole)
             .collect(Collectors.toList());
     }
 
@@ -304,19 +325,21 @@ public class MongoRoleDao implements RoleDao {
      * @param jobPlanName the name of the job plan
      * @return a list of RoleJobPlan objects that match the job plan name, or an empty list if none found
      */
+    @Override
     public List<RoleJobPlan> getRoleJobPlansByJobPlanName(String jobPlanName) {
         if (jobPlanName == null || jobPlanName.isEmpty()) {
             return Collections.emptyList();
         }
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("roleJobPlanIds").in(jobPlanName));
+        query.addCriteria(Criteria.where(EntityFields.ROLE_JOB_PLAN_RELATED_ENTITY_COLLECTION).in(jobPlanName));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
 
-        List<MongoRoleImpl> roles = mongoTemplate.find(query, MongoRoleImpl.class);
+        List<MongoRoleRecord> roles = mongoTemplate.find(query, MongoRoleRecord.class);
 
         // Extract all RoleJobPlans with matching job plan name from all matching roles
         return roles.stream()
-            .map(this::loadRelationships)
+            .map(this::convertRecordToRole)
             .flatMap(role -> role.getRoleJobPlans().stream())
             .filter(roleJobPlan -> jobPlanName.equals(roleJobPlan.getJobPlanName()))
             .collect(Collectors.toList());
@@ -331,13 +354,20 @@ public class MongoRoleDao implements RoleDao {
      * @param policyId the unique identifier of the policy for which associated roles need to be retrieved
      * @return a list of roles associated with the specified policy, or an empty list if no roles are found
      */
+    @Override
     public List<Role> getRolesAssociatedWithPolicy(Object policyId) {
         if (policyId == null) {
             return Collections.emptyList();
         }
 
         String policyIdStr = policyId.toString();
-        return repository.findByPolicyIdsContaining(policyIdStr).stream()
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ROLE_POLICY_RELATED_ENTITY_COLLECTION).in(policyIdStr));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
+
+        return mongoTemplate.find(query, MongoRoleRecord.class).stream()
+            .map(mongoRoleRecord
+                -> OBJECT_MAPPER.readValue(mongoRoleRecord.getRole(), MongoRoleImpl.class))
             .map(this::loadRelationships)
             .collect(Collectors.toList());
     }
@@ -353,7 +383,7 @@ public class MongoRoleDao implements RoleDao {
         if (role.getPolicyIds() != null && !role.getPolicyIds().isEmpty()) {
             Set<Policy> policies = new HashSet<>();
             for (String policyId : role.getPolicyIds()) {
-                Policy policy = mongoPolicyDao.getPolicyById(policyId);
+                Policy policy = mongoPolicyDaoImpl.getPolicyById(policyId);
                 if (policy != null) {
                     policies.add(policy);
                 }
@@ -400,16 +430,72 @@ public class MongoRoleDao implements RoleDao {
      * @param role the role to convert
      * @return the MongoRoleImpl
      */
-    private MongoRoleImpl convertToMongoRole(Role role) {
-        MongoRoleImpl mongoRole = new MongoRoleImpl();
-        mongoRole.setId(role.getId());
-        mongoRole.setName(role.getName());
-        mongoRole.setDescription(role.getDescription());
-        mongoRole.setCreatedDateTime(role.getCreatedDateTime());
-        mongoRole.setUpdatedDateTime(role.getUpdatedDateTime());
-        mongoRole.setPolicies(role.getPolicies());
-        mongoRole.setRoleModules(role.getRoleModules());
-        mongoRole.setRoleJobPlans(role.getRoleJobPlans());
-        return mongoRole;
+    private MongoRoleRecord convertToMongoRole(Role role) {
+        MongoRoleRecord record = new MongoRoleRecord();
+        record.setType(ROLE_TYPE);
+        record.setId(role.getName() + "-" + ROLE_TYPE);
+        role.setId(role.getName() + "-" + ROLE_TYPE);
+        record.setName(role.getName());
+        record.setTimestamp(role.getCreatedDateTime() != null ? role.getCreatedDateTime().getTime() : System.currentTimeMillis());
+        record.setModifiedTimestamp(role.getUpdatedDateTime() != null ? role.getUpdatedDateTime().getTime() : System.currentTimeMillis());
+        record.setRelatedPolicies(role.getPolicies().stream()
+            .map(Policy::getId).map(String::valueOf).collect(Collectors.toList()));
+        record.setRelatedModules(role.getRoleModules().stream()
+            .map(RoleModule::getModuleName).collect(Collectors.toList()));
+        record.setRelatedJobPlans(role.getRoleJobPlans().stream()
+            .map(RoleJobPlan::getJobPlanName).collect(Collectors.toList()));
+        record.setExpiry(DO_NOT_EXPIRE);
+        record.getRelatedPolicies().forEach(policyId -> {
+            MongoPolicyRecord policy = this.mongoPolicyDaoImpl.getPolicyRecordById(policyId);
+            if(policy.getRelatedRoleIdentifiers() == null) policy.setRelatedRoleIdentifiers(new ArrayList<>());
+            if(!policy.getRelatedRoleIdentifiers().contains(role.getId())) {
+                policy.getRelatedRoleIdentifiers().add((String) role.getId());
+                this.mongoPolicyDaoImpl.saveOrUpdatePolicy(policy);
+            }
+        });
+
+        try {
+            record.setRole(OBJECT_MAPPER.writeValueAsString(role));
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert Role to string! [" + role.getName() + "]", e);
+        }
+
+        return record;
+    }
+
+    private Role convertRecordToRole(MongoRoleRecord record) {
+        try {
+            Role role = OBJECT_MAPPER.readValue(record.getRole(), MongoRoleImpl.class);
+            role.setId(record.getId());
+
+            if(record.getRelatedPolicies() != null) {
+                record.getRelatedPolicies().forEach(policyId
+                    -> role.addPolicy(this.mongoPolicyDaoImpl.getPolicyById(policyId)));
+            }
+
+            if(record.getRelatedModules() != null) {
+                record.getRelatedModules().forEach(moduleName
+                    -> {
+                    RoleModule roleModule =  new MongoRoleModuleImpl();
+                    roleModule.setRole(role);
+                    roleModule.setModuleName(moduleName);
+                    role.addRoleModule(roleModule);
+                });
+            }
+
+            if(record.getRelatedJobPlans() != null) {
+                record.getRelatedJobPlans().forEach(jobPlanName
+                    -> {
+                    RoleJobPlan roleJobPlan =  new MongoRoleJobPlanImpl();
+                    roleJobPlan.setRole(role);
+                    roleJobPlan.setJobPlanName(jobPlanName);
+                    role.addRoleJobPlan(roleJobPlan);
+                });
+            }
+
+            return role;
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]", e);
+        }
     }
 }

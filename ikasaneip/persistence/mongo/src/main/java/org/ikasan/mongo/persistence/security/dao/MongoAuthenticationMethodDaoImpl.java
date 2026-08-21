@@ -1,7 +1,10 @@
 package org.ikasan.mongo.persistence.security.dao;
 
 import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodImpl;
+import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodRecord;
 import org.ikasan.mongo.persistence.security.repository.MongoAuthenticationMethodRepository;
+import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.dao.AuthenticationMethodDao;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.slf4j.Logger;
@@ -10,8 +13,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,21 +36,25 @@ import java.util.stream.Collectors;
  *
  * @author Ikasan Development Team
  */
-public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
+public class MongoAuthenticationMethodDaoImpl implements AuthenticationMethodDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoAuthenticationMethodDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoAuthenticationMethodDaoImpl.class);
+
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = MongoSecurityObjectMapperFactory.newInstance();
+    private static final long DO_NOT_EXPIRE = -1L;
 
     private final MongoAuthenticationMethodRepository repository;
     private final MongoTemplate mongoTemplate;
 
     /**
-     * Constructor for MongoAuthenticationMethodDao.
+     * Constructor for MongoAuthenticationMethodDaoImpl.
      *
      * @param repository the MongoDB repository for authentication method persistence
      * @param mongoTemplate the MongoTemplate for custom queries
      */
-    public MongoAuthenticationMethodDao(MongoAuthenticationMethodRepository repository,
-                                        MongoTemplate mongoTemplate) {
+    public MongoAuthenticationMethodDaoImpl(MongoAuthenticationMethodRepository repository,
+                                            MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }
@@ -56,6 +64,7 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      *
      * @return a new MongoAuthenticationMethodImpl instance
      */
+    @Override
     public AuthenticationMethod createAuthenticationMethod() {
         return new MongoAuthenticationMethodImpl();
     }
@@ -69,24 +78,9 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      *
      * @param authenticationMethod the authentication method to save or update
      */
+    @Override
     public void saveOrUpdateAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        MongoAuthenticationMethodImpl mongoAuthMethod;
-
-        if (authenticationMethod instanceof MongoAuthenticationMethodImpl) {
-            mongoAuthMethod = (MongoAuthenticationMethodImpl) authenticationMethod;
-        } else {
-            mongoAuthMethod = convertToMongoAuthenticationMethod(authenticationMethod);
-        }
-
-        // Generate ID from name if not set
-        if (mongoAuthMethod.getId() == null && mongoAuthMethod.getName() != null) {
-            mongoAuthMethod.setId(mongoAuthMethod.getName());
-        }
-
-        // Set lastSynchronised if not set
-        if (mongoAuthMethod.getLastSynchronised() == null) {
-            mongoAuthMethod.setLastSynchronised(new Date());
-        }
+        MongoAuthenticationMethodRecord mongoAuthMethod = convertToMongoAuthenticationMethod(authenticationMethod);
 
         repository.save(mongoAuthMethod);
         logger.debug("Saved authentication method with name: {}", authenticationMethod.getName());
@@ -98,15 +92,21 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      * @param id the unique identifier of the authentication method
      * @return the authentication method, or null if not found
      */
+    @Override
     public AuthenticationMethod getAuthenticationMethod(Object id) {
         if (id == null) {
             return null;
         }
 
-        String idStr = id.toString();
-        return repository.findById(idStr)
-            .map(authMethod -> (AuthenticationMethod) authMethod)
-            .orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id.toString()));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(AUTHENTICATION_METHOD_TYPE));
+
+        MongoAuthenticationMethodRecord result = mongoTemplate.findOne(query, MongoAuthenticationMethodRecord.class);
+        if (result == null) {
+            return null;
+        }
+        return OBJECT_MAPPER.readValue(result.getAuthenticationMethod(), MongoAuthenticationMethodImpl.class);
     }
 
     /**
@@ -114,9 +114,16 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      *
      * @return a list of all authentication methods, ordered by their order field
      */
+    @Override
     public List<AuthenticationMethod> getAuthenticationMethods() {
-        return repository.findAllByOrderByOrderAsc().stream()
-            .map(authMethod -> (AuthenticationMethod) authMethod)
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(AUTHENTICATION_METHOD_TYPE));
+        query.with(Sort.by(Sort.Direction.ASC, "order"));
+
+        List<MongoAuthenticationMethodRecord> results = mongoTemplate.find(query, MongoAuthenticationMethodRecord.class);
+        return results.stream()
+            .map(authMethod -> OBJECT_MAPPER
+                .readValue(authMethod.getAuthenticationMethod(), MongoAuthenticationMethodImpl.class))
             .collect(Collectors.toList());
     }
 
@@ -125,8 +132,12 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      *
      * @return the number of authentication methods
      */
+    @Override
     public long getNumberOfAuthenticationMethods() {
-        return repository.count();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(AUTHENTICATION_METHOD_TYPE));
+
+        return mongoTemplate.count(query, MongoAuthenticationMethodRecord.class);
     }
 
     /**
@@ -138,13 +149,16 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      * @param order the order/priority of the authentication method
      * @return the authentication method with the specified order, or null if not found
      */
+    @Override
     public AuthenticationMethod getAuthenticationMethodByOrder(long order) {
         Query query = new Query();
         query.addCriteria(Criteria.where("order").is(order));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(AUTHENTICATION_METHOD_TYPE));
         query.with(Sort.by(Sort.Direction.ASC, "order"));
 
-        MongoAuthenticationMethodImpl result = mongoTemplate.findOne(query, MongoAuthenticationMethodImpl.class);
-        return result;
+        MongoAuthenticationMethodRecord result = mongoTemplate.findOne(query, MongoAuthenticationMethodRecord.class);
+        if(result == null) return null;
+        return OBJECT_MAPPER.readValue(result.getAuthenticationMethod(), MongoAuthenticationMethodImpl.class);
     }
 
     /**
@@ -155,8 +169,13 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      *
      * @param authenticationMethod the authentication method to delete
      */
+    @Override
     public void deleteAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        repository.deleteByName(authenticationMethod.getName());
+        Query query = new Query();
+        query.addCriteria(Criteria.where("name").is(authenticationMethod.getName()));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(AUTHENTICATION_METHOD_TYPE));
+
+        mongoTemplate.remove(query, MongoAuthenticationMethodRecord.class);
         logger.debug("Deleted authentication method with name: {}", authenticationMethod.getName());
     }
 
@@ -166,35 +185,24 @@ public class MongoAuthenticationMethodDao implements AuthenticationMethodDao {
      * @param authenticationMethod the authentication method to convert
      * @return the MongoAuthenticationMethodImpl
      */
-    private MongoAuthenticationMethodImpl convertToMongoAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        MongoAuthenticationMethodImpl mongoAuthMethod = new MongoAuthenticationMethodImpl();
-        mongoAuthMethod.setId(authenticationMethod.getId());
-        mongoAuthMethod.setName(authenticationMethod.getName());
-        mongoAuthMethod.setMethod(authenticationMethod.getMethod());
-        mongoAuthMethod.setOrder(authenticationMethod.getOrder());
-        mongoAuthMethod.setEnabled(authenticationMethod.isEnabled());
-        mongoAuthMethod.setScheduled(authenticationMethod.isScheduled());
-        mongoAuthMethod.setLastSynchronised(authenticationMethod.getLastSynchronised());
-        mongoAuthMethod.setLdapServerUrl(authenticationMethod.getLdapServerUrl());
-        mongoAuthMethod.setLdapBindUserDn(authenticationMethod.getLdapBindUserDn());
-        mongoAuthMethod.setLdapBindUserPassword(authenticationMethod.getLdapBindUserPassword());
-        mongoAuthMethod.setLdapUserSearchBaseDn(authenticationMethod.getLdapUserSearchBaseDn());
-        mongoAuthMethod.setLdapUserSearchFilter(authenticationMethod.getLdapUserSearchFilter());
-        mongoAuthMethod.setApplicationSecurityBaseDn(authenticationMethod.getApplicationSecurityBaseDn());
-        mongoAuthMethod.setAccountTypeAttributeName(authenticationMethod.getAccountTypeAttributeName());
-        mongoAuthMethod.setUserAccountMappingAttributeName(authenticationMethod.getUserAccountMappingAttributeName());
-        mongoAuthMethod.setUserAccountNameAttributeName(authenticationMethod.getUserAccountNameAttributeName());
-        mongoAuthMethod.setEmailAttributeName(authenticationMethod.getEmailAttributeName());
-        mongoAuthMethod.setApplicationSecurityGroupAttributeName(authenticationMethod.getApplicationSecurityGroupAttributeName());
-        mongoAuthMethod.setFirstNameAttributeName(authenticationMethod.getFirstNameAttributeName());
-        mongoAuthMethod.setSurnameAttributeName(authenticationMethod.getSurnameAttributeName());
-        mongoAuthMethod.setDepartmentAttributeName(authenticationMethod.getDepartmentAttributeName());
-        mongoAuthMethod.setLdapUserDescriptionAttributeName(authenticationMethod.getLdapUserDescriptionAttributeName());
-        mongoAuthMethod.setApplicationSecurityDescriptionAttributeName(authenticationMethod.getApplicationSecurityDescriptionAttributeName());
-        mongoAuthMethod.setMemberofAttributeName(authenticationMethod.getMemberofAttributeName());
-        mongoAuthMethod.setUserSynchronisationFilter(authenticationMethod.getUserSynchronisationFilter());
-        mongoAuthMethod.setGroupSynchronisationFilter(authenticationMethod.getGroupSynchronisationFilter());
-        mongoAuthMethod.setSynchronisationCronExpression(authenticationMethod.getSynchronisationCronExpression());
-        return mongoAuthMethod;
+    private MongoAuthenticationMethodRecord convertToMongoAuthenticationMethod(AuthenticationMethod authenticationMethod) {
+        MongoAuthenticationMethodRecord record = new MongoAuthenticationMethodRecord();
+        record.setId(authenticationMethod.getName() + "-" + AUTHENTICATION_METHOD_TYPE);
+        record.setType(AUTHENTICATION_METHOD_TYPE);
+        record.setName(authenticationMethod.getName());
+        record.setOrder(authenticationMethod.getOrder());
+        record.setTimestamp(authenticationMethod.getLastSynchronised() != null
+            ? authenticationMethod.getLastSynchronised().getTime()
+            : System.currentTimeMillis());
+        record.setModifiedTimestamp(System.currentTimeMillis());
+        record.setExpiry(DO_NOT_EXPIRE);
+        try {
+            record.setAuthenticationMethod(OBJECT_MAPPER.writeValueAsString(authenticationMethod));
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert AuthenticationMethod to string! ["
+                + authenticationMethod.getName() + "]", e);
+        }
+
+        return record;
     }
 }

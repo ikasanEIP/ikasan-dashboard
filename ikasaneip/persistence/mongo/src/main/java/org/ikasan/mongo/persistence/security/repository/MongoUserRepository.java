@@ -1,9 +1,8 @@
 package org.ikasan.mongo.persistence.security.repository;
 
-import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
+import org.ikasan.mongo.persistence.security.model.MongoUserRecord;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoUserRepository extends MongoRepository<MongoUserImpl, String> {
+public interface MongoUserRepository extends MongoRepository<MongoUserRecord, String> {
 
     /**
      * Find a user by username.
@@ -24,7 +23,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUserImpl, Stri
      * @param username the username to search for
      * @return Optional containing the user if found
      */
-    Optional<MongoUserImpl> findByUsername(String username);
+    Optional<MongoUserRecord> findByUsername(String username);
 
     /**
      * Find users whose username contains the search term (case-insensitive).
@@ -32,7 +31,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUserImpl, Stri
      * @param username the search term
      * @return list of matching users
      */
-    List<MongoUserImpl> findByUsernameContainingIgnoreCase(String username);
+    List<MongoUserRecord> findByUsernameContainingIgnoreCase(String username);
 
     /**
      * Find users whose first name contains the search term (case-insensitive).
@@ -40,7 +39,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUserImpl, Stri
      * @param firstName the search term
      * @return list of matching users
      */
-    List<MongoUserImpl> findByFirstNameContainingIgnoreCase(String firstName);
+    List<MongoUserRecord> findByFirstNameContainingIgnoreCase(String firstName);
 
     /**
      * Find users whose surname contains the search term (case-insensitive).
@@ -48,7 +47,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUserImpl, Stri
      * @param surname the search term
      * @return list of matching users
      */
-    List<MongoUserImpl> findBySurnameContainingIgnoreCase(String surname);
+    List<MongoUserRecord> findBySurnameContainingIgnoreCase(String surname);
 
     /**
      * Find users associated with a specific principal.
@@ -56,7 +55,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUserImpl, Stri
      * @param principalId the principal identifier
      * @return list of users associated with the principal
      */
-    List<MongoUserImpl> findByPrincipalIdsContaining(String principalId);
+    List<MongoUserRecord> findByRelatedPrincipalIdentifiersContaining(String principalId);
 
     /**
      * Delete a user by username.
