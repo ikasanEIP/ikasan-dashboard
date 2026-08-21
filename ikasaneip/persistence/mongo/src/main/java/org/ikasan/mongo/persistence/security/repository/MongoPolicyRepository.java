@@ -41,6 +41,7 @@
 package org.ikasan.mongo.persistence.security.repository;
 
 import org.ikasan.mongo.persistence.security.model.MongoPolicyImpl;
+import org.ikasan.mongo.persistence.security.model.MongoPolicyRecord;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -55,7 +56,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoPolicyRepository extends MongoRepository<MongoPolicyImpl, String> {
+public interface MongoPolicyRepository extends MongoRepository<MongoPolicyRecord, String> {
 
     /**
      * Find a policy by name.
@@ -63,7 +64,7 @@ public interface MongoPolicyRepository extends MongoRepository<MongoPolicyImpl, 
      * @param name the name to search for
      * @return Optional containing the policy if found
      */
-    Optional<MongoPolicyImpl> findByName(String name);
+    Optional<MongoPolicyRecord> findByName(String name);
 
     /**
      * Find policies whose name contains the search term (case-insensitive).
@@ -71,15 +72,7 @@ public interface MongoPolicyRepository extends MongoRepository<MongoPolicyImpl, 
      * @param name the search term
      * @return list of matching policies
      */
-    List<MongoPolicyImpl> findByNameContainingIgnoreCase(String name);
-
-    /**
-     * Find policies whose description contains the search term (case-insensitive).
-     *
-     * @param description the search term
-     * @return list of matching policies
-     */
-    List<MongoPolicyImpl> findByDescriptionContainingIgnoreCase(String description);
+    List<MongoPolicyRecord> findByNameContainingIgnoreCase(String name);
 
     /**
      * Delete a policy by name.

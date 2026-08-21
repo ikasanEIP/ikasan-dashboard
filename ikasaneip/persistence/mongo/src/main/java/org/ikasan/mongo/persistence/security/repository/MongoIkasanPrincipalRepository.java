@@ -40,7 +40,7 @@
  */
 package org.ikasan.mongo.persistence.security.repository;
 
-import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl;
+import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalRecord;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -55,7 +55,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIkasanPrincipalImpl, String> {
+public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIkasanPrincipalRecord, String> {
 
     /**
      * Find a principal by name.
@@ -63,7 +63,7 @@ public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIka
      * @param name the name to search for
      * @return Optional containing the principal if found
      */
-    Optional<MongoIkasanPrincipalImpl> findByName(String name);
+    Optional<MongoIkasanPrincipalRecord> findByName(String name);
 
     /**
      * Find principals whose name contains the search term (case-insensitive).
@@ -71,23 +71,8 @@ public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIka
      * @param name the search term
      * @return list of matching principals
      */
-    List<MongoIkasanPrincipalImpl> findByNameContainingIgnoreCase(String name);
+    List<MongoIkasanPrincipalRecord> findByNameContainingIgnoreCase(String name);
 
-    /**
-     * Find principals by type.
-     *
-     * @param type the principal type
-     * @return list of principals with the specified type
-     */
-    List<MongoIkasanPrincipalImpl> findByType(String type);
-
-    /**
-     * Find principals whose type contains the search term (case-insensitive).
-     *
-     * @param type the search term
-     * @return list of matching principals
-     */
-    List<MongoIkasanPrincipalImpl> findByTypeContainingIgnoreCase(String type);
 
     /**
      * Find principals associated with a specific role.
@@ -95,7 +80,7 @@ public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIka
      * @param roleId the role identifier
      * @return list of principals associated with the role
      */
-    List<MongoIkasanPrincipalImpl> findByRoleIdsContaining(String roleId);
+    List<MongoIkasanPrincipalRecord> findByRelatedRoleIdentifiersContaining(String roleId);
 
     /**
      * Delete a principal by name.
@@ -104,11 +89,4 @@ public interface MongoIkasanPrincipalRepository extends MongoRepository<MongoIka
      */
     void deleteByName(String name);
 
-    /**
-     * Check if a principal exists by name.
-     *
-     * @param name the name to check
-     * @return true if a principal with the given name exists
-     */
-    boolean existsByName(String name);
 }

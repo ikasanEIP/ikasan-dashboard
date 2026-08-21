@@ -41,6 +41,7 @@
 package org.ikasan.mongo.persistence.security.repository;
 
 import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodImpl;
+import org.ikasan.mongo.persistence.security.model.MongoAuthenticationMethodRecord;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -55,7 +56,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoAuthenticationMethodRepository extends MongoRepository<MongoAuthenticationMethodImpl, String> {
+public interface MongoAuthenticationMethodRepository extends MongoRepository<MongoAuthenticationMethodRecord, String> {
 
     /**
      * Find an authentication method by name.
@@ -63,7 +64,7 @@ public interface MongoAuthenticationMethodRepository extends MongoRepository<Mon
      * @param name the name to search for
      * @return Optional containing the authentication method if found
      */
-    Optional<MongoAuthenticationMethodImpl> findByName(String name);
+    Optional<MongoAuthenticationMethodRecord> findByName(String name);
 
     /**
      * Find authentication methods whose name contains the search term (case-insensitive).
@@ -71,46 +72,14 @@ public interface MongoAuthenticationMethodRepository extends MongoRepository<Mon
      * @param name the search term
      * @return list of matching authentication methods
      */
-    List<MongoAuthenticationMethodImpl> findByNameContainingIgnoreCase(String name);
-
-    /**
-     * Find authentication methods by method type.
-     *
-     * @param method the method type
-     * @return list of authentication methods with the specified method type
-     */
-    List<MongoAuthenticationMethodImpl> findByMethod(String method);
-
-    /**
-     * Find all enabled authentication methods.
-     *
-     * @param enabled the enabled status
-     * @return list of enabled authentication methods
-     */
-    List<MongoAuthenticationMethodImpl> findByEnabled(boolean enabled);
-
-    /**
-     * Find all scheduled authentication methods.
-     *
-     * @param scheduled the scheduled status
-     * @return list of scheduled authentication methods
-     */
-    List<MongoAuthenticationMethodImpl> findByScheduled(boolean scheduled);
+    List<MongoAuthenticationMethodRecord> findByNameContainingIgnoreCase(String name);
 
     /**
      * Find authentication methods ordered by their order field.
      *
      * @return list of authentication methods ordered by order field
      */
-    List<MongoAuthenticationMethodImpl> findAllByOrderByOrderAsc();
-
-    /**
-     * Find enabled authentication methods ordered by their order field.
-     *
-     * @param enabled the enabled status
-     * @return list of enabled authentication methods ordered by order field
-     */
-    List<MongoAuthenticationMethodImpl> findByEnabledOrderByOrderAsc(boolean enabled);
+    List<MongoAuthenticationMethodRecord> findAllByOrderByOrderAsc();
 
     /**
      * Delete an authentication method by name.
