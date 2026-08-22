@@ -1598,8 +1598,5 @@ public class ContextTemplateManagementWidget extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-//        this.init("", moduleMetaDataService, scheduledProcessManagementService,
-//            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-//            , schedulerJobService, logStreamingService, jobInitiationService);
     }
 }

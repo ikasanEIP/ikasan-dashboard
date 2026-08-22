@@ -15,12 +15,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.RouteConfiguration;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.scheduler.listener.JobPlanSaveRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
-import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
+import org.ikasan.dashboard.ui.scheduler.view.JobTemplateVisualisationView;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
@@ -115,6 +117,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected boolean showPrettyFormattedDiagram;
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+    private List<JobPlanSaveRequiredListener> jobPlanSaveRequiredListeners = new ArrayList<>();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -330,12 +334,14 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         this.designerCanvas.addBoundaryStyled("AND-"+UUID.randomUUID().toString(), 200, 200, "--"
             , IkasanColours.SCHEDULER_AND, 3);
         this.saveRequired = true;
+        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
     }
 
     public void addOrGrouping() {
         this.designerCanvas.addBoundaryStyled("OR-"+UUID.randomUUID().toString(), 200, 200, "--.."
             , IkasanColours.SCHEDULER_OR, 3);
         this.saveRequired = true;
+        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
     }
 
     public void save() {
@@ -343,25 +349,13 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     }
 
     private void openJobVisualisation(ContextTemplate contextTemplate) {
-        try {
-            JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
-                this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
-                this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
-                this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.parentContextTemplate.isUseAutoLayout());
-            this.jobSynchronisationRequiredListeners.forEach(listener
-                -> jobTemplateVisualisationDialog.addJobSynchronisationRequiredListener(listener));
-            jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
-            jobTemplateVisualisationDialog.open();
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(JobTemplateVisualisationView.class
+                    , List.of(
+                        parentContextTemplate.getName(),
+                        contextTemplate.getName()));
 
-            if(parent != null) {
-                parent.close();
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+            getUI().ifPresent(ui -> ui.getPage().open(route));
     }
 
     private void openContextVisualisation(ContextTemplate contextTemplate) {
@@ -478,6 +472,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
         this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
         this.saveRequired = true;
+        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
     }
 
     @Override
@@ -606,6 +601,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 , UI.getCurrent().getLocale()));
 
             this.saveRequired = false;
+            this.jobPlanSaveRequiredListeners.forEach(listener
+                -> listener.jobPlanSaveRequired(false));
         }
         catch (CanvasJsonValidationException e) {
             ConfirmDialog errorDialog = new ConfirmDialog();
@@ -663,7 +660,23 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         return saveRequired;
     }
 
+    /**
+     * Registers a listener for events indicating that job synchronisation is required.
+     *
+     * @param listener the listener to be added that will handle job synchronisation required events
+     */
     public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
         this.jobSynchronisationRequiredListeners.add(listener);
+    }
+
+    /**
+     * Adds a listener to be notified when a job plan save is required.
+     *
+     * @param listener the listener to be added, which implements the
+     *                 {@code JobPlanSaveRequiredListener} interface and defines
+     *                 the behavior to be executed when a job plan save is required.
+     */
+    public void addJobPlanSaveRequiredListener(JobPlanSaveRequiredListener listener) {
+        this.jobPlanSaveRequiredListeners.add(listener);
     }
 }
