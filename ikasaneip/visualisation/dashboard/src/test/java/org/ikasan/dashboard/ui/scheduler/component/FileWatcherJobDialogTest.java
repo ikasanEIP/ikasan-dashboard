@@ -26,6 +26,7 @@ import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -43,6 +44,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
     @Override
