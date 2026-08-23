@@ -150,39 +150,34 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
         Assert.assertNotNull(actionsLayout);
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(0).getClass());
-        Assert.assertEquals("<vaadin-icon icon=\"vaadin:modal\" title=\"Manage Job Plan\" id=\"editScheduledJob\" " +
-                "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:trash\" title=\"Delete Job Plan\" style=\"cursor:pointer;" +
+                "width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(0).getElement().toString());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(1).getClass());
-        Assert.assertEquals("<vaadin-icon icon=\"vaadin:trash\" title=\"Delete Job Plan\" style=\"cursor:pointer;" +
-                "width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
-            , actionsLayout.getComponentAt(1).getElement().toString());
-
-        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(2).getClass());
         Assert.assertEquals("<vaadin-icon icon=\"vaadin:play\" title=\"Enable scheduled jobs. When scheduled jobs " +
                 "are enabled on a job plan, all instances of that job plan will also have their scheduled jobs enabled when they are created.\" " +
                 "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
-            , actionsLayout.getComponentAt(2).getElement().toString());
+            , actionsLayout.getComponentAt(1).getElement().toString());
 
-        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(3).getClass());
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(2).getClass());
         Assert.assertEquals("<vaadin-icon icon=\"vaadin:ban\" title=\"Disable scheduled jobs. When scheduled jobs" +
                 " are disabled on a job plan, all instances of that job plan will also have their scheduled jobs disabled when they " +
                 "are created.\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
-            , actionsLayout.getComponentAt(3).getElement().toString());
+            , actionsLayout.getComponentAt(2).getElement().toString());
 
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(3).getClass());
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(4).getClass());
-        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(5).getClass());
 
-        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(6).getClass());
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(5).getClass());
         Assert.assertEquals("<vaadin-icon icon=\"vaadin:external-link\" title=\"Open in new window\" " +
                 "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
-            , actionsLayout.getComponentAt(6).getElement().toString());
+            , actionsLayout.getComponentAt(5).getElement().toString());
 
-        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(7).getClass());
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(6).getClass());
         Assert.assertEquals("<vaadin-icon icon=\"vaadin:plus\" title=\"Create a new instance of the job plan.\" " +
                 "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
-            , actionsLayout.getComponentAt(7).getElement().toString());
+            , actionsLayout.getComponentAt(6).getElement().toString());
 
         VerticalLayout scheduledJobsDisabled = (VerticalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "scheduledJobsDisabled");
         Assert.assertNotNull(scheduledJobsDisabled);
@@ -257,33 +252,12 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
         Assert.assertNotNull(actionsLayout);
 
         // Verify we have 8 action icons
-        Assert.assertEquals(8, actionsLayout.getComponentCount());
+        Assert.assertEquals(7, actionsLayout.getComponentCount());
 
         // Verify all components are icons
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 7; i++) {
             Assert.assertTrue(actionsLayout.getComponentAt(i) instanceof Icon);
         }
-    }
-
-    @Test
-    public void test_grid_edit_icon_properties() {
-        UI.getCurrent().navigate("scheduler");
-
-        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
-        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
-        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
-
-        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
-
-        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
-
-        Icon editIcon = (Icon) actionsLayout.getComponentAt(0);
-        String iconHtml = editIcon.getElement().toString();
-
-        // Verify edit icon has correct properties
-        Assert.assertTrue(iconHtml.contains("vaadin:modal"));
-        Assert.assertTrue(iconHtml.contains("Manage Job Plan"));
-        Assert.assertTrue(iconHtml.contains("editScheduledJob"));
     }
 
     @Test
@@ -298,7 +272,7 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
 
         HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
 
-        Icon deleteIcon = (Icon) actionsLayout.getComponentAt(1);
+        Icon deleteIcon = (Icon) actionsLayout.getComponentAt(0);
         String iconHtml = deleteIcon.getElement().toString();
 
         // Verify delete icon has correct properties
@@ -318,7 +292,7 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
 
         HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
 
-        Icon enableIcon = (Icon) actionsLayout.getComponentAt(2);
+        Icon enableIcon = (Icon) actionsLayout.getComponentAt(1);
         String iconHtml = enableIcon.getElement().toString();
 
         // Verify enable icon has correct properties
@@ -338,7 +312,7 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
 
         HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
 
-        Icon disableIcon = (Icon) actionsLayout.getComponentAt(3);
+        Icon disableIcon = (Icon) actionsLayout.getComponentAt(2);
         String iconHtml = disableIcon.getElement().toString();
 
         // Verify disable icon has correct properties
@@ -358,7 +332,7 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
 
         HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
 
-        Icon openIcon = (Icon) actionsLayout.getComponentAt(6);
+        Icon openIcon = (Icon) actionsLayout.getComponentAt(5);
         String iconHtml = openIcon.getElement().toString();
 
         // Verify open in new window icon has correct properties
@@ -378,7 +352,7 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
 
         HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
 
-        Icon createIcon = (Icon) actionsLayout.getComponentAt(7);
+        Icon createIcon = (Icon) actionsLayout.getComponentAt(6);
         String iconHtml = createIcon.getElement().toString();
 
         // Verify create instance icon has correct properties

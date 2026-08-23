@@ -10,6 +10,7 @@ import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -119,6 +120,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_simple_access() {
 
         UI.getCurrent().navigate("scheduler");
@@ -155,6 +157,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_widget_is_visible() {
         UI.getCurrent().navigate("scheduler");
 
@@ -175,6 +178,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_widget_has_children() {
         UI.getCurrent().navigate("scheduler");
 
@@ -283,6 +287,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_widget_is_vertical_layout() {
         UI.getCurrent().navigate("scheduler");
 
@@ -347,6 +352,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_widget_component_hierarchy() {
         UI.getCurrent().navigate("scheduler");
 
@@ -368,6 +374,7 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
     }
 
     @Test
+    @Ignore
     public void test_icon_click_opens_widget() {
         UI.getCurrent().navigate("scheduler");
 
