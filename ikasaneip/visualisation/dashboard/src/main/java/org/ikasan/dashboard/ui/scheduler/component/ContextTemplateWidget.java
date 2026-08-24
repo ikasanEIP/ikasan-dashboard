@@ -423,28 +423,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.MODAL), getTranslation("tooltip.manage-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            edit.setId("editScheduledJob");
-            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE
-                , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE
-                , SecurityConstants.SCHEDULER_ALL_READ);
-
-            edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
-                ContextTemplateManagementDialog contextTemplateManagementDialog
-                    = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
-                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService, record.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
-                    , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                    , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                    , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.systemEventSearchService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
-                    , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance
-                );
-                contextTemplateManagementDialog.open();
-            });
-
-            layout.add(edit);
-
             Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN);
 

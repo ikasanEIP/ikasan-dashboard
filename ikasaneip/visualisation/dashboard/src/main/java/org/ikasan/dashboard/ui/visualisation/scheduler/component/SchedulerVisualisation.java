@@ -19,7 +19,6 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.JobPlanSaveRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
-import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.JobTemplateVisualisationView;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
@@ -118,7 +117,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     private List<JobPlanSaveRequiredListener> jobPlanSaveRequiredListeners = new ArrayList<>();
 
-    public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
