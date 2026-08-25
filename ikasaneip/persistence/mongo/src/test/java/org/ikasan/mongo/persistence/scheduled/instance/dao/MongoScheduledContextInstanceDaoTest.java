@@ -9,11 +9,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -24,10 +20,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import static org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 /**
  * MongoDB DAO Test for ScheduledContextInstance operations.
@@ -52,16 +49,12 @@ public class MongoScheduledContextInstanceDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
     private MongoScheduledContextInstanceDao dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
-    @Autowired
-    public void setDao(MongoScheduledContextInstanceRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoScheduledContextInstanceDao(repository, mongoTemplate);
     }
 
     @After
@@ -81,7 +74,7 @@ public class MongoScheduledContextInstanceDaoTest {
         ScheduledContextInstanceRecord record = createContextInstanceRecord("id1", "context1", InstanceStatus.RUNNING);
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1");
+        ScheduledContextInstanceRecord result = dao.findById("id1" + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
 
         Assert.assertNotNull(result);
         Assert.assertEquals("context1", result.getContextName());
@@ -100,12 +93,12 @@ public class MongoScheduledContextInstanceDaoTest {
         ScheduledContextInstanceRecord record = createContextInstanceRecord("id1", "context1", InstanceStatus.RUNNING);
         dao.save(record);
 
-        ScheduledContextInstanceRecord found = dao.findById("id1");
+        ScheduledContextInstanceRecord found = dao.findById("id1" + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(found);
 
-        dao.deleteById("id1");
+        dao.deleteById("id1" + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
 
-        ScheduledContextInstanceRecord notFound = dao.findById("id1");
+        ScheduledContextInstanceRecord notFound = dao.findById("id1" + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNull(notFound);
     }
 
@@ -411,7 +404,7 @@ public class MongoScheduledContextInstanceDaoTest {
         record.setModifiedBy("testUser");
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1");
+        ScheduledContextInstanceRecord result = dao.findById("id1" + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(result);
         Assert.assertEquals("testUser", result.getModifiedBy());
     }
@@ -424,7 +417,7 @@ public class MongoScheduledContextInstanceDaoTest {
         record.setContextInstance(contextInstance);
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1");
+        ScheduledContextInstanceRecord result = dao.findById("id1"+ "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(result);
         Assert.assertTrue(result.getContextInstance().isContainsRepeatingJobs());
     }

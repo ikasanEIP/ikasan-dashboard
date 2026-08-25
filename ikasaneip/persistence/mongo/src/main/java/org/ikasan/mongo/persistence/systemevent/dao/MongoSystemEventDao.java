@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.systemevent.dao;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchDao;
@@ -21,7 +22,11 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import static org.ikasan.spec.entity.EntityFields.EXPIRY;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
 
 /**
  * MongoDB implementation of SystemEventSearchDao and EntityDao.
@@ -32,21 +37,22 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSystemEventDao.class);
 
-    private static final String SYSTEM_EVENT = "systemEvent";
-
     private final MongoSystemEventRepository repository;
     private final MongoTemplate mongoTemplate;
     private final JsonMapper objectMapper;
+    private final int daysToKeep;
 
     /**
-     * Constructor
+     * Constructor for MongoSystemEventDao.
      *
-     * @param repository the MongoDB repository
-     * @param mongoTemplate the MongoDB template
+     * @param repository the MongoDB repository for system events, used for database operations.
+     * @param mongoTemplate the MongoTemplate for executing MongoDB queries and updates.
+     * @param daysToKeep the number of days for which system events should be retained in the database.
      */
-    public MongoSystemEventDao(MongoSystemEventRepository repository, MongoTemplate mongoTemplate) {
+    public MongoSystemEventDao(MongoSystemEventRepository repository, MongoTemplate mongoTemplate, int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.daysToKeep = daysToKeep;
         this.objectMapper = JsonMapper.builder().build();
     }
 
@@ -56,6 +62,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(id));
+        query.addCriteria(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
 
         MongoSystemEventImpl result = mongoTemplate.findOne(query, MongoSystemEventImpl.class);
 
@@ -77,22 +84,25 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
+        // Always add type filter
+        criteriaList.add(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
+
         // Filter by actor (wildcard search)
         if (filter.getActor() != null && !filter.getActor().isEmpty()) {
             String regex = ".*" + Pattern.quote(filter.getActor()) + ".*";
-            criteriaList.add(Criteria.where("actor").regex(regex, "i"));
+            criteriaList.add(Criteria.where(EntityFields.ACTOR).regex(regex, "i"));
         }
 
         // Filter by subject (wildcard search)
         if (filter.getSubject() != null && !filter.getSubject().isEmpty()) {
             String regex = ".*" + Pattern.quote(filter.getSubject()) + ".*";
-            criteriaList.add(Criteria.where("subject").regex(regex, "i"));
+            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_SUBJECT).regex(regex, "i"));
         }
 
         // Filter by action (wildcard search)
         if (filter.getAction() != null && !filter.getAction().isEmpty()) {
             String regex = ".*" + Pattern.quote(filter.getAction()) + ".*";
-            criteriaList.add(Criteria.where("action").regex(regex, "i"));
+            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_ACTION).regex(regex, "i"));
         }
 
         // Filter by search term in payload
@@ -101,7 +111,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
             for (String term : terms) {
                 if (!term.isEmpty()) {
                     String regex = ".*" + Pattern.quote(term) + ".*";
-                    criteriaList.add(Criteria.where("payload").regex(regex, "i"));
+                    criteriaList.add(Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(regex, "i"));
                 }
             }
         }
@@ -110,7 +120,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         if (filter.getEndTime() > 0) {
             Date startDate = new Date(filter.getStartTime());
             Date endDate = new Date(filter.getEndTime());
-            criteriaList.add(Criteria.where("timestamp").gte(startDate).lte(endDate));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startDate).lte(endDate));
         }
 
         // Apply all criteria
@@ -127,7 +137,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
             query.with(Sort.by(direction, sortColumn));
         } else {
             // Default sort by timestamp descending
-            query.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
         }
 
         // Apply pagination
@@ -188,7 +198,11 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
      */
     public void deleteExpired() {
         Date currentTime = new Date();
-        repository.deleteByExpiryLessThan(currentTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
+
+        mongoTemplate.remove(query, MongoSystemEventImpl.class);
         logger.debug("Deleted expired system events before: {}", currentTime);
     }
 
@@ -199,29 +213,15 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
      * @return the MongoDB entity
      */
     private MongoSystemEventImpl convertToMongoEntity(SystemEvent systemEvent) {
-        if (systemEvent instanceof MongoSystemEventImpl) {
-            MongoSystemEventImpl mongoEvent = (MongoSystemEventImpl) systemEvent;
-
-            // Ensure MongoDB id is set
-            if (mongoEvent.getMongoId() == null) {
-                mongoEvent.setId(buildMongoId(systemEvent));
-            }
-
-            // Serialize the full SystemEvent to JSON for the payload field
-            if (mongoEvent.getPayload() == null) {
-                try {
-                    mongoEvent.setPayload(objectMapper.writeValueAsString(systemEvent));
-                } catch (JacksonException e) {
-                    throw new RuntimeException("Cannot convert system event to JSON string!", e);
-                }
-            }
-
-            return mongoEvent;
-        }
-
-        // Convert from other SystemEvent implementations
         MongoSystemEventImpl mongoEvent = new MongoSystemEventImpl();
         mongoEvent.setId(buildMongoId(systemEvent));
+        mongoEvent.setType(SYSTEM_EVENT_TYPE);
+        try {
+            mongoEvent.setPayload(objectMapper.writeValueAsString(systemEvent));
+        }
+        catch (JacksonException e) {
+            throw new RuntimeException(String.format("Cannot convert system event to string! [%s]", systemEvent));
+        }
         mongoEvent.setModuleName(systemEvent.getModuleName());
         mongoEvent.setActor(systemEvent.getActor());
         mongoEvent.setAction(systemEvent.getAction());
@@ -229,13 +229,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         mongoEvent.setTimestamp(systemEvent.getTimestamp());
         mongoEvent.setExpiry(systemEvent.getExpiry());
         mongoEvent.setSystemEventId(systemEvent.getId());
-
-        // Serialize the full SystemEvent to JSON
-        try {
-            mongoEvent.setPayload(objectMapper.writeValueAsString(systemEvent));
-        } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert system event to JSON string!", e);
-        }
+        mongoEvent.setExpiry(new Date(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis()));
 
         return mongoEvent;
     }
@@ -249,9 +243,9 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
      */
     private String buildMongoId(SystemEvent systemEvent) {
         if (systemEvent.getModuleName() != null && !systemEvent.getModuleName().isEmpty()) {
-            return systemEvent.getModuleName() + "-" + SYSTEM_EVENT + "-" + systemEvent.getId();
+            return systemEvent.getModuleName() + "-" + SYSTEM_EVENT_TYPE + "-" + systemEvent.getId();
         } else {
-            return SYSTEM_EVENT + "-" + systemEvent.getSubject() + "-" + systemEvent.getId();
+            return SYSTEM_EVENT_TYPE + "-" + systemEvent.getSubject() + "-" + systemEvent.getId();
         }
     }
 }

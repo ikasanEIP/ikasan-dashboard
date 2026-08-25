@@ -25,11 +25,6 @@ public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotifi
 
     private JsonMapper objectMapper = JsonMapper.builder().build();
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String EMAIL_NOTIFICATION_CONTEXT = "emailNotificationContext";
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, EmailNotificationContextRecord emailNotificationContextRecord)
     {

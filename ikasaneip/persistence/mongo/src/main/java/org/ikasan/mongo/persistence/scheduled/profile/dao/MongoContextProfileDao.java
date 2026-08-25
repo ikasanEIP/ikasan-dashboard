@@ -1,9 +1,9 @@
 package org.ikasan.mongo.persistence.scheduled.profile.dao;
 
-import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileRecordImpl;
-import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileImpl;
-import org.ikasan.mongo.persistence.scheduled.profile.repository.MongoContextProfileRepository;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
+import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileImpl;
+import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileRecordImpl;
+import org.ikasan.mongo.persistence.scheduled.profile.repository.MongoContextProfileRepository;
 import org.ikasan.spec.scheduled.profile.dao.ContextProfileDao;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -19,8 +19,10 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
+
+import static org.ikasan.spec.entity.EntityFields.ID;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
 
 /**
  * MongoDB implementation of ContextProfileDao.
@@ -29,7 +31,6 @@ import java.util.regex.Pattern;
 public class MongoContextProfileDao implements ContextProfileDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoContextProfileDao.class);
-    private static final String CONTEXT_PROFILE_TYPE = "contextProfile";
 
     private final MongoContextProfileRepository repository;
     private final MongoTemplate mongoTemplate;
@@ -69,27 +70,19 @@ public class MongoContextProfileDao implements ContextProfileDao {
         logger.debug("Saving context profile for profileName={}, contextName={}",
             record.getProfileName(), record.getContextName());
 
-        MongoContextProfileRecordImpl mongoRecord;
-        if (record instanceof MongoContextProfileRecordImpl) {
-            mongoRecord = (MongoContextProfileRecordImpl) record;
-        } else {
-            // Convert to MongoDB implementation
-            mongoRecord = new MongoContextProfileRecordImpl();
-            mongoRecord.setProfileName(record.getProfileName());
-            mongoRecord.setContextName(record.getContextName());
-            mongoRecord.setOwner(record.getOwner());
-            mongoRecord.setContextProfile(record.getContextProfile());
-            mongoRecord.setAccessGroups(record.getAccessGroups());
-            mongoRecord.setAccessUsers(record.getAccessUsers());
-            mongoRecord.setCreatedDateTime(record.getCreatedDateTime());
-            mongoRecord.setModifiedDateTime(record.getModifiedDateTime());
-            mongoRecord.setModifiedBy(record.getModifiedBy());
-        }
-
-        // Ensure ID is set according to pattern
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            mongoRecord.setId(record.getProfileName() + "-" + record.getContextName() + "-" + CONTEXT_PROFILE_TYPE);
-        }
+        MongoContextProfileRecordImpl mongoRecord = new MongoContextProfileRecordImpl();
+        mongoRecord.setId(record.getProfileName() + "-"
+            + record.getContextName() + "-" + CONTEXT_PROFILE_TYPE);
+        mongoRecord.setType(CONTEXT_PROFILE_TYPE);
+        mongoRecord.setProfileName(record.getProfileName());
+        mongoRecord.setContextName(record.getContextName());
+        mongoRecord.setOwner(record.getOwner());
+        mongoRecord.setContextProfile(record.getContextProfile());
+        mongoRecord.setAccessGroups(record.getAccessGroups());
+        mongoRecord.setAccessUsers(record.getAccessUsers());
+        mongoRecord.setCreatedDateTime(record.getCreatedDateTime());
+        mongoRecord.setModifiedDateTime(record.getModifiedDateTime());
+        mongoRecord.setModifiedBy(record.getModifiedBy());
 
         // Initialize context profile if null
         if (mongoRecord.getContextProfile() == null) {
@@ -108,7 +101,9 @@ public class MongoContextProfileDao implements ContextProfileDao {
         if (mongoRecord.getCreatedDateTime() == 0) {
             mongoRecord.setCreatedDateTime(System.currentTimeMillis());
         }
+
         mongoRecord.setModifiedDateTime(System.currentTimeMillis());
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
         logger.debug("Saved context profile with id={}", mongoRecord.getId());
@@ -118,7 +113,10 @@ public class MongoContextProfileDao implements ContextProfileDao {
     public void deleteByContextName(String contextName) {
         logger.debug("Deleting context profiles by contextName={}", contextName);
 
-        Criteria criteria = Criteria.where("contextName").is(contextName);
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where("contextName").is(contextName),
+            Criteria.where(TYPE).is(CONTEXT_PROFILE_TYPE)
+        );
         Query query = new Query(criteria);
 
         long deletedCount = mongoTemplate.remove(query, MongoContextProfileRecordImpl.class).getDeletedCount();
@@ -129,11 +127,15 @@ public class MongoContextProfileDao implements ContextProfileDao {
     public ContextProfileRecord findById(String id) {
         logger.debug("Finding context profile by id={}", id);
 
-        Optional<MongoContextProfileRecordImpl> result = repository.findById(id);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(CONTEXT_PROFILE_TYPE));
 
-        if (result.isPresent()) {
+        MongoContextProfileRecordImpl result = mongoTemplate.findOne(query, MongoContextProfileRecordImpl.class);
+
+        if (result != null) {
             logger.debug("Found context profile with id={}", id);
-            return result.get();
+            return result;
         } else {
             logger.debug("No context profile found with id={}", id);
             return null;
@@ -148,6 +150,9 @@ public class MongoContextProfileDao implements ContextProfileDao {
         long startTime = System.currentTimeMillis();
 
         List<Criteria> criteriaList = new ArrayList<>();
+
+        // Always add type filter
+        criteriaList.add(Criteria.where(TYPE).is(CONTEXT_PROFILE_TYPE));
 
         // Profile name filter
         if (filter.getProfileName() != null && !filter.getProfileName().isEmpty()) {
@@ -180,9 +185,7 @@ public class MongoContextProfileDao implements ContextProfileDao {
 
         // Build query
         Query query;
-        if (criteriaList.isEmpty()) {
-            query = new Query();
-        } else if (criteriaList.size() == 1) {
+        if (criteriaList.size() == 1) {
             query = new Query(criteriaList.get(0));
         } else {
             query = new Query(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));

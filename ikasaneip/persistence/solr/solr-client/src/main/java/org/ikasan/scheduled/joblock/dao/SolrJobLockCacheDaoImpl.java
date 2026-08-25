@@ -18,8 +18,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
 
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
-    public static final String JOB_LOCK_CACHE_TYPE = "jobLockCache";
-    public static final String JOB_LOCK_CACHE_ID = "jobLockCacheIdentifier";
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 

@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.cronutils.model.CronType.QUARTZ;
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInstanceActionWidget
     implements ContextInstanceStateChangeEventLocalBroadcastListener, SchedulerJobStateChangeEventLocalBroadcastListener,
@@ -1864,7 +1864,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         } else {
             // Not in the cluster cache — re-fetch from DB for authoritative status.
             this.contextInstance = this.scheduledContextInstanceService
-                .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
+                .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE).getContextInstance();
         }
         if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
             NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
@@ -1873,7 +1873,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
         if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
             this.contextInstance = this.scheduledContextInstanceService
-                .findById(this.contextInstance.getId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
+                .findById(this.contextInstance.getId()+ "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE).getContextInstance();
             if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
                 NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
                     , UI.getCurrent().getLocale()));

@@ -20,15 +20,11 @@ public class MongoModuleMetadata {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed(unique = true)
-    @Field("module_name")
-    private String moduleName;
-
     @Indexed
-    @Field("module_metadata_json")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String moduleMetadataJson;
 
-    @Field("created_timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long createdTimestamp;
 
     /**
@@ -42,7 +38,6 @@ public class MongoModuleMetadata {
      */
     public MongoModuleMetadata(String moduleName) {
         this.id = moduleName;
-        this.moduleName = moduleName;
         this.createdTimestamp = System.currentTimeMillis();
     }
 
@@ -60,14 +55,6 @@ public class MongoModuleMetadata {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
     }
 
     public String getModuleMetadataJson() {
@@ -90,7 +77,6 @@ public class MongoModuleMetadata {
     public String toString() {
         return "MongoModuleMetadata{" +
             "id='" + id + '\'' +
-            ", moduleName='" + moduleName + '\'' +
             ", createdTimestamp=" + createdTimestamp +
             '}';
     }

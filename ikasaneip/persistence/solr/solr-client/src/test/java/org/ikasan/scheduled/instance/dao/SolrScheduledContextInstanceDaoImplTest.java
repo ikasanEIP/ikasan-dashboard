@@ -9,7 +9,6 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -22,12 +21,11 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 public class SolrScheduledContextInstanceDaoImplTest extends SolrTestCaseJ4 {
 
@@ -65,7 +63,7 @@ public class SolrScheduledContextInstanceDaoImplTest extends SolrTestCaseJ4 {
         ScheduledContextInstanceRecord record = createContextInstanceRecord("id1", "context1", InstanceStatus.RUNNING);
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE);
+        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
 
         Assert.assertNotNull(result);
         Assert.assertEquals("context1", result.getContextName());
@@ -84,12 +82,12 @@ public class SolrScheduledContextInstanceDaoImplTest extends SolrTestCaseJ4 {
         ScheduledContextInstanceRecord record = createContextInstanceRecord("id1", "context1", InstanceStatus.RUNNING);
         dao.save(record);
 
-        ScheduledContextInstanceRecord found = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE);
+        ScheduledContextInstanceRecord found = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(found);
 
         dao.deleteById("id1");
 
-        ScheduledContextInstanceRecord notFound = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE);
+        ScheduledContextInstanceRecord notFound = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNull(notFound);
     }
 
@@ -389,7 +387,7 @@ public class SolrScheduledContextInstanceDaoImplTest extends SolrTestCaseJ4 {
         record.setModifiedBy("testUser");
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE);
+        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(result);
         Assert.assertEquals("testUser", result.getModifiedBy());
     }
@@ -402,7 +400,7 @@ public class SolrScheduledContextInstanceDaoImplTest extends SolrTestCaseJ4 {
         record.setContextInstance(contextInstance);
         dao.save(record);
 
-        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE);
+        ScheduledContextInstanceRecord result = dao.findById("id1_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
         Assert.assertNotNull(result);
         Assert.assertTrue(result.getContextInstance().isContainsRepeatingJobs());
     }

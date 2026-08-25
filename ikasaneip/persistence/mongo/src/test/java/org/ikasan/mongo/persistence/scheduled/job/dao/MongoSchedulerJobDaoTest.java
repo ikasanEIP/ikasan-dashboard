@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -19,6 +20,9 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+
+import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
+import static org.ikasan.spec.metadata.dao.ModuleMetadataDao.MODULE_METADATA;
 
 public class MongoSchedulerJobDaoTest {
 
@@ -252,9 +256,10 @@ public class MongoSchedulerJobDaoTest {
 
     @Test
     public void test_get_all_agent_names() {
-        insertFileEventDrivenJobsWithAgent("id1", 5, "context1", "agent1");
-        insertFileEventDrivenJobsWithAgent("id2", 5, "context2", "agent2");
-        insertFileEventDrivenJobsWithAgent("id3", 5, "context3", "agent3");
+        // Insert module metadata documents with type="moduleMetaData" and SCHEDULER_AGENT type in payload
+        insertModuleMetadata("agent1");
+        insertModuleMetadata("agent2");
+        insertModuleMetadata("agent3");
 
         List<String> agentNames = dao.getAllAgentNames();
 
@@ -431,5 +436,15 @@ public class MongoSchedulerJobDaoTest {
 
             repository.save(record);
         }
+    }
+
+    private void insertModuleMetadata(String agentName) {
+        org.bson.Document document = new org.bson.Document();
+        document.put(EntityFields.ID, agentName);
+        document.put(EntityFields.TYPE, MODULE_METADATA);
+        document.put(EntityFields.PAYLOAD_CONTENT, "{\"type\":\"SCHEDULER_AGENT\"}");
+        document.put(EntityFields.CREATED_DATE_TIME, System.currentTimeMillis());
+
+        mongoTemplate.getCollection(IKASAN_COLLECTION_NAME).insertOne(document);
     }
 }

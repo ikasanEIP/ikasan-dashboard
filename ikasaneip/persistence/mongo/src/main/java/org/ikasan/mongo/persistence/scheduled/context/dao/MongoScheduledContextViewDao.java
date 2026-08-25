@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.scheduled.context.dao;
 
 import org.ikasan.mongo.persistence.scheduled.context.model.MongoScheduledContextViewRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.context.repository.MongoScheduledContextViewRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextViewDao;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.slf4j.Logger;
@@ -49,8 +50,9 @@ public class MongoScheduledContextViewDao implements ScheduledContextViewDao {
         logger.debug("Getting context view for parentContextName={}, contextName={}", parentContextName, contextName);
 
         Criteria criteria = new Criteria().andOperator(
-            Criteria.where("parentContextName").is(parentContextName),
-            Criteria.where("contextName").is(contextName)
+            Criteria.where(EntityFields.MODULE_NAME).is(parentContextName),
+            Criteria.where(EntityFields.FLOW_NAME).is(contextName),
+            Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_VIEW_TYPE)
         );
 
         Query query = new Query(criteria);
@@ -75,28 +77,18 @@ public class MongoScheduledContextViewDao implements ScheduledContextViewDao {
         logger.debug("Saving context view for parentContextName={}, contextName={}",
             record.getParentContextName(), record.getContextName());
 
-        MongoScheduledContextViewRecordImpl mongoRecord;
-        if (record instanceof MongoScheduledContextViewRecordImpl) {
-            mongoRecord = (MongoScheduledContextViewRecordImpl) record;
-        } else {
-            // Convert to MongoDB implementation
-            mongoRecord = new MongoScheduledContextViewRecordImpl();
-            mongoRecord.setId(record.getParentContextName() + "-" + record.getContextName() + "-" + SCHEDULED_CONTEXT_VIEW);
-            mongoRecord.setParentContextName(record.getParentContextName());
-            mongoRecord.setContextName(record.getContextName());
-            mongoRecord.setContextView(record.getContextView());
-            mongoRecord.setTimestamp(record.getTimestamp());
-            mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
-            mongoRecord.setModifiedBy(record.getModifiedBy());
-        }
+        MongoScheduledContextViewRecordImpl mongoRecord = new MongoScheduledContextViewRecordImpl();
 
-        // Ensure ID is set according to pattern
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            mongoRecord.setId(record.getParentContextName() + "-" + record.getContextName() + "-" + SCHEDULED_CONTEXT_VIEW);
-        }
-
-        // Update modifiedTimestamp on save
+        mongoRecord.setType(SCHEDULED_CONTEXT_VIEW_TYPE);
+        mongoRecord.setContextView(record.getContextView());
+        mongoRecord.setId(record.getParentContextName() + "-"
+            + record.getContextName() + "-" + SCHEDULED_CONTEXT_VIEW_TYPE);
+        mongoRecord.setParentContextName(record.getParentContextName());
+        mongoRecord.setContextName(record.getContextName());
+        mongoRecord.setTimestamp(record.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        mongoRecord.setModifiedBy(record.getModifiedBy());
+        mongoRecord.setExpiry(ScheduledContextViewDao.DO_NOT_EXPIRE);
 
         repository.save(mongoRecord);
         logger.debug("Saved context view with id={}", mongoRecord.getId());
@@ -111,13 +103,15 @@ public class MongoScheduledContextViewDao implements ScheduledContextViewDao {
     public void delete(String parentContextName, String contextName) {
         logger.debug("Deleting context view for parentContextName={}, contextName={}", parentContextName, contextName);
 
-        ScheduledContextViewRecord record = getContextView(parentContextName, contextName);
-        if (record != null) {
-            repository.deleteById(record.getId());
-            logger.debug("Deleted context view with id={}", record.getId());
-        } else {
-            logger.debug("No context view found to delete for parentContextName={}, contextName={}",
-                parentContextName, contextName);
-        }
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(EntityFields.MODULE_NAME).is(parentContextName),
+            Criteria.where(EntityFields.FLOW_NAME).is(contextName),
+            Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_VIEW_TYPE)
+        );
+
+        Query query = new Query(criteria);
+        mongoTemplate.remove(query, MongoScheduledContextViewRecordImpl.class);
+
+        logger.debug("Deleted context view for parentContextName={}, contextName={}", parentContextName, contextName);
     }
 }

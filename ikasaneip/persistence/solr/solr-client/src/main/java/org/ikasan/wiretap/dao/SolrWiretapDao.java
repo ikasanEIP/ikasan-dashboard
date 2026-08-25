@@ -17,19 +17,13 @@ public class SolrWiretapDao extends SolrDaoBase<WiretapEvent> implements EntityD
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrWiretapDao.class);
 
-    /**
-     * We need to give this hibernate it's context.
-     */
-    public static final String WIRETAP = "wiretap";
-
-
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, WiretapEvent wiretapEvent)
     {
         SolrInputDocument document = new SolrInputDocument();
         document.addField(ID, wiretapEvent.getModuleName() + "-wiretap-"
             + wiretapEvent.getIdentifier());
-        document.addField(TYPE, WIRETAP);
+        document.addField(TYPE, WIRETAP_TYPE);
         document.addField(MODULE_NAME, wiretapEvent.getModuleName());
         document.addField(FLOW_NAME, wiretapEvent.getFlowName());
         document.addField(COMPONENT_NAME, wiretapEvent.getComponentName());

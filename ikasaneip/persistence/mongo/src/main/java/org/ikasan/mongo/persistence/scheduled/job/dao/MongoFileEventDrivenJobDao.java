@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.scheduled.job.dao;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoFileEventDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoFileEventDrivenJobRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -15,7 +16,10 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
+import static org.ikasan.spec.entity.EntityFields.ID;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
+import static org.ikasan.spec.scheduled.job.model.JobConstants.FILE_EVENT_DRIVEN_JOB;
 
 /**
  * MongoDB implementation of FileEventDrivenJobDao.
@@ -38,23 +42,29 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
 
     @Override
     public void save(FileEventDrivenJobRecord event) {
-        if (!(event instanceof MongoFileEventDrivenJobRecordImpl)) {
-            throw new IllegalArgumentException("Event must be an instance of MongoFileEventDrivenJobRecordImpl");
+        MongoFileEventDrivenJobRecordImpl mongoRecord = new MongoFileEventDrivenJobRecordImpl();
+        if(event.getId() != null && !event.getId().isEmpty()) {
+            mongoRecord.setId(event.getId());
         }
-
-        MongoFileEventDrivenJobRecordImpl mongoRecord = (MongoFileEventDrivenJobRecordImpl) event;
-
-        // Generate ID if not set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JobConstants.FILE_EVENT_DRIVEN_JOB + "_"
-                + mongoRecord.getAgentName() + "_"
-                + mongoRecord.getJobName() + "_"
-                + mongoRecord.getFileEventDrivenJob().getContextName();
-            mongoRecord.setId(id);
+        else {
+            mongoRecord.setId(JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()
+                + "_" + event.getFileEventDrivenJob().getContextName());
         }
-
-        // Set modified timestamp
+        mongoRecord.setType(JobConstants.FILE_EVENT_DRIVEN_JOB);
+        mongoRecord.setFileEventDrivenJob(event.getFileEventDrivenJob());
+        mongoRecord.setAgentName(event.getAgentName());
+        mongoRecord.setJobName(event.getJobName());
+        mongoRecord.setDisplayName(event.getDisplayName());
+        mongoRecord.setContextName(event.getContextName());
+        mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            mongoRecord.setModifiedBy(event.getModifiedBy());
+        }
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }
@@ -70,10 +80,12 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
     public SearchResults<FileEventDrivenJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        long totalCount = repository.count();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(FILE_EVENT_DRIVEN_JOB));
+
+        long totalCount = mongoTemplate.count(query, MongoFileEventDrivenJobRecordImpl.class);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        Query query = new Query();
         query.with(pageable);
 
         List<MongoFileEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoFileEventDrivenJobRecordImpl.class);
@@ -86,7 +98,10 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
     public SearchResults<FileEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("contextName").is(contextId);
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(EntityFields.COMPONENT_NAME).is(contextId),
+            Criteria.where(TYPE).is(FILE_EVENT_DRIVEN_JOB)
+        );
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoFileEventDrivenJobRecordImpl.class);
@@ -102,7 +117,10 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
 
     @Override
     public FileEventDrivenJobRecord findById(String id) {
-        Optional<MongoFileEventDrivenJobRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(FILE_EVENT_DRIVEN_JOB));
+
+        return mongoTemplate.findOne(query, MongoFileEventDrivenJobRecordImpl.class);
     }
 }

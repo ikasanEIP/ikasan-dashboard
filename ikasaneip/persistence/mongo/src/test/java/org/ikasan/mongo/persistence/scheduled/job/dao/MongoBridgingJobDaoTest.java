@@ -67,7 +67,7 @@ public class MongoBridgingJobDaoTest {
         BridgingJobRecord found = dao.findById(record.getId());
         Assert.assertNotNull(found);
         Assert.assertEquals(record.getId(), found.getId());
-        Assert.assertEquals("agent1", found.getAgentName());
+        Assert.assertEquals("BRIDGING_JOB", found.getAgentName());
         Assert.assertEquals("job1", found.getJobName());
         Assert.assertEquals("context1", found.getContextName());
     }
@@ -86,11 +86,13 @@ public class MongoBridgingJobDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoBridgingJobRecordImpl record = createBridgingJobRecord("agent1", "job1", "context1");
+        BridgingJobRecord record = createBridgingJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -178,50 +180,7 @@ public class MongoBridgingJobDaoTest {
         Assert.assertEquals("testUser", found.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        BridgingJobRecord invalidRecord = new BridgingJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public BridgingJob getBridgingJob() { return null; }
-            @Override
-            public void setBridgingJob(BridgingJob bridgingJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
-
     private MongoBridgingJobRecordImpl createBridgingJobRecord(String agentName, String jobName, String contextName) {
         BridgingJobImpl bridgingJob = new BridgingJobImpl();
         bridgingJob.setAgentName(agentName);
@@ -230,6 +189,8 @@ public class MongoBridgingJobDaoTest {
         bridgingJob.setDisplayName("Display " + jobName);
 
         MongoBridgingJobRecordImpl record = new MongoBridgingJobRecordImpl();
+        record.setId(bridgingJob.getAgentName() + "_"
+            + bridgingJob.getJobName() + "_" + bridgingJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

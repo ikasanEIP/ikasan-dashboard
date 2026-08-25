@@ -28,7 +28,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl.SCHEDULED_CONTEXT;
+import static org.ikasan.spec.scheduled.context.dao.ScheduledContextDao.SCHEDULED_CONTEXT_TYPE;
 
 public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
@@ -90,7 +90,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
             ScheduledContextRecord found = this.dao.findById("contextName");
 
-            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT_TYPE, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextName", found.getContext().getName());
             Assert.assertEquals("user generated layout", found.getContext().getUserGeneratedLayout());
@@ -110,7 +110,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
             found = this.dao.findById("contextName");
 
-            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT_TYPE, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextName", found.getContext().getName());
             Assert.assertEquals("updated user generated layout", found.getContext().getUserGeneratedLayout());

@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.wiretap.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -20,37 +21,37 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
     @Id
     private String id;
 
-    @Field("identifier")
-    private Long identifier;
+    @Field(EntityFields.TYPE)
+    private String type;
 
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("flow_name")
+    @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
     @Indexed
-    @Field("component_name")
+    @Field(EntityFields.COMPONENT_NAME)
     private String componentName;
 
     @Indexed
-    @Field("event_id")
+    @Field(EntityFields.EVENT)
     private String eventId;
 
-    @Field("related_event_id")
+    @Field(EntityFields.RELATED_EVENT)
     private String relatedEventId;
 
     @Indexed
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
     @Indexed
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private long expiry;
 
-    @Field("event")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
     /**
@@ -59,35 +60,14 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
     public MongoWiretapEventImpl() {
     }
 
-    /**
-     * Constructor matching SolrWiretapEvent
-     *
-     * @param identifier the wiretap event identifier
-     * @param moduleName the module name
-     * @param flowName the flow name
-     * @param componentName the component name
-     * @param eventId the event ID
-     * @param relatedEventId the related event ID
-     * @param timestamp the event timestamp
-     * @param event the event content as String
-     */
-    public MongoWiretapEventImpl(Long identifier, String moduleName, String flowName,
-                                 String componentName, String eventId, String relatedEventId,
-                                 long timestamp, String event) {
-        this.identifier = identifier;
-        this.id = moduleName + "-wiretap-" + identifier;
-        this.moduleName = moduleName;
-        this.flowName = flowName;
-        this.componentName = componentName;
-        this.eventId = eventId;
-        this.relatedEventId = relatedEventId;
-        this.timestamp = timestamp;
-        this.event = event;
-    }
-
     @Override
     public long getIdentifier() {
-        return this.identifier != null ? this.identifier : 0L;
+        if(id.contains("-")) {
+            return new Long(id.substring(id.lastIndexOf("-")+1));
+        }
+        else {
+            return new Long(id);
+        }
     }
 
     @Override
@@ -129,24 +109,20 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
         return this.id;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
 
-    public void setIdentifier(Long identifier) {
-        this.identifier = identifier;
-        // Update id when identifier changes
-        if (this.moduleName != null && identifier != null) {
-            this.id = this.moduleName + "-wiretap-" + identifier;
-        }
-    }
-
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
-        // Update id when module name changes
-        if (moduleName != null && this.identifier != null) {
-            this.id = moduleName + "-wiretap-" + this.identifier;
-        }
     }
 
     public void setFlowName(String flowName) {
@@ -189,7 +165,6 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
         return timestamp == that.timestamp &&
                 expiry == that.expiry &&
                 Objects.equals(id, that.id) &&
-                Objects.equals(identifier, that.identifier) &&
                 Objects.equals(moduleName, that.moduleName) &&
                 Objects.equals(flowName, that.flowName) &&
                 Objects.equals(componentName, that.componentName) &&
@@ -200,7 +175,7 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, identifier, moduleName, flowName, componentName,
+        return Objects.hash(id, moduleName, flowName, componentName,
                            eventId, relatedEventId, timestamp, expiry, event);
     }
 
@@ -208,7 +183,6 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
     public String toString() {
         return "MongoWiretapEventImpl{" +
                 "id='" + id + '\'' +
-                ", identifier=" + identifier +
                 ", moduleName='" + moduleName + '\'' +
                 ", flowName='" + flowName + '\'' +
                 ", componentName='" + componentName + '\'' +

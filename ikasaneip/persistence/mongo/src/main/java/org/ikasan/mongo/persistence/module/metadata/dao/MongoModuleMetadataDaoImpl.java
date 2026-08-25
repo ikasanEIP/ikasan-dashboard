@@ -81,7 +81,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         logger.debug("Finding ModuleMetaData by id: {}", id);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("module_name").is(id));
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         MongoModuleMetadata entity = mongoTemplate.findOne(query, MongoModuleMetadata.class);
@@ -99,7 +99,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         logger.debug("Deleting ModuleMetaData with id: {}", id);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("module_name").is(id));
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         mongoTemplate.remove(query, MongoModuleMetadata.class);
@@ -121,7 +121,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
             int page = offset > 0 ? offset / resultSize : 0;
             query.with(PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, "module_name")));
         } else {
-            query.with(Sort.by(Sort.Direction.ASC, "module_name"));
+            query.with(Sort.by(Sort.Direction.ASC, EntityFields.ID));
         }
 
         results = mongoTemplate.find(query, MongoModuleMetadata.class);
@@ -142,7 +142,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
 
         // Add module name filter if provided
         if (moduleNames != null && !moduleNames.isEmpty()) {
-            Criteria criteria = Criteria.where("module_name").in(moduleNames);
+            Criteria criteria = Criteria.where(EntityFields.ID).in(moduleNames);
             query.addCriteria(criteria);
         }
 
@@ -176,14 +176,14 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
 
         // Add module name filter if provided
         if (moduleNames != null && !moduleNames.isEmpty()) {
-            Criteria criteria = Criteria.where("module_name").in(moduleNames);
+            Criteria criteria = Criteria.where(EntityFields.ID).in(moduleNames);
             query.addCriteria(criteria);
         }
 
         // Add module type filter by searching in JSON content
         if (moduleType != null) {
             String typePattern = "\"type\":\"" + moduleType + "\"";
-            Criteria typeCriteria = Criteria.where("module_metadata_json").regex(typePattern);
+            Criteria typeCriteria = Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(typePattern);
             query.addCriteria(typeCriteria);
         }
 

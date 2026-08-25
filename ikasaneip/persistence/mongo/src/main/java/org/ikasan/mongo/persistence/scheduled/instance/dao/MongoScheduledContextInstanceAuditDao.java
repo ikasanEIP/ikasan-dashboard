@@ -7,6 +7,9 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
  * MongoDB implementation of ScheduledContextInstanceAuditDao.
  *
@@ -20,14 +23,16 @@ public class MongoScheduledContextInstanceAuditDao implements ScheduledContextIn
     private static final Logger logger = LoggerFactory.getLogger(MongoScheduledContextInstanceAuditDao.class);
 
     private final MongoScheduledContextInstanceRepository repository;
+    private final long daysToKeep;
 
     /**
      * Constructor
      *
      * @param repository the MongoDB repository
      */
-    public MongoScheduledContextInstanceAuditDao(MongoScheduledContextInstanceRepository repository) {
+    public MongoScheduledContextInstanceAuditDao(MongoScheduledContextInstanceRepository repository, long daysToKeep) {
         this.repository = repository;
+        this.daysToKeep = daysToKeep;
     }
 
     @Override
@@ -50,14 +55,16 @@ public class MongoScheduledContextInstanceAuditDao implements ScheduledContextIn
      * @return the entity ready for persistence
      */
     private MongoScheduledContextInstanceRecordImpl convertToEntity(ScheduledContextInstanceRecord record) {
-        if (record instanceof MongoScheduledContextInstanceRecordImpl) {
-            return (MongoScheduledContextInstanceRecordImpl) record;
-        }
-
         MongoScheduledContextInstanceRecordImpl entity = new MongoScheduledContextInstanceRecordImpl();
 
         // Use the record's ID (audit ID) directly
-        entity.setId(record.getId());
+        if(record.getId() != null) {
+            entity.setId(record.getId());
+        }
+        else {
+            entity.setId(SCHEDULED_CONTEXT_INSTANCE_AUDIT_ID + "_" + UUID.randomUUID());
+        }
+        entity.setType(SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE);
         entity.setContextName(record.getContextName());
         entity.setContextInstanceId(record.getContextInstanceId());
         entity.setContextInstance(record.getContextInstance());
@@ -68,6 +75,7 @@ public class MongoScheduledContextInstanceAuditDao implements ScheduledContextIn
         entity.setStartTime(record.getStartTime());
         entity.setEndTime(record.getEndTime());
         entity.setContainsRepeatingJobs(record.isContainsRepeatingJobs());
+        entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
 
         return entity;
     }
