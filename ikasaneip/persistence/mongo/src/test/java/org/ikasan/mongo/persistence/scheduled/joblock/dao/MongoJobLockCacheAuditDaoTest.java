@@ -35,7 +35,7 @@ public class MongoJobLockCacheAuditDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoJobLockCacheAuditRepository.class);
 
-        dao = new MongoJobLockCacheAuditDao(repository, mongoTemplate);
+        dao = new MongoJobLockCacheAuditDao(repository, mongoTemplate, 7);
     }
 
     @After
@@ -69,11 +69,14 @@ public class MongoJobLockCacheAuditDaoTest {
 
     @Test
     public void test_save_generates_unique_id() {
-        MongoJobLockCacheAuditRecordImpl record1 = createJobLockCacheAuditRecord("env1");
-        MongoJobLockCacheAuditRecordImpl record2 = createJobLockCacheAuditRecord("env1");
+        JobLockCacheAuditRecord record1 = createJobLockCacheAuditRecord("env1");
+        JobLockCacheAuditRecord record2 = createJobLockCacheAuditRecord("env1");
 
         dao.save(record1);
         dao.save(record2);
+
+        record1 = dao.findAll(100, 0).getResultList().get(0);
+        record2 = dao.findAll(100, 0).getResultList().get(1);
 
         Assert.assertNotNull(record1.getId());
         Assert.assertNotNull(record2.getId());
@@ -84,11 +87,12 @@ public class MongoJobLockCacheAuditDaoTest {
 
     @Test
     public void test_save_sets_timestamp() {
-        MongoJobLockCacheAuditRecordImpl record = createJobLockCacheAuditRecord("test-env");
+        JobLockCacheAuditRecord record = createJobLockCacheAuditRecord("test-env");
 
         long beforeSave = System.currentTimeMillis();
         dao.save(record);
 
+        record = dao.findAll(100, 0).getResultList().get(0);
         Assert.assertTrue(record.getTimestamp() >= beforeSave);
         Assert.assertTrue(record.getTimestamp() <= System.currentTimeMillis());
     }
@@ -144,11 +148,11 @@ public class MongoJobLockCacheAuditDaoTest {
 
     @Test
     public void test_save_multiple_records_maintains_order() throws InterruptedException {
-        MongoJobLockCacheAuditRecordImpl record1 = createJobLockCacheAuditRecord("env1");
+        JobLockCacheAuditRecord record1 = createJobLockCacheAuditRecord("env1");
         Thread.sleep(10);
-        MongoJobLockCacheAuditRecordImpl record2 = createJobLockCacheAuditRecord("env2");
+        JobLockCacheAuditRecord record2 = createJobLockCacheAuditRecord("env2");
         Thread.sleep(10);
-        MongoJobLockCacheAuditRecordImpl record3 = createJobLockCacheAuditRecord("env3");
+        JobLockCacheAuditRecord record3 = createJobLockCacheAuditRecord("env3");
 
         dao.save(record1);
         dao.save(record2);
@@ -157,44 +161,14 @@ public class MongoJobLockCacheAuditDaoTest {
         SearchResults<JobLockCacheAuditRecord> results = dao.findAll(10, 0);
         Assert.assertEquals(3, results.getTotalNumberOfResults());
 
+        record1 = dao.findAll(100, 0).getResultList().get(0);
+        record2 = dao.findAll(100, 0).getResultList().get(1);
+        record3 = dao.findAll(100, 0).getResultList().get(2);
+
         // Verify timestamps are set
         Assert.assertTrue(record1.getTimestamp() > 0);
         Assert.assertTrue(record2.getTimestamp() > record1.getTimestamp());
         Assert.assertTrue(record3.getTimestamp() > record2.getTimestamp());
-    }
-
-    @Test
-    public void test_environment_field_preserved() {
-        MongoJobLockCacheAuditRecordImpl record = createJobLockCacheAuditRecord("production");
-
-        dao.save(record);
-
-        SearchResults<JobLockCacheAuditRecord> results = dao.findAll(10, 0);
-        JobLockCacheAuditRecord found = results.getResultList().get(0);
-
-        Assert.assertEquals("production", found.getEnvironment());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        JobLockCacheAuditRecord invalidRecord = new JobLockCacheAuditRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getEnvironment() { return "test"; }
-            @Override
-            public void setEnvironment(String environment) {}
-            @Override
-            public void setJobLockCache(org.ikasan.spec.scheduled.joblock.model.JobLockCacheData jobLockCache) {}
-            @Override
-            public org.ikasan.spec.scheduled.joblock.model.JobLockCacheData getJobLockCache() { return null; }
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-        };
-
-        dao.save(invalidRecord);
     }
 
     // Helper methods

@@ -7,11 +7,14 @@ import org.ikasan.spec.wiretap.WiretapEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static org.ikasan.spec.entity.EntityFields.*;
 
 /**
  * MongoDB implementation of WiretapDao.
@@ -68,9 +71,13 @@ public class MongoWiretapDao implements EntityDao<WiretapEvent> {
         }
 
         // Try to find by direct ID first
-        Optional<MongoWiretapEventImpl> result = repository.findById(id);
-        if (result.isPresent()) {
-            return result.get();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(WIRETAP_TYPE));
+
+        MongoWiretapEventImpl result = mongoTemplate.findOne(query, MongoWiretapEventImpl.class);
+        if (result != null) {
+            return result;
         }
 
         // If not found and id is numeric, it might be just the identifier
@@ -92,7 +99,11 @@ public class MongoWiretapDao implements EntityDao<WiretapEvent> {
      */
     public void deleteExpired() {
         long currentTime = System.currentTimeMillis();
-        repository.deleteByExpiryLessThan(currentTime);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(TYPE).is(WIRETAP_TYPE));
+
+        mongoTemplate.remove(query, MongoWiretapEventImpl.class);
         logger.debug("Deleted expired wiretap events before timestamp: {}", currentTime);
     }
 
@@ -103,50 +114,17 @@ public class MongoWiretapDao implements EntityDao<WiretapEvent> {
      * @return the MongoWiretapEventImpl entity
      */
     private MongoWiretapEventImpl convertToEntity(WiretapEvent wiretapEvent) {
-        if (wiretapEvent instanceof MongoWiretapEventImpl) {
-            MongoWiretapEventImpl mongoEvent = (MongoWiretapEventImpl) wiretapEvent;
-
-            // Ensure ID is set based on module name and identifier
-            if (mongoEvent.getId() == null && mongoEvent.getModuleName() != null && mongoEvent.getIdentifier() > 0) {
-                mongoEvent.setId(mongoEvent.getModuleName() + "-wiretap-" + mongoEvent.getIdentifier());
-            }
-
-            // Set expiry if not already set
-            if (mongoEvent.getExpiry() == 0) {
-                long millisecondsInDay = (this.daysToKeep * TimeUnit.DAYS.toMillis(1));
-                mongoEvent.setExpiry(millisecondsInDay + System.currentTimeMillis());
-            }
-
-            return mongoEvent;
-        }
-
         // Convert from generic WiretapEvent to MongoWiretapEventImpl
         MongoWiretapEventImpl entity = new MongoWiretapEventImpl();
-        entity.setIdentifier(wiretapEvent.getIdentifier());
+        entity.setId(wiretapEvent.getModuleName() + "-wiretap-" + wiretapEvent.getIdentifier());
+        entity.setType(WIRETAP_TYPE);
         entity.setModuleName(wiretapEvent.getModuleName());
         entity.setFlowName(wiretapEvent.getFlowName());
         entity.setComponentName(wiretapEvent.getComponentName());
         entity.setEventId(wiretapEvent.getEventId());
+        entity.setEvent(wiretapEvent.getEvent().toString());
         entity.setTimestamp(wiretapEvent.getTimestamp());
-
-        // Set the event content
-        Object event = wiretapEvent.getEvent();
-        if (event != null) {
-            entity.setEvent(event.toString());
-        }
-
-        // Generate ID
-        if (wiretapEvent.getModuleName() != null && wiretapEvent.getIdentifier() > 0) {
-            entity.setId(wiretapEvent.getModuleName() + "-wiretap-" + wiretapEvent.getIdentifier());
-        }
-
-        // Set expiry
-        long expiry = wiretapEvent.getExpiry();
-        if (expiry == 0) {
-            long millisecondsInDay = (this.daysToKeep * TimeUnit.DAYS.toMillis(1));
-            expiry = millisecondsInDay + System.currentTimeMillis();
-        }
-        entity.setExpiry(expiry);
+        entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
 
         return entity;
     }

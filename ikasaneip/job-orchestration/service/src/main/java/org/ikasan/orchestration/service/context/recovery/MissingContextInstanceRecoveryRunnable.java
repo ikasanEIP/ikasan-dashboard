@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.ikasan.solr.dao.SolrGeneralDaoImpl.DESCENDING;
-import static org.ikasan.spec.solr.SolrDaoBase.START_TIME;
+import static org.ikasan.spec.entity.EntityFields.START_TIME;
 
 public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServiceBase implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(MissingContextInstanceRecoveryRunnable.class);

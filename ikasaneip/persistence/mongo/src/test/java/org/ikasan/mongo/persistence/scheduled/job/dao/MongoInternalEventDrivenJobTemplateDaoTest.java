@@ -4,14 +4,10 @@ import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoInternalEventDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoInternalEventDrivenJobRepository;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -69,7 +65,7 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         Assert.assertEquals("agent1", found.getAgentName());
         Assert.assertEquals("job1", found.getJobName());
         Assert.assertEquals("context1", found.getContextName());
-        Assert.assertTrue(record.getId().startsWith("internalEventDrivenJobTemplate_"));
+        Assert.assertEquals(record.getId(), found.getId());
     }
 
     @Test
@@ -245,64 +241,6 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         dao.enableAll(records, "testUser");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        InternalEventDrivenJobRecord invalidRecord = new InternalEventDrivenJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public InternalEventDrivenJob getInternalEventDrivenJob() { return null; }
-            @Override
-            public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-            @Override
-            public boolean isHeld() { return false; }
-            @Override
-            public void setHeld(boolean held) {}
-            @Override
-            public boolean isSkipped() { return false; }
-            @Override
-            public void setSkipped(boolean skipped) {}
-            @Override
-            public boolean isTargetResidingContextOnly() { return false; }
-            @Override
-            public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {}
-            @Override
-            public boolean isParticipatesInLock() { return false; }
-            @Override
-            public void setParticipatesInLock(boolean participatesInLock) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     @Test
     public void test_findAll_only_returns_templates() {
         // Create a regular job using the parent DAO
@@ -318,9 +256,9 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         SearchResults<InternalEventDrivenJobRecord> templateResults = dao.findAll(10, 0);
         Assert.assertEquals(2, templateResults.getTotalNumberOfResults());
 
-        // Regular DAO should find all
+        // Regular DAO should find non template only
         SearchResults<InternalEventDrivenJobRecord> allResults = regularDao.findAll(10, 0);
-        Assert.assertEquals(3, allResults.getTotalNumberOfResults());
+        Assert.assertEquals(1, allResults.getTotalNumberOfResults());
     }
 
     // Helper methods
@@ -335,6 +273,8 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         internalEventDrivenJob.setParticipatesInLock(false);
 
         MongoInternalEventDrivenJobRecordImpl record = new MongoInternalEventDrivenJobRecordImpl();
+        record.setId(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
+            + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

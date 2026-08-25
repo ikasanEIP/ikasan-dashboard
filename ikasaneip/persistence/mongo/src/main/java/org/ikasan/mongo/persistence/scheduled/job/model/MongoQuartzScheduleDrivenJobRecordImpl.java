@@ -4,9 +4,11 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -20,29 +22,37 @@ public class MongoQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDri
     @Id
     private String id;
 
-    @Field("agentName")
+    @Field(EntityFields.MODULE_NAME)
     private String agentName;
 
-    @Field("jobName")
+    @Field(EntityFields.FLOW_NAME)
     private String jobName;
 
-    @Field("displayName")
+    @Field(EntityFields.DISPLAY_NAME)
     private String displayName;
 
-    @Field("contextName")
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextName;
 
-    @Field("quartzScheduleDrivenJob")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String quartzScheduleDrivenJob;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("modifiedTimestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modifiedBy")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
+
+    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -137,5 +147,21 @@ public class MongoQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDri
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

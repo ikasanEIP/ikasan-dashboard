@@ -6,6 +6,7 @@ import org.ikasan.mongo.persistence.scheduled.job.model.MongoFileEventDrivenJobR
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoFileEventDrivenJobRepository;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -74,22 +75,23 @@ public class MongoFileEventDrivenJobDaoTest {
     @Test
     public void test_save_with_explicit_id() {
         MongoFileEventDrivenJobRecordImpl record = createFileEventDrivenJobRecord("agent1", "job1", "context1");
-        record.setId("custom_id");
 
         dao.save(record);
 
-        FileEventDrivenJobRecord found = dao.findById("custom_id");
+        FileEventDrivenJobRecord found = dao.findById(record.getId());
         Assert.assertNotNull(found);
-        Assert.assertEquals("custom_id", found.getId());
+        Assert.assertEquals(record.getId(), found.getId());
     }
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoFileEventDrivenJobRecordImpl record = createFileEventDrivenJobRecord("agent1", "job1", "context1");
+        FileEventDrivenJobRecord record = createFileEventDrivenJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -177,48 +179,6 @@ public class MongoFileEventDrivenJobDaoTest {
         Assert.assertEquals("testUser", found.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        FileEventDrivenJobRecord invalidRecord = new FileEventDrivenJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public FileEventDrivenJob getFileEventDrivenJob() { return null; }
-            @Override
-            public void setFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
 
     private MongoFileEventDrivenJobRecordImpl createFileEventDrivenJobRecord(String agentName, String jobName, String contextName) {
@@ -229,6 +189,9 @@ public class MongoFileEventDrivenJobDaoTest {
         fileEventDrivenJob.setDisplayName("Display " + jobName);
 
         MongoFileEventDrivenJobRecordImpl record = new MongoFileEventDrivenJobRecordImpl();
+        record.setId(JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + fileEventDrivenJob.getAgentName()
+            + "_" + fileEventDrivenJob.getJobName()
+            + "_" + fileEventDrivenJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

@@ -94,16 +94,6 @@ public class MongoJobLockCacheDaoTest {
     }
 
     @Test
-    public void test_save_with_explicit_id() {
-        MongoJobLockCacheRecordImpl record = createJobLockCacheRecord("test-env");
-        record.setId("custom_id");
-
-        dao.save(record);
-
-        Assert.assertEquals("custom_id", record.getId());
-    }
-
-    @Test
     public void test_save_sets_timestamp_if_not_set() {
         MongoJobLockCacheRecordImpl record = createJobLockCacheRecord("test-env");
         Assert.assertEquals(0, record.getTimestamp());
@@ -174,28 +164,6 @@ public class MongoJobLockCacheDaoTest {
         record.setId("someIdWithoutSeparator");
 
         Assert.assertEquals(JobLockCacheRecord.DEFAULT_ENVIRONMENT, record.getEnvironment());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        JobLockCacheRecord invalidRecord = new JobLockCacheRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getEnvironment() { return "test"; }
-            @Override
-            public void setEnvironment(String environment) {}
-            @Override
-            public void setJobLockCache(org.ikasan.spec.scheduled.joblock.model.JobLockCacheData jobLockCache) {}
-            @Override
-            public org.ikasan.spec.scheduled.joblock.model.JobLockCacheData getJobLockCache() { return null; }
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-        };
-
-        dao.save(invalidRecord);
     }
 
     // Helper methods

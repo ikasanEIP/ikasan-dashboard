@@ -35,15 +35,10 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
      */
     private static Logger logger = LoggerFactory.getLogger(SolrScheduledContextInstanceDaoImpl.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String SCHEDULED_CONTEXT_INSTANCE = "scheduledContextInstance";
-
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextInstanceRecord scheduledContextInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, scheduledContextInstanceRecord.getContextInstance().getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
-        document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE);
+        document.addField(ID, scheduledContextInstanceRecord.getContextInstance().getId() + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
+        document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
         } catch (JacksonException e) {
@@ -74,7 +69,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
     @Override
     public ScheduledContextInstanceRecord findById(String id) {
-        SolrQuery query = super.buildIdQuery(id, SCHEDULED_CONTEXT_INSTANCE);
+        SolrQuery query = super.buildIdQuery(id, SCHEDULED_CONTEXT_INSTANCE_TYPE);
 
         logger.debug("query: " + query);
 
@@ -84,7 +79,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
     @Override
     public void deleteById(String id) {
-        super.removeById(SCHEDULED_CONTEXT_INSTANCE, id + "_" + SCHEDULED_CONTEXT_INSTANCE);
+        super.removeById(SCHEDULED_CONTEXT_INSTANCE_TYPE, id + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
     }
 
     @Override
@@ -99,7 +94,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
             .map(Enum::toString)
             .collect(Collectors.toList()), STATUS).toString();
 
-        String queryString = TYPE + COLON + SCHEDULED_CONTEXT_INSTANCE + AND + listOfStatus;
+        String queryString = TYPE + COLON + SCHEDULED_CONTEXT_INSTANCE_TYPE + AND + listOfStatus;
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString);
@@ -111,7 +106,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, int limit, int offset
         , String sortField, String sortDirection) {
         StringBuffer queryString = new StringBuffer();
-        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE_TYPE)
             .append(AND)
             .append(MODULE_NAME).append(COLON).append(SolrSpecialCharacterEscapeUtil.escape(contextName));
 
@@ -129,7 +124,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, long startTimestamp, long endTimestamp
         , int limit, int offset, String sortField, String sortDirection) {
         StringBuffer queryString = new StringBuffer();
-        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE_TYPE)
             .append(AND)
             .append(MODULE_NAME).append(COLON).append(SolrSpecialCharacterEscapeUtil.escape(contextName));
 
@@ -151,7 +146,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByFilter(ContextInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
         StringBuffer queryString = new StringBuffer();
-        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE);
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE_TYPE);
 
         if(filter.getContextInstanceNames() != null && !filter.getContextInstanceNames().isEmpty()) {
             queryString.append(AND).append(OPEN_BRACKET);

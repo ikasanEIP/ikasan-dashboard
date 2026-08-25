@@ -3,8 +3,10 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -18,23 +20,30 @@ public class MongoScheduledContextViewRecordImpl implements ScheduledContextView
     @Id
     private String id;
 
-    @Field("parentContextName")
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Field(EntityFields.MODULE_NAME)
     private String parentContextName;
 
-    @Field("contextName")
+    @Field(EntityFields.FLOW_NAME)
     private String contextName;
 
-    @Field("contextView")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextView;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("modifiedTimestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modifiedBy")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -43,6 +52,14 @@ public class MongoScheduledContextViewRecordImpl implements ScheduledContextView
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -103,6 +120,14 @@ public class MongoScheduledContextViewRecordImpl implements ScheduledContextView
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 
     @Override

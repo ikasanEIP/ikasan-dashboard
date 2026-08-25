@@ -15,6 +15,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ikasan.spec.entity.EntityFields.COMPONENT_NAME;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
+
 public class MongoEmailNotificationContextDao implements EmailNotificationContextDao, BatchInsert<EmailNotificationContextRecord> {
 
     private final MongoEmailNotificationContextRepository repository;
@@ -28,12 +31,14 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
     @Override
     public SearchResults<EmailNotificationContextRecord> findAll(int limit, int offset) {
-        PageRequest pageRequest = PageRequest.of(offset / limit, limit);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(EMAIL_NOTIFICATION_CONTEXT));
 
-        long totalCount = repository.count();
+        long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
-        List<EmailNotificationContextRecord> results = repository.findAll(pageRequest)
-            .getContent()
+        query.with(PageRequest.of(offset / limit, limit));
+
+        List<EmailNotificationContextRecord> results = mongoTemplate.find(query, MongoEmailNotificationContextRecordImpl.class)
             .stream()
             .map(record -> (EmailNotificationContextRecord) record)
             .collect(Collectors.toList());
@@ -43,8 +48,11 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
     @Override
     public SearchResults<EmailNotificationContextRecord> findByContextName(String contextName, int limit, int offset) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("contextName").is(contextName));
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(COMPONENT_NAME).is(contextName),
+            Criteria.where(TYPE).is(EMAIL_NOTIFICATION_CONTEXT)
+        );
+        Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
@@ -60,31 +68,24 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
     @Override
     public void deleteByContextName(String contextName) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("contextName").is(contextName));
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(COMPONENT_NAME).is(contextName),
+            Criteria.where(TYPE).is(EMAIL_NOTIFICATION_CONTEXT)
+        );
+        Query query = new Query(criteria);
         mongoTemplate.remove(query, MongoEmailNotificationContextRecordImpl.class);
     }
 
     @Override
     public void save(EmailNotificationContextRecord record) {
-        MongoEmailNotificationContextRecordImpl mongoRecord;
-
-        if (record instanceof MongoEmailNotificationContextRecordImpl) {
-            mongoRecord = (MongoEmailNotificationContextRecordImpl) record;
-        } else {
-            mongoRecord = new MongoEmailNotificationContextRecordImpl();
-            mongoRecord.setId(record.getId());
-            mongoRecord.setContextName(record.getContextName());
-            mongoRecord.setEmailNotificationContext(record.getEmailNotificationContext());
-            mongoRecord.setTimestamp(record.getTimestamp());
-            mongoRecord.setModifiedTimestamp(record.getModifiedTimestamp());
-            mongoRecord.setModifiedBy(record.getModifiedBy());
-        }
-
-        // Set ID to contextName if not already set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            mongoRecord.setId(record.getEmailNotificationContext().getContextName());
-        }
+        MongoEmailNotificationContextRecordImpl mongoRecord = new MongoEmailNotificationContextRecordImpl();
+        mongoRecord.setId(record.getEmailNotificationContext().getContextName());
+        mongoRecord.setType(EMAIL_NOTIFICATION_CONTEXT);
+        mongoRecord.setContextName(record.getContextName());
+        mongoRecord.setEmailNotificationContext(record.getEmailNotificationContext());
+        mongoRecord.setTimestamp(record.getTimestamp());
+        mongoRecord.setModifiedTimestamp(record.getModifiedTimestamp());
+        mongoRecord.setModifiedBy(record.getModifiedBy());
 
         // Set contextName from EmailNotificationContext if not already set
         if (mongoRecord.getContextName() == null || mongoRecord.getContextName().isEmpty()) {
@@ -98,6 +99,7 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
         // Always update modifiedTimestamp
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }

@@ -3,7 +3,9 @@ package org.ikasan.mongo.persistence.scheduled.job.dao;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoContextStartJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextStartJobRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.dao.ContextStartJobDao;
+import org.ikasan.spec.scheduled.job.model.ContextStartJob;
 import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
@@ -15,7 +17,6 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * MongoDB implementation of ContextStartJobDao.
@@ -38,23 +39,30 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
     @Override
     public void save(ContextStartJobRecord event) {
-        if (!(event instanceof MongoContextStartJobRecordImpl)) {
-            throw new IllegalArgumentException("Event must be an instance of MongoContextStartJobRecordImpl");
+        MongoContextStartJobRecordImpl mongoRecord = new MongoContextStartJobRecordImpl();
+        mongoRecord.setType(JobConstants.CONTEXT_START_JOB);
+
+        ContextStartJob job = event.getContextStartJob();
+        if(event.getId() != null) {
+            mongoRecord.setId(event.getId());
         }
-
-        MongoContextStartJobRecordImpl mongoRecord = (MongoContextStartJobRecordImpl) event;
-
-        // Generate ID if not set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JobConstants.CONTEXT_START_JOB + "_"
-                + mongoRecord.getAgentName() + "_"
-                + mongoRecord.getJobName() + "_"
-                + mongoRecord.getContextName();
-            mongoRecord.setId(id);
+        else {
+            mongoRecord.setId(job.getAgentName() + "_"
+                + event.getJobName() + "_" + job.getContextName());
         }
-
-        // Set modified timestamp
+        mongoRecord.setContextStartJob(job);
+        mongoRecord.setContextName(job.getContextName());
+        mongoRecord.setAgentName(job.getAgentName());
+        mongoRecord.setDisplayName(job.getDisplayName());
+        mongoRecord.setJobName(event.getJobName());
+        mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            mongoRecord.setModifiedBy(event.getModifiedBy());
+        }
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }
@@ -70,10 +78,12 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
     public SearchResults<ContextStartJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        long totalCount = repository.count();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_START_JOB));
+
+        long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        Query query = new Query();
         query.with(pageable);
 
         List<MongoContextStartJobRecordImpl> results = mongoTemplate.find(query, MongoContextStartJobRecordImpl.class);
@@ -86,7 +96,10 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
     public SearchResults<ContextStartJobRecord> findByContext(String contextId, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("contextName").is(contextId);
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(EntityFields.COMPONENT_NAME).is(contextId),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_START_JOB)
+        );
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
@@ -102,7 +115,10 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
     @Override
     public ContextStartJobRecord findById(String id) {
-        Optional<MongoContextStartJobRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_START_JOB));
+
+        return mongoTemplate.findOne(query, MongoContextStartJobRecordImpl.class);
     }
 }

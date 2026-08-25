@@ -32,8 +32,6 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
     private static final Logger LOG = LoggerFactory.getLogger(SolrScheduledContextInstanceAuditAggregateDaoImpl.class);
-    private static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE = "scheduledContextInstanceAuditAggregate";
-    private static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_ID = "scheduledContextInstanceAuditAggregateId";
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextInstanceAuditAggregateRecord record) {

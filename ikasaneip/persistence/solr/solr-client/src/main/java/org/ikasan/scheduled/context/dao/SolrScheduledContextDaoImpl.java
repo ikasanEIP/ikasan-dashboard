@@ -30,14 +30,9 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
      */
     private static Logger logger = LoggerFactory.getLogger(SolrScheduledContextDaoImpl.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String SCHEDULED_CONTEXT = "scheduledContext";
-
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextRecord scheduledContextRecord) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(TYPE, SCHEDULED_CONTEXT);
+        document.addField(TYPE, SCHEDULED_CONTEXT_TYPE);
         try {
             ContextTemplate contextTemplate = scheduledContextRecord.getContext();
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(contextTemplate));
@@ -48,7 +43,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
                 , scheduledContextRecord.getContext()));
         }
-        document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT);
+        document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         document.addField(MODULE_NAME, scheduledContextRecord.getContextName());
         document.addField(CREATED_DATE_TIME, scheduledContextRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
@@ -57,7 +52,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             !scheduledContextRecord.getModifiedBy().isEmpty()) {
             document.addField(MODIFIED_BY, scheduledContextRecord.getModifiedBy());
         }
-        document.setField(EXPIRY, DO_NOT_EXPIRE);
+        document.setField(EXPIRY, ScheduledContextDao.DO_NOT_EXPIRE);
 
         logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;
@@ -74,7 +69,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
     @Override
     public ScheduledContextRecord findById(String id) {
-        SolrQuery query = super.buildIdQuery(id + "-" + SCHEDULED_CONTEXT, SCHEDULED_CONTEXT);
+        SolrQuery query = super.buildIdQuery(id + "-" + SCHEDULED_CONTEXT_TYPE, SCHEDULED_CONTEXT_TYPE);
 
         logger.debug("query: " + query);
 
@@ -93,7 +88,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     public SearchResults<ScheduledContextRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
+        typeBuffer.append("\"").append(SCHEDULED_CONTEXT_TYPE).append("\" ");
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(typeBuffer.toString());
@@ -107,7 +102,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     public SearchResults<ScheduledContextRecord> findByFilter(ScheduledContextSearchFilter filter, int limit, int offset, String sortColumn, String sortOrder) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
-        queryBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
+        queryBuffer.append("\"").append(SCHEDULED_CONTEXT_TYPE).append("\" ");
 
         if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
             queryBuffer.append(AND);
@@ -142,7 +137,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     @Override
     public ScheduledContextRecord findByName(String name) {
         SolrQuery query = new SolrQuery(super.buildFieldPredicate(name, MODULE_NAME)
-            .append(" AND ").append(super.buildFieldPredicate(SCHEDULED_CONTEXT, TYPE)).toString());
+            .append(" AND ").append(super.buildFieldPredicate(SCHEDULED_CONTEXT_TYPE, TYPE)).toString());
 
         logger.debug("query: " + query);
 
@@ -161,6 +156,6 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
     @Override
     public void deleteContext(String contextName) {
-        super.removeById(SCHEDULED_CONTEXT, contextName + "-" + SCHEDULED_CONTEXT);
+        super.removeById(SCHEDULED_CONTEXT_TYPE, contextName + "-" + SCHEDULED_CONTEXT_TYPE);
     }
 }

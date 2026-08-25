@@ -3,9 +3,11 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -19,17 +21,25 @@ public class MongoNotificationSendAuditRecordImpl implements NotificationSendAud
     @Id
     private String id;
 
-    @Field("notificationSendAudit")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String notificationSendAudit;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("modifiedTimestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modifiedBy")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
+
+    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -87,5 +97,21 @@ public class MongoNotificationSendAuditRecordImpl implements NotificationSendAud
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

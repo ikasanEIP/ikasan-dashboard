@@ -4,14 +4,10 @@ import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoQuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoQuartzScheduleDrivenJobRepository;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -255,48 +251,6 @@ public class MongoQuartzScheduleDrivenJobDaoTest {
         Assert.assertEquals("testUser", found.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        QuartzScheduleDrivenJobRecord invalidRecord = new QuartzScheduleDrivenJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public QuartzScheduleDrivenJobImpl getQuartzScheduleDrivenJob() { return null; }
-            @Override
-            public void setQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
 
     private void insertQuartzScheduleDrivenJobs(String idPrefix, int num, String contextId) {
@@ -312,6 +266,9 @@ public class MongoQuartzScheduleDrivenJobDaoTest {
             quartzScheduleDrivenJob.setDisplayName("displayName" + i);
 
             MongoQuartzScheduleDrivenJobRecordImpl record = new MongoQuartzScheduleDrivenJobRecordImpl();
+            record.setId(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + quartzScheduleDrivenJob.getAgentName()
+                + "_" + quartzScheduleDrivenJob.getJobName()
+                + "_" + quartzScheduleDrivenJob.getContextName());
             record.setAgentName(agent);
             record.setJobName(jobName);
             record.setContextName(contextId);

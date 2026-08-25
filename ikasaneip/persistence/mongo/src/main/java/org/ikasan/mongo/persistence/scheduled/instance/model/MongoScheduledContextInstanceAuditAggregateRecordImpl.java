@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.springframework.data.annotation.Id;
@@ -26,39 +27,39 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
     @Id
     private String id;
 
-    @Field("context_name")
-    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    @Field("context_instance_id")
-    @Indexed
+    @Field(EntityFields.FLOW_NAME)
     private String contextInstanceId;
 
-    @Field("context_instance_audit")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextInstanceAudit;
 
-    @Field("scheduled_process_event_name")
-    @Indexed
+    @Field(EntityFields.COMPONENT_NAME)
     private String scheduledProcessEventName;
 
-    @Field("raised_events")
+    @Field(EntityFields.EVENT)
     private String raisedEvents;
 
-    @Field("created_date_time")
-    @Indexed
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("status")
-    @Indexed
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field("is_repeating_job")
-    @Indexed
+    @Field(EntityFields.IS_REPEATING_JOB)
     private boolean isRepeatingJob;
 
-    @Field("job_type")
-    @Indexed
+    @Field(EntityFields.JOB_TYPE)
     private String jobType;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -67,6 +68,14 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -174,5 +183,13 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
     @Override
     public void setJobType(String jobType) {
         this.jobType = jobType;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

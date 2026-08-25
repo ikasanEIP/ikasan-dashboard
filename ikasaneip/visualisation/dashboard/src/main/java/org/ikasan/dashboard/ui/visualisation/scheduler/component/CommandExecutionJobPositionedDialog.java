@@ -11,12 +11,16 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.scheduler.component.ErrorAcknowledgedPositionedDialog;
+import org.ikasan.dashboard.ui.scheduler.component.JsonViewerDialog;
+import org.ikasan.dashboard.ui.scheduler.component.LogFileHistoryDialog;
+import org.ikasan.dashboard.ui.scheduler.component.TextViewerDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.designer.PositionedDialog;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -24,7 +28,6 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,7 +193,7 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
         filter.setContextName(this.contextInstance.getName());
         last5ExecutionDurations.setValue(
             this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
-                    (filter, 20, 0, SolrDaoBase.CREATED_DATE_TIME, "DESCENDING")
+                    (filter, 20, 0, EntityFields.CREATED_DATE_TIME, "DESCENDING")
             .getResultList().stream()
             .map(record -> {
                     if (record.getSchedulerJobInstance() != null && record.getStatus().equals(InstanceStatus.COMPLETE.toString())) {
