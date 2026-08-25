@@ -2,15 +2,11 @@ package org.ikasan.mongo.persistence.systemevent.dao;
 
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
+import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventSearchFilter;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
-import org.ikasan.spec.systemevent.SystemEventSearchFilter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -58,16 +54,12 @@ public class MongoSystemEventDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
     private MongoSystemEventDao dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
-    @Autowired
-    public void setDao(MongoSystemEventRepository repository, MongoTemplate mongoTemplate) {
-        this.dao = new MongoSystemEventDao(repository, mongoTemplate);
     }
 
     @After
@@ -177,7 +169,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(2L, "Module1", "jane.smith", "UPDATE", "User", new Date());
         createSystemEvent(3L, "Module1", "john.doe", "DELETE", "Role", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("john.doe");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -198,7 +190,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(11L, "Module2", "admin", "UPDATE", "User", new Date());
         createSystemEvent(12L, "Module2", "admin", "DELETE", "Configuration", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setSubject("Configuration");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -218,7 +210,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(21L, "Module3", "user2", "UPDATE", "Flow", new Date());
         createSystemEvent(22L, "Module3", "user3", "CREATE", "Module", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setAction("CREATE");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -246,7 +238,7 @@ public class MongoSystemEventDaoTest {
         event3.setPayload("{\"type\":\"integration\",\"name\":\"another-flow\"}");
         dao.save(event3);
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setSearchTerm("integration");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -263,7 +255,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(41L, "Module5", "user2", "UPDATE", "Flow", new Date(baseTime));
         createSystemEvent(42L, "Module5", "user3", "DELETE", "Flow", new Date(baseTime + 10000));
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setStartTime(baseTime - 5000);
         filter.setEndTime(baseTime + 5000);
 
@@ -282,7 +274,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(51L, "Module6", "admin", "UPDATE", "Role", new Date(baseTime));
         createSystemEvent(52L, "Module6", "user1", "CREATE", "User", new Date(baseTime));
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("admin");
         filter.setSubject("User");
         filter.setAction("CREATE");
@@ -305,7 +297,7 @@ public class MongoSystemEventDaoTest {
             createSystemEvent(60L + i, "Module7", "user" + i, "CREATE", "Flow", new Date());
         }
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
 
         // Get first page (5 items)
         SearchResults<SystemEvent> page1 = dao.findByFilter(filter, 5, 0, null, null);
@@ -331,7 +323,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(71L, "Module8", "user2", "CREATE", "Flow", new Date(baseTime));
         createSystemEvent(72L, "Module8", "user3", "CREATE", "Flow", new Date(baseTime + 1000));
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, "timestamp", "ASCENDING");
 
@@ -352,7 +344,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(81L, "Module9", "user2", "CREATE", "Flow", new Date(baseTime + 1000));
         createSystemEvent(82L, "Module9", "user3", "CREATE", "Flow", new Date(baseTime + 2000));
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
 
         // Default sorting should be descending by timestamp
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, "timestamp", "DESCENDING");
@@ -370,7 +362,7 @@ public class MongoSystemEventDaoTest {
     public void test_findByFilter_empty_results() {
         createSystemEvent(90L, "Module10", "user1", "CREATE", "Flow", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("nonexistent");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -386,7 +378,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(100L, "Module11", "user.name@domain.com", "CREATE", "Flow-Test", new Date());
         createSystemEvent(101L, "Module11", "admin", "UPDATE", "Component", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("user.name@domain.com");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -413,7 +405,7 @@ public class MongoSystemEventDaoTest {
 
         dao.save(events);
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 20, 0, null, null);
 
         Assert.assertNotNull(results);
@@ -426,7 +418,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(121L, "Module12", "john.smith", "UPDATE", "Flow", new Date());
         createSystemEvent(122L, "Module12", "jane.doe", "DELETE", "Flow", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("john");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -445,7 +437,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(131L, "Module13", "admin", "UPDATE", "AdminFlow", new Date());
         createSystemEvent(132L, "Module13", "admin", "DELETE", "UserModule", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setSubject("Flow");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -464,7 +456,7 @@ public class MongoSystemEventDaoTest {
         createSystemEvent(141L, "Module14", "user2", "CREATE_ROLE", "Role", new Date());
         createSystemEvent(142L, "Module14", "user3", "UPDATE_USER", "User", new Date());
 
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setAction("CREATE");
 
         SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
@@ -475,33 +467,6 @@ public class MongoSystemEventDaoTest {
         for (SystemEvent event : results.getResultList()) {
             Assert.assertTrue(event.getAction().contains("CREATE"));
         }
-    }
-
-    @Test
-    public void test_expiry_filtering() {
-        // Create events with different expiry dates
-        long currentTime = System.currentTimeMillis();
-
-        MongoSystemEventImpl expiredEvent = createSystemEvent(150L, "Module15", "user1", "CREATE", "Flow", new Date(currentTime));
-        expiredEvent.setExpiry(new Date(currentTime - 10000)); // Already expired
-        dao.save(expiredEvent);
-
-        MongoSystemEventImpl validEvent = createSystemEvent(151L, "Module15", "user2", "UPDATE", "Flow", new Date(currentTime));
-        validEvent.setExpiry(new Date(currentTime + 10000)); // Not expired
-        dao.save(validEvent);
-
-        // Verify both events exist before deletion
-        TestSystemEventSearchFilter filter = new TestSystemEventSearchFilter();
-        SearchResults<SystemEvent> results = dao.findByFilter(filter, 10, 0, null, null);
-        Assert.assertEquals(2, results.getTotalNumberOfResults());
-
-        // Delete expired events
-        dao.deleteExpired();
-
-        // Verify only the valid event remains
-        results = dao.findByFilter(filter, 10, 0, null, null);
-        Assert.assertEquals(1, results.getTotalNumberOfResults());
-        Assert.assertEquals("user2", results.getResultList().get(0).getActor());
     }
 
     @Test
@@ -537,66 +502,5 @@ public class MongoSystemEventDaoTest {
         dao.save(event);
         return event;
     }
-
-    /**
-     * Test implementation of SystemEventSearchFilter for testing purposes.
-     * This class provides a simple implementation with getters and setters
-     * for all filter criteria used by MongoSystemEventDao.
-     */
-    private static class TestSystemEventSearchFilter implements SystemEventSearchFilter {
-        private String actor;
-        private String subject;
-        private String action;
-        private String searchTerm;
-        private long startTime;
-        private long endTime;
-
-        public String getActor() {
-            return actor;
-        }
-
-        public void setActor(String actor) {
-            this.actor = actor;
-        }
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
-
-        public String getAction() {
-            return action;
-        }
-
-        public void setAction(String action) {
-            this.action = action;
-        }
-
-        public String getSearchTerm() {
-            return searchTerm;
-        }
-
-        public void setSearchTerm(String searchTerm) {
-            this.searchTerm = searchTerm;
-        }
-
-        public long getStartTime() {
-            return startTime;
-        }
-
-        public void setStartTime(long startTime) {
-            this.startTime = startTime;
-        }
-
-        public long getEndTime() {
-            return endTime;
-        }
-
-        public void setEndTime(long endTime) {
-            this.endTime = endTime;
-        }
-    }
+    
 }

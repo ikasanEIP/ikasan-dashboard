@@ -50,17 +50,12 @@ public class MongoScheduledContextInstanceAuditAggregateDaoTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
     private MongoScheduledContextInstanceAuditAggregateDao dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
-    @Autowired
-    public void setDao(MongoScheduledContextInstanceAuditAggregateRepository repository,
-                       MongoTemplate mongoTemplate) {
-        this.dao = new MongoScheduledContextInstanceAuditAggregateDao(repository, mongoTemplate);
     }
 
     @After

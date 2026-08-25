@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceAuditAggregateRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * MongoDB implementation of ScheduledContextInstanceAuditAggregateDao.
@@ -28,6 +30,7 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
 
     private final MongoScheduledContextInstanceAuditAggregateRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final long daysToKeep;
 
     /**
      * Constructor
@@ -37,9 +40,10 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
      */
     public MongoScheduledContextInstanceAuditAggregateDao(
             MongoScheduledContextInstanceAuditAggregateRepository repository,
-            MongoTemplate mongoTemplate) {
+            MongoTemplate mongoTemplate, long daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.daysToKeep = daysToKeep;
     }
 
     @Override
@@ -92,30 +96,33 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
+        // Always add type filter
+        criteriaList.add(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE));
+
         // Filter by context name (wildcard)
         if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            criteriaList.add(Criteria.where("contextName").regex(".*" + filter.getContextName() + ".*", "i"));
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).regex(".*" + filter.getContextName() + ".*", "i"));
         }
 
         // Filter by context instance ID (wildcard)
         if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
-            criteriaList.add(Criteria.where("contextInstanceId").regex(".*" + filter.getContextInstanceId() + ".*", "i"));
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).regex(".*" + filter.getContextInstanceId() + ".*", "i"));
         }
 
         // Filter by scheduled process event name (wildcard, case insensitive)
         if (filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()) {
-            criteriaList.add(Criteria.where("scheduledProcessEventName")
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME)
                     .regex(".*" + filter.getScheduledProcessEventName().toLowerCase() + ".*", "i"));
         }
 
         // Filter by status (wildcard)
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            criteriaList.add(Criteria.where("status").regex(".*" + filter.getStatus() + ".*", "i"));
+            criteriaList.add(Criteria.where(EntityFields.STATUS).regex(".*" + filter.getStatus() + ".*", "i"));
         }
 
         // Filter by raised initiation event name (search in raisedEvents field)
         if (filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
-            criteriaList.add(Criteria.where("raisedEvents")
+            criteriaList.add(Criteria.where(EntityFields.EVENT)
                     .regex(".*" + filter.getRaisedInitiationEventName().toLowerCase() + ".*", "i"));
         }
 
@@ -132,7 +139,7 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
             query.with(Sort.by(direction, sortField));
         } else {
             // Default sort by created date time descending
-            query.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
         }
 
         // Get total count
@@ -167,8 +174,9 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
 
         for (String contextInstanceId : contextInstanceIds) {
             Query query = new Query();
-            query.addCriteria(Criteria.where("contextInstanceId").is(contextInstanceId));
-            query.addCriteria(Criteria.where("isRepeatingJob").is(true));
+            query.addCriteria(Criteria.where(EntityFields.FLOW_NAME).is(contextInstanceId));
+            query.addCriteria(Criteria.where(EntityFields.IS_REPEATING_JOB).is(true));
+            query.addCriteria(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE));
 
             List<MongoScheduledContextInstanceAuditAggregateRecordImpl> records =
                     mongoTemplate.find(query, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
@@ -197,23 +205,37 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
      */
     private MongoScheduledContextInstanceAuditAggregateRecordImpl convertToEntity(
             ScheduledContextInstanceAuditAggregateRecord record) {
-
-        if (record instanceof MongoScheduledContextInstanceAuditAggregateRecordImpl) {
-            return (MongoScheduledContextInstanceAuditAggregateRecordImpl) record;
-        }
-
         MongoScheduledContextInstanceAuditAggregateRecordImpl entity =
                 new MongoScheduledContextInstanceAuditAggregateRecordImpl();
 
-        entity.setId(record.getId());
-        entity.setContextName(record.getContextName());
-        entity.setContextInstanceId(record.getContextInstanceId());
-        entity.setScheduledProcessEventName(record.getScheduledProcessEventName());
+        if(record.getId() != null) {
+            entity.setId(record.getId());
+        }
+        else {
+            entity.setId(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_ID + "_" + UUID.randomUUID());
+        }
         entity.setScheduledContextInstanceAuditAggregate(record.getScheduledContextInstanceAuditAggregate());
-        entity.setStatus(record.getStatus());
+        entity.setType(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE);
+        entity.setContextInstanceId(record.getContextInstanceId());
+        entity.setContextName(record.getContextName());
+        if(record.getScheduledProcessEventName() != null) {
+            entity.setScheduledProcessEventName(record.getScheduledProcessEventName());
+        }
+        entity.setTimestamp(System.currentTimeMillis());
+
+        if(record.getScheduledContextInstanceAuditAggregate().getSchedulerJobInitiationEvents() != null &&
+            !record.getScheduledContextInstanceAuditAggregate().getSchedulerJobInitiationEvents().isEmpty()) {
+            StringBuffer eventsBuffer = new StringBuffer();
+            record.getScheduledContextInstanceAuditAggregate()
+                .getSchedulerJobInitiationEvents().forEach(event -> eventsBuffer.append(event.getJobName()).append(" "));
+
+            entity.setRaisedEvents(eventsBuffer.toString().toLowerCase());
+        }
+
         entity.setRepeatingJob(record.isRepeatingJob());
         entity.setJobType(record.getJobType());
-        entity.setTimestamp(record.getTimestamp());
+        entity.setStatus(record.getStatus());
+        entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
 
         return entity;
     }
@@ -229,7 +251,7 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
     private SearchResults<ScheduledContextInstanceAuditAggregateRecord> createSearchResults(
             List<ScheduledContextInstanceAuditAggregateRecord> results, long totalCount, long queryTime) {
 
-        return new SearchResults<ScheduledContextInstanceAuditAggregateRecord>() {
+        return new SearchResults<>() {
             @Override
             public List<ScheduledContextInstanceAuditAggregateRecord> getResultList() {
                 return results;

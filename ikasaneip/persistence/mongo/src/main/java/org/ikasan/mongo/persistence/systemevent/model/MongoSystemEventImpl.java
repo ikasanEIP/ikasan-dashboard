@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.systemevent.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -22,31 +23,34 @@ public class MongoSystemEventImpl implements SystemEvent {
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed
-    @Field("module_name")
+    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
     @Indexed
-    @Field("actor")
+    @Field(EntityFields.ACTOR)
     private String actor;
 
-    @Field("payload")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String payload;
 
     @Indexed
-    @Field("action")
+    @Field(EntityFields.SYSTEM_EVENT_ACTION)
     private String action;
 
     @Indexed
-    @Field("subject")
+    @Field(EntityFields.SYSTEM_EVENT_SUBJECT)
     private String subject;
 
     @Indexed
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private Date timestamp;
 
     @Indexed
-    @Field("expiry")
+    @Field(EntityFields.EXPIRY)
     private Date expiry;
 
     private transient Long systemEventId;
@@ -73,6 +77,14 @@ public class MongoSystemEventImpl implements SystemEvent {
         this.action = action;
         this.subject = subject;
         this.timestamp = timestamp;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override

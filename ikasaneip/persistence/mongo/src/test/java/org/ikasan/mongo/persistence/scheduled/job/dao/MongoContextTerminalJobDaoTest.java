@@ -85,11 +85,13 @@ public class MongoContextTerminalJobDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoContextTerminalJobRecordImpl record = createContextTerminalJobRecord("agent1", "job1", "context1");
+        ContextTerminalJobRecord record = createContextTerminalJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -167,7 +169,7 @@ public class MongoContextTerminalJobDaoTest {
 
     @Test
     public void test_modified_by_field() {
-        MongoContextTerminalJobRecordImpl record = createContextTerminalJobRecord("agent1", "job1", "context1");
+        ContextTerminalJobRecord record = createContextTerminalJobRecord("agent1", "job1", "context1");
         record.setModifiedBy("testUser");
 
         dao.save(record);
@@ -175,48 +177,6 @@ public class MongoContextTerminalJobDaoTest {
         ContextTerminalJobRecord found = dao.findById(record.getId());
         Assert.assertNotNull(found);
         Assert.assertEquals("testUser", found.getModifiedBy());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        ContextTerminalJobRecord invalidRecord = new ContextTerminalJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public ContextTerminalJob getContextTerminalJob() { return null; }
-            @Override
-            public void setContextTerminalJob(ContextTerminalJob contextTerminalJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
     }
 
     // Helper methods
@@ -229,6 +189,8 @@ public class MongoContextTerminalJobDaoTest {
         contextTerminalJob.setDisplayName("Display " + jobName);
 
         MongoContextTerminalJobRecordImpl record = new MongoContextTerminalJobRecordImpl();
+        record.setId(contextTerminalJob.getAgentName() + "_"
+            + contextTerminalJob.getJobName() + "_" + contextTerminalJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

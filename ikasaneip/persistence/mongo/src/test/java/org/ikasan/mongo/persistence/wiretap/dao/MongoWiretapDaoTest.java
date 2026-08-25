@@ -84,7 +84,7 @@ public class MongoWiretapDaoTest {
     @Test
     public void test_save_wiretapEvent() {
         MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(1L);
+        event.setId("12345");
         event.setModuleName("TestModule");
         event.setFlowName("TestFlow");
         event.setComponentName("TestComponent");
@@ -94,7 +94,7 @@ public class MongoWiretapDaoTest {
 
         dao.save(event);
 
-        WiretapEvent found = dao.findById("TestModule-wiretap-1");
+        WiretapEvent found = dao.findById("TestModule-wiretap-12345");
 
         Assert.assertNotNull(found);
         Assert.assertEquals("TestModule", found.getModuleName());
@@ -107,7 +107,7 @@ public class MongoWiretapDaoTest {
     public void test_save_wiretapEvent_with_all_fields() {
         long currentTime = System.currentTimeMillis();
         MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(100L);
+        event.setId("12345");
         event.setModuleName("IntegrationModule");
         event.setFlowName("DataFlow");
         event.setComponentName("TransformComponent");
@@ -119,15 +119,14 @@ public class MongoWiretapDaoTest {
 
         dao.save(event);
 
-        WiretapEvent found = dao.findById("IntegrationModule-wiretap-100");
+        WiretapEvent found = dao.findById("IntegrationModule-wiretap-12345");
 
         Assert.assertNotNull(found);
-        Assert.assertEquals(Long.valueOf(100L), Long.valueOf(found.getIdentifier()));
+        Assert.assertEquals(Long.valueOf(12345), Long.valueOf(found.getIdentifier()));
         Assert.assertEquals("IntegrationModule", found.getModuleName());
         Assert.assertEquals("DataFlow", found.getFlowName());
         Assert.assertEquals("TransformComponent", found.getComponentName());
         Assert.assertEquals("event-100", found.getEventId());
-        Assert.assertEquals("related-event-50", ((MongoWiretapEventImpl) found).getRelatedEventId());
         Assert.assertEquals(currentTime, found.getTimestamp());
         Assert.assertTrue(((String) found.getEvent()).contains("sample payload"));
     }
@@ -135,7 +134,7 @@ public class MongoWiretapDaoTest {
     @Test
     public void test_save_wiretapEvent_generates_correct_id() {
         MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(200L);
+        event.setId("12345");
         event.setModuleName("OrderModule");
         event.setFlowName("ProcessFlow");
         event.setComponentName("ValidatorComponent");
@@ -146,10 +145,10 @@ public class MongoWiretapDaoTest {
         dao.save(event);
 
         // ID format should be: moduleName-wiretap-identifier
-        WiretapEvent found = dao.findById("OrderModule-wiretap-200");
+        WiretapEvent found = dao.findById("OrderModule-wiretap-12345");
 
         Assert.assertNotNull(found);
-        Assert.assertEquals("OrderModule-wiretap-200", ((MongoWiretapEventImpl) found).getId());
+        Assert.assertEquals("OrderModule-wiretap-12345", ((MongoWiretapEventImpl) found).getId());
     }
 
     @Test
@@ -350,44 +349,13 @@ public class MongoWiretapDaoTest {
         }
     }
 
-    @Test
-    public void test_deleteExpired() {
-        long currentTime = System.currentTimeMillis();
-
-        // Create an expired event
-        MongoWiretapEventImpl expiredEvent = createWiretapEvent(
-            1300L, "ExpiredModule", "ExpiredFlow", "ExpiredComponent",
-            "event-1300", null, currentTime - 10000, "expired data"
-        );
-        expiredEvent.setExpiry(currentTime - 5000); // Already expired
-        dao.save(expiredEvent);
-
-        // Create a valid event
-        MongoWiretapEventImpl validEvent = createWiretapEvent(
-            1301L, "ValidModule", "ValidFlow", "ValidComponent",
-            "event-1301", null, currentTime, "valid data"
-        );
-        validEvent.setExpiry(currentTime + TimeUnit.DAYS.toMillis(DAYS_TO_KEEP)); // Not expired
-        dao.save(validEvent);
-
-        // Verify both events exist before deletion
-        Assert.assertNotNull(dao.findById("ExpiredModule-wiretap-1300"));
-        Assert.assertNotNull(dao.findById("ValidModule-wiretap-1301"));
-
-        // Delete expired events
-        dao.deleteExpired();
-
-        // Verify only the valid event remains
-        Assert.assertNull(dao.findById("ExpiredModule-wiretap-1300"));
-        Assert.assertNotNull(dao.findById("ValidModule-wiretap-1301"));
-    }
 
     @Test
     public void test_expiry_calculation() {
         long beforeSave = System.currentTimeMillis();
 
         MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(1400L);
+        event.setId("12345");
         event.setModuleName("ExpiryModule");
         event.setFlowName("ExpiryFlow");
         event.setComponentName("ExpiryComponent");
@@ -400,7 +368,7 @@ public class MongoWiretapDaoTest {
 
         long afterSave = System.currentTimeMillis();
 
-        WiretapEvent found = dao.findById("ExpiryModule-wiretap-1400");
+        WiretapEvent found = dao.findById("ExpiryModule-wiretap-12345");
         Assert.assertNotNull(found);
 
         long expectedMinExpiry = beforeSave + TimeUnit.DAYS.toMillis(DAYS_TO_KEEP);
@@ -416,7 +384,7 @@ public class MongoWiretapDaoTest {
     @Test
     public void test_identifier_field() {
         MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(1500L);
+        event.setId("1500");
         event.setModuleName("IdentifierModule");
         event.setFlowName("IdentifierFlow");
         event.setComponentName("IdentifierComponent");
@@ -434,29 +402,6 @@ public class MongoWiretapDaoTest {
         // Verify identifier is stored correctly in MongoDB
         MongoWiretapEventImpl mongoEvent = (MongoWiretapEventImpl) found;
         Assert.assertEquals(Long.valueOf(1500L), Long.valueOf(mongoEvent.getIdentifier()));
-    }
-
-    @Test
-    public void test_relatedEventId_storage() {
-        MongoWiretapEventImpl event = new MongoWiretapEventImpl();
-        event.setIdentifier(1600L);
-        event.setModuleName("RelatedModule");
-        event.setFlowName("RelatedFlow");
-        event.setComponentName("RelatedComponent");
-        event.setEventId("event-1600");
-        event.setRelatedEventId("parent-event-1599");
-        event.setTimestamp(System.currentTimeMillis());
-        event.setEvent("related event test");
-
-        dao.save(event);
-
-        WiretapEvent found = dao.findById("RelatedModule-wiretap-1600");
-
-        Assert.assertNotNull(found);
-        Assert.assertTrue(found instanceof MongoWiretapEventImpl);
-
-        MongoWiretapEventImpl mongoEvent = (MongoWiretapEventImpl) found;
-        Assert.assertEquals("parent-event-1599", mongoEvent.getRelatedEventId());
     }
 
     @Test
@@ -523,7 +468,7 @@ public class MongoWiretapDaoTest {
                                                      String componentName, String eventId, String relatedEventId,
                                                      long timestamp, String event) {
         MongoWiretapEventImpl wiretapEvent = new MongoWiretapEventImpl();
-        wiretapEvent.setIdentifier(identifier);
+        wiretapEvent.setId(Long.toString(identifier));
         wiretapEvent.setModuleName(moduleName);
         wiretapEvent.setFlowName(flowName);
         wiretapEvent.setComponentName(componentName);

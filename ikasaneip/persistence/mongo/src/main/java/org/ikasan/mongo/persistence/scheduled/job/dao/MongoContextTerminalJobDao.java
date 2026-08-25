@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoContextTerminalJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextTerminalJobRepository;
 import org.ikasan.spec.scheduled.job.dao.ContextTerminalJobDao;
+import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
@@ -15,7 +16,9 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
+import static org.ikasan.spec.entity.EntityFields.*;
+import static org.ikasan.spec.scheduled.job.model.JobConstants.CONTEXT_TERMINAL_JOB;
 
 /**
  * MongoDB implementation of ContextTerminalJobDao.
@@ -38,23 +41,31 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
     @Override
     public void save(ContextTerminalJobRecord event) {
-        if (!(event instanceof MongoContextTerminalJobRecordImpl)) {
-            throw new IllegalArgumentException("Event must be an instance of MongoContextTerminalJobRecordImpl");
+
+        MongoContextTerminalJobRecordImpl mongoRecord = new MongoContextTerminalJobRecordImpl();
+        mongoRecord.setType(JobConstants.CONTEXT_TERMINAL_JOB);
+
+        ContextTerminalJob job = event.getContextTerminalJob();
+        if(event.getId() != null && !event.getId().isEmpty()) {
+            mongoRecord.setId(event.getId());
         }
-
-        MongoContextTerminalJobRecordImpl mongoRecord = (MongoContextTerminalJobRecordImpl) event;
-
-        // Generate ID if not set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JobConstants.CONTEXT_TERMINAL_JOB + "_"
-                + mongoRecord.getAgentName() + "_"
-                + mongoRecord.getJobName() + "_"
-                + mongoRecord.getContextName();
-            mongoRecord.setId(id);
+        else {
+            mongoRecord.setId(job.getAgentName() + "_"
+                + event.getJobName() + "_" + job.getContextName());
         }
-
-        // Set modified timestamp
+        mongoRecord.setContextTerminalJob(job);
+        mongoRecord.setContextName(event.getContextName());
+        mongoRecord.setDisplayName(event.getDisplayName());
+        mongoRecord.setAgentName(event.getAgentName());
+        mongoRecord.setJobName(event.getJobName());
+        mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            mongoRecord.setModifiedBy(event.getModifiedBy());
+        }
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }
@@ -70,10 +81,12 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
     public SearchResults<ContextTerminalJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        long totalCount = repository.count();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(CONTEXT_TERMINAL_JOB));
+
+        long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        Query query = new Query();
         query.with(pageable);
 
         List<MongoContextTerminalJobRecordImpl> results = mongoTemplate.find(query, MongoContextTerminalJobRecordImpl.class);
@@ -86,7 +99,10 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
     public SearchResults<ContextTerminalJobRecord> findByContext(String contextId, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("contextName").is(contextId);
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(COMPONENT_NAME).is(contextId),
+            Criteria.where(TYPE).is(CONTEXT_TERMINAL_JOB)
+        );
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
@@ -102,7 +118,10 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
     @Override
     public ContextTerminalJobRecord findById(String id) {
-        Optional<MongoContextTerminalJobRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(CONTEXT_TERMINAL_JOB));
+
+        return mongoTemplate.findOne(query, MongoContextTerminalJobRecordImpl.class);
     }
 }

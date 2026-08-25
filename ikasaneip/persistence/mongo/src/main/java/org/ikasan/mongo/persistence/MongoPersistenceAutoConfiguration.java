@@ -136,6 +136,9 @@ public class MongoPersistenceAutoConfiguration {
     @Value("${entity.retention.days:30}")
     private int entityRetentionDays;
 
+    @Value("${scheduler.instance.entity.retention.days:90}")
+    private int schedulerInstanceEntityRetentionDays;
+
     @Bean
     public MongoClient mongoClient(
             @Value("${spring.data.mongodb.uri}") String connectionString,
@@ -290,7 +293,7 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("jobLockCacheAuditDao")
     public JobLockCacheAuditDao jobLockCacheAuditDao(MongoJobLockCacheAuditRepository repository,
                                                      MongoTemplate mongoTemplate) {
-        return new MongoJobLockCacheAuditDao(repository, mongoTemplate);
+        return new MongoJobLockCacheAuditDao(repository, mongoTemplate, this.schedulerInstanceEntityRetentionDays);
     }
 
     @Bean("emailNotificationContextDao")
@@ -321,20 +324,21 @@ public class MongoPersistenceAutoConfiguration {
     public ScheduledContextInstanceDao scheduledContextInstanceDao(
             MongoScheduledContextInstanceRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoScheduledContextInstanceDao(repository, mongoTemplate);
+        return new MongoScheduledContextInstanceDao(repository, mongoTemplate, schedulerInstanceEntityRetentionDays);
     }
 
     @Bean("scheduledContextInstanceAuditDao")
     public ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao(
             MongoScheduledContextInstanceRepository repository) {
-        return new MongoScheduledContextInstanceAuditDao(repository);
+        return new MongoScheduledContextInstanceAuditDao(repository, this.schedulerInstanceEntityRetentionDays);
     }
 
     @Bean("scheduledContextInstanceAuditAggregateDao")
     public ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao(
             MongoScheduledContextInstanceAuditAggregateRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoScheduledContextInstanceAuditAggregateDao(repository, mongoTemplate);
+        return new MongoScheduledContextInstanceAuditAggregateDao(repository, mongoTemplate
+            , this.schedulerInstanceEntityRetentionDays);
     }
 
     @Bean("schedulerJobRecordDao")
@@ -467,7 +471,7 @@ public class MongoPersistenceAutoConfiguration {
     public MongoSystemEventDao systemEventDao(
             MongoSystemEventRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoSystemEventDao(repository, mongoTemplate);
+        return new MongoSystemEventDao(repository, mongoTemplate, this.entityRetentionDays);
     }
 
     @Bean("wiretapEntityDao")

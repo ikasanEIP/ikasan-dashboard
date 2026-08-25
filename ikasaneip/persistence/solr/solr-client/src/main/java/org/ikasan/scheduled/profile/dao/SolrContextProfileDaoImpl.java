@@ -25,7 +25,6 @@ import static org.ikasan.spec.entity.EntityFields.*;
 
 public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord> implements ContextProfileDao {
 
-    public static final String CONTEXT_PROFILE_TYPE = "contextProfile";
     private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 

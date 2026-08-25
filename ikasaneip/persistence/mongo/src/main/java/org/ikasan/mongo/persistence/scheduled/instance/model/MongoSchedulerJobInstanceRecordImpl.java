@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.scheduled.instance.model;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.slf4j.Logger;
@@ -30,67 +31,57 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
     @Id
     private String id;
 
-    @Indexed
-    @Field("job_name")
-    private String jobName;
-
-    @Field("display_name")
-    private String displayName;
-
-    @Indexed
-    @Field("context_name")
-    private String contextName;
-
-    @Indexed
-    @Field("child_context_name")
-    private String childContextName;
-
-    @Indexed
-    @Field("context_instance_id")
-    private String contextInstanceId;
-
-    @Field("type")
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
-    @Field("status")
+    @Field(EntityFields.MODULE_NAME)
+    private String jobName;
+
+    @Field(EntityFields.DISPLAY_NAME)
+    private String displayName;
+
+    @Field(EntityFields.FLOW_NAME)
+    private String contextName;
+
+    @Field(EntityFields.COMPONENT_NAME)
+    private String contextInstanceId;
+
+    @Field(EntityFields.CHILD_CONTEXT_NAME)
+    private String childContextName;
+
+    @Field(EntityFields.PAYLOAD_CONTENT)
+    private String schedulerJobInstance;
+
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field("target_residing_context_only")
+    @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
-    @Field("participates_in_lock")
-    private boolean participatesInLock;
+    @Field(EntityFields.PARTICIPATES_IN_LOCK)
+    boolean participatesInLock;
 
-    @Indexed
-    @Field("start_time")
+    @Field(EntityFields.START_TIME)
     private long startTime;
 
-    @Indexed
-    @Field("end_time")
+    @Field(EntityFields.END_TIME)
     private long endTime;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Indexed
-    @Field("modified_timestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modified_by")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field("manually_submitted_by")
+    @Field(EntityFields.MANUALLY_SUBMITTED_BY)
     private String manuallySubmittedBy;
 
-    /**
-     * Store SchedulerJobInstance as JSON string in MongoDB.
-     * This allows us to handle polymorphic job instance types without complex mapping.
-     */
-    @Field("scheduler_job_instance")
-    private String schedulerJobInstanceJson;
-
-    private transient SchedulerJobInstance schedulerJobInstance;
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     /**
      * Default constructor for MongoDB
@@ -180,31 +171,31 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
         try {
             SchedulerJobInstance instance;
             if(this.type != null && this.type.equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
-                instance = objectMapper.readValue(this.schedulerJobInstanceJson, FileEventDrivenJobInstance.class);
+                instance = objectMapper.readValue(this.schedulerJobInstance, FileEventDrivenJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
-                instance = objectMapper.readValue(this.schedulerJobInstanceJson, QuartzScheduleDrivenJobInstance.class);
+                instance = objectMapper.readValue(this.schedulerJobInstance, QuartzScheduleDrivenJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, InternalEventDrivenJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, InternalEventDrivenJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, GlobalEventJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, GlobalEventJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.CONTEXT_START_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, ContextStartJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, ContextStartJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, ContextTerminalJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, ContextTerminalJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, LocalEventJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, LocalEventJobInstance.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.BRIDGING_JOB_INSTANCE)) {
-                instance =  objectMapper.readValue(this.schedulerJobInstanceJson, BridgingJobInstance.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, BridgingJobInstance.class);
             }
             else {
-                instance = objectMapper.readValue(this.schedulerJobInstanceJson, SchedulerJobInstance.class);
+                instance = objectMapper.readValue(this.schedulerJobInstance, SchedulerJobInstance.class);
             }
 
             if(instance.getStatus().equals(InstanceStatus.SKIPPED)) {
@@ -224,10 +215,9 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
 
     @Override
     public void setSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) {
-        this.schedulerJobInstance = schedulerJobInstance;
         if (schedulerJobInstance != null) {
             try {
-                this.schedulerJobInstanceJson = objectMapper.writeValueAsString(schedulerJobInstance);
+                this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);
             } catch (JacksonException e) {
                 logger.error("Failed to serialize SchedulerJobInstance to JSON", e);
                 throw new RuntimeException("Failed to serialize SchedulerJobInstance", e);
@@ -325,13 +315,13 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
         this.manuallySubmittedBy = manuallySubmittedBy;
     }
 
-//    public String getSchedulerJobInstanceJson() {
-//        return schedulerJobInstanceJson;
-//    }
-//
-//    public void setSchedulerJobInstanceJson(String schedulerJobInstanceJson) {
-//        this.schedulerJobInstanceJson = schedulerJobInstanceJson;
-//    }
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
+    }
 
     @Override
     public String toString() {

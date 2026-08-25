@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.springframework.data.annotation.Id;
@@ -26,42 +27,42 @@ public class MongoScheduledContextInstanceRecordImpl implements ScheduledContext
     @Id
     private String id;
 
-    @Field("context_name")
-    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    @Field("context_instance_id")
-    @Indexed
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextInstanceId;
 
-    @Field("context_instance")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String contextInstance;
 
-    @Field("status")
-    @Indexed
+    @Field(EntityFields.STATUS)
     private String status;
 
-    @Field("created_date_time")
-    @Indexed
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("updated_date_time")
-    @Indexed
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modified_by")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field("start_time")
-    @Indexed
+    @Field(EntityFields.START_TIME)
     private long startTime;
 
-    @Field("end_time")
-    @Indexed
+    @Field(EntityFields.END_TIME)
     private long endTime;
 
-    @Field("contains_repeating_jobs")
+    @Field(EntityFields.CONTAINS_REPEATING_JOBS)
     private boolean containsRepeatingJobs = false;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -70,6 +71,14 @@ public class MongoScheduledContextInstanceRecordImpl implements ScheduledContext
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -186,5 +195,13 @@ public class MongoScheduledContextInstanceRecordImpl implements ScheduledContext
     @Override
     public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
         this.containsRepeatingJobs = containsRepeatingJobs;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

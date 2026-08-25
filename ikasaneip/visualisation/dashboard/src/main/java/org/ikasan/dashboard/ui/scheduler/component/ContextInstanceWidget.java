@@ -85,7 +85,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 public class ContextInstanceWidget extends VerticalLayout
     implements BeforeEnterObserver, ContextInstanceStateChangeEventLocalBroadcastListener
@@ -1572,7 +1572,7 @@ public class ContextInstanceWidget extends VerticalLayout
             if(event.getContextInstance().getId().equals(this.contextInstance.getId())) {
                 this.ui.access(() -> {
                     ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
-                        .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
+                        .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
                     if (record != null) {
                         this.contextInstance = record.getContextInstance();
                         ContextHelper.enrichJobs(this.contextInstance);
