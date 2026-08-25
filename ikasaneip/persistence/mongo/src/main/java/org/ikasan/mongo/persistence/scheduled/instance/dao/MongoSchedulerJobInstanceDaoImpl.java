@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoSchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.search.SearchResults;
@@ -92,7 +93,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         logger.debug("Finding job instances by contextInstanceId: {}, limit={}, offset={}, sortField={}, sortDirection={}",
             contextInstanceId, limit, offset, sortField, sortDirection);
 
-        Query query = new Query(Criteria.where("contextInstanceId").is(contextInstanceId));
+        Query query = new Query(Criteria.where(EntityFields.COMPONENT_NAME).is(contextInstanceId));
 
         return executeQueryWithPagination(query, limit, offset, sortField, sortDirection);
     }
@@ -106,7 +107,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         logger.debug("Finding job instances by contextName: {}, limit={}, offset={}, sortField={}, sortDirection={}",
             contextName, limit, offset, sortField, sortDirection);
 
-        Query query = new Query(Criteria.where("contextName").is(contextName));
+        Query query = new Query(Criteria.where(EntityFields.FLOW_NAME).is(contextName));
 
         return executeQueryWithPagination(query, limit, offset, sortField, sortDirection);
     }
@@ -115,7 +116,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
     public boolean doesJobPlanInstanceContainRepeatingJobs(String contextInstanceId) {
         logger.debug("Checking if job plan instance contains repeating jobs: {}", contextInstanceId);
 
-        Query query = new Query(Criteria.where("contextInstanceId").is(contextInstanceId));
+        Query query = new Query(Criteria.where(EntityFields.COMPONENT_NAME).is(contextInstanceId));
 
         List<MongoSchedulerJobInstanceRecordImpl> jobInstances = mongoTemplate.find(query, MongoSchedulerJobInstanceRecordImpl.class);
 
@@ -155,11 +156,11 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         }
 
         // Build aggregation pipeline
-        MatchOperation matchStage = Aggregation.match(Criteria.where("context_instance_id").in(contextInstanceIds));
+        MatchOperation matchStage = Aggregation.match(Criteria.where(EntityFields.COMPONENT_NAME).in(contextInstanceIds));
 
-        GroupOperation groupStage = Aggregation.group("context_instance_id", "status")
+        GroupOperation groupStage = Aggregation.group(EntityFields.COMPONENT_NAME, EntityFields.STATUS)
             .count().as("statusCount")
-            .first("context_name").as("contextName");
+            .first(EntityFields.FLOW_NAME).as("contextName");
 
         Aggregation aggregation = Aggregation.newAggregation(matchStage, groupStage);
 
@@ -171,8 +172,8 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         for (Map<String, Object> result : results.getMappedResults()) {
             @SuppressWarnings("unchecked")
             Map<String, Object> idMap = (Map<String, Object>) result.get("_id");
-            String contextInstanceId = (String) idMap.get("context_instance_id");
-            String status = (String) idMap.get("status");
+            String contextInstanceId = (String) idMap.get(EntityFields.COMPONENT_NAME);
+            String status = (String) idMap.get(EntityFields.STATUS);
             Integer count = (Integer) result.get("statusCount");
             String contextName = (String) result.get("contextName");
 
@@ -212,13 +213,13 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         // to avoid counting duplicated jobs that appear in multiple child contexts
 
         MatchOperation matchStage = Aggregation.match(
-            Criteria.where("context_instance_id").in(contextInstanceIds)
-                .and("target_residing_context_only").is(true)
+            Criteria.where(EntityFields.COMPONENT_NAME).in(contextInstanceIds)
+                .and(EntityFields.TARGET_RESIDING_CONTEXT_ONLY).is(true)
         );
 
-        GroupOperation groupStage = Aggregation.group("context_instance_id", "status")
+        GroupOperation groupStage = Aggregation.group(EntityFields.COMPONENT_NAME, EntityFields.STATUS)
             .count().as("statusCount")
-            .first("context_name").as("contextName");
+            .first(EntityFields.FLOW_NAME).as("contextName");
 
         Aggregation aggregation = Aggregation.newAggregation(matchStage, groupStage);
 
@@ -230,8 +231,8 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         for (Map<String, Object> result : results.getMappedResults()) {
             @SuppressWarnings("unchecked")
             Map<String, Object> idMap = (Map<String, Object>) result.get("_id");
-            String contextInstanceId = (String) idMap.get("contextInstanceId");
-            String status = (String) idMap.get("status");
+            String contextInstanceId = (String) idMap.get(EntityFields.COMPONENT_NAME);
+            String status = (String) idMap.get(EntityFields.STATUS);
             Integer count = (Integer) result.get("statusCount");
             String contextName = (String) result.get("contextName");
 
@@ -276,65 +277,65 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         }
 
         if (filter.getJobName() != null && !filter.getJobName().isEmpty()) {
-            query.addCriteria(Criteria.where("jobName").regex(filter.getJobName(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).regex(filter.getJobName(), "i"));
         }
 
         if (filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where("displayName").regex(filter.getDisplayNameFilter(), "i"));
+            query.addCriteria(Criteria.where(EntityFields.DISPLAY_NAME).regex(filter.getDisplayNameFilter(), "i"));
         }
 
         if (filter.getJobType() != null && !filter.getJobType().isEmpty()) {
-            query.addCriteria(Criteria.where("type").is(filter.getJobType()));
+            query.addCriteria(Criteria.where(EntityFields.TYPE).is(filter.getJobType()));
         }
 
         if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            query.addCriteria(Criteria.where("contextName").is(filter.getContextName()));
+            query.addCriteria(Criteria.where(EntityFields.FLOW_NAME).is(filter.getContextName()));
         }
 
         if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
-            query.addCriteria(Criteria.where("contextInstanceId").is(filter.getContextInstanceId()));
+            query.addCriteria(Criteria.where(EntityFields.COMPONENT_NAME).is(filter.getContextInstanceId()));
         }
 
         if (filter.getChildContextName() != null && !filter.getChildContextName().isEmpty()) {
-            query.addCriteria(Criteria.where("childContextName").is(filter.getChildContextName()));
+            query.addCriteria(Criteria.where(EntityFields.CHILD_CONTEXT_NAME).is(filter.getChildContextName()));
         }
 
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            query.addCriteria(Criteria.where("status").is(filter.getStatus()));
+            query.addCriteria(Criteria.where(EntityFields.STATUS).is(filter.getStatus()));
         }
 
         if (filter.isTargetResidingContextOnly() != null) {
-            query.addCriteria(Criteria.where("targetResidingContextOnly").is(filter.isTargetResidingContextOnly()));
+            query.addCriteria(Criteria.where(EntityFields.TARGET_RESIDING_CONTEXT_ONLY).is(filter.isTargetResidingContextOnly()));
         }
 
         if (filter.isParticipatesInLock() != null) {
-            query.addCriteria(Criteria.where("participatesInLock").is(filter.isParticipatesInLock()));
+            query.addCriteria(Criteria.where(EntityFields.PARTICIPATES_IN_LOCK).is(filter.isParticipatesInLock()));
         }
 
         // Time window filters
         if (filter.getStartTimeWindowStart() > 0 && filter.getStartTimeWindowEnd() > 0) {
-            query.addCriteria(Criteria.where("startTime")
+            query.addCriteria(Criteria.where(EntityFields.START_TIME)
                 .gte(filter.getStartTimeWindowStart())
                 .lte(filter.getStartTimeWindowEnd()));
         } else if (filter.getStartTimeWindowStart() > 0) {
-            query.addCriteria(Criteria.where("startTime").gte(filter.getStartTimeWindowStart()));
+            query.addCriteria(Criteria.where(EntityFields.START_TIME).gte(filter.getStartTimeWindowStart()));
         } else if (filter.getStartTimeWindowEnd() > 0) {
-            query.addCriteria(Criteria.where("startTime").lte(filter.getStartTimeWindowEnd()));
+            query.addCriteria(Criteria.where(EntityFields.START_TIME).lte(filter.getStartTimeWindowEnd()));
         }
 
         if (filter.getEndTimeWindowStart() > 0 && filter.getEndTimeWindowEnd() > 0) {
-            query.addCriteria(Criteria.where("endTime")
+            query.addCriteria(Criteria.where(EntityFields.END_TIME)
                 .gte(filter.getEndTimeWindowStart())
                 .lte(filter.getEndTimeWindowEnd()));
         } else if (filter.getEndTimeWindowStart() > 0) {
-            query.addCriteria(Criteria.where("endTime").gte(filter.getEndTimeWindowStart()));
+            query.addCriteria(Criteria.where(EntityFields.END_TIME).gte(filter.getEndTimeWindowStart()));
         } else if (filter.getEndTimeWindowEnd() > 0) {
-            query.addCriteria(Criteria.where("endTime").lte(filter.getEndTimeWindowEnd()));
+            query.addCriteria(Criteria.where(EntityFields.END_TIME).lte(filter.getEndTimeWindowEnd()));
         }
 
         // Exclude start and terminal jobs if requested
         if (!filter.includeStartAndTerminalJobsInSearchResults()) {
-            query.addCriteria(Criteria.where("type").nin("ContextStartJob", "ContextTerminalJob"));
+            query.addCriteria(Criteria.where(EntityFields.TYPE).nin("ContextStartJob", "ContextTerminalJob"));
         }
 
         return query;

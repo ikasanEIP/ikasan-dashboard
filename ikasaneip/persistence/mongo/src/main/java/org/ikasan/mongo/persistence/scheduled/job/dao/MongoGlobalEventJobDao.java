@@ -17,7 +17,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+
+import static org.ikasan.spec.entity.EntityFields.ID;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
+import static org.ikasan.spec.scheduled.job.model.JobConstants.GLOBAL_EVENT_JOB;
 
 /**
  * MongoDB implementation of GlobalEventJobDao.
@@ -40,23 +43,32 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
 
     @Override
     public void save(GlobalEventJobRecord event) {
-        if (!(event instanceof MongoGlobalEventJobRecordImpl)) {
-            throw new IllegalArgumentException("Event must be an instance of MongoGlobalEventJobRecordImpl");
+        MongoGlobalEventJobRecordImpl mongoRecord = new MongoGlobalEventJobRecordImpl();
+
+        mongoRecord.setType(JobConstants.GLOBAL_EVENT_JOB);
+
+        GlobalEventJob job = event.getGlobalEventJob();
+
+        if(event.getId() != null && !event.getId().isEmpty()) {
+            mongoRecord.setId(event.getId());
         }
-
-        MongoGlobalEventJobRecordImpl mongoRecord = (MongoGlobalEventJobRecordImpl) event;
-
-        // Generate ID if not set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JobConstants.GLOBAL_EVENT_JOB + "_"
-                + mongoRecord.getAgentName() + "_"
-                + mongoRecord.getJobName() + "_"
-                + mongoRecord.getGlobalEventJob().getContextName();
-            mongoRecord.setId(id);
+        else {
+            mongoRecord.setId(JobConstants.GLOBAL_EVENT_JOB + "_" + event.getAgentName() + "_"
+                + event.getJobName() + "_" + job.getContextName());
         }
-
-        // Set modified timestamp
+        mongoRecord.setGlobalEventJob(job);
+        mongoRecord.setContextName(event.getContextName());
+        mongoRecord.setAgentName(event.getAgentName());
+        mongoRecord.setJobName(event.getJobName());
+        mongoRecord.setDisplayName(event.getGlobalEventJob().getDisplayName());
+        mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            mongoRecord.setModifiedBy(event.getModifiedBy());
+        }
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }
@@ -72,10 +84,12 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
     public SearchResults<GlobalEventJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        long totalCount = repository.count();
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(GLOBAL_EVENT_JOB));
+
+        long totalCount = mongoTemplate.count(query, MongoGlobalEventJobRecordImpl.class);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        Query query = new Query();
         query.with(pageable);
 
         List<MongoGlobalEventJobRecordImpl> results = mongoTemplate.find(query, MongoGlobalEventJobRecordImpl.class);
@@ -88,7 +102,10 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
     public SearchResults<GlobalEventJobRecord> findByContext(String contextId, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("contextName").is(contextId);
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where("contextName").is(contextId),
+            Criteria.where(TYPE).is(GLOBAL_EVENT_JOB)
+        );
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoGlobalEventJobRecordImpl.class);
@@ -104,8 +121,11 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
 
     @Override
     public GlobalEventJobRecord findById(String id) {
-        Optional<MongoGlobalEventJobRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(GLOBAL_EVENT_JOB));
+
+        return mongoTemplate.findOne(query, MongoGlobalEventJobRecordImpl.class);
     }
 
     @Override

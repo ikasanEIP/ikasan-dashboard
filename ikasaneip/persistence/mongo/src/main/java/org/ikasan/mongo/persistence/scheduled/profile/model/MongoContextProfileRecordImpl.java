@@ -1,12 +1,17 @@
 package org.ikasan.mongo.persistence.scheduled.profile.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,36 +20,45 @@ import java.util.List;
  */
 @Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoContextProfileRecordImpl implements ContextProfileRecord {
+    private static final JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     @Id
     private String id;
 
-    @Field("profileName")
+    @Field(EntityFields.MODULE_NAME)
     private String profileName;
 
-    @Field("contextName")
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextName;
 
-    @Field("owner")
+    @Field(EntityFields.FLOW_NAME)
     private String owner;
 
-    @Field("contextProfile")
-    private ContextProfile contextProfile;
+    @Field(EntityFields.PAYLOAD_CONTENT)
+    private String contextProfile;
 
-    @Field("accessGroups")
-    private List<String> accessGroups;
+    @Field(EntityFields.ACCESS_GROUPS)
+    private String accessGroups;
 
-    @Field("accessUsers")
-    private List<String> accessUsers;
+    @Field(EntityFields.ACCESS_USERS)
+    private String accessUsers;
 
-    @Field("createdDateTime")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long createdDateTime;
 
-    @Field("modifiedDateTime")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedDateTime;
 
-    @Field("modifiedBy")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
+
+    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     public String getId() {
         return id;
@@ -86,35 +100,37 @@ public class MongoContextProfileRecordImpl implements ContextProfileRecord {
 
     @Override
     public ContextProfile getContextProfile() {
-        if (this.contextProfile == null) {
-            return null;
-        }
-        return this.contextProfile;
+        if(this.contextProfile == null) return null;
+        return objectMapper.readValue(this.contextProfile, MongoContextProfileImpl.class);
     }
 
     @Override
     public void setContextProfile(ContextProfile contextProfile) {
-        this.contextProfile = contextProfile;
+        this.contextProfile = objectMapper.writeValueAsString(contextProfile);
     }
 
     @Override
     public List<String> getAccessGroups() {
-        return this.accessGroups;
+        if(this.accessGroups == null) return null;
+
+        return objectMapper.readValue(this.accessGroups, ArrayList.class);
     }
 
     @Override
     public void setAccessGroups(List<String> accessGroups) {
-        this.accessGroups = accessGroups;
+        this.accessGroups = objectMapper.writeValueAsString(accessGroups);
     }
 
     @Override
     public List<String> getAccessUsers() {
-        return this.accessUsers;
+        if(this.accessUsers == null) return null;
+
+        return objectMapper.readValue(this.accessUsers, ArrayList.class);
     }
 
     @Override
     public void setAccessUsers(List<String> accessUsers) {
-        this.accessUsers = accessUsers;
+        this.accessUsers = objectMapper.writeValueAsString(accessUsers);
     }
 
     @Override
@@ -145,5 +161,21 @@ public class MongoContextProfileRecordImpl implements ContextProfileRecord {
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

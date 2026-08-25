@@ -3,6 +3,8 @@ package org.ikasan.mongo.persistence.scheduled.job.dao;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoInternalEventDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoInternalEventDrivenJobRepository;
+import org.ikasan.spec.entity.EntityFields;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
@@ -16,7 +18,10 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
+import static org.ikasan.spec.entity.EntityFields.ID;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
+import static org.ikasan.spec.scheduled.job.model.JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE;
 
 public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDrivenJobDao {
 
@@ -34,21 +39,38 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
     @Override
     public void save(InternalEventDrivenJobRecord event) {
-        if (!(event instanceof MongoInternalEventDrivenJobRecordImpl)) {
-            throw new IllegalArgumentException("Event must be an instance of MongoInternalEventDrivenJobRecordImpl");
-        }
-
         MongoInternalEventDrivenJobRecordImpl mongoRecord = (MongoInternalEventDrivenJobRecordImpl) event;
 
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE + "_"
-                + mongoRecord.getAgentName() + "_"
-                + mongoRecord.getJobName() + "_"
-                + mongoRecord.getInternalEventDrivenJob().getContextName();
-            mongoRecord.setId(id);
-        }
+        mongoRecord.setType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
 
+        InternalEventDrivenJob job = event.getInternalEventDrivenJob();
+
+        if(event.getId() != null && !event.getId().isEmpty()) {
+            mongoRecord.setId(event.getId());
+        }
+        else {
+            mongoRecord.setId(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"
+                + event.getJobName() + "_" + job.getContextName());
+        }
+        mongoRecord.setInternalEventDrivenJob(job);
+        mongoRecord.setDisplayName(job.getDisplayName());
+        mongoRecord.setTargetResidingContextOnly(job.isTargetResidingContextOnly());
+        mongoRecord.setParticipatesInLock(job.isParticipatesInLock());
+        mongoRecord.setContextName(job.getContextName());
+        mongoRecord.setAgentName(job.getAgentName());
+        mongoRecord.setJobName(job.getJobName());
+        mongoRecord.setTimestamp(mongoRecord.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            mongoRecord.setModifiedBy(event.getModifiedBy());
+        }
+        mongoRecord.setExpiry(-1);
+        mongoRecord.setHeld(event.isHeld());
+        mongoRecord.setSkipped(event.isSkipped());
+
         repository.save(mongoRecord);
     }
 
@@ -56,7 +78,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
     public SearchResults<InternalEventDrivenJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("id").regex("^" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE + "_");
+        Criteria criteria = Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
@@ -76,7 +98,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
     public SearchResults<InternalEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("id").regex("^" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE + "_")
+        Criteria criteria = Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE)
             .and("contextName").is(contextId);
         Query query = new Query(criteria);
 
@@ -95,8 +117,11 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
     @Override
     public InternalEventDrivenJobRecord findById(String id) {
-        Optional<MongoInternalEventDrivenJobRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE));
+
+        return mongoTemplate.findOne(query, MongoInternalEventDrivenJobRecordImpl.class);
     }
 
     @Override

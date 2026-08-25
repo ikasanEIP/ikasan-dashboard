@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -23,6 +24,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.ikasan.spec.metadata.dao.ModuleMetadataDao.MODULE_METADATA;
 
 public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord> {
 
@@ -60,7 +63,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
     public SearchResults<SchedulerJobRecord> findAll(int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("type").in(ALL_JOB_TYPES);
+        Criteria criteria = Criteria.where(EntityFields.TYPE).in(ALL_JOB_TYPES);
         Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
@@ -82,8 +85,8 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
         Criteria criteria = Criteria.where("type").in(ALL_JOB_TYPES_WITH_LIFECYCLE)
             .andOperator(
                 new Criteria().orOperator(
-                    Criteria.where("contextName").is(contextName),
-                    Criteria.where("contextName").is(JobConstants.GLOBAL_EVENT)
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(contextName),
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(JobConstants.GLOBAL_EVENT)
                 )
             );
 
@@ -103,8 +106,8 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
     public SearchResults<SchedulerJobRecord> findByAgent(String agentName, int limit, int offset) {
         long startTime = System.currentTimeMillis();
 
-        Criteria criteria = Criteria.where("type").in(ALL_JOB_TYPES_WITH_LIFECYCLE)
-            .and("agentName").is(agentName);
+        Criteria criteria = Criteria.where(EntityFields.TYPE).in(ALL_JOB_TYPES_WITH_LIFECYCLE)
+            .and(EntityFields.MODULE_NAME).is(agentName);
 
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
@@ -127,56 +130,56 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
 
         // Handle job type filtering
         if (filter.getJobTypeFilter() != null && !filter.getJobTypeFilter().isEmpty()) {
-            criteriaList.add(Criteria.where("type").is(filter.getJobTypeFilter()));
+            criteriaList.add(Criteria.where(EntityFields.TYPE).is(filter.getJobTypeFilter()));
         } else if (filter.getJobTypes() != null && !filter.getJobTypes().isEmpty()) {
-            criteriaList.add(Criteria.where("type").in(filter.getJobTypes()));
+            criteriaList.add(Criteria.where( EntityFields.TYPE).in(filter.getJobTypes()));
         } else {
             // Default to all job types with lifecycle
-            criteriaList.add(Criteria.where("type").in(ALL_JOB_TYPES_WITH_LIFECYCLE));
+            criteriaList.add(Criteria.where(EntityFields.TYPE).in(ALL_JOB_TYPES_WITH_LIFECYCLE));
         }
 
         // Job name filter
         if (filter.getJobNameFilter() != null && !filter.getJobNameFilter().isEmpty()) {
-            criteriaList.add(Criteria.where("jobName").regex(".*" + filter.getJobNameFilter() + ".*", "i"));
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).regex(".*" + filter.getJobNameFilter() + ".*", "i"));
         }
 
         // Display name filter
         if (filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
-            criteriaList.add(Criteria.where("displayName").regex(".*" + filter.getDisplayNameFilter() + ".*", "i"));
+            criteriaList.add(Criteria.where(EntityFields.DISPLAY_NAME).regex(".*" + filter.getDisplayNameFilter() + ".*", "i"));
         }
 
         // NOT job name filter
         if (filter.getNotJobNameInFilter() != null && !filter.getNotJobNameInFilter().isEmpty()) {
-            criteriaList.add(Criteria.where("jobName").nin(filter.getNotJobNameInFilter()));
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).nin(filter.getNotJobNameInFilter()));
         }
 
         // Context name filters
         if (filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
-            criteriaList.add(Criteria.where("contextName").in(filter.getContextNames()));
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(filter.getContextNames()));
         } else if (filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
             criteriaList.add(
                 new Criteria().orOperator(
-                    Criteria.where("contextName").is(filter.getContextSearchFilter()),
-                    Criteria.where("contextName").is(JobConstants.GLOBAL_EVENT)
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(filter.getContextSearchFilter()),
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(JobConstants.GLOBAL_EVENT)
                 )
             );
         }
 
         // Boolean filters
         if (filter.isHeld()) {
-            criteriaList.add(Criteria.where("held").is(true));
+            criteriaList.add(Criteria.where(EntityFields.HELD).is(true));
         }
 
         if (filter.isSkipped()) {
-            criteriaList.add(Criteria.where("skipped").is(true));
+            criteriaList.add(Criteria.where(EntityFields.SKIPPED).is(true));
         }
 
         if (filter.isTargetResidingContextOnly() != null) {
-            criteriaList.add(Criteria.where("targetResidingContextOnly").is(filter.isTargetResidingContextOnly()));
+            criteriaList.add(Criteria.where(EntityFields.TARGET_RESIDING_CONTEXT_ONLY).is(filter.isTargetResidingContextOnly()));
         }
 
         if (filter.isParticipatesInLock() != null) {
-            criteriaList.add(Criteria.where("participatesInLock").is(filter.isParticipatesInLock()));
+            criteriaList.add(Criteria.where(EntityFields.PARTICIPATES_IN_LOCK).is(filter.isParticipatesInLock()));
         }
 
         // Combine all criteria
@@ -194,7 +197,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
                 : Sort.by(Sort.Direction.DESC, sortColumn);
         } else {
             // Default sort by jobName descending
-            sort = Sort.by(Sort.Direction.DESC, "jobName");
+            sort = Sort.by(Sort.Direction.DESC, EntityFields.FLOW_NAME);
         }
 
         // Apply pagination
@@ -214,12 +217,12 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
 
     @Override
     public SchedulerJobRecord findByContextIdAndJobName(String contextId, String jobName) {
-        Criteria criteria = Criteria.where("type").in(ALL_JOB_TYPES_WITH_LIFECYCLE)
-            .and("jobName").is(jobName)
+        Criteria criteria = Criteria.where(EntityFields.TYPE).in(ALL_JOB_TYPES_WITH_LIFECYCLE)
+            .and(EntityFields.FLOW_NAME).is(jobName)
             .andOperator(
                 new Criteria().orOperator(
-                    Criteria.where("contextName").is(contextId),
-                    Criteria.where("contextName").is(JobConstants.GLOBAL_EVENT)
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(contextId),
+                    Criteria.where(EntityFields.COMPONENT_NAME).is(JobConstants.GLOBAL_EVENT)
                 )
             );
 
@@ -258,10 +261,13 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
 
     @Override
     public List<String> getAllAgentNames() {
-        // Use MongoDB aggregation to get distinct agent names
+        // Query for documents with type="moduleMetaData" and module_metadata_json containing "type":"SCHEDULER_AGENT"
+        // This is equivalent to Solr query: type:"moduleMetaData" AND payload:"*\"type\":\"SCHEDULER_AGENT\"*"
         Aggregation aggregation = Aggregation.newAggregation(
-            Aggregation.group("agentName"),
-            Aggregation.project().andExpression("_id").as("agentName")
+            Aggregation.match(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA)
+                .and(EntityFields.PAYLOAD_CONTENT).regex(".*\"type\":\"SCHEDULER_AGENT\".*")),
+            Aggregation.group().addToSet(EntityFields.ID).as("agentNames"),
+            Aggregation.project().and("agentNames").as("agentNames")
         );
 
         AggregationResults<AgentNameResult> results = mongoTemplate.aggregate(
@@ -271,21 +277,23 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
         );
 
         List<String> agentNames = new ArrayList<>();
-        results.forEach(result -> agentNames.add(result.getAgentName()));
+        if (results.getUniqueMappedResult() != null) {
+            agentNames.addAll(results.getUniqueMappedResult().getAgentNames());
+        }
 
         return agentNames;
     }
 
     // Helper class for aggregation results
     private static class AgentNameResult {
-        private String agentName;
+        private List<String> agentNames;
 
-        public String getAgentName() {
-            return agentName;
+        public List<String> getAgentNames() {
+            return agentNames;
         }
 
-        public void setAgentName(String agentName) {
-            this.agentName = agentName;
+        public void setAgentNames(List<String> agentNames) {
+            this.agentNames = agentNames;
         }
     }
 }

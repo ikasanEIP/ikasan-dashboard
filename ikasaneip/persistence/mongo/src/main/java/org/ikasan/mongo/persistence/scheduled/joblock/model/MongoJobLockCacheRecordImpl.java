@@ -4,9 +4,11 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -20,17 +22,24 @@ public class MongoJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Id
     private String id;
 
-    @Field("environment")
     private String environment;
 
-    @Field("jobLockCache")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String jobLockCache;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("modifiedTimestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
+
+    @Indexed
+    @Field(EntityFields.TYPE)
+    private String type;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {
@@ -93,5 +102,21 @@ public class MongoJobLockCacheRecordImpl implements JobLockCacheRecord {
 
     public void setModifiedTimestamp(long modifiedTimestamp) {
         this.modifiedTimestamp = modifiedTimestamp;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 }

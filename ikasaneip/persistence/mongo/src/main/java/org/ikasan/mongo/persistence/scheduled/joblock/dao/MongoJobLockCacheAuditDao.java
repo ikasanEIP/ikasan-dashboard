@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
 
@@ -24,11 +25,14 @@ public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
 
     private final MongoJobLockCacheAuditRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final int daysToKeep;
 
     public MongoJobLockCacheAuditDao(MongoJobLockCacheAuditRepository repository,
-                                     MongoTemplate mongoTemplate) {
+                                     MongoTemplate mongoTemplate,
+                                     int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.daysToKeep = daysToKeep;
     }
 
     @Override
@@ -51,20 +55,14 @@ public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
 
     @Override
     public void save(JobLockCacheAuditRecord record) {
-        if (!(record instanceof MongoJobLockCacheAuditRecordImpl)) {
-            throw new IllegalArgumentException("Record must be an instance of MongoJobLockCacheAuditRecordImpl");
-        }
+        MongoJobLockCacheAuditRecordImpl mongoRecord = new MongoJobLockCacheAuditRecordImpl();
 
-        MongoJobLockCacheAuditRecordImpl mongoRecord = (MongoJobLockCacheAuditRecordImpl) record;
-
-        // Generate unique ID if not set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = JOB_LOCK_AUDIT_CACHE_TYPE_ID + "_" + UUID.randomUUID();
-            mongoRecord.setId(id);
-        }
-
-        // Set timestamp to current time for audit records
+        mongoRecord.setId(JOB_LOCK_AUDIT_CACHE_TYPE_ID + "_" + UUID.randomUUID());
+        mongoRecord.setType(JOB_LOCK_AUDIT_CACHE_TYPE);
+        mongoRecord.setJobLockCache(record.getJobLockCache());
         mongoRecord.setTimestamp(System.currentTimeMillis());
+        mongoRecord.setExpiry(daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
+
 
         logger.debug("Saving JobLockCacheAuditRecord with id: {}", mongoRecord.getId());
         repository.save(mongoRecord);

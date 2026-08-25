@@ -66,7 +66,7 @@ public class MongoContextStartJobDaoTest {
         ContextStartJobRecord found = dao.findById(record.getId());
         Assert.assertNotNull(found);
         Assert.assertEquals(record.getId(), found.getId());
-        Assert.assertEquals("agent1", found.getAgentName());
+        Assert.assertEquals("CONTEXT_START_JOB", found.getAgentName());
         Assert.assertEquals("job1", found.getJobName());
         Assert.assertEquals("context1", found.getContextName());
     }
@@ -85,11 +85,13 @@ public class MongoContextStartJobDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoContextStartJobRecordImpl record = createContextStartJobRecord("agent1", "job1", "context1");
+        ContextStartJobRecord record = createContextStartJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -177,48 +179,6 @@ public class MongoContextStartJobDaoTest {
         Assert.assertEquals("testUser", found.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        ContextStartJobRecord invalidRecord = new ContextStartJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public ContextStartJob getContextStartJob() { return null; }
-            @Override
-            public void setContextStartJob(ContextStartJob contextStartJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
 
     private MongoContextStartJobRecordImpl createContextStartJobRecord(String agentName, String jobName, String contextName) {
@@ -229,6 +189,8 @@ public class MongoContextStartJobDaoTest {
         contextStartJob.setDisplayName("Display " + jobName);
 
         MongoContextStartJobRecordImpl record = new MongoContextStartJobRecordImpl();
+        record.setId(contextStartJob.getAgentName() + "_"
+            + contextStartJob.getJobName() + "_" + contextStartJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

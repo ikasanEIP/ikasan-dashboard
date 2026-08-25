@@ -6,9 +6,13 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.notification.dao.NotificationSendAuditDao;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.List;
-import java.util.Optional;
+
+import static org.ikasan.spec.entity.EntityFields.ID;
+import static org.ikasan.spec.entity.EntityFields.TYPE;
 
 public class MongoNotificationSendAuditDao implements NotificationSendAuditDao<NotificationSendAuditRecord>, BatchInsert<NotificationSendAuditRecord> {
 
@@ -25,38 +29,29 @@ public class MongoNotificationSendAuditDao implements NotificationSendAuditDao<N
     public NotificationSendAuditRecord find(String contextInstanceId, String contextName, String jobName,
                                             String monitorType, String notifierType) {
         String id = generateId(contextInstanceId, contextName, jobName, monitorType, notifierType);
-        Optional<MongoNotificationSendAuditRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(NOTIFICATION_SEND_AUDIT));
+
+        return mongoTemplate.findOne(query, MongoNotificationSendAuditRecordImpl.class);
     }
 
     @Override
     public void save(NotificationSendAuditRecord record) {
-        MongoNotificationSendAuditRecordImpl mongoRecord;
-
-        if (record instanceof MongoNotificationSendAuditRecordImpl) {
-            mongoRecord = (MongoNotificationSendAuditRecordImpl) record;
-        } else {
-            mongoRecord = new MongoNotificationSendAuditRecordImpl();
-            mongoRecord.setId(record.getId());
-            mongoRecord.setNotificationSendAudit(record.getNotificationSendAudit());
-            mongoRecord.setTimestamp(record.getTimestamp());
-            mongoRecord.setModifiedTimestamp(record.getModifiedTimestamp());
-            mongoRecord.setModifiedBy(record.getModifiedBy());
-        }
-
-        // Generate ID if not already set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = generateId(mongoRecord);
-            mongoRecord.setId(id);
-        }
-
-        // Set timestamp if not already set
-        if (mongoRecord.getTimestamp() == 0) {
+        MongoNotificationSendAuditRecordImpl mongoRecord = new MongoNotificationSendAuditRecordImpl();
+        mongoRecord.setId(generateId(record));
+        mongoRecord.setType(NOTIFICATION_SEND_AUDIT);
+        mongoRecord.setNotificationSendAudit(record.getNotificationSendAudit());
+        if(record.getModifiedTimestamp() == 0) {
             mongoRecord.setTimestamp(System.currentTimeMillis());
         }
-
-        // Always update modifiedTimestamp
+        else {
+            mongoRecord.setTimestamp(record.getTimestamp());
+        }
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        mongoRecord.setModifiedBy(record.getModifiedBy());
+        mongoRecord.setExpiry(-1);
 
         repository.save(mongoRecord);
     }
@@ -66,6 +61,15 @@ public class MongoNotificationSendAuditDao implements NotificationSendAuditDao<N
         entities.forEach(this::save);
     }
 
+    /**
+     * Generates a unique identifier string for a given notification send audit record by extracting
+     * and concatenating specific fields with underscores as separators.
+     *
+     * @param notificationSendAuditRecord the notification send audit record containing the details
+     *                                     required to generate the identifier
+     * @return a concatenated string representing the unique identifier based on the notification
+     *         send audit record
+     */
     private String generateId(NotificationSendAuditRecord notificationSendAuditRecord) {
         return generateId(
             notificationSendAuditRecord.getNotificationSendAudit().getContextInstanceId(),
@@ -76,6 +80,16 @@ public class MongoNotificationSendAuditDao implements NotificationSendAuditDao<N
         );
     }
 
+    /**
+     * Generates a unique identifier string by concatenating the given parameters with underscores as separators.
+     *
+     * @param contextInstanceId the context instance ID to include in the generated ID
+     * @param contextName the context name to include in the generated ID
+     * @param jobName the job name to include in the generated ID
+     * @param monitorType the monitor type to include in the generated ID
+     * @param notifierType the notifier type to include in the generated ID
+     * @return a concatenated string representing the unique identifier
+     */
     private String generateId(String contextInstanceId, String contextName, String jobName,
                              String monitorType, String notifierType) {
         StringBuilder sb = new StringBuilder(contextInstanceId);

@@ -4,14 +4,10 @@ import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoGlobalEventJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoGlobalEventJobRepository;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -86,11 +82,13 @@ public class MongoGlobalEventJobDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoGlobalEventJobRecordImpl record = createGlobalEventJobRecord("agent1", "job1", "context1");
+        GlobalEventJobRecord record = createGlobalEventJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -208,48 +206,6 @@ public class MongoGlobalEventJobDaoTest {
         Assert.assertEquals("enableUser", found.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        GlobalEventJobRecord invalidRecord = new GlobalEventJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public GlobalEventJob getGlobalEventJob() { return null; }
-            @Override
-            public void setGlobalEventJob(GlobalEventJob globalEventJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
 
     private MongoGlobalEventJobRecordImpl createGlobalEventJobRecord(String agentName, String jobName, String contextName) {
@@ -260,6 +216,8 @@ public class MongoGlobalEventJobDaoTest {
         globalEventJob.setDisplayName("Display " + jobName);
 
         MongoGlobalEventJobRecordImpl record = new MongoGlobalEventJobRecordImpl();
+        record.setId(JobConstants.GLOBAL_EVENT_JOB + "_" + globalEventJob.getAgentName() + "_"
+            + globalEventJob.getJobName() + "_" + globalEventJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

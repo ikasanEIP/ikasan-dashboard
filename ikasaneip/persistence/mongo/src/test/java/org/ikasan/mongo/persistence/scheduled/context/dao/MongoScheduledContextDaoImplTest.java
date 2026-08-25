@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.ikasan.spec.scheduled.context.dao.ScheduledContextDao.SCHEDULED_CONTEXT_TYPE;
 import static org.junit.Assert.*;
 
 /**
@@ -86,7 +87,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getId());
+        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         assertNotNull(found);
         assertEquals("test-context-1", found.getContextName());
         assertNotNull(found.getContext());
@@ -137,11 +138,12 @@ public class MongoScheduledContextDaoImplTest {
 
         dao.save(record);
 
-        // Then
-        assertEquals(initialTimestamp, record.getTimestamp()); // Original timestamp preserved
-        assertTrue(record.getModifiedTimestamp() > initialModifiedTimestamp); // Modified timestamp updated
+        ScheduledContextRecord found  = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
 
-        ScheduledContextRecord found = dao.findById(record.getId());
+        // Then
+        assertEquals(initialTimestamp, found.getTimestamp()); // Original timestamp preserved
+        assertTrue(found.getModifiedTimestamp() > initialModifiedTimestamp); // Modified timestamp updated
+
         assertEquals("Updated description", found.getContext().getDescription());
     }
 
@@ -414,7 +416,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getId());
+        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         assertNotNull(found);
         ContextTemplate foundTemplate = found.getContext();
         assertNotNull(foundTemplate);
@@ -431,19 +433,19 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getId());
+        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         assertFalse(found.isDisabled());
 
         // When - Update to disabled = true
         ContextTemplateImpl template = (ContextTemplateImpl) found.getContext();
         template.setDisabled(true);
         template.setQuartzScheduleDrivenJobsDisabledForContext(true);
-        ((MongoScheduledContextRecordImpl) found).setContext(template);
+        found.setContext(template);
 
-        dao.save((MongoScheduledContextRecordImpl) found);
+        dao.save(found);
 
         // Then - Denormalized fields should be updated
-        ScheduledContextRecord updated = dao.findById(record.getId());
+        ScheduledContextRecord updated = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         assertTrue(updated.isDisabled());
         assertTrue(updated.isQuartzScheduleDrivenJobsDisabledForContext());
     }

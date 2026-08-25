@@ -1,7 +1,8 @@
 package org.ikasan.mongo.persistence.scheduled.context.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.slf4j.Logger;
@@ -30,34 +31,37 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     @Id
     private String id;
 
+    @Field(EntityFields.TYPE)
+    private String type;
+
     @Indexed(unique = true)
-    @Field("context_name")
+    @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
-    /**
-     * Store ContextTemplate as JSON string in MongoDB.
-     */
-    @Field("context_template")
-    private String contextTemplateJson;
+    @Field(EntityFields.PAYLOAD_CONTENT)
+    private String context;
 
-    private transient ContextTemplate contextTemplate;
-
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Indexed
-    @Field("modified_timestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modified_by")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Indexed
-    @Field("disabled")
-    private boolean disabled;
+    @Field(EntityFields.DISABLED)
+    private boolean disabled = false;
 
-    @Field("quartz_scheduled_jobs_disabled")
-    private boolean quartzScheduledJobsDisabledForContext;
+    @Field(EntityFields.QUARTZ_SCHEDULED_JOBS_DISABLED)
+    private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
+
+    private transient ContextTemplate contextTemplate;
 
     /**
      * Default constructor for MongoDB
@@ -84,6 +88,14 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
         this.id = id;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public String getContextName() {
         return contextName;
@@ -92,14 +104,13 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     @Override
     public void setContextName(String contextName) {
         this.contextName = contextName;
-        this.id = contextName; // Keep ID in sync with context name
     }
 
     @Override
     public ContextTemplate getContext() {
-        if (contextTemplate == null && contextTemplateJson != null) {
+        if (contextTemplate == null && this.context != null) {
             try {
-                contextTemplate = objectMapper.readValue(contextTemplateJson, ContextTemplate.class);
+                contextTemplate = objectMapper.readValue(context, ContextTemplate.class);
             } catch (JacksonException e) {
                 logger.error("Failed to deserialize ContextTemplate from JSON", e);
                 throw new RuntimeException("Failed to deserialize ContextTemplate", e);
@@ -109,14 +120,15 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     }
 
     @Override
-    public void setContext(ContextTemplate context) {
-        this.contextTemplate = context;
+    public void setContext(ContextTemplate ct) {
+        this.contextTemplate = ct;
         if (context != null) {
             try {
-                this.contextTemplateJson = objectMapper.writeValueAsString(context);
+                this.context = objectMapper.writeValueAsString(context);
                 // Update denormalized fields for querying
-                this.disabled = context.isDisabled();
-                this.quartzScheduledJobsDisabledForContext = context.isQuartzScheduleDrivenJobsDisabledForContext();
+                this.disabled = ct.isDisabled();
+                this.isQuartzScheduleDrivenJobsDisabledForContext
+                    = ct.isQuartzScheduleDrivenJobsDisabledForContext();
             } catch (JacksonException e) {
                 logger.error("Failed to serialize ContextTemplate to JSON", e);
                 throw new RuntimeException("Failed to serialize ContextTemplate", e);
@@ -159,17 +171,33 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
         return disabled;
     }
 
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
     @Override
     public boolean isQuartzScheduleDrivenJobsDisabledForContext() {
-        return quartzScheduledJobsDisabledForContext;
+        return isQuartzScheduleDrivenJobsDisabledForContext;
+    }
+
+    public void setQuartzScheduleDrivenJobsDisabledForContext(boolean quartzScheduleDrivenJobsDisabledForContext) {
+        isQuartzScheduleDrivenJobsDisabledForContext = quartzScheduleDrivenJobsDisabledForContext;
     }
 
     public String getContextTemplateJson() {
-        return contextTemplateJson;
+        return context;
     }
 
     public void setContextTemplateJson(String contextTemplateJson) {
-        this.contextTemplateJson = contextTemplateJson;
+        this.context = contextTemplateJson;
+    }
+
+    public long getExpiry() {
+        return expiry;
+    }
+
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
     }
 
     @Override
@@ -181,7 +209,7 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
             ", modifiedTimestamp=" + modifiedTimestamp +
             ", modifiedBy='" + modifiedBy + '\'' +
             ", disabled=" + disabled +
-            ", quartzScheduledJobsDisabledForContext=" + quartzScheduledJobsDisabledForContext +
+            ", quartzScheduledJobsDisabledForContext=" + isQuartzScheduleDrivenJobsDisabledForContext +
             '}';
     }
 }

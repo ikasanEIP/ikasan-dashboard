@@ -6,6 +6,7 @@ import org.ikasan.mongo.persistence.scheduled.job.model.MongoInternalEventDriven
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoInternalEventDrivenJobRepository;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -86,11 +87,13 @@ public class MongoInternalEventDrivenJobDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        InternalEventDrivenJobRecord record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = dao.findById(record.getId());
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }
@@ -306,64 +309,6 @@ public class MongoInternalEventDrivenJobDaoTest {
         Assert.assertEquals("testUser", found2.getModifiedBy());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_save_wrong_type_throws_exception() {
-        InternalEventDrivenJobRecord invalidRecord = new InternalEventDrivenJobRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getAgentName() { return "agent"; }
-            @Override
-            public void setAgentName(String agentName) {}
-            @Override
-            public String getJobName() { return "job"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "display"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "context"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public InternalEventDrivenJob getInternalEventDrivenJob() { return null; }
-            @Override
-            public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long modifiedTimestamp) {}
-            @Override
-            public String getModifiedBy() { return null; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-            @Override
-            public boolean isHeld() { return false; }
-            @Override
-            public void setHeld(boolean held) {}
-            @Override
-            public boolean isSkipped() { return false; }
-            @Override
-            public void setSkipped(boolean skipped) {}
-            @Override
-            public boolean isTargetResidingContextOnly() { return false; }
-            @Override
-            public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {}
-            @Override
-            public boolean isParticipatesInLock() { return false; }
-            @Override
-            public void setParticipatesInLock(boolean participatesInLock) {}
-        };
-
-        dao.save(invalidRecord);
-    }
-
     // Helper methods
 
     private MongoInternalEventDrivenJobRecordImpl createInternalEventDrivenJobRecord(String agentName, String jobName, String contextName) {
@@ -376,6 +321,8 @@ public class MongoInternalEventDrivenJobDaoTest {
         internalEventDrivenJob.setParticipatesInLock(false);
 
         MongoInternalEventDrivenJobRecordImpl record = new MongoInternalEventDrivenJobRecordImpl();
+        record.setId(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
+            + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
         record.setAgentName(agentName);
         record.setJobName(jobName);
         record.setContextName(contextName);

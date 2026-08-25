@@ -30,15 +30,10 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
 
     private JsonMapper objectMapper = JsonMapper.builder().build();
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String SYSTEM_EVENT = "systemEvent";
-
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SystemEvent systemEvent)
     {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(TYPE, SYSTEM_EVENT);
+        document.addField(TYPE, SYSTEM_EVENT_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, getSystemEventContent(systemEvent));
         }
@@ -48,11 +43,11 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
 
         if(systemEvent.getModuleName() != null){
             document.addField(ID, systemEvent.getModuleName()
-                + "-" + SYSTEM_EVENT + "-" + systemEvent.getId());
+                + "-" + SYSTEM_EVENT_TYPE + "-" + systemEvent.getId());
             document.addField(MODULE_NAME, systemEvent.getModuleName());
         }
         else {
-            document.addField(ID, SYSTEM_EVENT + "-" + systemEvent.getSubject() + "-" + systemEvent.getId());
+            document.addField(ID, SYSTEM_EVENT_TYPE + "-" + systemEvent.getSubject() + "-" + systemEvent.getId());
         }
 
         document.addField(ACTOR, systemEvent.getActor());
@@ -69,7 +64,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
 
     @Override
     public SystemEvent findById(String id) {
-        SolrQuery query = super.buildIdQuery(id, SYSTEM_EVENT);
+        SolrQuery query = super.buildIdQuery(id, SYSTEM_EVENT_TYPE);
 
         logger.debug("query: " + query);
 
@@ -89,7 +84,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
         , String sortColumn, String sortOrder) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
-        queryBuffer.append("\"").append(SYSTEM_EVENT).append("\" ");
+        queryBuffer.append("\"").append(SYSTEM_EVENT_TYPE).append("\" ");
 
         if(filter.getActor() != null && !filter.getActor().isEmpty()) {
             queryBuffer.append(AND);

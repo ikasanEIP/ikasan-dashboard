@@ -26,11 +26,6 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
 
     private JsonMapper objectMapper = JsonMapper.builder().build();
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String NOTIFICATION_SEND_AUDIT = "notificationSendAudit";
-
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, NotificationSendAuditRecord notificationSendAuditRecord)
     {
         SolrInputDocument document = new SolrInputDocument();

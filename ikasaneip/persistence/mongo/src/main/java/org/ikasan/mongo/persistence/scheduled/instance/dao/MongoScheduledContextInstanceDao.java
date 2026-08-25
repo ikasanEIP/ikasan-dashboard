@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceRepository;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -20,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 
 /**
  * MongoDB implementation of ScheduledContextInstanceDao.
@@ -33,6 +36,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
 
     private final MongoScheduledContextInstanceRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final long daysToKeep;
 
     /**
      * Constructor
@@ -41,9 +45,10 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
      * @param mongoTemplate the MongoDB template
      */
     public MongoScheduledContextInstanceDao(MongoScheduledContextInstanceRepository repository,
-                                            MongoTemplate mongoTemplate) {
+                                            MongoTemplate mongoTemplate, long daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.daysToKeep = daysToKeep;
     }
 
     @Override
@@ -56,13 +61,23 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
     @Override
     public ScheduledContextInstanceRecord findById(String id) {
         logger.debug("Finding scheduled context instance record by id: {}", id);
-        return repository.findById(id).orElse(null);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
+
+        return mongoTemplate.findOne(query, MongoScheduledContextInstanceRecordImpl.class);
     }
 
     @Override
     public void deleteById(String id) {
         logger.debug("Deleting scheduled context instance record by id: {}", id);
-        repository.deleteById(id);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).is(id));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
+
+        mongoTemplate.remove(query, MongoScheduledContextInstanceRecordImpl.class);
     }
 
     @Override
@@ -85,7 +100,8 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
                 .collect(Collectors.toList());
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("status").in(statusStrings));
+        query.addCriteria(Criteria.where(EntityFields.STATUS).in(statusStrings));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
 
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
@@ -120,7 +136,8 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         long queryStartTime = System.currentTimeMillis();
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("contextName").is(contextName));
+        query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(contextName));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
 
         // Apply sorting
         if (sortField != null && !sortField.isEmpty()) {
@@ -166,10 +183,11 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
-        criteriaList.add(Criteria.where("contextName").is(contextName));
+        criteriaList.add(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
+        criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).is(contextName));
 
         if (startTimestamp > 0 || endTimestamp > 0) {
-            criteriaList.add(Criteria.where("timestamp").gte(startTimestamp).lte(endTimestamp));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTimestamp).lte(endTimestamp));
         }
 
         query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
@@ -218,20 +236,23 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
+        // Always add type filter
+        criteriaList.add(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
+
         // Filter by context instance names
         if (filter.getContextInstanceNames() != null && !filter.getContextInstanceNames().isEmpty()) {
-            criteriaList.add(Criteria.where("contextName").in(filter.getContextInstanceNames()));
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(filter.getContextInstanceNames()));
         }
 
         // Filter by context search term (wildcard)
         if (filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
-            criteriaList.add(Criteria.where("contextName")
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME)
                     .regex(".*" + filter.getContextSearchFilter() + ".*", "i"));
         }
 
         // Filter by context instance ID (wildcard)
         if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
-            criteriaList.add(Criteria.where("contextInstanceId")
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME)
                     .regex(".*" + filter.getContextInstanceId() + ".*", "i"));
         }
 
@@ -239,33 +260,26 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         if (filter.getCreatedTimestamp() > 0) {
             long startOfDay = atStartOfDay(new Date(filter.getCreatedTimestamp()));
             long endOfDay = atEndOfDay(new Date(filter.getCreatedTimestamp()));
-            criteriaList.add(Criteria.where("timestamp").gte(startOfDay).lte(endOfDay));
-        }
-
-        // Filter by modified timestamp (day range)
-        if (filter.getModifiedTimestamp() > 0) {
-            long startOfDay = atStartOfDay(new Date(filter.getModifiedTimestamp()));
-            long endOfDay = atEndOfDay(new Date(filter.getModifiedTimestamp()));
-            criteriaList.add(Criteria.where("modifiedTimestamp").gte(startOfDay).lte(endOfDay));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startOfDay).lte(endOfDay));
         }
 
         // Filter by start time range
         if (filter.getStartTimeStart() > 0 && filter.getStartTimeEnd() > 0) {
-            criteriaList.add(Criteria.where("startTime")
+            criteriaList.add(Criteria.where(EntityFields.START_TIME)
                     .gte(filter.getStartTimeStart())
                     .lte(filter.getStartTimeEnd()));
         }
 
         // Filter by end time range
         if (filter.getEndTimeStart() > 0 && filter.getEndTimeEnd() > 0) {
-            criteriaList.add(Criteria.where("endTime")
+            criteriaList.add(Criteria.where(EntityFields.END_TIME)
                     .gte(filter.getEndTimeStart())
                     .lte(filter.getEndTimeEnd()));
         }
 
         // Filter by status
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            criteriaList.add(Criteria.where("status").is(filter.getStatus()));
+            criteriaList.add(Criteria.where(EntityFields.STATUS).is(filter.getStatus()));
         }
 
         // Apply all criteria
@@ -281,7 +295,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
             query.with(Sort.by(direction, sortField));
         } else {
             // Default sort by created date time descending
-            query.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
         }
 
         // Get total count
@@ -310,31 +324,29 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
     /**
      * Convert ScheduledContextInstanceRecord to MongoDB entity
      *
-     * @param record the record to convert
+     * @param scheduledContextInstanceRecord the record to convert
      * @return the entity ready for persistence
      */
-    private MongoScheduledContextInstanceRecordImpl convertToEntity(ScheduledContextInstanceRecord record) {
-        if (record instanceof MongoScheduledContextInstanceRecordImpl) {
-            return (MongoScheduledContextInstanceRecordImpl) record;
-        }
-
+    private MongoScheduledContextInstanceRecordImpl convertToEntity(ScheduledContextInstanceRecord scheduledContextInstanceRecord) {
         MongoScheduledContextInstanceRecordImpl entity = new MongoScheduledContextInstanceRecordImpl();
 
-        // Generate ID from contextInstance.getId() if available
-        if (record.getContextInstance() != null && record.getContextInstance().getId() != null) {
-            entity.setId(record.getContextInstance().getId());
+        entity.setId(scheduledContextInstanceRecord.getContextInstance().getId() + "_" + SCHEDULED_CONTEXT_INSTANCE_TYPE);
+        entity.setType(SCHEDULED_CONTEXT_INSTANCE_TYPE);
+        entity.setContextInstance(scheduledContextInstanceRecord.getContextInstance());
+        entity.setStatus(scheduledContextInstanceRecord.getStatus());
+        entity.setContextName(scheduledContextInstanceRecord.getContextName());
+        entity.setContextInstanceId(scheduledContextInstanceRecord.getContextInstance().getId());
+        entity.setTimestamp(scheduledContextInstanceRecord.getTimestamp());
+        entity.setModifiedTimestamp(System.currentTimeMillis());
+        // only update modified by field if populated.
+        if(scheduledContextInstanceRecord.getModifiedBy() != null &&
+            !scheduledContextInstanceRecord.getModifiedBy().isEmpty()) {
+            entity.setModifiedBy(scheduledContextInstanceRecord.getModifiedBy());
         }
-
-        entity.setContextName(record.getContextName());
-        entity.setContextInstanceId(record.getContextInstanceId());
-        entity.setContextInstance(record.getContextInstance());
-        entity.setStatus(record.getStatus());
-        entity.setTimestamp(record.getTimestamp());
-        entity.setModifiedTimestamp(record.getModifiedTimestamp());
-        entity.setModifiedBy(record.getModifiedBy());
-        entity.setStartTime(record.getStartTime());
-        entity.setEndTime(record.getEndTime());
-        entity.setContainsRepeatingJobs(record.isContainsRepeatingJobs());
+        entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
+        entity.setStartTime(scheduledContextInstanceRecord.getContextInstance().getStartTime());
+        entity.setEndTime(scheduledContextInstanceRecord.getContextInstance().getEndTime());
+        entity.setContainsRepeatingJobs(scheduledContextInstanceRecord.getContextInstance().isContainsRepeatingJobs());
 
         return entity;
     }

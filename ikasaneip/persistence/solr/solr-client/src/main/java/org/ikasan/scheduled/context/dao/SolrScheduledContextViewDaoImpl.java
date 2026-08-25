@@ -18,20 +18,19 @@ public class SolrScheduledContextViewDaoImpl extends SolrDaoBase<ScheduledContex
      */
     private static Logger logger = LoggerFactory.getLogger(SolrScheduledContextViewDaoImpl.class);
 
-    public static final String SCHEDULED_CONTEXT_VIEW = "scheduledContextView";
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextViewRecord event) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(TYPE, SCHEDULED_CONTEXT_VIEW);
+        document.addField(TYPE, SCHEDULED_CONTEXT_VIEW_TYPE);
         document.addField(PAYLOAD_CONTENT, event.getContextView());
-        document.addField(ID, event.getParentContextName() + "-" + event.getContextName() + "-" + SCHEDULED_CONTEXT_VIEW);
+        document.addField(ID, event.getParentContextName() + "-" + event.getContextName() + "-" + SCHEDULED_CONTEXT_VIEW_TYPE);
         document.addField(MODULE_NAME, event.getParentContextName());
         document.addField(FLOW_NAME, event.getContextName());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, event.getModifiedBy());
-        document.setField(EXPIRY, DO_NOT_EXPIRE);
+        document.setField(EXPIRY, ScheduledContextViewDao.DO_NOT_EXPIRE);
 
         logger.debug(String.format("Converted scheduled context view record to SolrDocument[%s]", document));
         return document;
@@ -43,7 +42,7 @@ public class SolrScheduledContextViewDaoImpl extends SolrDaoBase<ScheduledContex
             .append(AND)
             .append(super.buildFieldPredicate(contextName, FLOW_NAME))
             .append(AND)
-            .append(super.buildFieldPredicate(SCHEDULED_CONTEXT_VIEW, TYPE)).toString());
+            .append(super.buildFieldPredicate(SCHEDULED_CONTEXT_VIEW_TYPE, TYPE)).toString());
 
         logger.debug("query: " + query);
 

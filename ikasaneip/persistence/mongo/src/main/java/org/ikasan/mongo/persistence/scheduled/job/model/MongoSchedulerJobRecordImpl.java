@@ -4,10 +4,12 @@ import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -21,44 +23,48 @@ public class MongoSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Id
     private String id;
 
-    @Field("type")
+    @Field(EntityFields.TYPE)
     private String type;
 
-    @Field("agentName")
+    @Field(EntityFields.MODULE_NAME)
     private String agentName;
 
-    @Field("jobName")
+    @Field(EntityFields.FLOW_NAME)
     private String jobName;
 
-    @Field("displayName")
+    @Field(EntityFields.DISPLAY_NAME)
     private String displayName;
 
-    @Field("contextName")
+    @Field(EntityFields.COMPONENT_NAME)
     private String contextName;
 
-    @Field("job")
+    @Field(EntityFields.PAYLOAD_CONTENT)
     private String job;
 
-    @Field("timestamp")
+    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
-    @Field("modifiedTimestamp")
+    @Field(EntityFields.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
-    @Field("modifiedBy")
+    @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Field("held")
+    @Field(EntityFields.HELD)
     private boolean held;
 
-    @Field("skipped")
+    @Field(EntityFields.SKIPPED)
     private boolean skipped;
 
-    @Field("targetResidingContextOnly")
+    @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
-    @Field("participatesInLock")
+    @Field(EntityFields.PARTICIPATES_IN_LOCK)
     private boolean participatesInLock;
+
+    @Indexed
+    @Field(EntityFields.EXPIRY)
+    private long expiry;
 
     @Override
     public String getId() {

@@ -13,8 +13,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.ikasan.spec.entity.EntityFields.*;
 
 public class MongoEmailNotificationDetailsDao implements EmailNotificationDetailsDao, BatchInsert<EmailNotificationDetailsRecord> {
 
@@ -29,12 +30,14 @@ public class MongoEmailNotificationDetailsDao implements EmailNotificationDetail
 
     @Override
     public SearchResults<EmailNotificationDetailsRecord> findAll(int limit, int offset) {
-        PageRequest pageRequest = PageRequest.of(offset / limit, limit);
+        Query query = new Query();
+        query.addCriteria(Criteria.where(TYPE).is(EMAIL_NOTIFICATION_DETAILS));
 
-        long totalCount = repository.count();
+        long totalCount = mongoTemplate.count(query, MongoEmailNotificationDetailsRecordImpl.class);
 
-        List<EmailNotificationDetailsRecord> results = repository.findAll(pageRequest)
-            .getContent()
+        query.with(PageRequest.of(offset / limit, limit));
+
+        List<EmailNotificationDetailsRecord> results = mongoTemplate.find(query, MongoEmailNotificationDetailsRecordImpl.class)
             .stream()
             .map(record -> (EmailNotificationDetailsRecord) record)
             .collect(Collectors.toList());
@@ -44,8 +47,11 @@ public class MongoEmailNotificationDetailsDao implements EmailNotificationDetail
 
     @Override
     public SearchResults<EmailNotificationDetailsRecord> findByContextName(String contextName, int limit, int offset) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("contextName").is(contextName));
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(COMPONENT_NAME).is(contextName),
+            Criteria.where(TYPE).is(EMAIL_NOTIFICATION_DETAILS)
+        );
+        Query query = new Query(criteria);
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationDetailsRecordImpl.class);
 
@@ -62,50 +68,49 @@ public class MongoEmailNotificationDetailsDao implements EmailNotificationDetail
     @Override
     public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
         String id = generateId(jobName, childContextName, monitorType);
-        Optional<MongoEmailNotificationDetailsRecordImpl> result = repository.findById(id);
-        return result.orElse(null);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(EMAIL_NOTIFICATION_DETAILS));
+
+        return mongoTemplate.findOne(query, MongoEmailNotificationDetailsRecordImpl.class);
     }
 
     @Override
     public void deleteByContextName(String contextName) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("contextName").is(contextName));
+        Criteria criteria = new Criteria().andOperator(
+            Criteria.where(COMPONENT_NAME).is(contextName),
+            Criteria.where(TYPE).is(EMAIL_NOTIFICATION_DETAILS)
+        );
+        Query query = new Query(criteria);
         mongoTemplate.remove(query, MongoEmailNotificationDetailsRecordImpl.class);
     }
 
     @Override
     public void deleteByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
         String id = generateId(jobName, childContextName, monitorType);
-        repository.deleteById(id);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(TYPE).is(EMAIL_NOTIFICATION_DETAILS));
+
+        mongoTemplate.remove(query, MongoEmailNotificationDetailsRecordImpl.class);
     }
 
     @Override
     public void save(EmailNotificationDetailsRecord record) {
-        MongoEmailNotificationDetailsRecordImpl mongoRecord;
-
-        if (record instanceof MongoEmailNotificationDetailsRecordImpl) {
-            mongoRecord = (MongoEmailNotificationDetailsRecordImpl) record;
-        } else {
-            mongoRecord = new MongoEmailNotificationDetailsRecordImpl();
-            mongoRecord.setId(record.getId());
-            mongoRecord.setJobName(record.getJobName());
-            mongoRecord.setContextName(record.getContextName());
-            mongoRecord.setMonitorType(record.getMonitorType());
-            mongoRecord.setEmailNotificationDetails(record.getEmailNotificationDetails());
-            mongoRecord.setTimestamp(record.getTimestamp());
-            mongoRecord.setModifiedTimestamp(record.getModifiedTimestamp());
-            mongoRecord.setModifiedBy(record.getModifiedBy());
-        }
-
-        // Generate ID if not already set
-        if (mongoRecord.getId() == null || mongoRecord.getId().isEmpty()) {
-            String id = generateId(
-                record.getEmailNotificationDetails().getJobName(),
-                record.getEmailNotificationDetails().getChildContextName(),
-                record.getEmailNotificationDetails().getMonitorType()
-            );
-            mongoRecord.setId(id);
-        }
+        MongoEmailNotificationDetailsRecordImpl mongoRecord = new MongoEmailNotificationDetailsRecordImpl();
+        mongoRecord.setId(generateId(record.getEmailNotificationDetails().getJobName()
+            , record.getEmailNotificationDetails().getChildContextName()
+            , record.getEmailNotificationDetails().getMonitorType()));
+        mongoRecord.setType(EMAIL_NOTIFICATION_DETAILS);
+        mongoRecord.setJobName(record.getEmailNotificationDetails().getJobName());
+        mongoRecord.setContextName(record.getEmailNotificationDetails().getContextName());
+        mongoRecord.setMonitorType(record.getEmailNotificationDetails().getMonitorType());
+        mongoRecord.setEmailNotificationDetails(record.getEmailNotificationDetails());
+        mongoRecord.setTimestamp(record.getTimestamp());
+        mongoRecord.setModifiedTimestamp(record.getModifiedTimestamp());
+        mongoRecord.setModifiedBy(record.getModifiedBy());
 
         // Set fields from EmailNotificationDetails if not already set
         if (mongoRecord.getJobName() == null || mongoRecord.getJobName().isEmpty()) {
