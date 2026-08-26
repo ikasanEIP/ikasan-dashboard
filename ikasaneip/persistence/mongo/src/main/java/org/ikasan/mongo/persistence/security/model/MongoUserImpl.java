@@ -186,7 +186,7 @@ public class MongoUserImpl implements User, UserLite {
         if (this.principalIds == null) {
             this.principalIds = new ArrayList<>();
         }
-        if (principal.getId() != null && !this.principalIds.contains(principal.getId().toString())) {
+        if (principal != null && principal.getId() != null && !this.principalIds.contains(principal.getId().toString())) {
             this.principalIds.add(principal.getId().toString());
         }
     }

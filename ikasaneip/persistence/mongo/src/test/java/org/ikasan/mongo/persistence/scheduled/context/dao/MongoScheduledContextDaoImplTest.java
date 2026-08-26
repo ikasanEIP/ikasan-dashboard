@@ -87,7 +87,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
+        ScheduledContextRecord found = dao.findById(record.getContextName());
         assertNotNull(found);
         assertEquals("test-context-1", found.getContextName());
         assertNotNull(found.getContext());
@@ -138,7 +138,7 @@ public class MongoScheduledContextDaoImplTest {
 
         dao.save(record);
 
-        ScheduledContextRecord found  = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
+        ScheduledContextRecord found  = dao.findById(record.getContextName());
 
         // Then
         assertEquals(initialTimestamp, found.getTimestamp()); // Original timestamp preserved
@@ -416,7 +416,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
+        ScheduledContextRecord found = dao.findById(record.getContextName());
         assertNotNull(found);
         ContextTemplate foundTemplate = found.getContext();
         assertNotNull(foundTemplate);
@@ -433,7 +433,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(record);
 
         // Then
-        ScheduledContextRecord found = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
+        ScheduledContextRecord found = dao.findById(record.getContextName());
         assertFalse(found.isDisabled());
 
         // When - Update to disabled = true
@@ -445,7 +445,7 @@ public class MongoScheduledContextDaoImplTest {
         dao.save(found);
 
         // Then - Denormalized fields should be updated
-        ScheduledContextRecord updated = dao.findById(record.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
+        ScheduledContextRecord updated = dao.findById(record.getContextName());
         assertTrue(updated.isDisabled());
         assertTrue(updated.isQuartzScheduleDrivenJobsDisabledForContext());
     }
