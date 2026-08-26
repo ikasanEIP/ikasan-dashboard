@@ -146,8 +146,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
-            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
-            .map(this::loadRoles)
+            .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
 
@@ -166,8 +165,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         addSortingAndPaging(query, filter, limit, offset);
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
-            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
-            .map(this::loadRoles)
+            .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
 
@@ -235,7 +233,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         if (result == null) {
             return null;
         }
-        return loadRoles(OBJECT_MAPPER.readValue(result.getPrincipal(), MongoIkasanPrincipalImpl.class));
+        return convertRecordToPrincipal(result);
     }
 
     /**
@@ -256,7 +254,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         if (result == null) {
             return null;
         }
-        return loadRoles(OBJECT_MAPPER.readValue(result.getPrincipal(), MongoIkasanPrincipalImpl.class));
+        return convertRecordToPrincipal(result);
     }
 
     /**
@@ -275,8 +273,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
-            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
-            .map(this::loadRoles)
+            .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
 
@@ -307,8 +304,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
-            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
-            .map(this::loadRoles)
+            .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
 
@@ -507,8 +503,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
-            .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
-            .map(this::loadRoles)
+            .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
 
@@ -591,23 +586,29 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
     }
 
     /**
-     * Loads roles for a principal from the role DAO.
+     * Converts a SolrIkasanPrincipalRecord to an IkasanPrincipal object.
      *
-     * @param principal the principal to load roles for
-     * @return the principal with roles loaded
+     * This private helper method deserializes the JSON principal string stored in the
+     * SolrIkasanPrincipalRecord into a SolrIkasanPrincipalImpl object using Jackson ObjectMapper.
+     *
+     * @param record the SolrIkasanPrincipalRecord to convert
+     * @return the deserialized IkasanPrincipal object
+     * @throws RuntimeException if the JSON deserialization fails
      */
-    private IkasanPrincipal loadRoles(MongoIkasanPrincipalImpl principal) {
-        if (principal.getRoleIds() != null && !principal.getRoleIds().isEmpty()) {
-            Set<Role> roles = new HashSet<>();
-            for (String roleId : principal.getRoleIds()) {
-                Role role = mongoRoleDaoImpl.getRoleById(roleId);
-                if (role != null) {
-                    roles.add(role);
-                }
+    private IkasanPrincipal convertRecordToPrincipal(MongoIkasanPrincipalRecord record) {
+        try {
+            IkasanPrincipal ikasanPrincipal = OBJECT_MAPPER.readValue(record.getPrincipal()
+                , MongoIkasanPrincipalImpl.class);
+
+            if(record.getRelatedRoleIdentifiers() != null) {
+                record.getRelatedRoleIdentifiers().forEach(roleId
+                    -> ikasanPrincipal.addRole(this.mongoRoleDaoImpl.getRoleById(roleId)));
             }
-            principal.setRoles(roles);
+
+            return ikasanPrincipal;
+        } catch (JacksonException e) {
+            throw new RuntimeException("Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipal! [" + record.getName() + "]", e);
         }
-        return principal;
     }
 
     /**
