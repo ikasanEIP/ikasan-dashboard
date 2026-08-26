@@ -265,7 +265,7 @@ public class MongoGeneralDaoImpl implements
     public void removeExpired() {
         long currentTime = System.currentTimeMillis();
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(EntityFields.EXPIRY).gt(0).lt(currentTime));
 
         long deletedCount = mongoTemplate.remove(query, MongoIkasanDocument.class).getDeletedCount();
         logger.info("Deleted {} expired documents", deletedCount);
