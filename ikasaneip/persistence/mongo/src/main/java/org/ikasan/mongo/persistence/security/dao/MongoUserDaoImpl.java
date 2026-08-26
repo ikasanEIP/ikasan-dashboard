@@ -217,7 +217,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public User getUser(String username) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").is(username));
+        query.addCriteria(Criteria.where(EntityFields.NAME).is(username));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         MongoUserRecord result = mongoTemplate.findOne(query, MongoUserRecord.class);
@@ -230,7 +230,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserByUsernameLike(String username) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("username").regex(".*" + username + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.NAME).regex(".*" + username + ".*", "i"));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -241,7 +241,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserByFirstnameLike(String firstname) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("firstName").regex(".*" + firstname + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.FIRST_NAME).regex(".*" + firstname + ".*", "i"));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -252,7 +252,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserBySurnameLike(String surname) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("surname").regex(".*" + surname + ".*", "i"));
+        query.addCriteria(Criteria.where(EntityFields.SURNAME).regex(".*" + surname + ".*", "i"));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -321,13 +321,10 @@ public class MongoUserDaoImpl implements UserDao {
      */
     private User loadPrincipals(MongoUserRecord userRecord) {
         MongoUserImpl user = OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class);
-        if (user.getPrincipalIds() != null && !user.getPrincipalIds().isEmpty()) {
-            user.getPrincipalIds().forEach(principalId -> {
-                IkasanPrincipal principal = this.ikasanPrincipalDao.findById(principalId);
-                if (principal != null) {
-                    user.addPrincipal(principal);
-                }
-            });
+
+        if(userRecord.getRelatedPrincipalIdentifiers() != null) {
+            userRecord.getRelatedPrincipalIdentifiers().forEach(principalId
+                -> user.addPrincipal(this.ikasanPrincipalDao.findById(principalId)));
         }
 
         return user;

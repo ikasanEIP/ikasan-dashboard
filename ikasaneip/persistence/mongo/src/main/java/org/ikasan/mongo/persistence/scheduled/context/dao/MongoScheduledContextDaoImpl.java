@@ -58,7 +58,7 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
         logger.debug("Finding ScheduledContextRecord by id: {}", id);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where(ID).is(id));
+        query.addCriteria(Criteria.where(ID).is(id + "-" + SCHEDULED_CONTEXT_TYPE));
         query.addCriteria(Criteria.where(TYPE).is(SCHEDULED_CONTEXT_TYPE));
 
         ScheduledContextRecord result = mongoTemplate.findOne(query, MongoScheduledContextRecordImpl.class);
