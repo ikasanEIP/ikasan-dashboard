@@ -1,11 +1,14 @@
 package org.ikasan.mongo.persistence.security.model;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.entity.EntityFields;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
+@Document(collection = MongoConstants.IKASAN_COLLECTION_NAME)
 public class MongoUserRecord {
 
     @Id
