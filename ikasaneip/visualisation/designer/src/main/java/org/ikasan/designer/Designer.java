@@ -1,6 +1,5 @@
 package org.ikasan.designer;
 
-import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
@@ -14,6 +13,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -198,7 +198,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         groupButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.group();
         });
-        groupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_GROUP.create().getElement());
+        groupButton.getElement().appendChild(VaadinIcon.GROUP.create().getElement());
         groupButton.getElement().setAttribute("title", getTranslation("tooltip.group-elements", UI.getCurrent().getLocale()));
 
         actions.add(groupButton);
@@ -208,7 +208,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         ungroupButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.ungroup();
         });
-        ungroupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_UNGROUP.create().getElement());
+        ungroupButton.getElement().appendChild(VaadinIcon.FAMILY.create().getElement());
         ungroupButton.getElement().setAttribute("title", getTranslation("tooltip.ungroup-elements", UI.getCurrent().getLocale()));
 
         actions.add(ungroupButton);
@@ -218,7 +218,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         toFrontButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.bringToFront();
         });
-        toFrontButton.getElement().appendChild(FontAwesome.Solid.CLONE.create().getElement());
+        toFrontButton.getElement().appendChild(VaadinIcon.BOOK.create().getElement());
         toFrontButton.getElement().setAttribute("title", getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()));
         actions.add(toFrontButton);
 
@@ -227,72 +227,62 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         toBackButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.sendToBack();
         });
-        toBackButton.getElement().appendChild(FontAwesome.Solid.WINDOW_RESTORE.create().getElement());
+        toBackButton.getElement().appendChild(VaadinIcon.SQUARE_SHADOW.create().getElement());
         toBackButton.getElement().setAttribute("title", getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()));
         actions.add(toBackButton, getDivider());
 
         // Undo
         Button undoButton = new Button();
-        undoButton.getElement().appendChild(FontAwesome.Solid.UNDO.create().getElement());
+        undoButton.getElement().appendChild(VaadinIcon.ARROW_BACKWARD.create().getElement());
         undoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.undo());
         undoButton.getElement().setAttribute("title", getTranslation("tooltip.undo", UI.getCurrent().getLocale()));
         actions.add(undoButton);
 
         // Redo
         Button redoButton = new Button();
-        redoButton.getElement().appendChild(FontAwesome.Solid.REDO.create().getElement());
+        redoButton.getElement().appendChild(VaadinIcon.ARROW_FORWARD.create().getElement());
         redoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.redo());
         redoButton.getElement().setAttribute("title", getTranslation("tooltip.redo", UI.getCurrent().getLocale()));
         actions.add(redoButton, getDivider());
 
         // Zoom in
         Button zoomInButton = new Button();
-        zoomInButton.getElement().appendChild(FontAwesome.Solid.PLUS.create().getElement());
+        zoomInButton.getElement().appendChild(VaadinIcon.PLUS.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
         zoomInButton.getElement().setAttribute("title", getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()));
         actions.add(zoomInButton);
 
         // Zoom out
         Button zoomOutButton = new Button();
-        zoomOutButton.getElement().appendChild(FontAwesome.Solid.MINUS.create().getElement());
+        zoomOutButton.getElement().appendChild(VaadinIcon.MINUS.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
         zoomOutButton.getElement().setAttribute("title", getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()));
         actions.add(zoomOutButton, getDivider());
 
         // Copy
         Button copyButton = new Button();
-        copyButton.getElement().appendChild(FontAwesome.Solid.COPY.create().getElement());
+        copyButton.getElement().appendChild(VaadinIcon.COPY.create().getElement());
         copyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.copy());
         copyButton.getElement().setAttribute("title", getTranslation("tooltip.copy", UI.getCurrent().getLocale()));
         actions.add(copyButton);
 
         // Paste
         Button pasteButton = new Button();
-        pasteButton.getElement().appendChild(FontAwesome.Solid.PASTE.create().getElement());
+        pasteButton.getElement().appendChild(VaadinIcon.PASTE.create().getElement());
         pasteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.paste());
         pasteButton.getElement().setAttribute("title", getTranslation("tooltip.paste", UI.getCurrent().getLocale()));
         actions.add(pasteButton);
 
         // Delete
         Button deleteButton = new Button();
-        deleteButton.getElement().appendChild(FontAwesome.Solid.REMOVE.create().getElement());
+        deleteButton.getElement().appendChild(VaadinIcon.TRASH.create().getElement());
         deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.delete());
         deleteButton.getElement().setAttribute("title", getTranslation("tooltip.delete", UI.getCurrent().getLocale()));
         actions.add(deleteButton, getDivider());
 
-
-        // Export as selected format
-        Button download = new Button();
-        download.getElement().appendChild(FontAwesome.Solid.FILE_DOWNLOAD.create().getElement());
-        download.getElement().setAttribute("title", getTranslation("tooltip.export-png", UI.getCurrent().getLocale()));
-        actions.add(download);
-        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportPng();
-        });
-
         // Open another design
         Button open = new Button();
-        open.getElement().appendChild(FontAwesome.Solid.FOLDER_OPEN.create().getElement());
+        open.getElement().appendChild(VaadinIcon.FOLDER_OPEN.create().getElement());
         open.getElement().setAttribute("title", getTranslation("tooltip.open-diagram", UI.getCurrent().getLocale()));
         actions.add(open);
         open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
@@ -311,7 +301,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
         // Save current design
         Button save = new Button();
-        save.getElement().appendChild(FontAwesome.Solid.SAVE.create().getElement());
+        save.getElement().appendChild(VaadinIcon.HARDDRIVE.create().getElement());
         save.getElement().setAttribute("title", getTranslation("tooltip.save-diagram", UI.getCurrent().getLocale()));
         actions.add(save, getDivider());
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
