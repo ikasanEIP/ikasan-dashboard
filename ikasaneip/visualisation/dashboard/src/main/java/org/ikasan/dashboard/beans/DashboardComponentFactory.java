@@ -139,7 +139,8 @@ public class DashboardComponentFactory
     public HarvestingSchedulerService harvestingSchedulerService(List<HarvestingJob> harvestingJobs)
     {
         HarvestingSchedulerService harvestingSchedulerService =  new HarvestingSchedulerServiceImpl
-            (SchedulerFactory.getInstance().getScheduler(), CachingScheduledJobFactory.getInstance(), harvestingJobs);
+            (SchedulerFactory.getInstance().getScheduler(), CachingScheduledJobFactory.getInstance()
+                , harvestingJobs, this.moduleName);
 
         harvestingSchedulerService.registerJobs();
         return harvestingSchedulerService;
