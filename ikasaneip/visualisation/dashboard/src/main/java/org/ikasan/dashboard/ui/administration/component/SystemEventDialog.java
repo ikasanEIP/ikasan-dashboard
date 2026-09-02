@@ -24,7 +24,7 @@ import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.spec.systemevent.SystemEvent;
-import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.spec.systemevent.SystemEventRecord;
 import org.ikasan.systemevent.model.SystemEventImpl;
 
 import java.io.ByteArrayInputStream;
@@ -89,12 +89,12 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
     public void populate(SystemEvent systemEvent) {
         SystemEventImpl systemEventImpl = null;
         try {
-            systemEventImpl = objectMapper.readValue(((SolrSystemEvent)systemEvent).getPayload(), SystemEventImpl.class);
+            systemEventImpl = objectMapper.readValue(((SystemEventRecord)systemEvent).getPayload(), SystemEventImpl.class);
             super.title.setText(getTranslation("header.system-event", UI.getCurrent().getLocale()));
             this.actionedByTf.setValue(systemEventImpl.getActor());
             this.contextTf.setValue(SystemEventFormatter.getContext(systemEventImpl));
 
-            this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(((SolrSystemEvent)systemEvent).getTimestampLong()));
+            this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(systemEvent.getTimestamp().getTime()));
 
             open(systemEventImpl.getAction(), systemEventImpl);
         }

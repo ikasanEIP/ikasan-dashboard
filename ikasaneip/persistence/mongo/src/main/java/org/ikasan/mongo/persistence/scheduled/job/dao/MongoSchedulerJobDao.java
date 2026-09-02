@@ -93,7 +93,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        if (limit > -1 && offset > -1) {
+        if (limit > 0 && offset > -1) {
             Pageable pageable = PageRequest.of(offset / limit, limit);
             query.with(pageable);
         }
@@ -202,7 +202,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
             sort = Sort.by(Sort.Direction.DESC, EntityFields.FLOW_NAME);
         }
 
-        if(limit > -1 && offset > -1) {
+        if(limit > 0 && offset > -1) {
             // Apply pagination
             Pageable pageable = PageRequest.of(offset / limit, limit, sort);
             query.with(pageable);

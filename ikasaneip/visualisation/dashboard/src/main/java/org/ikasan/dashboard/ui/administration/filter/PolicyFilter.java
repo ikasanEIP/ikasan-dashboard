@@ -2,7 +2,6 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.SolrPolicyImpl;
 import org.ikasan.spec.security.model.Policy;
 
 import java.util.Collection;

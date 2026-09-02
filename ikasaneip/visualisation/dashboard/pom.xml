@@ -374,10 +374,10 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-solr-initialisation</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.ikasan</groupId>-->
+<!--            <artifactId>ikasan-solr-initialisation</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.ikasan</groupId>
@@ -954,6 +954,12 @@
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-persistence-initialisation</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 

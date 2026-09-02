@@ -23,15 +23,16 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.designer.PositionedDialog;
+import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -52,8 +53,8 @@ import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
-import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -243,7 +244,7 @@ public class SchedulerJobInstanceGridWidget extends Div
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                             ContextInstance contextInstance) {
         // Create a modulesGrid bound to the list
-        SchedulerJobInstanceSearchFilter schedulerJobSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter schedulerJobSearchFilter = new SchedulerJobInstanceSearchFilterImpl();
         schedulerJobSearchFilter.setJobName(this.jobName);
         schedulerJobSearchFilter.setStatus(this.jobStatus);
         schedulerJobInstanceFilteringGrid = new SchedulerJobInstanceFilteringGrid(this.schedulerJobInstanceService, schedulerJobSearchFilter);
@@ -299,7 +300,7 @@ public class SchedulerJobInstanceGridWidget extends Div
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobInstanceRecord.getType()));
+            Text text = new Text(SchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobInstanceRecord.getType()));
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -874,7 +875,7 @@ public class SchedulerJobInstanceGridWidget extends Div
                     horizontalLayout.add(manuallySubmittedBy);
 
                     manuallySubmittedBy.addClickListener(event -> {
-                        SolrSystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
+                        SystemEventSearchFilter searchFilter = new SystemEventSearchFilterImpl();
                         searchFilter.setSubject(SystemEventConstants.SCHEDULED_JOB_SUBMITTED);
                         searchFilter.setActor(schedulerJobInstanceRecord.getManuallySubmittedBy());
                         searchFilter.setSearchTerm(schedulerJobInstanceRecord.getJobName());
@@ -964,7 +965,7 @@ public class SchedulerJobInstanceGridWidget extends Div
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName", this.jobName);
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
-            , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+            , SchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name())
                     .filter(instanceStatus -> !instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE.name())
@@ -1260,7 +1261,7 @@ public class SchedulerJobInstanceGridWidget extends Div
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
         if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-            SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
             filter.setContextInstanceId(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId());
             filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
             filter.setChildContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());

@@ -1,7 +1,6 @@
 package org.ikasan.orchestration.service.scheduled.context;
 
-import org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.context.ScheduledContextRecordLite;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextViewDao;

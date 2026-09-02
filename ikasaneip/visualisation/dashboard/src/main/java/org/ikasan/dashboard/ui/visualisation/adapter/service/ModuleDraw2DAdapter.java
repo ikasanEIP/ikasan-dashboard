@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.adapter.service;
 
 import org.apache.commons.text.WordUtils;
 import org.ikasan.dashboard.ui.visualisation.model.flow.*;
+import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.spec.component.endpoint.Broker;
@@ -68,11 +69,11 @@ public class ModuleDraw2DAdapter
     }
 
     /**
-     * Manages the creation of a Flow instance based on the provided metadata and configuration.
+     * Manages the creation of a Flowimpl instance based on the provided metadata and configuration.
      *
      * @param flowMetaData The metadata containing all details about the flow, including flow elements, transitions, consumer, and startup type.
      * @param configurationMetaDataMap A map of configuration metadata keyed by configuration name, used to configure flow elements.
-     * @return A fully constructed Flow instance based on the input metadata and configurations.
+     * @return A fully constructed Flowimpl instance based on the input metadata and configurations.
      */
     protected Flow manageFlow(FlowMetaData flowMetaData, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {

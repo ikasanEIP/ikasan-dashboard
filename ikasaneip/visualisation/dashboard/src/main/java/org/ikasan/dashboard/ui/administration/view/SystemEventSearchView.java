@@ -8,7 +8,6 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.Query;
@@ -24,11 +23,11 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IkasanSystemEventDocumentToCsvConverter;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventRecord;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
-import org.ikasan.systemevent.model.SolrSystemEvent;
-import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.ikasan.systemevent.model.SystemEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
     private SystemEventSearchService systemEventSearchService;
 
     private SystemEventFilteringGrid searchResultsGrid;
-    private SystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
+    private SystemEventSearchFilter searchFilter = new SystemEventSearchFilterImpl();
 
     private SystemEventSearchForm searchForm;
 
@@ -113,7 +112,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             }
             else {
                 try {
-                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                    horizontalLayout.add(objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                         , SystemEventImpl.class).getActor());
                 } catch (JsonProcessingException e) {
                     // Not much we can do if the event is not valid json.
@@ -136,7 +135,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             }
             else {
                 try {
-                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                    horizontalLayout.add(objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                         , SystemEventImpl.class).getSubject());
                 } catch (JsonProcessingException e) {
                     // Not much we can do if the event is not valid json.
@@ -158,7 +157,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             }
             else {
                 try {
-                    String action = objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                    String action = objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                         , SystemEventImpl.class).getAction();
                     if(action != null) {
                         horizontalLayout.add(action.length() > 200 ? action.substring(0, 200) + "..." : action);
@@ -176,7 +175,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
         this.searchResultsGrid.addColumn(LitRenderer.<SystemEvent>of(
             "<div>${item.date}</div>")
             .withProperty("date",
-                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(((SolrSystemEvent)ikasanSolrDocument).getTimestampLong())))
+                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp().getTime())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setKey("timestamp")

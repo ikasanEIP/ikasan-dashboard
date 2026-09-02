@@ -14,7 +14,6 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -24,14 +23,14 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import org.apache.commons.lang3.SerializationUtils;
+import org.ikasan.dashboard.cluster.service.JobParameterRefreshService;
+import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.dashboard.cluster.service.LeaderElectionService;
-import org.ikasan.dashboard.cluster.service.JobParameterRefreshService;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateEnableDisableEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
@@ -39,11 +38,11 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.SolrScheduledContextSearchFilterImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionException;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
-import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -114,7 +113,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private EmailNotificationDetailsService emailNotificationDetailsService;
     private EmailNotificationContextService emailNotificationContextService;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
-    private SubMenu activeContextSubMenu;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private JobParameterRefreshService jobParameterRefreshService;
     private LeaderElectionService leaderElectionService;
@@ -301,7 +299,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance
                 , this.contextVisualisationNodeDistance, this.userService, this.securityService);
             contextTemplateDialog.open();
-            contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
                 if (!dialogOpenedChangeEvent.isOpened()) {
                     this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -388,7 +385,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                               LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                               JobInitiationService jobInitiationService, UserService userService, SecurityService securityService) {
         // Create a modulesGrid bound to the list
-        ScheduledContextSearchFilter contextSearchFilter = new ScheduledContextSearchFilterImpl();
+        ScheduledContextSearchFilter contextSearchFilter = new SolrScheduledContextSearchFilterImpl();
         contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, contextSearchFilter);
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
@@ -487,7 +484,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                             current.access(() -> {
                                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
-                                this.updateActiveContextMenu();
 
                                 NotificationHelper.showUserNotification(getTranslation("notification.context-deleted-successfully"
                                     , UI.getCurrent().getLocale()));
@@ -532,7 +528,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService, this.schedulerJobService
                     , this.contextProfileService, record);
 
-                cloneContextTemplateDialog.addOpenedChangeListener(event -> this.updateActiveContextMenu());
                 cloneContextTemplateDialog.open();
             });
 
@@ -890,11 +885,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                     contextTemplate.getTimezone());
                                 // ui.access() required: this lambda runs on the widget's background executor thread,
                                 // not the Vaadin event thread. Calling refreshAll() directly from a non-Vaadin
-                                // thread is a threading violation in Vaadin Flow 24.x.
+                                // thread is a threading violation in Vaadin Flowimpl 24.x.
                                 if(ui != null && ui.isAttached()) {
                                     ui.access(() -> contextTemplateFilteringGrid.getDataProvider().refreshAll());
                                 }
-                                this.updateActiveContextMenu();
 
                                 String action = String.format("Job plan [%s] has been enabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_ENABLED, action, authentication.getName());
@@ -979,11 +973,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 this.scheduledContextService.save(record);
                                 // ui.access() required: this lambda runs on the widget's background executor thread,
                                 // not the Vaadin event thread. Calling refreshAll() directly from a non-Vaadin
-                                // thread is a threading violation in Vaadin Flow 24.x.
+                                // thread is a threading violation in Vaadin Flowimpl 24.x.
                                 if(ui != null && ui.isAttached()) {
                                     ui.access(() -> contextTemplateFilteringGrid.getDataProvider().refreshAll());
                                 }
-                                this.updateActiveContextMenu();
 
                                 String action = String.format("Job plan [%s] has been disabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_DISABLED, action, authentication.getName());
@@ -1167,28 +1160,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     }
 
     /**
-     * Helper method to update the contents of the active context menu.
-     */
-    private void updateActiveContextMenu() {
-        this.activeContextSubMenu.removeAll();
-        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(authentication);
-        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(authentication);
-
-        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(identifier -> {
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(identifier);
-            if(contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED)) return;
-            if (canAccessAllJobPlans || accessibleJobPlans.contains(contextMachine.getContext().getName())) {
-                this.activeContextSubMenu.addItem(contextMachine.getContext().getName() + " (" + identifier + ")", itemClickEvent -> {
-                    String route = RouteConfiguration.forSessionScope()
-                        .getUrl(ContextInstanceView.class, contextMachine.getContext().getId() + "_scheduledContextInstance");
-
-                    getUI().ifPresent(ui -> ui.getPage().open(route));
-                });
-            }
-        });
-    }
-
-    /**
      * Helper method to create the quick action menu item.
      *
      * @param menu
@@ -1229,11 +1200,11 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     @Override
     public void receiveBroadcast(ContextInstance event) {
         // ui.access() required: receiveBroadcast is called from the broadcaster's background executor
-        // thread. Vaadin Flow 24.x requires all UI mutations to run on the Vaadin event thread
+        // thread. Vaadin Flowimpl 24.x requires all UI mutations to run on the Vaadin event thread
         // (or via ui.access()). The null-check guards the race window between onDetach() setting
         // ui=null and unregister() removing this listener.
         if(this.ui != null && this.ui.isAttached()) {
-            this.ui.access(this::updateActiveContextMenu);
+            // nothing to do at the moment
         }
     }
 

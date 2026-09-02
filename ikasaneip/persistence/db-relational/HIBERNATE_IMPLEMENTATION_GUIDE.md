@@ -422,7 +422,7 @@ graph TD
    - Denormalizes `disabled` and `quartzScheduleDrivenJobsDisabledForContext` fields
 
 2. ✅ **ScheduledContextRecordLiteImpl** - COMPLETED
-   - Location: `org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl`
+   - Location: `org.ikasan.scheduled.context.model.SolrScheduledContextRecordLiteImpl`
    - Lightweight DTO for efficient list operations
    - No JSONB dependencies
 

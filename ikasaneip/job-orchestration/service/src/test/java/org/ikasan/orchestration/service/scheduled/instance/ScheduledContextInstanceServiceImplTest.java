@@ -1,8 +1,8 @@
 package org.ikasan.orchestration.service.scheduled.instance;
 
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditRecordImpl;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditRecordImpl;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
@@ -215,21 +215,21 @@ public class ScheduledContextInstanceServiceImplTest {
         serviceWithDeltaEnabled.saveAudit(mockAuditAggregateRecord, previous, updated);
 
         // Then
-        ArgumentCaptor<SolrScheduledContextInstanceAuditRecordImpl> auditCaptor =
-            ArgumentCaptor.forClass(SolrScheduledContextInstanceAuditRecordImpl.class);
+        ArgumentCaptor<ScheduledContextInstanceAuditRecordImpl> auditCaptor =
+            ArgumentCaptor.forClass(ScheduledContextInstanceAuditRecordImpl.class);
         verify(mockAuditDao, times(2)).save(auditCaptor.capture());
 
-        List<SolrScheduledContextInstanceAuditRecordImpl> savedAuditRecords = auditCaptor.getAllValues();
+        List<ScheduledContextInstanceAuditRecordImpl> savedAuditRecords = auditCaptor.getAllValues();
         assertEquals(2, savedAuditRecords.size());
 
         // Verify previous context instance audit record
-        SolrScheduledContextInstanceAuditRecordImpl previousRecord = savedAuditRecords.get(0);
+        ScheduledContextInstanceAuditRecordImpl previousRecord = savedAuditRecords.get(0);
         assertEquals("test-context", previousRecord.getContextName());
         assertEquals("prev-ctx-instance-1", previousRecord.getContextInstanceId());
         assertEquals(previous.getId(), previousRecord.getContextInstance().getId());
 
         // Verify updated context instance audit record
-        SolrScheduledContextInstanceAuditRecordImpl updatedRecord = savedAuditRecords.get(1);
+        ScheduledContextInstanceAuditRecordImpl updatedRecord = savedAuditRecords.get(1);
         assertEquals("test-context", updatedRecord.getContextName());
         assertEquals("updated-ctx-instance-1", updatedRecord.getContextInstanceId());
         assertEquals(updated.getId(), updatedRecord.getContextInstance().getId());
@@ -385,11 +385,11 @@ public class ScheduledContextInstanceServiceImplTest {
         serviceWithDeltaEnabled.saveAudit(mockAuditAggregateRecord, previous, updated);
 
         // Then
-        ArgumentCaptor<SolrScheduledContextInstanceAuditRecordImpl> captor =
-            ArgumentCaptor.forClass(SolrScheduledContextInstanceAuditRecordImpl.class);
+        ArgumentCaptor<ScheduledContextInstanceAuditRecordImpl> captor =
+            ArgumentCaptor.forClass(ScheduledContextInstanceAuditRecordImpl.class);
         verify(mockAuditDao, times(2)).save(captor.capture());
 
-        List<SolrScheduledContextInstanceAuditRecordImpl> savedRecords = captor.getAllValues();
+        List<ScheduledContextInstanceAuditRecordImpl> savedRecords = captor.getAllValues();
         String previousAuditId = savedRecords.get(0).getId();
         String updatedAuditId = savedRecords.get(1).getId();
 

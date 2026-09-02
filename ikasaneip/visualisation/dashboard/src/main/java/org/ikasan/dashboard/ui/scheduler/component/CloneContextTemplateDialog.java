@@ -20,7 +20,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
-import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -135,7 +135,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                         clonedJobs.add(job);
                     });
 
-                    ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+                    ContextProfileSearchFilter searchFilter = new ContextProfileSearchFilterImpl();
                     searchFilter.setContextName(contextToClone.getContextName());
                     SearchResults<ContextProfileRecord> searchResults
                         = contextProfileService.findByFilter(searchFilter, -1, -1, null, null);

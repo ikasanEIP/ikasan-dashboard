@@ -5,8 +5,8 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 
-import static org.ikasan.solr.dao.SolrGeneralDaoImpl.DESCENDING;
 import static org.ikasan.spec.entity.EntityFields.START_TIME;
 
 public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServiceBase implements Runnable {
@@ -112,10 +111,11 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
                 if(this.scheduledContextRecord.getContext().isEndJobPlanUponCompletion()) {
-                    ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+                    ContextInstanceSearchFilter filter = new ContextInstanceSearchFilterImpl();
                     filter.setContextInstanceNames(List.of(this.scheduledContextRecord.getContext().getName()));
                     filter.setStatus(InstanceStatus.ENDED.toString());
-                    SearchResults<ScheduledContextInstanceRecord> results = super.scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, 1, 0, START_TIME, DESCENDING);
+                    SearchResults<ScheduledContextInstanceRecord> results = super.scheduledContextInstanceService
+                        .getScheduledContextInstancesByFilter(filter, 1, 0, START_TIME, "DESCENDING");
 
                     if(results != null && results.getTotalNumberOfResults() > 0 && QuartzTimeWindowChecker.withinOperatingWindow(contextInstance.getTimezone()
                         , contextInstance.getTimeWindowStart(), contextInstance.getContextTtlMilliseconds(), new Date(results.getResultList().get(0).getContextInstance().getStartTime()))) {

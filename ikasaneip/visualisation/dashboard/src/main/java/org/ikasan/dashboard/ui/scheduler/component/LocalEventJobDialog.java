@@ -128,10 +128,11 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.add(this.createConfigurationForm());
         layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
+        super.content.add(buttonLayout);
+        super.content.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
     }
 
     /**

@@ -5,12 +5,12 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.context.ScheduledContextRecordLiteImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceAggregateJobStatusImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
-import org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -259,11 +259,14 @@ public abstract class AbstractSchedulerViewTest extends UITest {
      * @return List of ContextInstanceAggregateJobStatus representing the aggregate statuses of context instances
      */
     protected List<ContextInstanceAggregateJobStatus> getAggregateContextInstanceStatuses() {
-        ContextInstanceAggregateJobStatus aggregateContextInstanceStatus = new SolrContextInstanceAggregateJobStatusImpl("contextInstanceId",
-            "contextName", Map.of(InstanceStatus.WAITING.name(), 1, InstanceStatus.RUNNING.name(), 5, InstanceStatus.COMPLETE.name(), 15,
-            InstanceStatus.SKIPPED.name(), 0, InstanceStatus.ERROR.name(), 0, InstanceStatus.ON_HOLD.name(), 1, InstanceStatus.LOCK_QUEUED.name(), 0), true);
+        ContextInstanceAggregateJobStatusImpl aggregateContextInstanceStatus = new ContextInstanceAggregateJobStatusImpl("contextInstanceId",
+            "contextName");
+
+        aggregateContextInstanceStatus.setStatusCounts( Map.of(InstanceStatus.WAITING, 1, InstanceStatus.RUNNING, 5, InstanceStatus.COMPLETE, 15,
+            InstanceStatus.SKIPPED, 0, InstanceStatus.ERROR, 0, InstanceStatus.ON_HOLD, 1, InstanceStatus.LOCK_QUEUED, 0));
 
         aggregateContextInstanceStatus.setRepeatingJobsStatusCounts(Map.of(InstanceStatus.COMPLETE.name(), 5, InstanceStatus.ERROR.name(), 2));
+        aggregateContextInstanceStatus.setContainsRepeatableJobs(true);
 
         return List.of(aggregateContextInstanceStatus);
     }

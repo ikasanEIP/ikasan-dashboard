@@ -3,24 +3,25 @@ package org.ikasan.orchestration.service.context.util;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationContextRecordImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsRecordImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.utils.TestSchedulerJobRecord;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextRecordImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -765,7 +766,7 @@ public class ContextExportZipUtilsTest {
 
         // Creating 9 jobs, 3 files, 3 schedulers and 3 event base ones.
         for (int i = 0; i < 3; i++) {
-            SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+            FileEventDrivenJobImpl solrFileEventDrivenJob = new FileEventDrivenJobImpl();
             solrFileEventDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
             solrFileEventDrivenJob.setJobName(contextTemplate.getName() + "jobName-fe" + i);
             solrFileEventDrivenJob.setIdentifier(identifiers.get(i));
@@ -780,7 +781,7 @@ public class ContextExportZipUtilsTest {
             fileRecord.setId(solrFileEventDrivenJob.getAgentName() + "_" + solrFileEventDrivenJob.getJobName());
             schedulerJobRecords.add(fileRecord);
 
-            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            InternalEventDrivenJobImpl solrInternalEventDrivenJob = new InternalEventDrivenJobImpl();
             solrInternalEventDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
             solrInternalEventDrivenJob.setJobName(contextTemplate.getName() + "jobName-ce" + i);
             solrInternalEventDrivenJob.setChildContextNames(List.of("child"));
@@ -794,7 +795,7 @@ public class ContextExportZipUtilsTest {
             eventRecord.setId(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
             schedulerJobRecords.add(eventRecord);
 
-            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJobTemplate = new SolrInternalEventDrivenJobImpl();
+            InternalEventDrivenJobImpl solrInternalEventDrivenJobTemplate = new InternalEventDrivenJobImpl();
             solrInternalEventDrivenJobTemplate.setAgentName(contextTemplate.getName() + "agentName" + i);
             solrInternalEventDrivenJobTemplate.setJobName(contextTemplate.getName() + "jobName-cet" + i);
             solrInternalEventDrivenJobTemplate.setIdentifier(identifiers.get(i));
@@ -808,7 +809,7 @@ public class ContextExportZipUtilsTest {
             templateRecord.setId(solrInternalEventDrivenJobTemplate.getAgentName() + "_" + solrInternalEventDrivenJobTemplate.getJobName());
             schedulerJobRecords.add(templateRecord);
 
-            SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+            QuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
             solrQuartzScheduleDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
             solrQuartzScheduleDrivenJob.setJobName(contextTemplate.getName() + "jobName-qe" + i);
             solrQuartzScheduleDrivenJob.setIdentifier(identifiers.get(i+20));
@@ -822,7 +823,7 @@ public class ContextExportZipUtilsTest {
             quartzRecord.setId(solrQuartzScheduleDrivenJob.getAgentName() + "_" + solrQuartzScheduleDrivenJob.getJobName());
             schedulerJobRecords.add(quartzRecord);
 
-            SolrGlobalEventJobImpl globalEventJob = new SolrGlobalEventJobImpl();
+            GlobalEventJobImpl globalEventJob = new GlobalEventJobImpl();
             globalEventJob.setJobName(contextTemplate.getName() + "jobName-ge" + i);
             globalEventJob.setAgentName(contextTemplate.getName() + "agentName" + i);
             globalEventJob.setChildContextNames(List.of("child"));
@@ -831,7 +832,9 @@ public class ContextExportZipUtilsTest {
 
             if(withGlobalEvents) {
                 globalEventJob.setIdentifier(identifiers.get(i+30));
-                contextTemplate.getScheduledJobs().add(globalEventJob);
+                List<SchedulerJob> jobs = contextTemplate.getScheduledJobs();
+                jobs.add(globalEventJob);
+                contextTemplate.setScheduledJobs(jobs);
             }
 
             TestSchedulerJobRecord globalRecord = new TestSchedulerJobRecord();
@@ -852,11 +855,11 @@ public class ContextExportZipUtilsTest {
     private static List<EmailNotificationContextRecord> createListOfEmailNotificationConext(String contextName) {
         List<EmailNotificationContextRecord> records = new ArrayList<>();
 
-        SolrEmailNotificationContextRecordImpl r = new SolrEmailNotificationContextRecordImpl();
+        EmailNotificationContextRecordImpl r = new EmailNotificationContextRecordImpl();
         r.setId(contextName);
         r.setContextName(contextName);
 
-        SolrEmailNotificationContextImpl email = new SolrEmailNotificationContextImpl();
+        EmailNotificationContextImpl email = new EmailNotificationContextImpl();
         email.setContextName(contextName);
         r.setEmailNotificationContext(email);
         records.add(r);
@@ -875,13 +878,13 @@ public class ContextExportZipUtilsTest {
 
         // Create 3 notification
         for (int i = 0; i < 3; i++) {
-            SolrEmailNotificationDetailsRecord r = new SolrEmailNotificationDetailsRecord();
+            EmailNotificationDetailsRecord r = new EmailNotificationDetailsRecordImpl();
             r.setContextName(contextName);
             r.setJobName("jobName-" + i);
             r.setId("jobName-" + i + "-" + contextName + "-child-" + i + "-ERROR");
             r.setMonitorType("ERROR");
 
-            SolrEmailNotificationDetails email = new SolrEmailNotificationDetails();
+            EmailNotificationDetails email = new EmailNotificationDetailsImpl();
             email.setContextName(contextName);
             email.setChildContextName(contextName + "-child-" + i);
             email.setJobName("jobName-" + i);

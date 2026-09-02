@@ -6,7 +6,7 @@ import org.ikasan.designer.pallet.DesignerItemIdentifier;
 public class Destination extends Node
 {
     /**
-     * Constructs a new Destination object.
+     * Constructs a new DestinationImpl object.
      *
      * @param id the unique identifier for the destination, represented as a DesignerItemIdentifier
      * @param name the name of the destination

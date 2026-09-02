@@ -92,7 +92,7 @@ public class MongoGeneralServiceImplTest {
         assertNotNull("Results should not be null", results);
         assertEquals("Should have 1 result", 1, results.getResultList().size());
         assertEquals("Module should match", "module1", results.getResultList().get(0).getModuleName());
-        assertEquals("Flow should match", "flow1", results.getResultList().get(0).getFlowName());
+        assertEquals("Flowimpl should match", "flow1", results.getResultList().get(0).getFlowName());
     }
 
     @Test

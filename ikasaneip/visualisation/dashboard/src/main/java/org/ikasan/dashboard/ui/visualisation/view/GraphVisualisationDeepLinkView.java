@@ -8,13 +8,11 @@ import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
@@ -24,7 +22,6 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.search.service.ESBSearchService;
-import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,7 +49,6 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     private TriggerService triggerRestService;
     private ConfigurationMetaDataService configurationMetadataService;
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
     private HospitalAuditService hospitalAuditService;
     private ResubmissionRestServiceImpl resubmissionRestService;
     private ReplayRestServiceImpl replayRestService;
@@ -73,11 +69,10 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
 
     private DateFormatter dateFormatter;
 
-    public GraphVisualisationDeepLinkView(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService, ModuleControlService moduleControlRestService,
+    public GraphVisualisationDeepLinkView(@Qualifier("esbSearchService") ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService, ModuleControlService moduleControlRestService,
                                           @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService,
                                           @Qualifier("configurationMetadataService") ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
-                                          SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                                           @Qualifier("hospitalAuditService") HospitalAuditService hospitalAuditService,
                                           ResubmissionRestServiceImpl resubmissionRestService,
                                           ReplayRestServiceImpl replayRestService,
@@ -93,7 +88,6 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
         this.configurationRestService = configurationRestService;
         this.configurationMetadataService = configurationMetadataService;
         this.businessStreamMetaDataService = businessStreamMetaDataService;
-        this.solrGeneralService = solrGeneralService;
         this.hospitalAuditService = hospitalAuditService;
         this.resubmissionRestService = resubmissionRestService;
         this.replayRestService = replayRestService;

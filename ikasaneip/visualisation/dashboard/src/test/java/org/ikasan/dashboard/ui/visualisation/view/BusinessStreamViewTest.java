@@ -68,11 +68,11 @@ public class BusinessStreamViewTest extends UITest
 
         BusinessStreamMetaDataImpl businessStreamMetaData = new BusinessStreamMetaDataImpl();
         businessStreamMetaData.setJson(loadDataFile(BUSINESS_STREAM_JSON));
-        businessStreamMetaData.setName("BusinessStream");
+        businessStreamMetaData.setName("BusinessStreamImpl");
         businessStreamMetaData.setId("id");
         businessStreamMetaData.setDescription("description");
 
-        graphView.createBusinessStreamGraph("BusinessStream"
+        graphView.createBusinessStreamGraph("BusinessStreamImpl"
             , businessStreamMetaData);
 
         DesignerCanvas designerCanvas = _get(DesignerCanvas.class);

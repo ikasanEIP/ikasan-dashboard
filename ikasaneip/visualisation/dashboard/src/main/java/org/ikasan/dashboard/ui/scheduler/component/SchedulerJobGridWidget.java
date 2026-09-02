@@ -25,9 +25,9 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisu
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.NewSchedulerJobEventBroadcaster;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -233,7 +233,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                             LogStreamingService logStreamingService) {
         // Create a modulesGrid bound to the list
-        SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SchedulerJobSearchFilterImpl();
         if(this.jobName != null) {
             schedulerJobSearchFilter.setJobNameFilter(this.jobName);
         }
@@ -292,7 +292,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
+            Text text = new Text(SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -869,7 +869,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         }
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName", this.jobName);
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
-            , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+            , SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
 
         HashMap<String, String> heldSkippedMap = new HashMap<>();
         heldSkippedMap.put(getTranslation("filter-label.held", UI.getCurrent().getLocale()), InstanceStatus.ON_HOLD.name());

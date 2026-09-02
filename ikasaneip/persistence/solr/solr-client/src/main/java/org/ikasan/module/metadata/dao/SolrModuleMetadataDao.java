@@ -5,6 +5,7 @@ import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.module.metadata.model.*;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -171,13 +172,13 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
     /**
      * Get using offset with filtering capabilities.
      *
-     * @param modulesNames
+     * @param moduleNames
      * @param startOffset
      * @param resultSize
      * @return
      */
     @Override
-    public ModuleMetadataSearchResults find(List<String> modulesNames, Integer startOffset, Integer resultSize)
+    public ModuleMetadataSearchResults find(List<String> moduleNames, Integer startOffset, Integer resultSize)
     {
         String queryString = "type:\"" + MODULE_METADATA + "\"";
 
@@ -188,9 +189,17 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
 
         StringBuffer moduleNamesBuffer = new StringBuffer();
 
-        if(modulesNames != null && modulesNames.size() > 0)
+        if(moduleNames != null && moduleNames.size() == 1
+            && moduleNames.get(0).startsWith("*") && moduleNames.get(0).endsWith("*")) {
+            String moduleNameFilter = moduleNames.get(0);
+            moduleNames.clear();
+            moduleNames.add("*" + ClientUtils.escapeQueryChars
+                (moduleNameFilter.substring(1, moduleNameFilter.length()-1)) + "*");
+        }
+
+        if(moduleNames != null && moduleNames.size() > 0)
         {
-            moduleNamesBuffer.append(this.buildPredicate(ID, modulesNames));
+            moduleNamesBuffer.append(this.buildPredicate(ID, moduleNames));
         }
 
         query.setFilterQueries(moduleNamesBuffer.toString());

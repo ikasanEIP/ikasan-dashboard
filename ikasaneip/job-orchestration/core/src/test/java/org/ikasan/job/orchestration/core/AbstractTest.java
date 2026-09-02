@@ -11,13 +11,9 @@ import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPrope
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
-import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.instance.model.SolrBridgingJobInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
@@ -484,7 +480,7 @@ public class AbstractTest
     public Map<String, BridgingJobInstance> loadBridgingJobInstanceMap(ContextTemplate contextTemplate, ContextInstance contextInstance) {
         Map<String, BridgingJobInstance> contextStartJobInstanceMap = ContextHelper.getBridgingJobsFromContext(contextTemplate).stream()
             .map(localEventJob -> {
-                BridgingJobInstance bridgingJobInstance = new SolrBridgingJobInstanceImpl();
+                BridgingJobInstance bridgingJobInstance = new BridgingJobInstanceImpl();
                 bridgingJobInstance.setJobName(localEventJob.getJobName());
                 bridgingJobInstance.setContextName(contextTemplate.getName());
                 bridgingJobInstance.setContextInstanceId(contextInstance.getId());

@@ -39,7 +39,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
     @Override
     public void save(InternalEventDrivenJobRecord event) {
-        MongoInternalEventDrivenJobRecordImpl mongoRecord = (MongoInternalEventDrivenJobRecordImpl) event;
+        MongoInternalEventDrivenJobRecordImpl mongoRecord = new MongoInternalEventDrivenJobRecordImpl();
 
         mongoRecord.setType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
 
@@ -59,7 +59,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
         mongoRecord.setContextName(job.getContextName());
         mongoRecord.setAgentName(job.getAgentName());
         mongoRecord.setJobName(job.getJobName());
-        mongoRecord.setTimestamp(mongoRecord.getTimestamp());
+        mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
 
         // only update modified by field if populated.

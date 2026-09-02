@@ -105,7 +105,20 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (childContextName != null ? childContextName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return super.equals(other);
+    }
+
+    @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
+
 }

@@ -57,7 +57,7 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
                 + event.getJobName() + "_" + job.getContextName());
         }
         mongoRecord.setGlobalEventJob(job);
-        mongoRecord.setContextName(event.getContextName());
+        mongoRecord.setContextName(job.getContextName());
         mongoRecord.setAgentName(event.getAgentName());
         mongoRecord.setJobName(event.getJobName());
         mongoRecord.setDisplayName(event.getGlobalEventJob().getDisplayName());
