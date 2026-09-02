@@ -1,11 +1,11 @@
 package org.ikasan.notification.monitor.mock;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.instance.model.SolrFileEventDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.instance.FileEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceRecordImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -59,11 +59,11 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
         List<SchedulerJobInstanceRecord> list = new ArrayList<>();
 
-        SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
+        SchedulerJobInstanceRecord record = new SchedulerJobInstanceRecordImpl();
 
         if (type.equalsIgnoreCase("file-notify")) {
 
-            FileEventDrivenJobInstance fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
+            FileEventDrivenJobInstance fileEventDrivenJobInstance = new FileEventDrivenJobInstanceImpl();
             fileEventDrivenJobInstance.setCronExpression("0 0/1 05-23 ? * MON-SUN *");
             fileEventDrivenJobInstance.setSlaCronExpression("0 0/1 05-23 ? * MON-SUN *");
             fileEventDrivenJobInstance.setJobName("job-1");
@@ -74,7 +74,7 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
         } else if (type.equalsIgnoreCase("file-no-notify")) {
 
-            FileEventDrivenJobInstance fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
+            FileEventDrivenJobInstance fileEventDrivenJobInstance = new FileEventDrivenJobInstanceImpl();
             fileEventDrivenJobInstance.setSlaCronExpression("0 0/1 05-23 ? * MON-SUN *");
             fileEventDrivenJobInstance.setJobName("job-1");
             fileEventDrivenJobInstance.setChildContextNames(Arrays.asList("context-instance-1"));
@@ -85,10 +85,10 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
         }
         else if (type.equalsIgnoreCase("internal")) {
 
-            InternalEventDrivenJobInstance internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
+            InternalEventDrivenJobInstance internalEventDrivenJobInstance = new InternalEventDrivenJobInstanceImpl();
             internalEventDrivenJobInstance.setStatus(InstanceStatus.COMPLETE);
 
-            ScheduledProcessEvent scheduledProcessEvent = new SolrScheduledProcessEvent();
+            ScheduledProcessEvent scheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
             scheduledProcessEvent.setFireTime(DateUtils.addMinutes(new Date(), -15).getTime());
             scheduledProcessEvent.setCompletionTime(new Date().getTime());
 

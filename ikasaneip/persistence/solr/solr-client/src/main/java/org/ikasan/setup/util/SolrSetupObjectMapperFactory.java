@@ -1,8 +1,8 @@
 package org.ikasan.setup.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.ikasan.setup.model.DashboardSetupItem;
 import org.ikasan.setup.model.SolrDashboardSetupItemImpl;
+import org.ikasan.spec.persistence.model.DashboardSetupItem;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;

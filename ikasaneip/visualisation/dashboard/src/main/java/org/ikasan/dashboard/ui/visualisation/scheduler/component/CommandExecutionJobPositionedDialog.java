@@ -19,7 +19,7 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.designer.PositionedDialog;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -188,7 +188,7 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
 
         TextArea last5ExecutionDurations = new TextArea(getTranslation("label.last-5-execution-durations", UI.getCurrent().getLocale()));
 
-        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setJobName(this.schedulerJobInstanceRecord.getJobName());
         filter.setContextName(this.contextInstance.getName());
         last5ExecutionDurations.setValue(

@@ -6,12 +6,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.security.dao.SolrIkasanPrincipalDaoImpl;
-import org.ikasan.security.dao.SolrPolicyDaoImpl;
-import org.ikasan.security.dao.SolrRoleDaoImpl;
-import org.ikasan.security.dao.SolrUserDaoImpl;
-import org.ikasan.solr.initialisation.core.SolrDataJobException;
-import org.ikasan.solr.initialisation.security.BaselineSecurityDataLoader;
+import org.ikasan.persistence.initialisation.core.DataJobException;
+import org.ikasan.persistence.initialisation.security.BaselineSecurityDataLoader;
 import org.ikasan.spec.security.dao.IkasanPrincipalDao;
 import org.ikasan.spec.security.dao.PolicyDao;
 import org.ikasan.spec.security.dao.RoleDao;
@@ -55,7 +51,7 @@ public class RoleManagementViewTest extends UITest
             try {
                 baselineSecurityDataLoader.execute();
                 baselineDataLoaded = true;
-            } catch (SolrDataJobException e) {
+            } catch (DataJobException e) {
                 throw new RuntimeException(e);
             }
         }

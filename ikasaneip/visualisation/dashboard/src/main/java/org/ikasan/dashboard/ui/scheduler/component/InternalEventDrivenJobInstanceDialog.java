@@ -35,9 +35,9 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -219,7 +219,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
         }
 
-        this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
+        this.internalEventDrivenJobInstance = new InternalEventDrivenJobInstanceImpl();
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }

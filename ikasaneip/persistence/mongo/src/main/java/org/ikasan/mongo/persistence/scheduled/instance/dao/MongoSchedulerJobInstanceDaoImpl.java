@@ -1,12 +1,15 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
+import org.ikasan.mongo.persistence.scheduled.instance.model.MongoContextInstanceAggregateJobStatusImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoSchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +26,8 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.ikasan.spec.entity.EntityFields.TYPE;
 
 /**
  * MongoDB implementation of SchedulerJobInstanceDao.
@@ -60,12 +65,15 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
     @Override
     public void save(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         logger.debug("Saving SchedulerJobInstanceRecord: {}", schedulerJobInstanceRecord.getId());
+        MongoSchedulerJobInstanceRecordImpl mongoRecord;
 
         if (!(schedulerJobInstanceRecord instanceof MongoSchedulerJobInstanceRecordImpl)) {
-            throw new IllegalArgumentException("schedulerJobInstanceRecord must be an instance of MongoSchedulerJobInstanceRecordImpl");
+            mongoRecord = this.convert(schedulerJobInstanceRecord.getSchedulerJobInstance());
+        }
+        else {
+            mongoRecord = (MongoSchedulerJobInstanceRecordImpl) schedulerJobInstanceRecord;
         }
 
-        MongoSchedulerJobInstanceRecordImpl mongoRecord = (MongoSchedulerJobInstanceRecordImpl) schedulerJobInstanceRecord;
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
 
         repository.save(mongoRecord);
@@ -75,13 +83,106 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
     public void save(List<SchedulerJobInstanceRecord> schedulerJobInstanceRecords) {
         List<MongoSchedulerJobInstanceRecordImpl> records = schedulerJobInstanceRecords.stream()
                 .map(record -> {
-                    MongoSchedulerJobInstanceRecordImpl mongoRecord = (MongoSchedulerJobInstanceRecordImpl) record;
-                    mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
-                    return mongoRecord;
+                    if(!(record instanceof MongoSchedulerJobInstanceRecordImpl)) {
+                        return this.convert(record.getSchedulerJobInstance());
+                    }
+                    else {
+                        MongoSchedulerJobInstanceRecordImpl mongoRecord = (MongoSchedulerJobInstanceRecordImpl) record;
+                        mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+                        return mongoRecord;
+                    }
                 })
                 .collect(Collectors.toList());
 
         repository.saveAll(records);
+    }
+
+    private MongoSchedulerJobInstanceRecordImpl convert(SchedulerJobInstance schedulerJobInstance) {
+        MongoSchedulerJobInstanceRecordImpl instanceRecord = new MongoSchedulerJobInstanceRecordImpl();
+
+        if(schedulerJobInstance instanceof FileEventDrivenJobInstance) {
+            instanceRecord.setId(schedulerJobInstance.getJobName()
+                + "_" + schedulerJobInstance.getContextInstanceId()
+                + "_" + schedulerJobInstance.getChildContextName()
+                + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+            instanceRecord.setType(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
+            instanceRecord.setId(schedulerJobInstance.getJobName()
+                + "_" + schedulerJobInstance.getContextInstanceId()
+                + "_" + schedulerJobInstance.getChildContextName()
+                + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            instanceRecord.setType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            instanceRecord.setTargetResidingContextOnly(((InternalEventDrivenJobInstance) schedulerJobInstance)
+                .isTargetResidingContextOnly());
+            instanceRecord.setParticipatesInLock(((InternalEventDrivenJobInstance) schedulerJobInstance)
+                .isParticipatesInLock());
+        }
+        else if(schedulerJobInstance instanceof QuartzScheduleDrivenJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof GlobalEventJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof ContextStartJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.CONTEXT_START_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.CONTEXT_START_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof ContextTerminalJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof LocalEventJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.LOCAL_EVENT_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.LOCAL_EVENT_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstance instanceof BridgingJobInstance) {
+                instanceRecord.setId(schedulerJobInstance.getJobName()
+                    + "_" + schedulerJobInstance.getContextInstanceId()
+                    + "_" + schedulerJobInstance.getChildContextName()
+                    + "_" + JobConstants.BRIDGING_JOB_INSTANCE);
+                instanceRecord.setType(JobConstants.BRIDGING_JOB_INSTANCE);
+        }
+
+        if(schedulerJobInstance.getScheduledProcessEvent() != null) {
+            instanceRecord.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getFireTime());
+            instanceRecord.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
+        }
+
+        instanceRecord.setStatus(schedulerJobInstance.isErrorAcknowledged() != null
+            && schedulerJobInstance.isErrorAcknowledged()
+            && schedulerJobInstance.getStatus() != null
+            && schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)
+            ? InstanceStatus.ERROR_ACKNOWLEDGED.name() : schedulerJobInstance.getStatus().name());
+
+        instanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+        instanceRecord.setContextName(schedulerJobInstance.getContextName());
+        instanceRecord.setDisplayName(schedulerJobInstance.getDisplayName());
+        instanceRecord.setJobName(schedulerJobInstance.getJobName());
+        instanceRecord.setTimestamp(System.currentTimeMillis());
+        instanceRecord.setContextInstanceId(schedulerJobInstance.getContextInstanceId());
+        instanceRecord.setChildContextName(schedulerJobInstance.getChildContextName());
+        instanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+        instanceRecord.setModifiedTimestamp(System.currentTimeMillis());
+
+        return instanceRecord;
     }
 
     @Override
@@ -93,9 +194,9 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         logger.debug("Finding job instances by contextInstanceId: {}, limit={}, offset={}, sortField={}, sortDirection={}",
             contextInstanceId, limit, offset, sortField, sortDirection);
 
-        Query query = new Query(Criteria.where(EntityFields.COMPONENT_NAME).is(contextInstanceId));
-
-        return executeQueryWithPagination(query, limit, offset, sortField, sortDirection);
+        SchedulerJobInstanceSearchFilterImpl filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        return this.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
     }
 
     @Override
@@ -107,9 +208,9 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         logger.debug("Finding job instances by contextName: {}, limit={}, offset={}, sortField={}, sortDirection={}",
             contextName, limit, offset, sortField, sortDirection);
 
-        Query query = new Query(Criteria.where(EntityFields.FLOW_NAME).is(contextName));
-
-        return executeQueryWithPagination(query, limit, offset, sortField, sortDirection);
+        SchedulerJobInstanceSearchFilterImpl filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextName(contextName);
+        return this.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
     }
 
     @Override
@@ -155,9 +256,17 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             return Collections.emptyList();
         }
 
-        // Build aggregation pipeline
-        MatchOperation matchStage = Aggregation.match(Criteria.where(EntityFields.COMPONENT_NAME).in(contextInstanceIds));
+        List<Criteria> typeOrCriteria = new ArrayList<>(List.of(
+            Criteria.where(EntityFields.TYPE).is(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.GLOBAL_EVENT_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.LOCAL_EVENT_JOB_INSTANCE)));
 
+        MatchOperation matchStage = Aggregation.match(
+            Criteria.where(EntityFields.COMPONENT_NAME).in(contextInstanceIds)
+                .orOperator(typeOrCriteria)
+        );
         GroupOperation groupStage = Aggregation.group(EntityFields.COMPONENT_NAME, EntityFields.STATUS)
             .count().as("statusCount")
             .first(EntityFields.FLOW_NAME).as("contextName");
@@ -167,7 +276,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, MongoConstants.IKASAN_COLLECTION_NAME, Map.class);
 
         // Process results into ContextInstanceAggregateJobStatus objects
-        Map<String, ContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();
+        Map<String, MongoContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();
 
         for (Map<String, Object> result : results.getMappedResults()) {
             @SuppressWarnings("unchecked")
@@ -177,9 +286,9 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             Integer count = (Integer) result.get("statusCount");
             String contextName = (String) result.get("contextName");
 
-            ContextInstanceAggregateJobStatusImpl aggregate = aggregateMap.computeIfAbsent(
+            MongoContextInstanceAggregateJobStatusImpl aggregate = aggregateMap.computeIfAbsent(
                 contextInstanceId,
-                id -> new ContextInstanceAggregateJobStatusImpl(id, contextName)
+                id -> new MongoContextInstanceAggregateJobStatusImpl(id, contextName)
             );
 
             try {
@@ -212,9 +321,16 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         // For this implementation, we filter out jobs where targetResidingContextOnly = false
         // to avoid counting duplicated jobs that appear in multiple child contexts
 
+        List<Criteria> typeOrCriteria = new ArrayList<>(List.of(
+            Criteria.where(EntityFields.TYPE).is(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.GLOBAL_EVENT_JOB_INSTANCE),
+            Criteria.where(EntityFields.TYPE).is(JobConstants.LOCAL_EVENT_JOB_INSTANCE)));
+
         MatchOperation matchStage = Aggregation.match(
             Criteria.where(EntityFields.COMPONENT_NAME).in(contextInstanceIds)
-                .and(EntityFields.TARGET_RESIDING_CONTEXT_ONLY).is(true)
+                .orOperator(typeOrCriteria)
         );
 
         GroupOperation groupStage = Aggregation.group(EntityFields.COMPONENT_NAME, EntityFields.STATUS)
@@ -226,7 +342,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, MongoConstants.IKASAN_COLLECTION_NAME, Map.class);
 
         // Process results into ContextInstanceAggregateJobStatus objects
-        Map<String, ContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();
+        Map<String, MongoContextInstanceAggregateJobStatusImpl> aggregateMap = new HashMap<>();
 
         for (Map<String, Object> result : results.getMappedResults()) {
             @SuppressWarnings("unchecked")
@@ -236,9 +352,9 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             Integer count = (Integer) result.get("statusCount");
             String contextName = (String) result.get("contextName");
 
-            ContextInstanceAggregateJobStatusImpl aggregate = aggregateMap.computeIfAbsent(
+            MongoContextInstanceAggregateJobStatusImpl aggregate = aggregateMap.computeIfAbsent(
                 contextInstanceId,
-                id -> new ContextInstanceAggregateJobStatusImpl(id, contextName)
+                id -> new MongoContextInstanceAggregateJobStatusImpl(id, contextName)
             );
 
             try {
@@ -287,6 +403,23 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         if (filter.getJobType() != null && !filter.getJobType().isEmpty()) {
             query.addCriteria(Criteria.where(EntityFields.TYPE).is(filter.getJobType()));
         }
+        else {
+            List<Criteria> typeOrCriteria = new ArrayList<>(List.of(
+                Criteria.where(EntityFields.TYPE).is(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.GLOBAL_EVENT_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.LOCAL_EVENT_JOB_INSTANCE)));
+
+            if(filter.includeStartAndTerminalJobsInSearchResults()) {
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_START_JOB_INSTANCE));
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE));
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.BRIDGING_JOB_INSTANCE));
+
+            }
+
+            query.addCriteria(new Criteria().orOperator(typeOrCriteria));
+        }
 
         if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
             query.addCriteria(Criteria.where(EntityFields.FLOW_NAME).is(filter.getContextName()));
@@ -333,10 +466,10 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             query.addCriteria(Criteria.where(EntityFields.END_TIME).lte(filter.getEndTimeWindowEnd()));
         }
 
-        // Exclude start and terminal jobs if requested
-        if (!filter.includeStartAndTerminalJobsInSearchResults()) {
-            query.addCriteria(Criteria.where(EntityFields.TYPE).nin("ContextStartJob", "ContextTerminalJob"));
-        }
+//        // Exclude start and terminal jobs if requested
+//        if (!filter.includeStartAndTerminalJobsInSearchResults()) {
+//            query.addCriteria(Criteria.where(EntityFields.TYPE).nin("ContextStartJob", "ContextTerminalJob"));
+//        }
 
         return query;
     }
@@ -389,64 +522,5 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         }
 
         return Sort.by(direction, sortField);
-    }
-
-    /**
-     * Implementation of ContextInstanceAggregateJobStatus for aggregation results.
-     */
-    private static class ContextInstanceAggregateJobStatusImpl implements ContextInstanceAggregateJobStatus {
-        private final String contextInstanceId;
-        private final String contextInstanceName;
-        private final Map<InstanceStatus, Integer> statusCounts = new HashMap<>();
-        private final Map<String, Integer> repeatingJobsStatusCounts = new HashMap<>();
-        private boolean containsRepeatableJobs;
-
-        public ContextInstanceAggregateJobStatusImpl(String contextInstanceId, String contextInstanceName) {
-            this.contextInstanceId = contextInstanceId;
-            this.contextInstanceName = contextInstanceName;
-        }
-
-        public void addStatusCount(InstanceStatus status, int count) {
-            statusCounts.put(status, statusCounts.getOrDefault(status, 0) + count);
-        }
-
-        @Override
-        public String getContextInstanceId() {
-            return contextInstanceId;
-        }
-
-        @Override
-        public String getContextInstanceName() {
-            return contextInstanceName;
-        }
-
-        @Override
-        public int getStatusCount(InstanceStatus instanceStatus) {
-            return statusCounts.getOrDefault(instanceStatus, 0);
-        }
-
-        @Override
-        public boolean containsRepeatableJobs() {
-            return containsRepeatableJobs;
-        }
-
-        @Override
-        public void setContainsRepeatableJobs(boolean containsRepeatableJobs) {
-            this.containsRepeatableJobs = containsRepeatableJobs;
-        }
-
-        @Override
-        public int repeatingJobInstanceStatusCount(InstanceStatus instanceStatus) {
-            String statusKey = instanceStatus.name();
-            return repeatingJobsStatusCounts.getOrDefault(statusKey, 0);
-        }
-
-        @Override
-        public void setRepeatingJobsStatusCounts(Map<String, Integer> repeatingJobsStatusCounts) {
-            this.repeatingJobsStatusCounts.clear();
-            if (repeatingJobsStatusCounts != null) {
-                this.repeatingJobsStatusCounts.putAll(repeatingJobsStatusCounts);
-            }
-        }
     }
 }

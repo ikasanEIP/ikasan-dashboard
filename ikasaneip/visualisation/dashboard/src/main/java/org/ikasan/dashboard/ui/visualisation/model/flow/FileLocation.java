@@ -6,7 +6,7 @@ import org.ikasan.designer.pallet.DesignerItemIdentifier;
 /**
  * The FileLocation class represents a specific type of node that corresponds
  * to a file's physical or logical location. It extends the Node class and
- * implements the Destination interface, inheriting common node-related
+ * implements the DestinationImpl interface, inheriting common node-related
  * properties and behaviors while enforcing additional destination-specific
  * functionality.
  *

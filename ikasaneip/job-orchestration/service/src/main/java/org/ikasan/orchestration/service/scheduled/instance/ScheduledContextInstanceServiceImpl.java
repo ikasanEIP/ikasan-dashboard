@@ -1,7 +1,7 @@
 package org.ikasan.orchestration.service.scheduled.instance;
 
-
-import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditRecordImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditRecordImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
@@ -82,13 +82,13 @@ public class ScheduledContextInstanceServiceImpl implements ScheduledContextInst
                 .getScheduledContextInstanceAuditAggregate();
 
             if(this.saveContextInstanceAuditDeltaRecords) {
-                SolrScheduledContextInstanceAuditRecordImpl previousContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+                ScheduledContextInstanceAuditRecordImpl previousContextInstanceRecord = new ScheduledContextInstanceAuditRecordImpl();
                 previousContextInstanceRecord.setContextName(previousContextInstance.getName());
                 previousContextInstanceRecord.setContextInstanceId(previousContextInstance.getId());
                 previousContextInstanceRecord.setContextInstance(previousContextInstance);
                 this.scheduledContextInstanceAuditDao.save(previousContextInstanceRecord);
 
-                SolrScheduledContextInstanceAuditRecordImpl updatedContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+                ScheduledContextInstanceAuditRecordImpl updatedContextInstanceRecord = new ScheduledContextInstanceAuditRecordImpl();
                 updatedContextInstanceRecord.setContextName(updatedContextInstance.getName());
                 updatedContextInstanceRecord.setContextInstanceId(updatedContextInstance.getId());
                 updatedContextInstanceRecord.setContextInstance(updatedContextInstance);

@@ -1,6 +1,6 @@
 package org.ikasan.orchestration.service.scheduled.profile;
 
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.profile.dao.ContextProfileDao;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;

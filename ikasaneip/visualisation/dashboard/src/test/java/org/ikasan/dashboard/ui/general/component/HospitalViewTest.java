@@ -79,7 +79,7 @@ public class HospitalViewTest extends UITest {
         Assertions.assertEquals("eventId", eventIdTf.getValue(), "Event Id text field equals");
 
         TextField flowNameTf = (TextField)ReflectionTestUtils.getField(hospitalView, "flowNameTf");
-        Assertions.assertEquals("flow", flowNameTf.getValue(), "Flow name text field equals");
+        Assertions.assertEquals("flow", flowNameTf.getValue(), "Flowimpl name text field equals");
 
         TextField moduleNameTf = (TextField)ReflectionTestUtils.getField(hospitalView, "moduleNameTf");
         Assertions.assertEquals("module", moduleNameTf.getValue(), "Module name text field equals");

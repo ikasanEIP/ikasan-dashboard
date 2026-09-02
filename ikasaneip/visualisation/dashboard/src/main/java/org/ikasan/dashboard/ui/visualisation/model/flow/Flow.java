@@ -28,7 +28,7 @@ public class Flow
 	private int controlImageH = 75;
 
     /**
-     * Constructs a new Flow instance with the provided parameters.
+     * Constructs a new Flowimpl instance with the provided parameters.
      *
      * @param name the name of the flow
      * @param configurationId the unique identifier for the configuration
@@ -102,7 +102,7 @@ public class Flow
     }
 
     /**
-     * Retrieves the y-coordinate of the Flow object.
+     * Retrieves the y-coordinate of the Flowimpl object.
      *
      * @return the y-coordinate as an integer
      */
@@ -122,9 +122,9 @@ public class Flow
     }
 
     /**
-     * Retrieves the height value of the Flow.
+     * Retrieves the height value of the Flowimpl.
      *
-     * @return the height of the Flow as an integer
+     * @return the height of the Flowimpl as an integer
      */
     public int getH()
     {
@@ -206,7 +206,7 @@ public class Flow
     }
 
     /**
-     * Retrieves the height of the control image associated with this Flow.
+     * Retrieves the height of the control image associated with this Flowimpl.
      *
      * @return the height of the control image as an integer
      */
@@ -253,9 +253,9 @@ public class Flow
     }
 
     /**
-     * Sets the startup type for this Flow.
+     * Sets the startup type for this Flowimpl.
      *
-     * @param startupType the {@code StartupType} to be assigned to this Flow
+     * @param startupType the {@code StartupType} to be assigned to this Flowimpl
      */
     public void setStartupType(StartupType startupType) {
         this.startupType = startupType;
@@ -300,7 +300,7 @@ public class Flow
     @Override
     public String toString()
     {
-        final StringBuffer sb = new StringBuffer("Flow{");
+        final StringBuffer sb = new StringBuffer("Flowimpl{");
         sb.append("name='").append(name).append('\'');
         sb.append(", configurationId='").append(configurationId).append('\'');
         sb.append(", consumer=").append(consumer);

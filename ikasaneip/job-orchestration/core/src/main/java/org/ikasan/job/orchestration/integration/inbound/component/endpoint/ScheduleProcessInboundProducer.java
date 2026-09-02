@@ -11,9 +11,9 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.job.orchestration.integration.inbound.exception.InvalidContextInstanceIdException;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
@@ -106,7 +106,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 if (contextualisedScheduledProcessEvent.getContextName() != null) {
 
                     // Create a search query to find out the instance id from solr.
-                    ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+                    ContextInstanceSearchFilter filter = new ContextInstanceSearchFilterImpl();
                     filter.setContextInstanceNames(Collections.singletonList(contextualisedScheduledProcessEvent.getContextName()));
                     filter.setContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
                     SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords =

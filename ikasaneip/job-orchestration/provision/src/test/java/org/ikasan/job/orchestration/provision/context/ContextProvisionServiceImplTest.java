@@ -8,14 +8,14 @@ import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerSer
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
-import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -1042,8 +1042,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
-        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord1 = new ContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new ContextProfileRecordImpl();
 
         List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
 
@@ -1140,14 +1140,14 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         contextTemplate.setScheduledJobs(contextJobs);
 
-        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
-        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord1 = new ContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new ContextProfileRecordImpl();
 
         List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
 
         // Email Notification
-        EmailNotificationDetails emailNotificationDetails1 = new SolrEmailNotificationDetails();
-        EmailNotificationDetails emailNotificationDetails2 = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails1 = new EmailNotificationDetailsImpl();
+        EmailNotificationDetails emailNotificationDetails2 = new EmailNotificationDetailsImpl();
 
         List<EmailNotificationDetails> emailNotificationDetails = List.of(emailNotificationDetails1, emailNotificationDetails2);
 
@@ -1207,14 +1207,14 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
-        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord1 = new ContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new ContextProfileRecordImpl();
 
         List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
 
         // Email Notification
-        EmailNotificationDetails emailNotificationDetails1 = new SolrEmailNotificationDetails();
-        EmailNotificationDetails emailNotificationDetails2 = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails1 = new EmailNotificationDetailsImpl();
+        EmailNotificationDetails emailNotificationDetails2 = new EmailNotificationDetailsImpl();
 
         List<EmailNotificationDetails> emailNotificationDetails = List.of(emailNotificationDetails1, emailNotificationDetails2);
 
@@ -1274,18 +1274,18 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
-        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord1 = new ContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new ContextProfileRecordImpl();
 
         List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
 
         // Email Notification Details
-        EmailNotificationDetails emailNotificationDetails1 = new SolrEmailNotificationDetails();
-        EmailNotificationDetails emailNotificationDetails2 = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails1 = new EmailNotificationDetailsImpl();
+        EmailNotificationDetails emailNotificationDetails2 = new EmailNotificationDetailsImpl();
 
         List<EmailNotificationDetails> emailNotificationDetails = List.of(emailNotificationDetails1, emailNotificationDetails2);
 
-        EmailNotificationContext emailNotificationContext = new SolrEmailNotificationContextImpl();
+        EmailNotificationContext emailNotificationContext = new EmailNotificationContextImpl();
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
@@ -1339,13 +1339,13 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
-        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord1 = new ContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new ContextProfileRecordImpl();
 
         List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
 
         // Email Notification
-        EmailNotificationContext emailNotificationContext = new SolrEmailNotificationContextImpl();
+        EmailNotificationContext emailNotificationContext = new EmailNotificationContextImpl();
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
@@ -1399,7 +1399,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        EmailNotificationContext emailNotificationContext = new SolrEmailNotificationContextImpl();
+        EmailNotificationContext emailNotificationContext = new EmailNotificationContextImpl();
 
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, schedulerJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, emailNotificationContext, new ArrayList<>());
         service.provisionContext(contextBundle);

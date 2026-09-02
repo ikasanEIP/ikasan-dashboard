@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.notification.scheduler.service;
 
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.search.service.ESBSearchService;
@@ -10,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class SchedulerNotificationService {
-    private ESBSearchService<IkasanSolrDocument, IkasanDocumentSearchResults> esbSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     public SchedulerNotificationService(ESBSearchService esbSearchService) {
         this.esbSearchService = esbSearchService;

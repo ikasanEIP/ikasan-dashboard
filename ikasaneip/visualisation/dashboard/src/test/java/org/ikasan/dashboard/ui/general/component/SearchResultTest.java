@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.esb.service.error.reporting.ErrorReportingServiceImpl;
 import org.ikasan.esb.service.replay.ReplayAuditServiceImpl;
@@ -79,10 +79,10 @@ public class SearchResultTest extends UITest {
         searchResults.search(0, System.currentTimeMillis() + 100000L, "", List.of("error", "exclusion", "wiretap"),
             false, new ArrayList<>(), new ArrayList<>());
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        Assertions.assertEquals(0, solrSearchFilteringGrid.getResultSize(), "Search results size equals 0!");
+        Assertions.assertEquals(0, searchFilteringGrid.getResultSize(), "Search results size equals 0!");
 
     }
 
@@ -104,20 +104,20 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assert.assertEquals(50, solrSearchFilteringGrid.getResultSize());
+        Assert.assertEquals(50, searchFilteringGrid.getResultSize());
 
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+        Assert.assertEquals(1, searchFilteringGrid.getResultSize());
     }
 
     @Test
@@ -133,14 +133,14 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(searchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/wiretap-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -159,18 +159,18 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
+        GridKt._doubleClickItem(searchFilteringGrid, 0);
 
         WiretapDialog wiretapDialog = _get(WiretapDialog.class);
         Assert.assertNotNull(wiretapDialog);
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(wiretapDialog, "moduleNameTf")).getValue());
@@ -195,14 +195,14 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(searchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/error-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -221,18 +221,18 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
+        GridKt._doubleClickItem(searchFilteringGrid, 0);
 
         ErrorDialog errorDialog = _get(ErrorDialog.class);
         Assert.assertNotNull(errorDialog);
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(errorDialog, "moduleNameTf")).getValue());
@@ -263,14 +263,14 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(searchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/hospital-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -292,18 +292,18 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
+        GridKt._doubleClickItem(searchFilteringGrid, 0);
 
         HospitalDialog hospitalDialog = _get(HospitalDialog.class);
         Assert.assertNotNull(hospitalDialog);
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(hospitalDialog, "moduleNameTf")).getValue());
@@ -330,14 +330,14 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
-        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
+        Grid.Column<IkasanESBDocument> column = GridKt._getColumnByKey(searchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
         Assert.assertEquals("HorizontalLayout[#frontend/images/replay-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
@@ -356,18 +356,18 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
-        GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
+        GridKt._doubleClickItem(searchFilteringGrid, 0);
 
         ReplayDialog replayDialog = _get(ReplayDialog.class);
         Assert.assertNotNull(replayDialog);
 
-        IkasanESBDocument row = GridKt._get(solrSearchFilteringGrid, 0);
+        IkasanESBDocument row = GridKt._get(searchFilteringGrid, 0);
 
         Assertions.assertEquals(row.getModuleName(), ((TextField)ReflectionTestUtils
             .getField(replayDialog, "moduleNameTf")).getValue());

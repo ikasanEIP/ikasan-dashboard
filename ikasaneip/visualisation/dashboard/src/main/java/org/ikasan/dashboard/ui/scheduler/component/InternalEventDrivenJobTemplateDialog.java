@@ -29,7 +29,7 @@ import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLong
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -125,7 +125,7 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
-        this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        this.internalEventDrivenJob = new InternalEventDrivenJobImpl();
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
     }

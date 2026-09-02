@@ -3,6 +3,8 @@ package org.ikasan.setup.model;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.setup.util.SolrSetupObjectMapperFactory;
 import org.ikasan.spec.entity.EntityFields;
+import org.ikasan.spec.persistence.model.DashboardPlatformSetup;
+import org.ikasan.spec.persistence.model.DashboardSetupItem;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 

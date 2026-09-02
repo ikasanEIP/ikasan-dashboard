@@ -14,9 +14,10 @@ import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleModule;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventRecord;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
-import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.systemevent.model.SolrSystemEventRecordImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -198,7 +199,7 @@ public class SystemEventSearchViewTest extends UITest {
         ArrayList<SystemEvent> ikasanSolrDocuments = new ArrayList<>();
 
         IntStream.range(0, size).forEach(i -> {
-            SolrSystemEvent document = new SolrSystemEvent();
+            SolrSystemEventRecordImpl document = new SolrSystemEventRecordImpl();
             document.setId("id" +i);
             document.setTimestampLong(1606203560055L);
             document.setPayload("{\"moduleName\":\"murex-trade\",\"action\":\"Configuration Updated OldConfig [{\\\"configurationId\\\":" +

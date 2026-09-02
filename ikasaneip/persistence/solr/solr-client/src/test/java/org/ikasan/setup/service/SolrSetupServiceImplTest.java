@@ -1,10 +1,10 @@
 package org.ikasan.setup.service;
 
 import org.ikasan.setup.dao.SolrSetupDaoImpl;
-import org.ikasan.setup.model.DashboardPlatformSetup;
-import org.ikasan.setup.model.DashboardSetupItem;
 import org.ikasan.setup.model.SolrDashboardPlatformSetupImpl;
 import org.ikasan.setup.model.SolrDashboardSetupItemImpl;
+import org.ikasan.spec.persistence.model.DashboardPlatformSetup;
+import org.ikasan.spec.persistence.model.DashboardSetupItem;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;

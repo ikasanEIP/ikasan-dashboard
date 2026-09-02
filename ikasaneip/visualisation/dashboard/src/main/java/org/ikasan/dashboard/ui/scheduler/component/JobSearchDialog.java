@@ -26,7 +26,7 @@ import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -48,7 +48,7 @@ public class JobSearchDialog extends AbstractCloseableResizableDialog {
     private DataProvider<SchedulerJobRecord, SchedulerJobSearchFilter> dataProvider;
     private ConfigurableFilterDataProvider<SchedulerJobRecord, Void, SchedulerJobSearchFilter> filteredDataProvider;
     private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
-    private SchedulerJobSearchFilter searchFilter = new SolrSchedulerJobSearchFilterImpl();
+    private SchedulerJobSearchFilter searchFilter = new SchedulerJobSearchFilterImpl();
 
 
     public JobSearchDialog(SchedulerJobService<SchedulerJobRecord> schedulerJobService, String jobSearchString) {
@@ -87,7 +87,7 @@ public class JobSearchDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobRecordGrid.addColumn(new ComponentRenderer<>(jobRecord -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 horizontalLayout.setWidthFull();
-                Text text = new Text(SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(jobRecord.getType()));
+                Text text = new Text(SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(jobRecord.getType()));
                 horizontalLayout.add(text);
                 return horizontalLayout;
             }))
@@ -211,7 +211,7 @@ public class JobSearchDialog extends AbstractCloseableResizableDialog {
         this.initDataProvider();
         HeaderRow headerRow = this.schedulerJobRecordGrid.appendHeaderRow();
         this.addSelectGridFiltering(headerRow, searchFilter::setJobTypeFilter
-            , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet().stream()
+            , SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet().stream()
                 .filter(e -> !e.getValue().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE) &&
                         !e.getValue().equals(JobConstants.GLOBAL_EVENT_JOB))
                 .collect(Collectors.toSet()), "type");

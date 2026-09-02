@@ -1,11 +1,10 @@
 package org.ikasan.orchestration.service.scheduled.job;
 
-import org.ikasan.scheduled.job.model.*;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.spec.scheduled.job.dao.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
-import org.ikasan.spec.solr.SolrServiceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SchedulerJobRecord> {
+public class SchedulerJobServiceImpl implements SchedulerJobService<SchedulerJobRecord> {
 
     private static Logger logger = LoggerFactory.getLogger(SchedulerJobServiceImpl.class);
 
@@ -322,7 +321,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
     }
 
     private InternalEventDrivenJobRecord internalEventDrivenJobRecord(InternalEventDrivenJob internalEventDrivenJob, String actor) {
-        SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+        InternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new InternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
         solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
@@ -359,7 +358,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
     }
 
     private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob, String actor) {
-        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
+        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new QuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(quartzScheduleDrivenJob.getAgentName());
         quartzScheduleDrivenJobRecord.setContextName(quartzScheduleDrivenJob.getContextName());
         quartzScheduleDrivenJobRecord.setJobName(quartzScheduleDrivenJob.getJobName());
@@ -392,8 +391,8 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
         this.saveFileEventDrivenJobRecords(records);
     }
 
-    private SolrFileEventDrivenJobRecordImpl fileEventDrivenJobRecord(FileEventDrivenJob fileEventDrivenJob, String actor) {
-        SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
+    private FileEventDrivenJobRecordImpl fileEventDrivenJobRecord(FileEventDrivenJob fileEventDrivenJob, String actor) {
+        FileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new FileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
         solrFileEventDrivenJobRecord.setContextName(fileEventDrivenJob.getContextName());
@@ -456,8 +455,8 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
         this.saveGlobalEventJobRecords(records);
     }
 
-    private SolrGlobalEventJobRecordImpl globalEventJobRecord(GlobalEventJob globalEventJob, String actor) {
-        SolrGlobalEventJobRecordImpl solrGlobalEventJobRecord = new SolrGlobalEventJobRecordImpl();
+    private GlobalEventJobRecordImpl globalEventJobRecord(GlobalEventJob globalEventJob, String actor) {
+        GlobalEventJobRecordImpl solrGlobalEventJobRecord = new GlobalEventJobRecordImpl();
         solrGlobalEventJobRecord.setAgentName(globalEventJob.getAgentName());
         solrGlobalEventJobRecord.setJobName(globalEventJob.getJobName());
         solrGlobalEventJobRecord.setContextName(globalEventJob.getContextName());
@@ -474,8 +473,8 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
         this.saveContextStartJobRecords(records);
     }
 
-    private SolrContextStartJobRecordImpl contextStartJobRecord(ContextStartJob contextStartJob, String actor) {
-        SolrContextStartJobRecordImpl solrContextStartJobRecord = new SolrContextStartJobRecordImpl();
+    private ContextStartJobRecordImpl contextStartJobRecord(ContextStartJob contextStartJob, String actor) {
+        ContextStartJobRecordImpl solrContextStartJobRecord = new ContextStartJobRecordImpl();
         solrContextStartJobRecord.setAgentName(contextStartJob.getAgentName());
         solrContextStartJobRecord.setJobName(contextStartJob.getJobName());
         solrContextStartJobRecord.setContextName(contextStartJob.getContextName());
@@ -492,8 +491,8 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
         this.saveContextTerminalJobRecord(records);
     }
 
-    private SolrContextTerminalJobRecordImpl contextTerminalJobRecord(ContextTerminalJob contextTerminalJob, String actor) {
-        SolrContextTerminalJobRecordImpl solrContextTerminalJobRecord = new SolrContextTerminalJobRecordImpl();
+    private ContextTerminalJobRecordImpl contextTerminalJobRecord(ContextTerminalJob contextTerminalJob, String actor) {
+        ContextTerminalJobRecordImpl solrContextTerminalJobRecord = new ContextTerminalJobRecordImpl();
         solrContextTerminalJobRecord.setAgentName(contextTerminalJob.getAgentName());
         solrContextTerminalJobRecord.setJobName(contextTerminalJob.getJobName());
         solrContextTerminalJobRecord.setContextName(contextTerminalJob.getContextName());
@@ -572,7 +571,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
 
     @Override
     public void releaseAll(String contextName, String actor) {
-        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setContextSearchFilter(contextName);
         filter.setHeld(true);
 
@@ -585,7 +584,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
 
     @Override
     public void enableAll(String contextName, String actor) {
-        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setContextSearchFilter(contextName);
         filter.setSkipped(true);
 
@@ -603,7 +602,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
 
     @Override
     public void holdAll(String contextName, String actor) {
-        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setContextSearchFilter(contextName);
 
         List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
@@ -631,7 +630,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
     }
 
     private List<SchedulerJobRecord> getSkippedFilteredGlobalEventJobRecords(String contextName) {
-        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setJobTypeFilter(JobConstants.GLOBAL_EVENT_JOB);
         SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
             .findByFilter(filter, -1, -1, null, null);
@@ -694,7 +693,7 @@ public class SchedulerJobServiceImpl extends SolrServiceBase implements Schedule
 
     @Override
     public Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContext(String contextName) {
-        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setContextSearchFilter(contextName);
         filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
 

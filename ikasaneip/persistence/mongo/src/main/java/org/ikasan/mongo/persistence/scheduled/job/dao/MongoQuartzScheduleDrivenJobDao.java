@@ -37,7 +37,7 @@ public class MongoQuartzScheduleDrivenJobDao implements QuartzScheduleDrivenJobD
 
     @Override
     public void save(QuartzScheduleDrivenJobRecord event) {
-        MongoQuartzScheduleDrivenJobRecordImpl mongoRecord = (MongoQuartzScheduleDrivenJobRecordImpl) event;
+        MongoQuartzScheduleDrivenJobRecordImpl mongoRecord = new MongoQuartzScheduleDrivenJobRecordImpl();
 
         if(event.getId() != null && !event.getId().isEmpty()) {
             mongoRecord.setId(event.getId());

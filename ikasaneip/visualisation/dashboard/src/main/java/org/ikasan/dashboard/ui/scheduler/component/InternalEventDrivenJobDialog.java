@@ -29,7 +29,6 @@ import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.scheduler.util.ControlCharacterUtils;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -133,7 +132,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
-        this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        this.internalEventDrivenJob = new InternalEventDrivenJobImpl();
         this.showDisplayName = parentContextTemplate.isUseDisplayName();
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
@@ -207,14 +206,17 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         buttonLayout.setSpacing(true);
         buttonLayout.setPadding(true);
         buttonLayout.add(saveButton, cancelButton);
+        buttonLayout.getStyle().set("padding-bottom", "20px");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setPadding(true);
         layout.setSpacing(false);
-        layout.add(this.createConfigurationForm(), createEditorLayout(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.add(this.createConfigurationForm(), createEditorLayout());
+
         super.content.add(layout);
+        super.content.add(buttonLayout);
+        super.content.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
     }
 
     /**

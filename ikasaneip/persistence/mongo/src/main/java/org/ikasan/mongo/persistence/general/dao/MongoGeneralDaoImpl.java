@@ -171,7 +171,7 @@ public class MongoGeneralDaoImpl implements
             criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
         }
 
-        // Flow names filter
+        // Flowimpl names filter
         if (flowNames != null && !flowNames.isEmpty()) {
             criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
         }

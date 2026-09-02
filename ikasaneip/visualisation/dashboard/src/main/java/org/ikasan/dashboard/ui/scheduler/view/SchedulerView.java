@@ -8,7 +8,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.TabVariant;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,8 +16,8 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.cluster.service.JobParameterRefreshService;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateWidget;
@@ -29,8 +28,8 @@ import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
@@ -283,7 +282,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             else {
                 jobSearchTf.setInvalid(false);
             }
-            SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+            SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
             filter.setJobNameFilter(jobSearchTf.getValue());
 
             if(!((IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication())
@@ -296,7 +295,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             filter.setJobTypes(List.of(JobConstants.INTERNAL_EVENT_DRIVEN_JOB, JobConstants.FILE_EVENT_DRIVEN_JOB,
                 JobConstants.LOCAL_EVENT_JOB, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB));
 
-            SearchResults<SchedulerJobRecord<SolrSchedulerJobImpl>> results
+            SearchResults<SchedulerJobRecord<SchedulerJobImpl>> results
                 = this.schedulerJobService.findByFilter(filter, 0, 0, null, null);
 
             if(results.getTotalNumberOfResults() == 0) {

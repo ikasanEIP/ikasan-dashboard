@@ -20,9 +20,9 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobRecordImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -94,7 +94,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
 
-        this.globalEventJob = new SolrGlobalEventJobImpl();
+        this.globalEventJob = new GlobalEventJobImpl();
 
 
         this.formBinder = new Binder<>(GlobalEventJob.class);
@@ -152,10 +152,10 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.add(this.createConfigurationForm());
         layout.getStyle().set("padding-bottom", "20px");
-        super.content.add(layout);
+        super.content.add(layout, buttonLayout);
+        super.content.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
     }
 
     /**
@@ -224,7 +224,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
             formBinder.writeBean(globalEventJob);
 
             if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
-                SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+                SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
                 filter.setJobNameFilter(globalEventJob.getJobName());
                 SearchResults searchResults = this.schedulerJobService.findByFilter(filter, 1, 0, null, null);
                 if(searchResults != null && searchResults.getTotalNumberOfResults() > 0 ) {
@@ -256,7 +256,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     public void createOrUpdateScheduledJob(GlobalEventJob globalEventJob, IkasanAuthentication authentication) {
         globalEventJob.setIdentifier(globalEventJob.getAgentName()+"-"+ globalEventJob.getJobName());
 
-        GlobalEventJobRecord globalEventJobRecord = new SolrGlobalEventJobRecordImpl();
+        GlobalEventJobRecord globalEventJobRecord = new GlobalEventJobRecordImpl();
         globalEventJobRecord.setAgentName(globalEventJob.getAgentName());
         globalEventJobRecord.setJobName(globalEventJob.getJobName());
         globalEventJobRecord.setGlobalEventJob(globalEventJob);

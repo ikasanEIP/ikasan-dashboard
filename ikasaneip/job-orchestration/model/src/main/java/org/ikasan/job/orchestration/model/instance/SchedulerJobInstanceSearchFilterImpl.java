@@ -3,8 +3,29 @@ package org.ikasan.job.orchestration.model.instance;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanceSearchFilter {
+    public static Map<String, String> JOB_TYPE_MAPPINGS = new HashMap<>();
+    public static Map<String, String> JOB_TYPE_MAPPINGS_INVERTED = new HashMap<>();
+
+    static {
+        JOB_TYPE_MAPPINGS.put("Scheduled Job", JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        JOB_TYPE_MAPPINGS.put("File Watcher Job", JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+        JOB_TYPE_MAPPINGS.put("Command Execution Job", JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        JOB_TYPE_MAPPINGS.put("Global Event Job", JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+        JOB_TYPE_MAPPINGS.put("Local Event Job", JobConstants.LOCAL_EVENT_JOB_INSTANCE);
+
+        JOB_TYPE_MAPPINGS_INVERTED.put(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, "Scheduled Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE, "File Watcher Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE, "Command Execution Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put(JobConstants.GLOBAL_EVENT_JOB_INSTANCE, "Global Event Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put(JobConstants.LOCAL_EVENT_JOB_INSTANCE, "Local Event Job");
+    }
+
     private String jobName;
     private boolean includeStartAndTerminalJobsInSearchResults = true;
     private String displayNameFilter = null;

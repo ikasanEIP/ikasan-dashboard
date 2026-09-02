@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -26,9 +25,9 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobLockParticipantBuilder;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -464,7 +463,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         addJobButton.setIconAfterText(true);
         addJobButton.setEnabled(false);
         addJobButton.addClickListener(event -> {
-            SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+            SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
             filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
 
             List<String> jobsInLock = new ArrayList<>();

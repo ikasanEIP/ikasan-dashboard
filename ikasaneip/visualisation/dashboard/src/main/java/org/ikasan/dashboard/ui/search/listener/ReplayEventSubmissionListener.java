@@ -14,7 +14,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.general.component.ReplayCommentsDialog;
 import org.ikasan.dashboard.ui.search.component.ReplayResultsDialog;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditEventImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
@@ -46,7 +46,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
     private ReplayService replayRestService;
     private BatchInsert replayAuditService;
 
-    public ReplayEventSubmissionListener(ReplayService replayRestService, BatchInsert replayAuditService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid
+    public ReplayEventSubmissionListener(ReplayService replayRestService, BatchInsert replayAuditService, ModuleMetaDataService moduleMetadataService, SearchFilteringGrid searchResultsGrid
         , HashMap<String, Checkbox> selectionBoxes, HashMap<String, IkasanESBDocument> selectionItems)
     {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);
