@@ -2,14 +2,10 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -19,14 +15,12 @@ import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.LocalEventJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
-import org.ikasan.spec.search.SearchResults;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,7 +38,7 @@ public class LocalEventJobSelectDialog extends AbstractCloseableResizableDialog 
     private ContextTemplate contextTemplate;
     private Grid<LocalEventJob> localEventJobGrid;
 
-    SchedulerJobSearchFilter searchFilter = new SolrSchedulerJobSearchFilterImpl();
+    SchedulerJobSearchFilter searchFilter = new SchedulerJobSearchFilterImpl();
 
     public LocalEventJobSelectDialog(ContextTemplate contextTemplate) {
         this.setHeight("70vh");

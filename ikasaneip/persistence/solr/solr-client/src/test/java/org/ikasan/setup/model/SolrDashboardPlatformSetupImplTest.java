@@ -1,5 +1,6 @@
 package org.ikasan.setup.model;
 
+import org.ikasan.spec.persistence.model.DashboardSetupItem;
 import org.junit.Assert;
 import org.junit.Test;
 

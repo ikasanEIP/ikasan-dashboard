@@ -13,9 +13,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.search.service.ESBSearchService;
 
 import java.time.Instant;
@@ -31,7 +30,7 @@ public class HospitalEventsWidget extends DashboardWidget implements BeforeEnter
 
     private static long MILLI_IN_DAY = 1000 * 60 * 60 * 24;
 
-    private ESBSearchService<IkasanSolrDocument, IkasanDocumentSearchResults> esbSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private Chart chart;
     private DataSeries exclusionSeries;

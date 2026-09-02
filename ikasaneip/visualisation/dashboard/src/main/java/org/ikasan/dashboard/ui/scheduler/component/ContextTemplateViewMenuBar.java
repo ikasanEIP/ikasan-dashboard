@@ -11,10 +11,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -48,21 +48,21 @@ public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUp
         SubMenu sharedViewsSubMenu = contextViews.getSubMenu();
 
         MenuItem systemViews = systemViewsSubMenu.addItem(getTranslation("menu-item.system-views", UI.getCurrent().getLocale()));
-        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+        ContextProfileSearchFilter searchFilter = new ContextProfileSearchFilterImpl();
         searchFilter.setContextName(this.contextTemplate.getName());
         searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 
         this.addContextViewsSubmenu(systemViews, searchFilter);
 
         MenuItem myViews = myViewsSubMenu.addItem(getTranslation("menu-item.my-views", UI.getCurrent().getLocale()));
-        searchFilter = new SolrContextProfileSearchFilterImpl();
+        searchFilter = new ContextProfileSearchFilterImpl();
         searchFilter.setContextName(this.contextTemplate.getName());
         searchFilter.setOwner(SecurityContextHolder.getContext().getAuthentication().getName());
 
         this.addContextViewsSubmenu(myViews, searchFilter);
 
         MenuItem sharedViews = sharedViewsSubMenu.addItem(getTranslation("menu-item.shared-views", UI.getCurrent().getLocale()));
-        searchFilter = new SolrContextProfileSearchFilterImpl();
+        searchFilter = new ContextProfileSearchFilterImpl();
         searchFilter.setContextName(this.contextTemplate.getName());
         searchFilter.setUser(SecurityContextHolder.getContext().getAuthentication().getName());
 

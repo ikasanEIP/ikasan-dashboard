@@ -12,7 +12,7 @@ import org.ikasan.dashboard.ui.general.component.HospitalCommentsDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.general.component.SearchResults;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
@@ -47,7 +47,7 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
 
     public ResubmitHospitalEventSubmissionListener(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
         , ModuleMetaDataService moduleMetadataService, ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService
-        , String actionMessage, SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes
+        , String actionMessage, SearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes
         , HashMap<String, IkasanESBDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter, SearchResults searchResults) {
         super(actionMessage, esbSearchService, moduleMetadataService, resubmissionRestService
             , searchResultsGrid, selectionBoxes, selectionItems, ikasanAuthentication, dateFormatter);

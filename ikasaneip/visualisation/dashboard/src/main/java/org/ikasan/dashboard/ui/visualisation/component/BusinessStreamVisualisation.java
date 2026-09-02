@@ -33,7 +33,6 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.json.DesignerJsonHelper;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.model.ModuleMetaData;

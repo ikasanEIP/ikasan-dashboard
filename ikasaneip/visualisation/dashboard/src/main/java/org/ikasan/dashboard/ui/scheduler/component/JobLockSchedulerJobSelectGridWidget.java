@@ -14,7 +14,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
@@ -98,7 +98,7 @@ public class JobLockSchedulerJobSelectGridWidget extends Div {
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
+            Text text = new Text(SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -153,7 +153,7 @@ public class JobLockSchedulerJobSelectGridWidget extends Div {
 
         if(this.jobType == null) {
             this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
-                , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+                , SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
         }
 
     }

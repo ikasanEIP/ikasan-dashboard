@@ -48,10 +48,10 @@ import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
-import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -747,7 +747,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         this.schedulerVisualisation.setWidthFull();
 
         try {
-            ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+            ContextProfileSearchFilter searchFilter = new ContextProfileSearchFilterImpl();
             searchFilter.setContextName(this.contextTemplate.getName());
             searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 

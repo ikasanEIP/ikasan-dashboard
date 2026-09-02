@@ -21,7 +21,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
@@ -87,7 +87,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
         textField.addValueChangeListener(ev -> {
 
-            setFilter.accept("*"+ev.getValue()+"*");
+            setFilter.accept(ev.getValue());
 
             filteredDataProvider.refreshAll();
         });

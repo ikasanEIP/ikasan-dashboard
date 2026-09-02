@@ -70,7 +70,7 @@ public class MongoGeneralDaoImplTest {
         assertEquals("ID should match", "test-id-1", found.getId());
         assertEquals("Type should match", "wiretap", found.getType());
         assertEquals("Module name should match", "module1", found.getModuleName());
-        assertEquals("Flow name should match", "flow1", found.getFlowName());
+        assertEquals("Flowimpl name should match", "flow1", found.getFlowName());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class MongoGeneralDaoImplTest {
         assertNotNull("Results should not be null", results);
         assertEquals("Should have 1 result", 1, results.getResultList().size());
         assertEquals("Module should match", "module1", results.getResultList().get(0).getModuleName());
-        assertEquals("Flow should match", "flow1", results.getResultList().get(0).getFlowName());
+        assertEquals("Flowimpl should match", "flow1", results.getResultList().get(0).getFlowName());
     }
 
     @Test

@@ -31,15 +31,16 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.designer.PositionedDialog;
+import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -63,8 +64,8 @@ import org.ikasan.spec.scheduled.job.service.LocalEventService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
-import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -79,7 +80,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.cronutils.model.CronType.QUARTZ;
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
+import static org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInstanceActionWidget
     implements ContextInstanceStateChangeEventLocalBroadcastListener, SchedulerJobStateChangeEventLocalBroadcastListener,
@@ -893,7 +894,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             horizontalLayout.add(manuallySubmittedBy);
                             if(schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
                                 manuallySubmittedBy.addClickListener(event -> {
-                                    SolrSystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
+                                    SystemEventSearchFilter searchFilter = new SystemEventSearchFilterImpl();
                                     searchFilter.setSubject(SystemEventConstants.SCHEDULED_JOB_SUBMITTED);
                                     searchFilter.setActor(schedulerJobInstanceRecord.getManuallySubmittedBy());
                                     searchFilter.setSearchTerm(schedulerJobInstanceRecord.getJobName());
@@ -1142,7 +1143,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(!this.canPerformAction(true)) {
                 return;
             }
-            SchedulerJobInstanceSearchFilter releaseCountFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            SchedulerJobInstanceSearchFilter releaseCountFilter = new SchedulerJobInstanceSearchFilterImpl();
             releaseCountFilter.setContextInstanceId(this.contextInstance.getId());
             releaseCountFilter.setStatus(InstanceStatus.ON_HOLD.name());
             long releaseCount = schedulerJobInstanceService
@@ -2158,13 +2159,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     if(item instanceof SchedulerJobInstance) {
                         SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) item;
                         children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                                , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
-                            .stream()
-                            .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                                && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
-                            .map(instance -> (Object) new PrecedingItem(instance))
-                            .collect(Collectors.toList()));
+                                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                                    , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
+                                .stream()
+                                .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                                    && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                                .map(instance -> (Object) new PrecedingItem(instance))
+                                .collect(Collectors.toList()));
                     }
                     stopWatch.stop();
                     logger.debug("TreeView hasChildren: Elapsed milli: " + stopWatch.getTime());
@@ -2360,7 +2361,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     }
 
     private void enableDisableScheduledJobs(ContextInstance contextInstance, UI ui) {
-        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
         filter.setContextInstanceId(contextInstance.getId());
         SearchResults<SchedulerJobInstanceRecord> results = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter

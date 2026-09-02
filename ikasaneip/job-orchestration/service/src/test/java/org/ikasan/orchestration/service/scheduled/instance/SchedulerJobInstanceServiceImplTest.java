@@ -1,9 +1,7 @@
 package org.ikasan.orchestration.service.scheduled.instance;
 
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;

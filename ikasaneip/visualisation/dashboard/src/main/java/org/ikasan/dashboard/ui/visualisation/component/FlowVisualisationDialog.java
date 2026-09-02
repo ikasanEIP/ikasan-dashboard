@@ -21,8 +21,6 @@ import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.hospital.service.HospitalAuditService;

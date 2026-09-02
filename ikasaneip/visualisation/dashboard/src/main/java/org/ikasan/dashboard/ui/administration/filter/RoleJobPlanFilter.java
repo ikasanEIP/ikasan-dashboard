@@ -2,9 +2,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.SolrRoleModuleImpl;
+import org.ikasan.security.service.model.RoleModuleImpl;
 import org.ikasan.spec.security.model.RoleJobPlan;
-import org.ikasan.spec.security.model.RoleModule;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -60,7 +59,7 @@ public class RoleJobPlanFilter implements Filter<RoleJobPlan>
 
         if(querySortOrders.get(0).getSorted().equals("name"))
         {
-            comparator = Comparator.comparing(SolrRoleModuleImpl::getModuleName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            comparator = Comparator.comparing(RoleModuleImpl::getModuleName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         }
 
         return comparator;

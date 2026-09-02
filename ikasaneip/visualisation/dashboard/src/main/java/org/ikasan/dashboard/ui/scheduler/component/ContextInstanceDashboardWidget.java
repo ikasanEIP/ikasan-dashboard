@@ -40,9 +40,9 @@ import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadc
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -80,7 +80,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
+import static org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao.SCHEDULED_CONTEXT_INSTANCE_TYPE;
 
 /**
  * A class representing the ContextInstanceDashboardWidget.
@@ -120,8 +120,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
     private TextField completeContextNameTf = new TextField();
     private TextField completeContextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
-    private ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
-    private ContextInstanceSearchFilter completeContextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+    private ContextInstanceSearchFilter contextInstanceSearchFilter = new ContextInstanceSearchFilterImpl();
+    private ContextInstanceSearchFilter completeContextInstanceSearchFilter = new ContextInstanceSearchFilterImpl();
     private IkasanAuthentication ikasanAuthentication;
     private UI ui;
 
@@ -407,8 +407,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
         breakOut.setVisible(!fullscreen);
-        breakOut.setWidth("50px");
-        breakOut.setHeight("50px");
         breakOut.addClickListener(event -> {
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(ContextInstanceMonitoringView.class);
@@ -458,8 +456,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
         breakOut.setVisible(!fullscreen);
-        breakOut.setWidth("50px");
-        breakOut.setHeight("50px");
         breakOut.addClickListener(event -> {
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(ContextInstanceMonitoringView.class);
@@ -796,8 +792,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                     statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-execution-dialog", UI.getCurrent().getLocale()));
                 }
                 else {
-                    Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR), "100px");
+                    Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE), "100px");
                     statusButton.setEnabled(false);
                     statusButton.setId("repeatingJobSuccessesButton");
                     horizontalLayout.add(statusButton);
@@ -1769,7 +1765,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
      */
     private List<PreparedFutureJobPlanInstance> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
                                                                                String sortField, String sortOrder) {
-        ContextInstanceSearchFilter preparedSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        ContextInstanceSearchFilter preparedSearchFilter = new ContextInstanceSearchFilterImpl();
         preparedSearchFilter.setStatus(InstanceStatus.PREPARED.name());
 
         List<ScheduledContextInstanceRecord> contextInstanceRecords = this.scheduledContextInstanceService

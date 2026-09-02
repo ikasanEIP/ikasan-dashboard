@@ -92,6 +92,14 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
 
         StringBuffer businessStreamNamesBuffer = new StringBuffer();
 
+        if(businessStreamNames != null && businessStreamNames.size() == 1
+            && businessStreamNames.get(0).startsWith("*") && businessStreamNames.get(0).endsWith("*")) {
+            String businessStreamNameFilter = businessStreamNames.get(0);
+            businessStreamNames.clear();
+            businessStreamNames.add("*" + ClientUtils.escapeQueryChars
+                (businessStreamNameFilter.substring(1, businessStreamNameFilter.length()-1)) + "*");
+        }
+
         if(businessStreamNames != null && businessStreamNames.size() > 0)
         {
             businessStreamNamesBuffer.append(this.buildPredicate(MODULE_NAME, businessStreamNames));

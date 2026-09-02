@@ -6,7 +6,7 @@ public class Flow {
     private final String flowName;
 
     /**
-     * Constructs a Flow instance with the specified module name and flow name.
+     * Constructs a Flowimpl instance with the specified module name and flow name.
      *
      * @param moduleName the name of the module associated with this flow
      * @param flowName the name of the flow
@@ -17,7 +17,7 @@ public class Flow {
     }
 
     /**
-     * Retrieves the name of the module associated with this Flow instance.
+     * Retrieves the name of the module associated with this Flowimpl instance.
      *
      * @return the name of the module as a String.
      */

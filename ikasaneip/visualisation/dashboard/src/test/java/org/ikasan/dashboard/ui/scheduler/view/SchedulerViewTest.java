@@ -7,7 +7,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.data.provider.Query;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.component.ScheduledAgentsFilteringGrid;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.module.ModuleType;
 import org.junit.Assert;
 import org.junit.Test;

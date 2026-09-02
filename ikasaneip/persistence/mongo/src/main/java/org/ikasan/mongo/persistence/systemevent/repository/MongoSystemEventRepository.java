@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.systemevent.repository;
 
-import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
+import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -16,7 +16,7 @@ import java.util.Optional;
  */
 @Repository
 @DependsOn("mongoTemplate")
-public interface MongoSystemEventRepository extends MongoRepository<MongoSystemEventImpl, String> {
+public interface MongoSystemEventRepository extends MongoRepository<MongoSystemEventRecordImpl, String> {
 
     /**
      * Find system event by module name and system event id
@@ -25,7 +25,7 @@ public interface MongoSystemEventRepository extends MongoRepository<MongoSystemE
      * @param id the id
      * @return optional system event
      */
-    Optional<MongoSystemEventImpl> findByModuleNameAndId(String moduleName, String id);
+    Optional<MongoSystemEventRecordImpl> findByModuleNameAndId(String moduleName, String id);
 
     /**
      * Find system events by actor (case-insensitive contains)
@@ -33,7 +33,7 @@ public interface MongoSystemEventRepository extends MongoRepository<MongoSystemE
      * @param actor the actor
      * @return list of system events
      */
-    List<MongoSystemEventImpl> findByActorContainingIgnoreCase(String actor);
+    List<MongoSystemEventRecordImpl> findByActorContainingIgnoreCase(String actor);
 
     /**
      * Find system events by subject (case-insensitive contains)
@@ -41,7 +41,7 @@ public interface MongoSystemEventRepository extends MongoRepository<MongoSystemE
      * @param subject the subject
      * @return list of system events
      */
-    List<MongoSystemEventImpl> findBySubjectContainingIgnoreCase(String subject);
+    List<MongoSystemEventRecordImpl> findBySubjectContainingIgnoreCase(String subject);
 
     /**
      * Find system events by action (case-insensitive contains)
@@ -49,7 +49,7 @@ public interface MongoSystemEventRepository extends MongoRepository<MongoSystemE
      * @param action the action
      * @return list of system events
      */
-    List<MongoSystemEventImpl> findByActionContainingIgnoreCase(String action);
+    List<MongoSystemEventRecordImpl> findByActionContainingIgnoreCase(String action);
 
     /**
      * Find system events by timestamp between two dates
@@ -58,7 +58,7 @@ public interface MongoSystemEventRepository extends MongoRepository<MongoSystemE
      * @param end the end date
      * @return list of system events
      */
-    List<MongoSystemEventImpl> findByTimestampBetween(Date start, Date end);
+    List<MongoSystemEventRecordImpl> findByTimestampBetween(Date start, Date end);
 
     /**
      * Delete system events with expiry less than the current time

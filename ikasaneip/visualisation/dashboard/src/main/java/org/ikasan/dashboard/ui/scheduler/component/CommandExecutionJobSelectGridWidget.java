@@ -14,7 +14,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -50,7 +50,7 @@ public class CommandExecutionJobSelectGridWidget extends Div {
         , String jobSelectLabel) {
 
         this.parent = parent;
-        this.schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
+        this.schedulerJobSearchFilter = new SchedulerJobSearchFilterImpl();
         this.jobSelectLabel = jobSelectLabel;
         init(schedulerJobService, contextTemplate);
     }

@@ -31,7 +31,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
-import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.spec.security.model.IkasanPrincipalLite;
 import org.ikasan.spec.security.model.UserLite;
 import org.ikasan.spec.security.service.SecurityService;
@@ -98,7 +98,7 @@ public class ContextViewManagementDialog extends AbstractCloseableResizableDialo
         profileNames.setLabel(getTranslation("label.profiles", UI.getCurrent().getLocale()));
         profileNames.setWidth("450px");
 
-        ContextProfileSearchFilter contextProfileSearchFilter = new SolrContextProfileSearchFilterImpl();
+        ContextProfileSearchFilter contextProfileSearchFilter = new ContextProfileSearchFilterImpl();
         contextProfileSearchFilter.setOwner(SecurityContextHolder.getContext().getAuthentication().getName());
         contextProfileSearchFilter.setContextName(this.parentContextName);
 

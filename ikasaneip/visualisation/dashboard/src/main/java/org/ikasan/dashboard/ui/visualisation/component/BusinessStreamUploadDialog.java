@@ -14,16 +14,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.streams.UploadHandler;
-import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class BusinessStreamUploadDialog extends AbstractCloseableResizableDialog
 {

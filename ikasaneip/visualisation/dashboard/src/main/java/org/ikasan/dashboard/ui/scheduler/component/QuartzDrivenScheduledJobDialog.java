@@ -24,8 +24,8 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -117,7 +117,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.contextTemplate = contextTemplate;
         this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
 
-        this.quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+        this.quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
 
 
         this.formBinder
@@ -183,10 +183,11 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.add(this.createConfigurationForm());
         layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
+        super.content.add(buttonLayout);
+        super.content.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
     }
 
     private boolean isJobSynchronisationRequired(QuartzScheduleDrivenJob priorToModification, QuartzScheduleDrivenJob afterModification) {
@@ -369,7 +370,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     public void createOrUpdateScheduledJob(QuartzScheduleDrivenJob solrQuartzScheduleDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
         solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName()+"-"+solrQuartzScheduleDrivenJob.getJobName());
 
-        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
+        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new QuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(solrQuartzScheduleDrivenJob.getAgentName());
         quartzScheduleDrivenJobRecord.setContextName(solrQuartzScheduleDrivenJob.getContextName());
         quartzScheduleDrivenJobRecord.setJobName(solrQuartzScheduleDrivenJob.getJobName());

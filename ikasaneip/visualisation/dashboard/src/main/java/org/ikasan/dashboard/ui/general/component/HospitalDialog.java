@@ -18,7 +18,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
@@ -68,12 +68,12 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanESBDocument>
 
     private String translatedEventActionMessage;
 
-    private SolrSearchFilteringGrid searchResultsGrid;
+    private SearchFilteringGrid searchResultsGrid;
 
     private DateFormatter dateFormatter;
 
     public HospitalDialog(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService, HospitalAuditService hospitalAuditService,
-                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid,
+                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SearchFilteringGrid searchResultsGrid,
                           DateFormatter dateFormatter)
     {
         this.esbSearchService = esbSearchService;

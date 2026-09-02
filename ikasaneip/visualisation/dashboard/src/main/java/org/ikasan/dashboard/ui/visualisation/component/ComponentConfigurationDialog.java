@@ -42,7 +42,7 @@ public class ComponentConfigurationDialog extends AbstractConfigurationDialog
             return this.configurationMetaData != null;
         } catch (Exception e) {
             logger.error(String.format("An error has occurred attempting to open configuration for component. " +
-                "Module Name[%s], Module URL[%s], Flow Name[%s], Component Name[%s]", module.getName(), module.getUrl(),
+                "Module Name[%s], Module URL[%s], Flowimpl Name[%s], Component Name[%s]", module.getName(), module.getUrl(),
                 flowName, componentName), e);
             return false;
         }

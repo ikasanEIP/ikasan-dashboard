@@ -21,12 +21,12 @@ import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
-import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +41,7 @@ public class ContextInstanceSystemEventHistoryDialog extends AbstractCloseableRe
     protected ConfigurableFilterDataProvider<SystemEvent,Void, SystemEventSearchFilter> filteredDataProvider;
     protected Grid<SystemEvent> systemEventGrid = new Grid<>();
     protected String noSystemEventsMessage;
-    protected SystemEventSearchFilter filter
-        = new SolrSystemEventSearchFilter();
+    protected SystemEventSearchFilter filter = new SystemEventSearchFilterImpl();
 
     /**
      * Initializes a new ContextInstanceSystemEventHistoryDialog with the given contextInstance and systemEventSearchService.

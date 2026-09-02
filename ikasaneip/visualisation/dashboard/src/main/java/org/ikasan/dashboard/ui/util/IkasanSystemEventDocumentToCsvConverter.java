@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.systemevent.SystemEvent;
-import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.spec.systemevent.SystemEventRecord;
 import org.ikasan.systemevent.model.SystemEventImpl;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -25,11 +25,11 @@ public class IkasanSystemEventDocumentToCsvConverter {
     }
 
     public void addDocument(SystemEvent ikasanSolrDocument) throws JsonProcessingException {
-        csvContents.append("\"").append((objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+        csvContents.append("\"").append((objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                 , SystemEventImpl.class).getActor())).append("\"").append(",")
             .append("\"").append(ikasanSolrDocument.getSubject() == null ? "" : ikasanSolrDocument.getSubject()).append("\"").append(",")
             .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getAction())).append(",")
-            .append("\"").append(this.dateFormatter.getFormattedDate(((SolrSystemEvent) ikasanSolrDocument).getTimestampLong())).append("\"").append("\n");
+            .append("\"").append(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp().getTime())).append("\"").append("\n");
     }
 
     public String getCvsContents() {

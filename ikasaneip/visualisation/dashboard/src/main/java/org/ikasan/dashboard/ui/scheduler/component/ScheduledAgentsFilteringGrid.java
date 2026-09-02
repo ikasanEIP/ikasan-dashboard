@@ -8,7 +8,6 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SearchConstants;
@@ -29,7 +28,7 @@ import java.util.function.Consumer;
 public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
     private Logger logger = LoggerFactory.getLogger(ScheduledAgentsFilteringGrid.class);
 
-    private ModuleMetaDataService solrSearchService;
+    private ModuleMetaDataService moduleMetaDataService;
 
     private DataProvider<ModuleMetaData,ModuleSearchFilter> dataProvider;
     private ConfigurableFilterDataProvider<ModuleMetaData,Void, ModuleSearchFilter> filteredDataProvider;
@@ -41,13 +40,13 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
     /**
      * Constructor
      *
-     * @param solrSearchService
+     * @param moduleMetaDataService
      * @param searchFilter
      */
-    public ScheduledAgentsFilteringGrid(ModuleMetaDataService solrSearchService,
+    public ScheduledAgentsFilteringGrid(ModuleMetaDataService moduleMetaDataService,
                                         ModuleSearchFilter searchFilter) {
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService ==  null) {
+        this.moduleMetaDataService = moduleMetaDataService;
+        if(this.moduleMetaDataService ==  null) {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
         this.searchFilter = searchFilter;
@@ -155,7 +154,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
                 });
             }
             else {
-                moduleNames.add("*" + ClientUtils.escapeQueryChars(filter.getModuleNameFilter()) + "*");
+                moduleNames.add("*" + filter.getModuleNameFilter() + "*");
             }
         }
 
@@ -167,7 +166,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
         ModuleMetadataSearchResults results;
 
         try {
-            results =  this.solrSearchService.find(moduleNames, ModuleType.SCHEDULER_AGENT, offset, limit);
+            results =  this.moduleMetaDataService.find(moduleNames, ModuleType.SCHEDULER_AGENT, offset, limit);
         }
         catch (Exception e) {
             e.printStackTrace();

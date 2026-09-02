@@ -97,11 +97,11 @@ public class FlowStateCache implements Consumer<FlowState>
 
 
     /**
-     * Retrieves the FlowState object for the given Module and Flow.
+     * Retrieves the FlowState object for the given Module and Flowimpl.
      *
      * @param module The Module for which to retrieve the FlowState.
-     * @param flow The Flow for which to retrieve the FlowState.
-     * @return The FlowState object associated with the provided Module and Flow.
+     * @param flow The Flowimpl for which to retrieve the FlowState.
+     * @return The FlowState object associated with the provided Module and Flowimpl.
      */
     public FlowState get(Module module, Flow flow)
     {
@@ -142,11 +142,11 @@ public class FlowStateCache implements Consumer<FlowState>
     }
 
     /**
-     * Checks if the cache contains a specific Module and Flow.
+     * Checks if the cache contains a specific Module and Flowimpl.
      *
      * @param module The Module to check in the cache.
-     * @param flow The Flow to check in the cache.
-     * @return true if the cache contains the Module and Flow, false otherwise.
+     * @param flow The Flowimpl to check in the cache.
+     * @return true if the cache contains the Module and Flowimpl, false otherwise.
      */
     public boolean contains(Module module, Flow flow)
     {

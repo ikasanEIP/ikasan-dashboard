@@ -9,7 +9,7 @@ public class Boundary {
     private String label;
 
     /**
-     * Constructs a new {@code Boundary} object with specified position, dimensions, colour, and label.
+     * Constructs a new {@code BoundaryImpl} object with specified position, dimensions, colour, and label.
      *
      * @param x the x-coordinate of the boundary
      * @param y the y-coordinate of the boundary

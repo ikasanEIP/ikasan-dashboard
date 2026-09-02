@@ -85,7 +85,8 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE_TYPE;
+import static org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao.SCHEDULED_CONTEXT_INSTANCE_TYPE;
+
 
 public class ContextInstanceWidget extends VerticalLayout
     implements BeforeEnterObserver, ContextInstanceStateChangeEventLocalBroadcastListener

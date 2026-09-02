@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionException;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
@@ -34,7 +35,6 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.service.SecurityService;
 import org.slf4j.Logger;
@@ -301,7 +301,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
      * @param contextName the name of the context for which prepared instances should be removed
      */
     protected void removePrepared(String contextName) {
-        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        ContextInstanceSearchFilter filter = new ContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
         filter.setContextInstanceNames(Collections.singletonList(contextName));
 

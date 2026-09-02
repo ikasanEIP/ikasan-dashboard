@@ -46,7 +46,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * Implementation of a MessageHistoryEvent based on a String lifeIdentifier from a Flow
+ * Implementation of a MessageHistoryEvent based on a String lifeIdentifier from a FlowImpl
  *
  * @author Ikasan Development Team
  */

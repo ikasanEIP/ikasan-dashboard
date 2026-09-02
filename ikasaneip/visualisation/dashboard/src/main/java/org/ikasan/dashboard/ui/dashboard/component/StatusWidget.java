@@ -362,12 +362,12 @@ public class StatusWidget extends DashboardWidget implements FlowStateBroadcastL
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
         this.recalculate();
-        logger.debug("Flow state update received!" + flowState);
+        logger.debug("Flowimpl state update received!" + flowState);
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
         this.recalculate();
-        logger.debug("Flow state update received!" + flowState);
+        logger.debug("Flowimpl state update received!" + flowState);
     }
 }

@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.search.component;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Image;
@@ -139,10 +140,13 @@ public class SearchForm extends VerticalLayout {
 
         this.wiretapImage = new Image("frontend/images/wiretap-inverse.png", "");
         this.wiretapImage.setHeight("40px");
-        this.wiretapCheckButton = new Button(this.wiretapImage);
-        this.wiretapCheckButton.setHeight("46px");
-        this.wiretapCheckButton.setWidth("44px");
+        this.wiretapCheckButton = new Button();
+        this.wiretapCheckButton.setIcon(this.wiretapImage);
         this.wiretapCheckButton.setId("wiretapCheckButton");
+        this.wiretapCheckButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+        this.wiretapCheckButton.getStyle().set("display", "flex");
+        this.wiretapCheckButton.getStyle().set("align-items", "center");
+        this.wiretapCheckButton.getStyle().set("justify-content", "center");
 
         this.wiretapCheckButton.addClickListener(buttonClickEvent -> {
             this.wiretapChecked = !this.wiretapChecked;
@@ -164,9 +168,10 @@ public class SearchForm extends VerticalLayout {
         this.errorImage = new Image("frontend/images/error-inverse.png", "");
         this.errorImage.setHeight("40px");
         this.errorCheckButton = new Button(errorImage);
-        this.errorCheckButton.setHeight("46px");
-        this.errorCheckButton.setWidth("44px");
         this.errorCheckButton.setId("errorCheckButton");
+        this.errorCheckButton.getStyle().set("display", "flex");
+        this.errorCheckButton.getStyle().set("align-items", "center");
+        this.errorCheckButton.getStyle().set("justify-content", "center");
 
         this.errorCheckButton.addClickListener(buttonClickEvent -> {
             this.errorChecked = !this.errorChecked;
@@ -188,9 +193,10 @@ public class SearchForm extends VerticalLayout {
         this.hospitalImage = new Image("frontend/images/hospital-inverse.png", "");
         this.hospitalImage.setHeight("40px");
         this.hospitalCheckButton = new Button(hospitalImage);
-        this.hospitalCheckButton.setHeight("46px");
-        this.hospitalCheckButton.setWidth("44px");
         this.hospitalCheckButton.setId("hospitalCheckButton");
+        this.hospitalCheckButton.getStyle().set("display", "flex");
+        this.hospitalCheckButton.getStyle().set("align-items", "center");
+        this.hospitalCheckButton.getStyle().set("justify-content", "center");
 
         this.hospitalCheckButton.addClickListener(buttonClickEvent -> {
             this.hospitalChecked = !this.hospitalChecked;
@@ -212,9 +218,10 @@ public class SearchForm extends VerticalLayout {
         this.replayImage = new Image("frontend/images/replay-inverse.png", "");
         this.replayImage.setHeight("40px");
         this.replayCheckButton = new Button(replayImage);
-        this.replayCheckButton.setHeight("46px");
-        this.replayCheckButton.setWidth("44px");
         this.replayCheckButton.setId("replayCheckButton");
+        this.replayCheckButton.getStyle().set("display", "flex");
+        this.replayCheckButton.getStyle().set("align-items", "center");
+        this.replayCheckButton.getStyle().set("justify-content", "center");
 
         this.replayCheckButton.addClickListener(buttonClickEvent -> {
             this.replayChecked = !this.replayChecked;

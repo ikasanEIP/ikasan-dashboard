@@ -51,6 +51,6 @@ public class Draw2DLayout {
             .filter(abstractWiretapNode -> abstractWiretapNode.getName() != null
                 && abstractWiretapNode.getName().equals(name))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Flow component not found: " + name));
+                .orElseThrow(() -> new IllegalArgumentException("Flowimpl component not found: " + name));
     }
 }

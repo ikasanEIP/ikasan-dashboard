@@ -2,10 +2,11 @@ package org.ikasan.setup.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.setup.model.DashboardPlatformSetup;
-import org.ikasan.setup.model.DashboardSetupItem;
 import org.ikasan.setup.model.SolrDashboardPlatformSetupImpl;
 import org.ikasan.setup.util.SolrSetupObjectMapperFactory;
+import org.ikasan.spec.persistence.dao.SetupDao;
+import org.ikasan.spec.persistence.model.DashboardPlatformSetup;
+import org.ikasan.spec.persistence.model.DashboardSetupItem;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;

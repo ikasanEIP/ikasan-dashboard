@@ -3,15 +3,11 @@ package org.ikasan.notification.notifier;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.*;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
-import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
-import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
-import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -133,7 +129,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -146,7 +142,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(true);
 
-        SolrEmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new EmailNotificationDetailsRecordImpl();
         emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
@@ -182,7 +178,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -193,7 +189,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
 
-        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecordImpl record = new EmailNotificationDetailsRecordImpl();
         record.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
@@ -230,7 +226,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -241,7 +237,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
 
-        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecordImpl record = new EmailNotificationDetailsRecordImpl();
         record.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
@@ -279,7 +275,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -290,7 +286,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
 
-        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecordImpl record = new EmailNotificationDetailsRecordImpl();
         record.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
@@ -335,7 +331,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1",MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -346,17 +342,17 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubject("subject-1");
         emailNotificationDetails.setHtml(true);
 
-        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new EmailNotificationDetailsRecordImpl();
         emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
 
-        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        NotificationSendAudit notificationSendAudit = new NotificationSendAuditImpl();
         notificationSendAudit.setContextInstanceId("context-instance-id-1");
         notificationSendAudit.setJobName("job-1");
         notificationSendAudit.setMonitorType("ERROR");
         notificationSendAudit.setNotifierType("EMAIL");
         notificationSendAudit.setNotificationSend(true);
 
-        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        NotificationSendAuditRecord notificationSendAuditRecord = new NotificationSendAuditRecordImpl();
         notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 
@@ -378,7 +374,7 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1","context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails = new EmailNotificationDetailsImpl();
         emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
@@ -391,17 +387,17 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(true);
 
-        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new EmailNotificationDetailsRecordImpl();
         emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
 
-        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        NotificationSendAudit notificationSendAudit = new NotificationSendAuditImpl();
         notificationSendAudit.setContextInstanceId("context-instance-id-1");
         notificationSendAudit.setJobName("job-1");
         notificationSendAudit.setMonitorType("ERROR");
         notificationSendAudit.setNotifierType("EMAIL");
         notificationSendAudit.setNotificationSend(false);
 
-        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        NotificationSendAuditRecord notificationSendAuditRecord = new NotificationSendAuditRecordImpl();
         notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 
@@ -515,14 +511,14 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
-        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        NotificationSendAudit notificationSendAudit = new NotificationSendAuditImpl();
         notificationSendAudit.setContextInstanceId("context-instance-id-1");
         notificationSendAudit.setJobName("job-1");
         notificationSendAudit.setMonitorType("ERROR");
         notificationSendAudit.setNotifierType("EMAIL");
         notificationSendAudit.setNotificationSend(false);
 
-        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        NotificationSendAuditRecord notificationSendAuditRecord = new NotificationSendAuditRecordImpl();
         notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 
@@ -563,14 +559,14 @@ public class EmailNotifierTest {
 
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.OVERDUE, InstanceStatus.ERROR);
 
-        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        NotificationSendAudit notificationSendAudit = new NotificationSendAuditImpl();
         notificationSendAudit.setContextInstanceId("context-instance-id-1");
         notificationSendAudit.setJobName("job-1");
         notificationSendAudit.setMonitorType("OVERDUE");
         notificationSendAudit.setNotifierType("EMAIL");
         notificationSendAudit.setNotificationSend(false);
 
-        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        NotificationSendAuditRecord notificationSendAuditRecord = new NotificationSendAuditRecordImpl();
         notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 

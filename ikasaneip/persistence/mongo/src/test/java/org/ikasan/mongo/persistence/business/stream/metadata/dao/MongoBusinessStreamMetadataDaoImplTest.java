@@ -1,7 +1,9 @@
 package org.ikasan.mongo.persistence.business.stream.metadata.dao;
 
 import org.apache.commons.io.IOUtils;
+import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamMetaDataImpl;
+import org.ikasan.mongo.persistence.business.stream.metadata.model.Flowimpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.MongoBusinessStream;
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
 import org.ikasan.mongo.persistence.module.metadata.model.MongoFlowMetaDataImpl;
@@ -582,8 +584,8 @@ public class MongoBusinessStreamMetadataDaoImplTest {
         assertNotNull(retrieved.getBusinessStream());
 
         // Verify the deserialized object uses MongoDB model classes
-        org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStream businessStream =
-            (org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStream) retrieved.getBusinessStream();
+        BusinessStreamImpl businessStream =
+            (BusinessStreamImpl) retrieved.getBusinessStream();
 
         assertNotNull(businessStream);
         assertNotNull(businessStream.getFlows());
@@ -595,10 +597,10 @@ public class MongoBusinessStreamMetadataDaoImplTest {
         assertTrue(businessStream.getFlows().size() > 0);
 
         // Verify the flow is a MongoDB model entity
-        assertTrue(businessStream.getFlows().get(0) instanceof org.ikasan.mongo.persistence.business.stream.metadata.model.Flow);
+        assertTrue(businessStream.getFlows().get(0) instanceof Flowimpl);
 
         // Verify flow properties
-        org.ikasan.mongo.persistence.business.stream.metadata.model.Flow firstFlow = businessStream.getFlows().get(0);
+        Flow firstFlow = businessStream.getFlows().get(0);
         assertNotNull(firstFlow.getId());
         assertNotNull(firstFlow.getModuleName());
         assertNotNull(firstFlow.getFlowName());

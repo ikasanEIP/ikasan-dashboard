@@ -18,7 +18,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
@@ -95,7 +95,7 @@ public class AcknowledgeErrorDialog extends AbstractCloseableResizableDialog {
                 if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
 
                     if(!((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly()) {
-                        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+                        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
                         filter.setContextInstanceId(this.contextInstance.getId());
                         filter.setJobName(schedulerJobInstanceRecord.getJobName());
 

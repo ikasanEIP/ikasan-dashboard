@@ -5,7 +5,7 @@ import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Represents a specific type of destination in the form of an FTP location.
- * This class extends the base {@code Node} class and implements the {@code Destination} interface.
+ * This class extends the base {@code Node} class and implements the {@code DestinationImpl} interface.
  *
  * An {@code FtpLocation} object is used to model an FTP server or location with associated metadata,
  * such as a unique identifier, name, and an image representation.

@@ -8,7 +8,6 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -34,7 +33,7 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
 {
     private Logger logger = LoggerFactory.getLogger(BusinessStreamFilteringGrid.class);
 
-    private BusinessStreamMetaDataService<BusinessStreamMetaData> solrSearchService;
+    private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
     private ModuleMetaDataService moduleMetaDataService;
 
     private DataProvider<BusinessStreamMetaData,BusinessStreamSearchFilter> dataProvider;
@@ -47,11 +46,11 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
     /**
      * Constructors
      */
-    public BusinessStreamFilteringGrid(BusinessStreamMetaDataService<BusinessStreamMetaData> solrSearchService,
+    public BusinessStreamFilteringGrid(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                                        BusinessStreamSearchFilter searchFilter, ModuleMetaDataService moduleMetaDataService)
     {
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService ==  null)
+        this.businessStreamMetaDataService = businessStreamMetaDataService;
+        if(this.businessStreamMetaDataService ==  null)
         {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
@@ -159,14 +158,14 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
         if(filter.getBusinessStreamNameFilter() != null && !filter.getBusinessStreamNameFilter().isEmpty())
         {
             businessStreamNames = new ArrayList<>();
-            businessStreamNames.add("*" + ClientUtils.escapeQueryChars(filter.getBusinessStreamNameFilter()) + "*");
+            businessStreamNames.add("*" + filter.getBusinessStreamNameFilter() + "*");
         }
 
         try {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
             if(this.canAccessAllModules(authentication) || authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN)) {
-                return this.solrSearchService.find(businessStreamNames, offset, limit);
+                return this.businessStreamMetaDataService.find(businessStreamNames, offset, limit);
             }
             else {
                 final ArrayList<String> accessibleModules = new ArrayList<>(SecurityUtils.getAccessibleModules(authentication));
@@ -189,7 +188,7 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
                     accessibleModulesMetaData = moduleMetadataSearchResults.getResultList();
                 }
 
-                return this.solrSearchService.findBusinessStreamsForModules(filter.getBusinessStreamNameFilter(),
+                return this.businessStreamMetaDataService.findBusinessStreamsForModules(filter.getBusinessStreamNameFilter(),
                     accessibleModulesMetaData, offset, limit);
             }
         }

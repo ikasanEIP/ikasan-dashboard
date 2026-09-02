@@ -1,6 +1,6 @@
 package org.ikasan.orchestration.service.scheduled.notification;
 
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.notification.dao.EmailNotificationContextDao;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;

@@ -212,8 +212,8 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
             }
         }
         catch (Exception e) {
-            logger.error("An error has occurred setting the current flow! Flow name[{}].", currentFlow.getName(), e);
-            throw new RuntimeException(String.format("An error has occurred setting the current flow! Flow name[%s].", currentFlow.getName()), e);
+            logger.error("An error has occurred setting the current flow! Flowimpl name[{}].", currentFlow.getName(), e);
+            throw new RuntimeException(String.format("An error has occurred setting the current flow! Flowimpl name[%s].", currentFlow.getName()), e);
         }
     }
 
@@ -331,7 +331,7 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
     /**
      * Retrieves the current flow associated with this module visualization.
      *
-     * @return the current Flow instance representing the active flow in the visualization
+     * @return the current Flowimpl instance representing the active flow in the visualization
      */
     public Flow getCurrentFlow() {
         return this.currentFlow;
