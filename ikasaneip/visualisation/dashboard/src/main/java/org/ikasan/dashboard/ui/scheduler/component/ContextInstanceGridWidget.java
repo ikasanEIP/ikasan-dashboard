@@ -18,7 +18,7 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -170,7 +170,7 @@ public class ContextInstanceGridWidget extends Div {
                             LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                             double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         // Create a modulesGrid bound to the list
-        ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        ContextInstanceSearchFilter contextInstanceSearchFilter = new ContextInstanceSearchFilterImpl();
         contextInstanceSearchFilter.setContextInstanceNames(Collections.singletonList(contextTemplate.getName()));
         contextInstanceFilteringGrid = new ContextInstanceFilteringGrid(this.scheduledContextInstanceService, contextInstanceSearchFilter);
         contextInstanceFilteringGrid.getElement().getStyle().set("margin-top", "40px");

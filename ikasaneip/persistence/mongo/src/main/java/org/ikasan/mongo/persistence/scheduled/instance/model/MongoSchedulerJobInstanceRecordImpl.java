@@ -1,4 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
@@ -13,6 +16,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.util.Objects;
 
 /**
  * MongoDB implementation of SchedulerJobInstanceRecord.
@@ -325,23 +330,19 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
 
     @Override
     public String toString() {
-        return "MongoSchedulerJobInstanceRecordImpl{" +
-            "id='" + id + '\'' +
-            ", jobName='" + jobName + '\'' +
-            ", displayName='" + displayName + '\'' +
-            ", contextName='" + contextName + '\'' +
-            ", childContextName='" + childContextName + '\'' +
-            ", contextInstanceId='" + contextInstanceId + '\'' +
-            ", type='" + type + '\'' +
-            ", status='" + status + '\'' +
-            ", targetResidingContextOnly=" + targetResidingContextOnly +
-            ", participatesInLock=" + participatesInLock +
-            ", startTime=" + startTime +
-            ", endTime=" + endTime +
-            ", timestamp=" + timestamp +
-            ", modifiedTimestamp=" + modifiedTimestamp +
-            ", modifiedBy='" + modifiedBy + '\'' +
-            ", manuallySubmittedBy='" + manuallySubmittedBy + '\'' +
-            '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SchedulerJobInstanceRecord that = (MongoSchedulerJobInstanceRecordImpl) o;
+        return id.equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

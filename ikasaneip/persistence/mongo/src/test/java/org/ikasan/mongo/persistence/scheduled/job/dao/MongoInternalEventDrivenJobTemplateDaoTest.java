@@ -82,11 +82,13 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
 
     @Test
     public void test_save_updates_modified_timestamp() throws InterruptedException {
-        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        InternalEventDrivenJobRecord record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
 
         long beforeSave = System.currentTimeMillis();
         Thread.sleep(10);
         dao.save(record);
+
+        record = this.dao.findById(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_agent1_job1_context1");
 
         Assert.assertTrue(record.getModifiedTimestamp() >= beforeSave);
     }

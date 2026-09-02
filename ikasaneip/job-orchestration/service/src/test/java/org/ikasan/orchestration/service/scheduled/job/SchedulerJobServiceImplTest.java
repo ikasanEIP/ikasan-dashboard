@@ -1,7 +1,7 @@
 package org.ikasan.orchestration.service.scheduled.job;
 
 import org.ikasan.job.orchestration.model.job.*;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.job.dao.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.search.SearchResults;

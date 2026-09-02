@@ -5,7 +5,7 @@ import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Represents a message channel in the system, which can be used as a destination.
- * A message channel is an extension of the Node class and implements the Destination interface.
+ * A message channel is an extension of the Node class and implements the DestinationImpl interface.
  * It encapsulates properties and behaviors specific to message channels, such as privacy attributes.
  */
 public class MessageChannel extends Node implements Destination

@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.StringJoiner;
 
 /**
- * MongoDB implementation of BusinessStream entity.
+ * MongoDB implementation of BusinessStreamImpl entity.
  *
  * This entity stores business stream metadata in MongoDB, providing:
  * - Efficient storage and retrieval of business stream metadata

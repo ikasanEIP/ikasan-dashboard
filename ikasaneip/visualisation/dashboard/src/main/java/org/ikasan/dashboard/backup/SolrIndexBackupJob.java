@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.backup;
 
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanESBDocument;

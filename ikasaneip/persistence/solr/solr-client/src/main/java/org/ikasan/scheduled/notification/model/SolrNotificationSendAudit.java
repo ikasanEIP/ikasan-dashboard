@@ -90,7 +90,7 @@ public class SolrNotificationSendAudit implements NotificationSendAudit {
 
     @Override
     public String toString() {
-        return "SolrNotificationSendAudit{" +
+        return "NotificationSendAuditImpl{" +
                 "jobName='" + jobName + '\'' +
                 ", contextInstanceId='" + contextInstanceId + '\'' +
                 ", contextName='" + contextName + '\'' +

@@ -119,7 +119,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
         doc.addField("id", "scheduledEvent1");
         doc.addField("type", "scheduledProcessEvent");
         doc.addField("moduleName", "schedulerAgent1");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("flowName", "Wriggle Customer HTTP Request Flowimpl");
         doc.addField("payload", loadDataFile("/solr/data/scheduledProcessEventSuccess.json"));
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
@@ -129,7 +129,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
         doc.addField("id", "scheduledEvent2");
         doc.addField("type", "scheduledProcessEvent");
         doc.addField("moduleName", "schedulerAgent1");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("flowName", "Wriggle Customer HTTP Request Flowimpl");
         doc.addField("payload", loadDataFile("/solr/data/scheduledProcessEventSuccessFail.json"));
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
@@ -143,7 +143,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
         doc.addField("id", "scheduledEvent1");
         doc.addField("type", "scheduledProcessEvent");
         doc.addField("moduleName", "schedulerAgent1");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("flowName", "Wriggle Customer HTTP Request Flowimpl");
         doc.addField("payload", loadDataFile("/solr/data/scheduledProcessEventSuccess.json"));
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
@@ -153,7 +153,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
         doc.addField("id", "scheduledEvent2");
         doc.addField("type", "scheduledProcessEvent");
         doc.addField("moduleName", "schedulerAgent1");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("flowName", "Wriggle Customer HTTP Request Flowimpl");
         doc.addField("payload", loadDataFile("/solr/data/scheduledProcessEventSuccess.json"));
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);

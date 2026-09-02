@@ -1,7 +1,6 @@
 package org.ikasan.orchestration.service.scheduled.notification;
 
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsRecordImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.dao.EmailNotificationDetailsDao;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;

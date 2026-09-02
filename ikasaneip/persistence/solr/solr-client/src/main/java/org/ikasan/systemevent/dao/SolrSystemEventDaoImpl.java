@@ -9,7 +9,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchDao;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
-import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.systemevent.model.SolrSystemEventRecordImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -69,7 +69,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
         logger.debug("query: " + query);
 
         SearchResults<? extends SystemEvent> searchResults = this
-            .findByQuery(query, SolrSystemEvent.class, 0, 1);
+            .findByQuery(query, SolrSystemEventRecordImpl.class, 0, 1);
 
         if(searchResults.getResultList().size() > 0) {
             return searchResults.getResultList().get(0);
@@ -148,6 +148,6 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
             solrQuery.addSort(CREATED_DATE_TIME, SolrQuery.ORDER.desc);
         }
 
-        return this.findByQuery(solrQuery, SolrSystemEvent.class, offset, limit);
+        return this.findByQuery(solrQuery, SolrSystemEventRecordImpl.class, offset, limit);
     }
 }

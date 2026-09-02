@@ -6,7 +6,7 @@ import org.ikasan.designer.pallet.DesignerItemIdentifier;
 /**
  * Represents an SFTP (Secure File Transfer Protocol) node in a visual design or workflow application.
  *
- * The SftpLocation class extends the Node class and implements the Destination interface,
+ * The SftpLocation class extends the Node class and implements the DestinationImpl interface,
  * providing additional configuration specific to SFTP-based destinations.
  * This class sets a default image to visually represent the SFTP location within the application and
  * inherits core functionality such as coordinate management and identifier association from its superclass.

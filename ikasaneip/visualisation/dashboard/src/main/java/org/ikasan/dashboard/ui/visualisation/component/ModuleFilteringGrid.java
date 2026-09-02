@@ -8,7 +8,6 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SearchConstants;
@@ -29,7 +28,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
 {
     private Logger logger = LoggerFactory.getLogger(ModuleFilteringGrid.class);
 
-    private ModuleMetaDataService solrSearchService;
+    private ModuleMetaDataService moduleMetaDataService;
 
     private DataProvider<ModuleMetaData,ModuleSearchFilter> dataProvider;
     private ConfigurableFilterDataProvider<ModuleMetaData,Void, ModuleSearchFilter> filteredDataProvider;
@@ -42,11 +41,11 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
     /**
      * Constructor
      */
-    public ModuleFilteringGrid(ModuleMetaDataService solrSearchService,
+    public ModuleFilteringGrid(ModuleMetaDataService moduleMetaDataService,
                                ModuleSearchFilter searchFilter)
     {
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService ==  null)
+        this.moduleMetaDataService = moduleMetaDataService;
+        if(this.moduleMetaDataService ==  null)
         {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
@@ -161,7 +160,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
                 });
             }
             else {
-                moduleNames.add("*" + ClientUtils.escapeQueryChars(filter.getModuleNameFilter()) + "*");
+                moduleNames.add("*" + filter.getModuleNameFilter() + "*");
             }
         }
 
@@ -173,7 +172,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
 
         try {
 
-            results =  this.solrSearchService.find(moduleNames, offset, limit);
+            results =  this.moduleMetaDataService.find(moduleNames, offset, limit);
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();

@@ -25,9 +25,9 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobRecordImpl;
 import org.ikasan.job.orchestration.service.ReplacementPairSpelBuilder;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -131,7 +131,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.contextTemplate = contextTemplate;
         this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
 
-        this.fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+        this.fileEventDrivenJob = new FileEventDrivenJobImpl();
 
         this.formBinder
             = new Binder<>(FileEventDrivenJob.class);
@@ -188,7 +188,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         buttonLayout.setMargin(true);
         buttonLayout.setSpacing(true);
         buttonLayout.add(saveButton, cancelButton);
-        buttonLayout.getStyle().set("padding-bottom", "40px");
+        buttonLayout.getStyle().set("padding-bottom", "20px");
 
         Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
         Button helpButton = new Button("Help", helpIcon);
@@ -205,10 +205,12 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         layout.add(helpButton);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, helpButton);
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
-        layout.getStyle().set("padding-bottom", "40px");
+        layout.add(this.createConfigurationForm());
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
+        layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
+        super.content.add(buttonLayout);
+        super.content.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
     }
 
     /**
@@ -645,7 +647,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     public void createOrUpdateScheduledJob(FileEventDrivenJob fileEventDrivenJob, IkasanAuthentication authentication) {
         fileEventDrivenJob.setIdentifier(fileEventDrivenJob.getAgentName()+"-"+fileEventDrivenJob.getJobName());
 
-        SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
+        FileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new FileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
         solrFileEventDrivenJobRecord.setContextName(fileEventDrivenJob.getContextName());

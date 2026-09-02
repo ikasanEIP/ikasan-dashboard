@@ -1,6 +1,6 @@
 package org.ikasan.notification.monitor.mock;
 
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -41,7 +41,7 @@ public class SchedulerJobRecordTestImpl implements SchedulerJobRecord {
 
     @Override
     public SchedulerJob getJob() {
-        FileEventDrivenJob fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+        FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
         fileEventDrivenJob.setCronExpression("0 0/1 05-23 ? * MON-SUN *");
         fileEventDrivenJob.setChildContextNames(Arrays.asList("context-instance-1"));
         return fileEventDrivenJob;

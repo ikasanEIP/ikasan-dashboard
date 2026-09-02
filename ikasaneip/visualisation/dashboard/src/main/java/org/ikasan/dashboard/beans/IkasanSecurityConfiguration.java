@@ -1,8 +1,6 @@
 package org.ikasan.dashboard.beans;
 
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.dao.SolrSecurityDaoImpl;
-import org.ikasan.security.dao.SolrUserDaoImpl;
 import org.ikasan.security.service.*;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactory;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactoryImpl;

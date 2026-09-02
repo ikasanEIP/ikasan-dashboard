@@ -1,18 +1,32 @@
 package org.ikasan.business.stream.metadata.model;
 
-import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.model.*;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
-public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<BusinessStream>
+public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<BusinessStreamImpl>
 {
-    private static final JsonMapper mapper = JsonMapper.builder().build();
+    private static final JsonMapper mapper;
+
+    static {
+        final var simpleModule = new SimpleModule()
+            .addAbstractTypeMapping(Boundary.class, BoundaryImpl.class)
+            .addAbstractTypeMapping(BusinessStream.class, BusinessStreamImpl.class)
+            .addAbstractTypeMapping(Correlator.class, CorrelatorImpl.class)
+            .addAbstractTypeMapping(Destination.class, DestinationImpl.class)
+            .addAbstractTypeMapping(Edge.class, EdgeImpl.class)
+            .addAbstractTypeMapping(Flow.class, FlowImpl.class)
+            .addAbstractTypeMapping(IntegratedSystem.class, IntegratedSystemImpl.class);
+
+        mapper = JsonMapper.builder().addModule(simpleModule).build();
+    }
 
     private String id;
     private String name;
     private String description;
     private String json;
-    private BusinessStream businessStream;
+    private BusinessStreamImpl businessStream;
 
     @Override
     public String getId()
@@ -61,11 +75,11 @@ public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<Busine
     }
 
     @Override
-    public BusinessStream getBusinessStream() {
+    public BusinessStreamImpl getBusinessStream() {
         if(this.businessStream == null) {
 
             try {
-                this.businessStream = mapper.readValue(this.json, BusinessStream.class);
+                this.businessStream = mapper.readValue(this.json, BusinessStreamImpl.class);
             }
             catch (JacksonException e) {
                 throw new RuntimeException("Could not map business stream from JSON", e);

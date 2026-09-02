@@ -15,7 +15,7 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.orchestration.service.utils.*;
-import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.job.orchestration.model.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;

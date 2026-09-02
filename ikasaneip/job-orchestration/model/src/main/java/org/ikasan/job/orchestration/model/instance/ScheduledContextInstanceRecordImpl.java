@@ -14,7 +14,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
 
     private static final JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
-    private String id;
+    protected String id;
     private String contextName;
     private String contextInstance;
     private String contextInstanceId;

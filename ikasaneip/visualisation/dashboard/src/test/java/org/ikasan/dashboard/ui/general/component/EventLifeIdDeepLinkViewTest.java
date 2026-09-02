@@ -2,7 +2,7 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -64,10 +64,10 @@ public class EventLifeIdDeepLinkViewTest extends UITest {
         SearchResults searchResults = (SearchResults) ReflectionTestUtils
             .getField(eventLifeIdDeepLinkView, "searchResults");
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        Assertions.assertEquals(3, solrSearchFilteringGrid.getResultSize(), "Search results size equals 3!");
+        Assertions.assertEquals(3, searchFilteringGrid.getResultSize(), "Search results size equals 3!");
     }
 
     @Test
@@ -93,9 +93,9 @@ public class EventLifeIdDeepLinkViewTest extends UITest {
         SearchResults searchResults = (SearchResults) ReflectionTestUtils
             .getField(eventLifeIdDeepLinkView, "searchResults");
 
-        SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SearchFilteringGrid searchFilteringGrid = (SearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        Assertions.assertEquals(0, solrSearchFilteringGrid.getResultSize(), "Search results size equals 0!");
+        Assertions.assertEquals(0, searchFilteringGrid.getResultSize(), "Search results size equals 0!");
     }
 }

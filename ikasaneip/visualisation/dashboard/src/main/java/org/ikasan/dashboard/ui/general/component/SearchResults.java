@@ -18,7 +18,7 @@ import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.search.SearchConstants;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.component.filter.SearchFilter;
 import org.ikasan.dashboard.ui.search.listener.IgnoreHospitalEventSubmissionListener;
 import org.ikasan.dashboard.ui.search.listener.ReplayEventSubmissionListener;
@@ -28,7 +28,6 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IkasanDocumentToCsvConverter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
@@ -54,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 public class SearchResults extends Div {
     private static Logger logger = LoggerFactory.getLogger(SearchResults.class);
 
-    private SolrSearchFilteringGrid searchResultsGrid;
+    private SearchFilteringGrid searchResultsGrid;
     private NativeLabel resultsLabel = new NativeLabel();
     private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
     private HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -220,10 +219,10 @@ public class SearchResults extends Div {
             () -> {
                 IkasanDocumentToCsvConverter csvConverter = new IkasanDocumentToCsvConverter();
                 for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100) {
-                    List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
+                    List<IkasanESBDocument> docs = (List<IkasanESBDocument>) searchResultsGrid.getDataProvider().fetch
                         (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
 
-                    for (IkasanSolrDocument document : docs) {
+                    for (IkasanESBDocument document : docs) {
                         csvConverter.addDocument(document);
                     }
 
@@ -280,10 +279,10 @@ public class SearchResults extends Div {
                 try (final var baos = new ByteArrayOutputStream();
                      final var zos = new ZipOutputStream(baos)) {
                     for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100) {
-                        List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
+                        List<IkasanESBDocument> docs = (List<IkasanESBDocument>) searchResultsGrid.getDataProvider().fetch
                             (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
 
-                        for (IkasanSolrDocument document : docs) {
+                        for (IkasanESBDocument document : docs) {
                             String documentAsString = objectMapper.writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(document);
 
@@ -359,7 +358,7 @@ public class SearchResults extends Div {
      */
     private void createSearchResultsGrid()
     {
-        this.searchResultsGrid = new SolrSearchFilteringGrid(this.esbSearchService, searchFilter, this.resultsLabel);
+        this.searchResultsGrid = new SearchFilteringGrid(this.esbSearchService, searchFilter, this.resultsLabel);
 
         // Add the icon column to the grid
         this.searchResultsGrid.addColumn(new ComponentRenderer<>(ikasanSolrDocument ->
@@ -716,7 +715,7 @@ public class SearchResults extends Div {
         searchFilter.setFlowNamesFilterList(flowNames);
 
         if(searchTerm != null && !searchTerm.isEmpty()  && !searchTerm.startsWith("\"") && !searchTerm.endsWith("\"")){
-            searchTerm = "\""+searchTerm+"\"";
+//            searchTerm = "\""+searchTerm+"\"";
         }
 
         this.searchResultsGrid.init(startTime, endTime, searchTerm, types, negateQuery, null);

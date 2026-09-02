@@ -12,7 +12,7 @@ import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -152,7 +152,7 @@ public class JobContextMenu extends Dialog {
         if (allowedStatuses.contains(status)) {
             SchedulerJobInstance schedulerJobInstance = this.currentInstance.getScheduledJobsMap().get(schedulerJob.getIdentifier());
 
-            SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SchedulerJobInstanceSearchFilterImpl();
             schedulerJobInstanceSearchFilter.setChildContextName(this.currentInstance.getName());
             schedulerJobInstanceSearchFilter.setJobName(schedulerJobInstance.getJobName());
             schedulerJobInstanceSearchFilter.setContextInstanceId(this.rootContextInstance.getId());

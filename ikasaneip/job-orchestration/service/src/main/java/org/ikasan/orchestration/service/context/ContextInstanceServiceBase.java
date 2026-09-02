@@ -10,14 +10,10 @@ import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
-import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -847,7 +843,7 @@ public abstract class ContextInstanceServiceBase {
      * @return A list of prepared context instances.
      */
     protected List<ContextInstance> findPrepared(String contextName) {
-        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        ContextInstanceSearchFilter filter = new ContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
         filter.setContextInstanceNames(Collections.singletonList(contextName));
 
@@ -866,7 +862,7 @@ public abstract class ContextInstanceServiceBase {
      * @param contextName The name of the context for which to remove prepared instances.
      */
     protected void removeAllPrepared(String contextName) {
-        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        ContextInstanceSearchFilter filter = new ContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
         filter.setContextInstanceNames(Collections.singletonList(contextName));
 

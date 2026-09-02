@@ -8,7 +8,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -40,7 +40,7 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
 
     public HospitalEventActionListener(String translatedEventActionMessage, ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                                        ModuleMetaDataService moduleMetadataService, ResubmissionService resubmissionRestService,
-                                       SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes,
+                                       SearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes,
                                        HashMap<String, IkasanESBDocument> selectionItems, IkasanAuthentication ikasanAuthentication,
                                        DateFormatter dateFormatter) {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);

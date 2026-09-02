@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.systemevent.dao;
 
-import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
+import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.entity.EntityFields;
@@ -64,7 +64,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         query.addCriteria(Criteria.where("_id").is(id));
         query.addCriteria(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
 
-        MongoSystemEventImpl result = mongoTemplate.findOne(query, MongoSystemEventImpl.class);
+        MongoSystemEventRecordImpl result = mongoTemplate.findOne(query, MongoSystemEventRecordImpl.class);
 
         if (result != null) {
             logger.debug("Found system event: {}", result);
@@ -129,7 +129,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         }
 
         // Get total count
-        long totalCount = mongoTemplate.count(query, MongoSystemEventImpl.class);
+        long totalCount = mongoTemplate.count(query, MongoSystemEventRecordImpl.class);
 
         // Apply sorting
         if (sortColumn != null && !sortColumn.isEmpty()) {
@@ -141,11 +141,13 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         }
 
         // Apply pagination
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        if(limit > 0 && offset > -1) {
+            Pageable pageable = PageRequest.of(offset / limit, limit);
+            query.with(pageable);
+        }
 
         // Execute query
-        List<MongoSystemEventImpl> results = mongoTemplate.find(query, MongoSystemEventImpl.class);
+        List<MongoSystemEventRecordImpl> results = mongoTemplate.find(query, MongoSystemEventRecordImpl.class);
 
         logger.debug("Found {} system events (total: {})", results.size(), totalCount);
 
@@ -174,7 +176,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
     public void save(SystemEvent systemEvent) {
         logger.debug("Saving system event: {}", systemEvent);
 
-        MongoSystemEventImpl mongoEvent = convertToMongoEntity(systemEvent);
+        MongoSystemEventRecordImpl mongoEvent = convertToMongoEntity(systemEvent);
         repository.save(mongoEvent);
 
         logger.debug("Saved system event with id: {}", mongoEvent.getMongoId());
@@ -184,7 +186,7 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
     public void save(List<SystemEvent> systemEvents) {
         logger.debug("Saving {} system events", systemEvents.size());
 
-        List<MongoSystemEventImpl> mongoEvents = new ArrayList<>();
+        List<MongoSystemEventRecordImpl> mongoEvents = new ArrayList<>();
         for (SystemEvent systemEvent : systemEvents) {
             mongoEvents.add(convertToMongoEntity(systemEvent));
         }
@@ -202,18 +204,18 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         query.addCriteria(Criteria.where(EXPIRY).lt(currentTime));
         query.addCriteria(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
 
-        mongoTemplate.remove(query, MongoSystemEventImpl.class);
+        mongoTemplate.remove(query, MongoSystemEventRecordImpl.class);
         logger.debug("Deleted expired system events before: {}", currentTime);
     }
 
     /**
-     * Convert SystemEvent to MongoSystemEventImpl
+     * Convert SystemEvent to MongoSystemEventRecordImpl
      *
      * @param systemEvent the system event
      * @return the MongoDB entity
      */
-    private MongoSystemEventImpl convertToMongoEntity(SystemEvent systemEvent) {
-        MongoSystemEventImpl mongoEvent = new MongoSystemEventImpl();
+    private MongoSystemEventRecordImpl convertToMongoEntity(SystemEvent systemEvent) {
+        MongoSystemEventRecordImpl mongoEvent = new MongoSystemEventRecordImpl();
         mongoEvent.setId(buildMongoId(systemEvent));
         mongoEvent.setType(SYSTEM_EVENT_TYPE);
         try {

@@ -3,14 +3,10 @@ package org.ikasan.orchestration.service.scheduled.instance;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.*;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.instance.model.*;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
@@ -20,15 +16,13 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +36,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     private Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceServiceImpl.class);
 
-    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     private final SchedulerJobInstanceDao schedulerJobInstanceDao;
     private final ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao;
@@ -70,15 +64,15 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
                                            boolean useLegacyJobStatusCount) {
         this.schedulerJobInstanceDao = schedulerJobInstanceDao;
         if (schedulerJobInstanceDao == null) {
-            throw new IllegalArgumentException("solrSchedulerJobInstanceDao cannot be null!");
+            throw new IllegalArgumentException("SchedulerJobInstanceDao cannot be null!");
         }
         this.scheduledContextInstanceAuditAggregateDao = scheduledContextInstanceAuditAggregateDao;
         if (scheduledContextInstanceAuditAggregateDao == null) {
-            throw new IllegalArgumentException("solrScheduledContextInstanceAuditAggregateDao cannot be null!");
+            throw new IllegalArgumentException("ScheduledContextInstanceAuditAggregateDao cannot be null!");
         }
         this.schedulerJobDao = schedulerJobDao;
         if (schedulerJobDao == null) {
-            throw new IllegalArgumentException("solrSchedulerJobDao cannot be null!");
+            throw new IllegalArgumentException("SchedulerJobDao cannot be null!");
         }
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (scheduledContextInstanceService == null) {
@@ -95,7 +89,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     @Override
     public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String uuid, String jobName, String childContextName) {
-        SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SchedulerJobInstanceSearchFilterImpl();
         schedulerJobInstanceSearchFilter.setChildContextName(childContextName);
         schedulerJobInstanceSearchFilter.setJobName(jobName);
         schedulerJobInstanceSearchFilter.setContextInstanceId(uuid);
@@ -127,7 +121,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     @Override
     public void update(SchedulerJobInstance schedulerJobInstance) {
-        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(schedulerJobInstance.getContextInstanceId());
         filter.setJobName(schedulerJobInstance.getJobName());
         filter.setChildContextName(schedulerJobInstance.getChildContextName());
@@ -181,13 +175,13 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
             List<SchedulerJobInstance> schedulerJobInstances = new ArrayList<>();
             for (SchedulerJobRecord schedulerJobRecord : schedulerJobRecordSearchResults.getResultList()) {
-                if(schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                if(schedulerJobRecord.getJob() instanceof FileEventDrivenJobImpl) {
                     schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrFileEventDrivenJobInstanceImpl.class));
+                        , FileEventDrivenJobInstanceImpl.class));
                 }
-                else if(schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                else if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
                     InternalEventDrivenJobInstance internalEventDrivenJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrInternalEventDrivenJobInstanceImpl.class);
+                        , InternalEventDrivenJobInstanceImpl.class);
 
                     if(schedulerJobInstancesInitialisationParameters.isInitialiseWithJobsOnHold()) {
                         internalEventDrivenJobInstance.setStatus(InstanceStatus.ON_HOLD);
@@ -222,13 +216,13 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
                     schedulerJobInstances.add(internalEventDrivenJobInstance);
                 }
-                else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob) {
                     schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrQuartzScheduleDrivenJobInstanceImpl.class));
+                        , QuartzScheduleDrivenJobInstanceImpl.class));
                 }
-                else if(schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                else if(schedulerJobRecord.getJob() instanceof GlobalEventJob) {
                     GlobalEventJobInstance globalEventJobInstance = objectMapper.readValue
-                        (objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
+                        (objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), GlobalEventJobInstanceImpl.class);
                     if(schedulerJobRecord.isSkipped()) {
                         globalEventJobInstance.setSkip(true);
                         globalEventJobInstance.setStatus(InstanceStatus.SKIPPED);
@@ -247,7 +241,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
             // context template via the ContextHelper and extracting all of the context start jobs.
             schedulerJobInstances.addAll(ContextHelper.getContextStartJobsFromContext(contextTemplate).stream()
                 .map(contextStartJob -> {
-                    ContextStartJobInstance contextStartJobInstance = new SolrContextStartJobInstanceImpl();
+                    ContextStartJobInstance contextStartJobInstance = new ContextStartJobInstanceImpl();
                     contextStartJobInstance.setJobName(contextStartJob.getJobName());
                     contextStartJobInstance.setContextName(contextTemplate.getName());
                     contextStartJobInstance.setContextInstanceId(contextInstance.getId());
@@ -263,7 +257,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
             // context template via the ContextHelper and extracting all of the context terminal jobs.
             schedulerJobInstances.addAll(ContextHelper.getContextTerminalJobsFromContext(contextTemplate).stream()
                 .map(contextTerminalJob -> {
-                    ContextTerminalJobInstance contextTerminalJobInstance = new SolrContextTerminalJobInstanceImpl();
+                    ContextTerminalJobInstance contextTerminalJobInstance = new ContextTerminalJobInstanceImpl();
                     contextTerminalJobInstance.setJobName(contextTerminalJob.getJobName());
                     contextTerminalJobInstance.setContextName(contextTemplate.getName());
                     contextTerminalJobInstance.setContextInstanceId(contextInstance.getId());
@@ -279,7 +273,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
             // context template via the ContextHelper and extracting all of the local event jobs.
             schedulerJobInstances.addAll(ContextHelper.getLocalEventJobsFromContext(contextTemplate).stream()
                 .map(localEventJob -> {
-                    LocalEventJobInstance localEventJobInstance = new SolrLocalEventJobInstanceImpl();
+                    LocalEventJobInstance localEventJobInstance = new LocalEventJobInstanceImpl();
                     localEventJobInstance.setJobName(localEventJob.getJobName());
                     localEventJobInstance.setContextName(contextTemplate.getName());
                     localEventJobInstance.setContextInstanceId(contextInstance.getId());
@@ -296,7 +290,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
             // context template via the ContextHelper and extracting all of the bridging jobs.
             schedulerJobInstances.addAll(ContextHelper.getBridgingJobsFromContext(contextTemplate).stream()
                 .map(bridgingJob -> {
-                    BridgingJobInstance bridgingJobInstance = new SolrBridgingJobInstanceImpl();
+                    BridgingJobInstance bridgingJobInstance = new BridgingJobInstanceImpl();
                     bridgingJobInstance.setJobName(bridgingJob.getJobName());
                     bridgingJobInstance.setContextName(contextTemplate.getName());
                     bridgingJobInstance.setContextInstanceId(contextInstance.getId());
@@ -346,7 +340,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
             List<SchedulerJobInstanceRecord> schedulerJobInstanceRecords = new ArrayList<>();
 
             contextualisedSchedulerJobInstances.forEach(job -> {
-                SchedulerJobInstanceRecord instanceRecord = new SolrSchedulerJobInstanceRecordImpl();
+                SchedulerJobInstanceRecord instanceRecord = new SchedulerJobInstanceRecordImpl();
                 instanceRecord.setContextName(job.getContextName());
                 instanceRecord.setJobName(job.getJobName());
                 instanceRecord.setStatus(job.getStatus().toString());
@@ -414,7 +408,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
     public Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType("internalEventDrivenJobInstance");
+        filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
             = this.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
 
@@ -450,13 +444,13 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         ContextHelper.holdAllJobs(childContext, commandExecutionJobsForContextInstanceChildContext.entrySet().stream()
             .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
 
-        SchedulerJobInstanceSearchFilter searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter searchFilter = new SchedulerJobInstanceSearchFilterImpl();
         searchFilter.setContextInstanceId(contextInstance.getId());
         searchFilter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.getScheduledContextInstancesByFilter(searchFilter
             , -1, -1, null, null);
 
-        searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        searchFilter = new SchedulerJobInstanceSearchFilterImpl();
         searchFilter.setContextInstanceId(contextInstance.getId());
         searchFilter.setJobType(JobConstants.LOCAL_EVENT_JOB_INSTANCE);
         searchResults.getResultList().addAll(this.getScheduledContextInstancesByFilter(searchFilter
@@ -536,13 +530,13 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         ContextHelper.enrichJobs(childContext);
         Map<String, SchedulerJobInstance> contextJobs = ContextHelper.getAllJobs(childContext);
 
-        SchedulerJobInstanceSearchFilter searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        SchedulerJobInstanceSearchFilter searchFilter = new SchedulerJobInstanceSearchFilterImpl();
         searchFilter.setContextInstanceId(contextInstance.getId());
         searchFilter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.getScheduledContextInstancesByFilter(searchFilter
             , -1, -1, null, null);
 
-        searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        searchFilter = new SchedulerJobInstanceSearchFilterImpl();
         searchFilter.setContextInstanceId(contextInstance.getId());
         searchFilter.setJobType(JobConstants.LOCAL_EVENT_JOB_INSTANCE);
         searchResults.getResultList().addAll(this.getScheduledContextInstancesByFilter(searchFilter

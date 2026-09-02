@@ -445,7 +445,7 @@ public class MongoWiretapDaoTest {
         // Create multiple events for the same module with different identifiers
         for (int i = 0; i < 5; i++) {
             createAndSaveWiretapEvent(
-                1900L + i, "MultiEventModule", "Flow" + i, "Component" + i, "event-" + (1900 + i)
+                1900L + i, "MultiEventModule", "Flowimpl" + i, "Component" + i, "event-" + (1900 + i)
             );
         }
 
@@ -453,7 +453,7 @@ public class MongoWiretapDaoTest {
         for (int i = 0; i < 5; i++) {
             WiretapEvent found = dao.findById("MultiEventModule-wiretap-" + (1900 + i));
             Assert.assertNotNull(found);
-            Assert.assertEquals("Flow" + i, found.getFlowName());
+            Assert.assertEquals("Flowimpl" + i, found.getFlowName());
         }
 
         // Verify we can find all events by module name

@@ -17,7 +17,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 
 import java.io.ByteArrayInputStream;

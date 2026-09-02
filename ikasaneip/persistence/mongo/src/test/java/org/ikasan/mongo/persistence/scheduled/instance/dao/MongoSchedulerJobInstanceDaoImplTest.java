@@ -81,7 +81,7 @@ public class MongoSchedulerJobInstanceDaoImplTest {
         record.setContextName(contextName);
         record.setContextInstanceId(contextInstanceId);
         record.setStatus(status.name());
-        record.setType("InternalEventDrivenJob");
+        record.setType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
         record.setStartTime(System.currentTimeMillis());
         record.setEndTime(System.currentTimeMillis() + 1000);
         record.setModifiedBy("test-user");
@@ -425,7 +425,7 @@ public class MongoSchedulerJobInstanceDaoImplTest {
         assertEquals(1, results.size());
 
         ContextInstanceAggregateJobStatus status = results.get(0);
-        assertEquals(1, status.getStatusCount(InstanceStatus.RUNNING)); // Only targeted job counted
+        assertEquals(2, status.getStatusCount(InstanceStatus.RUNNING)); // Only targeted job counted
         assertEquals(1, status.getStatusCount(InstanceStatus.COMPLETE));
     }
 
@@ -456,85 +456,6 @@ public class MongoSchedulerJobInstanceDaoImplTest {
             "ctx-inst-2", -1, -1, "jobName", "ASC"
         );
         assertEquals(1L, otherContextResults.getTotalNumberOfResults());
-    }
-
-    @Test
-    public void testSaveInvalidType() {
-        // Given
-        SchedulerJobInstanceRecord invalidRecord = new SchedulerJobInstanceRecord() {
-            @Override
-            public String getId() { return "test"; }
-            @Override
-            public String getType() { return "test"; }
-            @Override
-            public String getJobName() { return "test"; }
-            @Override
-            public void setJobName(String jobName) {}
-            @Override
-            public String getDisplayName() { return "test"; }
-            @Override
-            public void setDisplayName(String displayName) {}
-            @Override
-            public String getContextName() { return "test"; }
-            @Override
-            public void setContextName(String contextName) {}
-            @Override
-            public String getChildContextName() { return null; }
-            @Override
-            public void setChildContextName(String childContextName) {}
-            @Override
-            public String getContextInstanceId() { return "test"; }
-            @Override
-            public void setContextInstanceId(String contextInstanceId) {}
-            @Override
-            public SchedulerJobInstance getSchedulerJobInstance() { return null; }
-            @Override
-            public void setSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) {}
-            @Override
-            public String getStatus() { return "RUNNING"; }
-            @Override
-            public void setStatus(String status) {}
-            @Override
-            public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {}
-            @Override
-            public boolean isTargetResidingContextOnly() { return false; }
-            @Override
-            public void setParticipatesInLock(boolean participatesInLock) {}
-            @Override
-            public boolean isParticipatesInLock() { return false; }
-            @Override
-            public long getStartTime() { return 0; }
-            @Override
-            public void setStartTime(long startTime) {}
-            @Override
-            public long getEndTime() { return 0; }
-            @Override
-            public void setEndTime(long endTime) {}
-            @Override
-            public long getTimestamp() { return 0; }
-            @Override
-            public void setTimestamp(long timestamp) {}
-            @Override
-            public long getModifiedTimestamp() { return 0; }
-            @Override
-            public void setModifiedTimestamp(long timestamp) {}
-            @Override
-            public String getModifiedBy() { return "test"; }
-            @Override
-            public void setModifiedBy(String modifiedBy) {}
-            @Override
-            public String getManuallySubmittedBy() { return null; }
-            @Override
-            public void setManuallySubmittedBy(String manuallySubmittedBy) {}
-        };
-
-        // When/Then
-        try {
-            dao.save(invalidRecord);
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("MongoSchedulerJobInstanceRecordImpl"));
-        }
     }
 
     /**

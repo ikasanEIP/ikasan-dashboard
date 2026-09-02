@@ -25,7 +25,7 @@ import org.ikasan.dashboard.ui.scheduler.service.ContextTemplateDraw2dAdapterTes
 import org.ikasan.dashboard.ui.scheduler.service.ContextTemplateToDagConverterTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
+import org.ikasan.dashboard.ui.search.component.SearchFilteringGridTest;
 import org.ikasan.dashboard.ui.search.view.SearchViewTest;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapterTest;
 import org.ikasan.dashboard.ui.visualisation.component.FlowFilteringGridTest;
@@ -74,7 +74,7 @@ import org.springframework.test.context.DynamicPropertySource;
     UserManagementViewTest.class,
     FlowStateBroadcasterTest.class,
     SearchViewTest.class,
-    SolrSearchFilteringGridTest.class,
+    SearchFilteringGridTest.class,
     SearchFormTest.class,
     ModuleDraw2DAdapterTest.class,
     ModuleMetaDataDaoImplTest.class,

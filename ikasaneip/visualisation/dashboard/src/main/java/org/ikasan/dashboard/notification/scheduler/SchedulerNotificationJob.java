@@ -4,7 +4,6 @@ import org.ikasan.dashboard.notification.email.EmailNotification;
 import org.ikasan.dashboard.notification.email.EmailNotifier;
 import org.ikasan.dashboard.notification.scheduler.model.SchedulerNotification;
 import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationService;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.model.IkasanESBDocument;

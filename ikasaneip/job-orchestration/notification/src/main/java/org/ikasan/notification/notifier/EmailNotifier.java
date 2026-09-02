@@ -41,12 +41,8 @@
 package org.ikasan.notification.notifier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
-import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.NotificationType;
+import org.ikasan.job.orchestration.model.notification.*;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
-import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
-import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.notification.model.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -188,7 +184,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 super.sendEmail(emailNotificationDetails);
 
                 // save the notification
-                NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+                NotificationSendAudit notificationSendAudit = new NotificationSendAuditImpl();
                 notificationSendAudit.setContextInstanceId(notificationDetails.getContextInstanceId());
                 notificationSendAudit.setJobName(notificationDetails.getJobName());
                 notificationSendAudit.setContextName(notificationDetails.getChildContextName());
@@ -196,7 +192,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 notificationSendAudit.setNotifierType(NotificationType.EMAIL.name());
                 notificationSendAudit.setNotificationSend(true);
 
-                NotificationSendAuditRecord record = new SolrNotificationSendAuditRecord();
+                NotificationSendAuditRecord record = new NotificationSendAuditRecordImpl();
                 record.setNotificationSendAudit(notificationSendAudit);
                 record.setTimestamp(new Date().getTime());
 

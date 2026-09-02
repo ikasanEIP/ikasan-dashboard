@@ -18,6 +18,7 @@
         <module>solr</module>
         <module>db-relational</module>
         <module>mongo</module>
+        <module>persistence-initialisation</module>
     </modules>
 
 </project>

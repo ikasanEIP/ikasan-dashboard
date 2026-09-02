@@ -94,7 +94,7 @@ public class Module
     /**
      * Retrieves the list of flows associated with the module.
      *
-     * @return a list of Flow objects representing the flows in the module.
+     * @return a list of Flowimpl objects representing the flows in the module.
      *         Returns an empty list if no flows have been added.
      */
     public List<Flow> getFlows()
@@ -106,7 +106,7 @@ public class Module
      * Adds a new flow to the list of flows in the module.
      * If the list of flows does not already exist, it will be initialized.
      *
-     * @param flow the Flow object to be added to the module
+     * @param flow the Flowimpl object to be added to the module
      */
     public void addFlow(Flow flow)
     {

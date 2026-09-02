@@ -1,7 +1,7 @@
 package org.ikasan.mongo.persistence.systemevent.dao;
 
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventImpl;
+import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventSearchFilter;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.spec.search.SearchResults;
@@ -76,7 +76,7 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_save_systemEvent() {
-        MongoSystemEventImpl event = new MongoSystemEventImpl();
+        MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
         event.setSystemEventId(1L);
         event.setModuleName("TestModule");
         event.setActor("admin");
@@ -97,7 +97,7 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_save_systemEvent_with_moduleName() {
-        MongoSystemEventImpl event = new MongoSystemEventImpl();
+        MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
         event.setSystemEventId(100L);
         event.setModuleName("IntegrationModule");
         event.setActor("system");
@@ -117,28 +117,28 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_save_systemEvent_without_moduleName() {
-        MongoSystemEventImpl event = new MongoSystemEventImpl();
+        MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
         event.setSystemEventId(200L);
         event.setModuleName(null);
         event.setActor("user123");
         event.setAction("DELETE");
-        event.setSubject("Flow");
+        event.setSubject("Flowimpl");
         event.setTimestamp(new Date());
 
         dao.save(event);
 
-        SystemEvent found = dao.findById("systemEvent-Flow-200");
+        SystemEvent found = dao.findById("systemEvent-Flowimpl-200");
 
         Assert.assertNotNull(found);
         Assert.assertNull(found.getModuleName());
         Assert.assertEquals("user123", found.getActor());
-        Assert.assertEquals("Flow", found.getSubject());
+        Assert.assertEquals("Flowimpl", found.getSubject());
         Assert.assertEquals(Long.valueOf(200L), found.getId());
     }
 
     @Test
     public void test_findById_found() {
-        MongoSystemEventImpl event = new MongoSystemEventImpl();
+        MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
         event.setSystemEventId(300L);
         event.setModuleName("FindModule");
         event.setActor("tester");
@@ -206,8 +206,8 @@ public class MongoSystemEventDaoTest {
     @Test
     public void test_findByFilter_by_action() {
         // Create test data with different actions
-        createSystemEvent(20L, "Module3", "user1", "CREATE", "Flow", new Date());
-        createSystemEvent(21L, "Module3", "user2", "UPDATE", "Flow", new Date());
+        createSystemEvent(20L, "Module3", "user1", "CREATE", "Flowimpl", new Date());
+        createSystemEvent(21L, "Module3", "user2", "UPDATE", "Flowimpl", new Date());
         createSystemEvent(22L, "Module3", "user3", "CREATE", "Module", new Date());
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
@@ -226,15 +226,15 @@ public class MongoSystemEventDaoTest {
     @Test
     public void test_findByFilter_by_searchTerm() {
         // Create test data with different payloads
-        MongoSystemEventImpl event1 = createSystemEvent(30L, "Module4", "user1", "CREATE", "Flow", new Date());
+        MongoSystemEventRecordImpl event1 = createSystemEvent(30L, "Module4", "user1", "CREATE", "Flowimpl", new Date());
         event1.setPayload("{\"type\":\"integration\",\"name\":\"test-flow\"}");
         dao.save(event1);
 
-        MongoSystemEventImpl event2 = createSystemEvent(31L, "Module4", "user2", "UPDATE", "Component", new Date());
+        MongoSystemEventRecordImpl event2 = createSystemEvent(31L, "Module4", "user2", "UPDATE", "Component", new Date());
         event2.setPayload("{\"type\":\"component\",\"name\":\"other-component\"}");
         dao.save(event2);
 
-        MongoSystemEventImpl event3 = createSystemEvent(32L, "Module4", "user3", "DELETE", "Flow", new Date());
+        MongoSystemEventRecordImpl event3 = createSystemEvent(32L, "Module4", "user3", "DELETE", "Flowimpl", new Date());
         event3.setPayload("{\"type\":\"integration\",\"name\":\"another-flow\"}");
         dao.save(event3);
 
@@ -251,9 +251,9 @@ public class MongoSystemEventDaoTest {
     public void test_findByFilter_by_dateRange() {
         // Create test data with different timestamps
         long baseTime = System.currentTimeMillis();
-        createSystemEvent(40L, "Module5", "user1", "CREATE", "Flow", new Date(baseTime - 10000));
-        createSystemEvent(41L, "Module5", "user2", "UPDATE", "Flow", new Date(baseTime));
-        createSystemEvent(42L, "Module5", "user3", "DELETE", "Flow", new Date(baseTime + 10000));
+        createSystemEvent(40L, "Module5", "user1", "CREATE", "Flowimpl", new Date(baseTime - 10000));
+        createSystemEvent(41L, "Module5", "user2", "UPDATE", "Flowimpl", new Date(baseTime));
+        createSystemEvent(42L, "Module5", "user3", "DELETE", "Flowimpl", new Date(baseTime + 10000));
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setStartTime(baseTime - 5000);
@@ -294,7 +294,7 @@ public class MongoSystemEventDaoTest {
     public void test_findByFilter_with_pagination() {
         // Create 15 system events
         for (int i = 0; i < 15; i++) {
-            createSystemEvent(60L + i, "Module7", "user" + i, "CREATE", "Flow", new Date());
+            createSystemEvent(60L + i, "Module7", "user" + i, "CREATE", "Flowimpl", new Date());
         }
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
@@ -319,9 +319,9 @@ public class MongoSystemEventDaoTest {
     public void test_findByFilter_with_sorting_ascending() {
         // Create test data with different timestamps
         long baseTime = System.currentTimeMillis();
-        createSystemEvent(70L, "Module8", "user1", "CREATE", "Flow", new Date(baseTime + 2000));
-        createSystemEvent(71L, "Module8", "user2", "CREATE", "Flow", new Date(baseTime));
-        createSystemEvent(72L, "Module8", "user3", "CREATE", "Flow", new Date(baseTime + 1000));
+        createSystemEvent(70L, "Module8", "user1", "CREATE", "Flowimpl", new Date(baseTime + 2000));
+        createSystemEvent(71L, "Module8", "user2", "CREATE", "Flowimpl", new Date(baseTime));
+        createSystemEvent(72L, "Module8", "user3", "CREATE", "Flowimpl", new Date(baseTime + 1000));
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
 
@@ -340,9 +340,9 @@ public class MongoSystemEventDaoTest {
     public void test_findByFilter_with_sorting_descending() {
         // Create test data with different timestamps
         long baseTime = System.currentTimeMillis();
-        createSystemEvent(80L, "Module9", "user1", "CREATE", "Flow", new Date(baseTime));
-        createSystemEvent(81L, "Module9", "user2", "CREATE", "Flow", new Date(baseTime + 1000));
-        createSystemEvent(82L, "Module9", "user3", "CREATE", "Flow", new Date(baseTime + 2000));
+        createSystemEvent(80L, "Module9", "user1", "CREATE", "Flowimpl", new Date(baseTime));
+        createSystemEvent(81L, "Module9", "user2", "CREATE", "Flowimpl", new Date(baseTime + 1000));
+        createSystemEvent(82L, "Module9", "user3", "CREATE", "Flowimpl", new Date(baseTime + 2000));
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
 
@@ -360,7 +360,7 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_findByFilter_empty_results() {
-        createSystemEvent(90L, "Module10", "user1", "CREATE", "Flow", new Date());
+        createSystemEvent(90L, "Module10", "user1", "CREATE", "Flowimpl", new Date());
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("nonexistent");
@@ -375,7 +375,7 @@ public class MongoSystemEventDaoTest {
     @Test
     public void test_findByFilter_with_special_characters() {
         // Create test data with special characters
-        createSystemEvent(100L, "Module11", "user.name@domain.com", "CREATE", "Flow-Test", new Date());
+        createSystemEvent(100L, "Module11", "user.name@domain.com", "CREATE", "Flowimpl-Test", new Date());
         createSystemEvent(101L, "Module11", "admin", "UPDATE", "Component", new Date());
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
@@ -393,12 +393,12 @@ public class MongoSystemEventDaoTest {
         List<SystemEvent> events = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            MongoSystemEventImpl event = new MongoSystemEventImpl();
+            MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
             event.setSystemEventId(110L + i);
             event.setModuleName("BulkModule");
             event.setActor("bulkUser" + i);
             event.setAction("CREATE");
-            event.setSubject("Flow");
+            event.setSubject("Flowimpl");
             event.setTimestamp(new Date());
             events.add(event);
         }
@@ -414,9 +414,9 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_findByFilter_wildcard_actor() {
-        createSystemEvent(120L, "Module12", "john.doe", "CREATE", "Flow", new Date());
-        createSystemEvent(121L, "Module12", "john.smith", "UPDATE", "Flow", new Date());
-        createSystemEvent(122L, "Module12", "jane.doe", "DELETE", "Flow", new Date());
+        createSystemEvent(120L, "Module12", "john.doe", "CREATE", "Flowimpl", new Date());
+        createSystemEvent(121L, "Module12", "john.smith", "UPDATE", "Flowimpl", new Date());
+        createSystemEvent(122L, "Module12", "jane.doe", "DELETE", "Flowimpl", new Date());
 
         MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
         filter.setActor("john");
@@ -471,7 +471,7 @@ public class MongoSystemEventDaoTest {
 
     @Test
     public void test_save_updates_existing() {
-        MongoSystemEventImpl event = createSystemEvent(160L, "Module16", "user1", "CREATE", "Flow", new Date());
+        MongoSystemEventRecordImpl event = createSystemEvent(160L, "Module16", "user1", "CREATE", "Flowimpl", new Date());
         dao.save(event);
 
         SystemEvent found = dao.findById("Module16-systemEvent-160");
@@ -490,9 +490,9 @@ public class MongoSystemEventDaoTest {
     /**
      * Helper method to create a system event with common fields.
      */
-    private MongoSystemEventImpl createSystemEvent(Long id, String moduleName, String actor,
-                                                    String action, String subject, Date timestamp) {
-        MongoSystemEventImpl event = new MongoSystemEventImpl();
+    private MongoSystemEventRecordImpl createSystemEvent(Long id, String moduleName, String actor,
+                                                         String action, String subject, Date timestamp) {
+        MongoSystemEventRecordImpl event = new MongoSystemEventRecordImpl();
         event.setSystemEventId(id);
         event.setModuleName(moduleName);
         event.setActor(actor);
