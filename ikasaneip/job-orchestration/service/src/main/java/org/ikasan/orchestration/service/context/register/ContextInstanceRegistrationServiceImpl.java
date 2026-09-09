@@ -77,6 +77,7 @@ import org.ikasan.spec.systemevent.SystemEventService;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
@@ -309,10 +310,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
             && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
             || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1))) {
-            LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName));
-            systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName), "ContextMachineImpl");
+            this.logUnableToInitialiseContextInstanceDueToConcurrencyConstraint(contextName);
             return;
         }
 
@@ -388,10 +386,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
             && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
             || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1))) {
-            LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName));
-            systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName), "ContextMachineImpl");
+            this.logUnableToInitialiseContextInstanceDueToConcurrencyConstraint(contextName);
             return null;
         }
 
@@ -425,6 +420,44 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    /**
+     * Logs an informational message and creates a system event indicating that
+     * a new context instance cannot be initialized due to a concurrency constraint.
+     * This method identifies any prepared or active instances associated with the
+     * given context name to provide details in the log and system event message.
+     *
+     * @param contextName the name of the context for which the concurrency constraint
+     *                    prevents initialization of a new instance.
+     */
+    private void logUnableToInitialiseContextInstanceDueToConcurrencyConstraint(String contextName) {
+        List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
+
+        Optional<ContextInstance> preparedInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(context -> context.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst();
+
+
+        List<ContextInstance> activeInstances = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(context -> !context.getStatus().equals(InstanceStatus.PREPARED))
+            .toList();
+
+        String preparedInstanceIdentifier = preparedInstance.isPresent() ? preparedInstance.get().getId() : "unknown";
+        String activeInstanceIdentifiers = activeInstances.stream()
+            .map(ContextInstance::getId)
+            .collect(Collectors.joining(", "));
+
+        String message = "Context [" + contextName +
+            "] has been configured so that concurrent instances of the same plan cannot run. " +
+            "This is done by setting the ableToRunConcurrently flag on the job plan to false." +
+            "\nThe instance we are attempting to initialise is [" + preparedInstanceIdentifier +
+            "].\nThere is / are already active instance(s) [" + activeInstanceIdentifiers + "]! ";
+
+        LOG.info(message);
+        systemEventService.logSystemEvent("Context Instance Not Created", message, "ContextMachineImpl");
     }
 
     /**
