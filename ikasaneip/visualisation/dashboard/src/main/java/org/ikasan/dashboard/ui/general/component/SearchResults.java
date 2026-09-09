@@ -12,6 +12,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -158,28 +159,23 @@ public class SearchResults extends Div {
         selectAllImage.setHeight("30px");
         selectAllButton = new Button(selectAllImage);
         selectAllButton.getElement().setAttribute("title", getTranslation("tooltip.select-all", UI.getCurrent().getLocale()));
-        selectAllButton.setHeight("35px");
-        selectAllButton.setWidth("35px");
+
         selectAllButton.setId("selectAllButton");
 
         Image replayImage = new Image("/frontend/images/replay-service.png", "");
         replayImage.setHeight("30px");
         replayButton = new Button(replayImage);
         replayButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-replay", UI.getCurrent().getLocale()));
-        replayButton.setHeight("35px");
-        replayButton.setWidth("35px");
+
         Image resubmitImage = new Image("/frontend/images/resubmit-icon.png", "");
         resubmitImage.setHeight("30px");
         resubmitButton = new Button(resubmitImage);
         resubmitButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-resubmit", UI.getCurrent().getLocale()));
-        resubmitButton.setHeight("35px");
-        resubmitButton.setWidth("35px");
+
         Image ignoreImage = new Image("/frontend/images/ignore-icon.png", "");
         ignoreImage.setHeight("30px");
         ignoreButton = new Button(ignoreImage);
         ignoreButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-ignore", UI.getCurrent().getLocale()));
-        ignoreButton.setHeight("35px");
-        ignoreButton.setWidth("30px");
 
         this.createCsvDownloadButton();
         this.createDownloadZipButton();
@@ -187,11 +183,9 @@ public class SearchResults extends Div {
 
         selectAllButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> toggleSelected());
 
-        buttonLayout.setWidth("70px");
-
         HorizontalLayout buttonLayoutWrapper = new HorizontalLayout();
         buttonLayoutWrapper.setWidthFull();
-        buttonLayoutWrapper.add(this.resultsLabel, buttonLayout);
+        buttonLayoutWrapper.add(buttonLayout);
         buttonLayoutWrapper.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttonLayoutWrapper.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
@@ -202,7 +196,6 @@ public class SearchResults extends Div {
         HorizontalLayout controlLayout = new HorizontalLayout();
         controlLayout.setWidthFull();
         controlLayout.setSpacing(false);
-        controlLayout.setMargin(false);
         controlLayout.getStyle().set("background", "white");
         controlLayout.getStyle().set("color", "black");
         controlLayout.add(resultsLayout, buttonLayoutWrapper);
@@ -245,8 +238,6 @@ public class SearchResults extends Div {
         );
         csvExportButton.getElement().setAttribute("title"
             , getTranslation("tooltip.export-to-csv", UI.getCurrent().getLocale()));
-        csvExportButton.setHeight("35px");
-        csvExportButton.setWidth("30px");
 
         csvExportButton.setDisableOnClick(true);
         csvExportButton.addClickListener(event -> {
@@ -329,8 +320,6 @@ public class SearchResults extends Div {
             }
         );
         downloadButton.getElement().setAttribute("title", getTranslation("tooltip.download-grid-items", UI.getCurrent().getLocale()));
-        downloadButton.setHeight("35px");
-        downloadButton.setWidth("35px");
 
         downloadButton.setDisableOnClick(true);
         downloadButton.addClickListener(event -> {
@@ -518,14 +507,6 @@ public class SearchResults extends Div {
                 {
                     ErrorDialog errorDialog = new ErrorDialog(this.dateFormatter);
                     errorDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
-//                    errorDialog.open();
-
-//                    ErrorDialog2 errorDialog = new ErrorDialog2();
-//                    errorDialog.open();
-
-//                    CronBuilderDialog dialog = new CronBuilderDialog();
-//                    dialog.init(null);
-//                    dialog.open();
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.REPLAY))
                 {
@@ -652,7 +633,6 @@ public class SearchResults extends Div {
 
         if(types.size() != 1) {
             buttonLayout.add(this.csvExportButton, this.downloadButton);
-            buttonLayout.setWidth("82px");
             return;
         }
 
@@ -674,8 +654,6 @@ public class SearchResults extends Div {
                 , SecurityConstants.REPLAY_ALL_MODULES_WRITE
                 , SecurityConstants.REPLAY_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
-
-            buttonLayout.setWidth("184px");
         }
         else if(type.equals("exclusion"))
         {
@@ -699,12 +677,9 @@ public class SearchResults extends Div {
                 , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
                 , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
-
-            buttonLayout.setWidth("230px");
         }
         else {
             buttonLayout.add(this.csvExportButton, this.downloadButton);
-            buttonLayout.setWidth("82px");
         }
     }
 
@@ -713,10 +688,6 @@ public class SearchResults extends Div {
         this.selected = false;
         searchFilter.setModuleNamesFilterList(moduleNames);
         searchFilter.setFlowNamesFilterList(flowNames);
-
-        if(searchTerm != null && !searchTerm.isEmpty()  && !searchTerm.startsWith("\"") && !searchTerm.endsWith("\"")){
-//            searchTerm = "\""+searchTerm+"\"";
-        }
 
         this.searchResultsGrid.init(startTime, endTime, searchTerm, types, negateQuery, null);
         this.resultsLabel.setVisible(true);

@@ -901,7 +901,7 @@ public abstract class Draw2dAdapterBase {
      * updating the diagram builder for visual representation, and maintaining subsequent job identifiers.
      *
      * @param contextTransitions a list of context transitions, each representing the relationship between preceding
-     *                            and subsequent jobs and the associated contexts.
+     *                            and later jobs and the associated contexts.
      * @param diagramBuilder the diagram builder instance used to visually represent the context transitions.
      * @param graph the directed graph where context nodes and their connections will be added.
      * @param linkingConnections a list of connection identifiers indicating existing context links to avoid duplication.

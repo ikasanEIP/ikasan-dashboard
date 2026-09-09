@@ -5,6 +5,7 @@ import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 /**
  * MongoDB implementation of IkasanESBDocument.
@@ -31,7 +32,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     @Field(EntityFields.COMPONENT_NAME)
     private String componentName;
 
-    @Field(EntityFields.CREATED_DATE_TIME)
+    @Field(name = EntityFields.CREATED_DATE_TIME, targetType = FieldType.INT64)
     private long timeStamp;
 
     @Field(EntityFields.EXPIRY)
