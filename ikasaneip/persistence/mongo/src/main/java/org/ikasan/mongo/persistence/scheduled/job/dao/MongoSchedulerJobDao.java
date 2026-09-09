@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
+import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -267,7 +269,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
     public List<String> getAllAgentNames() {
         // Query for documents with type="moduleMetaData" and module_metadata_json containing "type":"SCHEDULER_AGENT"
         // This is equivalent to Solr query: type:"moduleMetaData" AND payload:"*\"type\":\"SCHEDULER_AGENT\"*"
-        Aggregation aggregation = Aggregation.newAggregation(
+        TypedAggregation<MongoModuleMetadata> aggregation = TypedAggregation.newAggregation(MongoModuleMetadata.class,
             Aggregation.match(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA)
                 .and(EntityFields.PAYLOAD_CONTENT).regex(".*\"type\":\"SCHEDULER_AGENT\".*")),
             Aggregation.group().addToSet(EntityFields.ID).as("agentNames"),

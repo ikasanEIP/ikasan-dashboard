@@ -42,10 +42,10 @@ public class SearchFilter
     }
 
     public boolean isValidModuleNameFilter() {
-        if(this.moduleNamesFilter == null) {
+        if(this.moduleNamesFilter == null  || this.moduleNamesFilter.isEmpty()) {
             return false;
         }
-        else if(moduleNamesFilterList.isEmpty() || this.moduleNamesFilter.isEmpty()) {
+        else if(moduleNamesFilterList.isEmpty()) {
             return true;
         }
 

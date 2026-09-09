@@ -57,7 +57,7 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry;
 
     @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)

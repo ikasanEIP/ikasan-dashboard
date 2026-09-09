@@ -7,6 +7,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.ikasan.mongo.persistence.business.stream.metadata.dao.MongoBusinessStreamMetadataDaoImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
@@ -106,7 +107,16 @@ import org.ikasan.spec.security.dao.UserDao;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.DbRefResolver;
+import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
@@ -263,7 +273,7 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("mongoTemplate")
     public MongoTemplate mongoTemplate(MongoClient mongoClient,
                                         @Value("${spring.data.mongodb.database:test}") String databaseName) {
-            return new MongoTemplate(mongoClient, databaseName);
+        return new MongoTemplate(mongoClient, databaseName);
     }
 
     @Bean("scheduledContextDao")
@@ -570,4 +580,5 @@ public class MongoPersistenceAutoConfiguration {
     {
         return esbSearchService(mongoGeneralDao);
     }
+
 }

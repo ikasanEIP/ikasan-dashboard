@@ -131,7 +131,11 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         StringBuffer errorBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_DETAIL, negateQuery);
         StringBuffer errorUriBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_URI, negateQuery);
         StringBuffer eventBuffer = this.buildSearchStringPredicate(searchTerm, EVENT, negateQuery);
-        StringBuffer eventIdBuffer = this.buildFieldPredicate(eventId, EVENT);
+        StringBuffer eventIdBuffer = new StringBuffer();
+        if(eventId != null && !eventId.isEmpty()) {
+            eventIdBuffer = new StringBuffer(OPEN_BRACKET).append(this.buildFieldPredicate(eventId, EVENT)).append(OR)
+                .append(this.buildFieldPredicate(eventId, ERROR_URI)).append(CLOSE_BRACKET);
+        }
         StringBuffer typeBuffer =  this.buildStringListQueryPart(types, TYPE);
 
         String logicalOperator = OR;
