@@ -10,6 +10,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.persistence.dao.EntityDeleteDao;
 import org.ikasan.spec.search.dao.ESBSearchDao;
 import org.ikasan.spec.search.model.IkasanESBDocument;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.ikasan.spec.entity.EntityFields.*;
 
@@ -94,7 +96,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
      * @param sortOrder
      * @return
      */
-    protected IkasanSolrDocumentSearchResults searchBase(Set<String> moduleName, Set<String> flowNames, Set<String> componentNames
+    protected IkasanSolrDocumentSearchResults searchBase(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames
         , String eventId, String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
         , String sortField, String sortOrder) {
         SolrQuery query = new SolrQuery();
@@ -121,13 +123,48 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         String queryFilter;
 
         try {
-            queryFilter = super.buildQuery(moduleName, flowNames, componentNames, new Date(startTime)
+            if (searchString != null && !searchString.isEmpty()) {
+                searchString = "*"+searchString+"*";
+            }
+
+            if (moduleNames != null && !moduleNames.isEmpty()) {
+                if (moduleNames.size() == 1 && !moduleNames.stream().findFirst().get().isEmpty()) {
+                    moduleNames = moduleNames.stream()
+                        .map(moduleName -> "*"+moduleName+"*")
+                        .collect(Collectors.toSet());
+                }
+            }
+
+            if (flowNames != null && !flowNames.isEmpty() && !flowNames.stream().findFirst().get().isEmpty()) {
+                if(flowNames.size() == 1) {
+                    flowNames = flowNames.stream()
+                        .map(flowName -> "*"+flowName+"*")
+                        .collect(Collectors.toSet());
+                }
+            }
+
+            // Component names filter
+            if (componentNames != null && !componentNames.isEmpty()) {
+                if(componentNames.size() == 1 && !componentNames.stream().findFirst().get().isEmpty()) {
+                    componentNames = componentNames.stream()
+                        .map(componentName -> "*"+componentName+"*")
+                        .collect(Collectors.toSet());
+                }
+            }
+
+            // Event ID filter
+            if (eventId != null && !eventId.isEmpty()) {
+                eventId = "*"+eventId+"*";
+            }
+
+            queryFilter = super.buildQuery(moduleNames, flowNames, componentNames, new Date(startTime)
                 , new Date(endTime), searchString, eventId, entityTypes, negateQuery);
         }
         catch (IOException e) {
             throw new RuntimeException(String.format("An error has occurred building Sorl query.", e.getMessage()));
         }
 
+        System.out.println(queryFilter);
         query.setQuery(queryFilter);
 
         try

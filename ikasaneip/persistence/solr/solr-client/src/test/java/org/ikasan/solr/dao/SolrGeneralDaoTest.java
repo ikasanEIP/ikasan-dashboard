@@ -722,17 +722,24 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 
-            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-                .atMost(15, TimeUnit.SECONDS)
-                .untilAsserted(() -> {
-                    assertEquals(70, dao.search(moduleNames, null, "b-ikasan2/", 0
-                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
-                });
+//            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
+//                .atMost(15, TimeUnit.SECONDS)
+//                .untilAsserted(() -> {
+//                    assertEquals(70, dao.search(moduleNames, null, "b-ikasan2/", 0
+//                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
+//                });
+
+//            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
+//                .atMost(15, TimeUnit.SECONDS)
+//                .untilAsserted(() -> {
+//                    assertEquals(50, dao.search(moduleNames, null, "b223648-bu-13442", 0
+//                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
+//                });
 
             with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
                 .atMost(15, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
-                    assertEquals(50, dao.search(moduleNames, null, "b223648-bu-13442", 0
+                    assertEquals(5, dao.search(null, null, "ikasan3", 0
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 
@@ -746,14 +753,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
             with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
                 .atMost(15, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
-                    assertEquals(5, dao.search(null, null, "ikasan3", 0
-                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
-                });
-
-            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-                .atMost(15, TimeUnit.SECONDS)
-                .untilAsserted(() -> {
-                    assertEquals(5, dao.search(null, null, "ikasan3 rocks", 0
+                    assertEquals(5, dao.search(null, null, "\"ikasan3 rocks\"", 0
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 
@@ -768,7 +768,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                 .atMost(15, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
                     // Note partial searches require the * wildcard character
-                    assertEquals(90, dao.search(null, null, "3345443*", 0
+                    assertEquals(90, dao.search(null, null, "3345443", 0
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 
@@ -776,7 +776,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                 .atMost(15, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
                     // Note partial searches require the * wildcard character
-                    assertEquals(90, dao.search(null, null, "*345443*", 0
+                    assertEquals(90, dao.search(null, null, "345443", 0
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 

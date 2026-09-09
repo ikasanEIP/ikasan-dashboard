@@ -115,8 +115,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
         statusButton.getStyle().set("font-size", "14pt");
         statusButton.getStyle().set("border", "solid 2px");
         statusButton.getStyle().set("border-color", "rgb(241,90,35)");
-        statusButton.setHeight("35px");
-        statusButton.setWidth("35px");
         statusButton.setEnabled(true);
 
         statusButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
@@ -196,26 +194,11 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
         }
 
         this.recoveringButton.setText(Integer.toString(recovering));
-        this.manageStatusButtonWidth(this.recoveringButton, recovering);
         this.stoppedButton.setText(Integer.toString(stopped));
-        this.manageStatusButtonWidth(this.stoppedButton, stopped);
         this.runningButton.setText(Integer.toString(running));
-        this.manageStatusButtonWidth(this.runningButton, running);
         this.pauseButton.setText(Integer.toString(paused));
-        this.manageStatusButtonWidth(this.pauseButton, paused);
         this.stoppedInErrorButton.setText(Integer.toString(inError));
-        this.manageStatusButtonWidth(this.stoppedInErrorButton, inError);
     }
-
-    private void manageStatusButtonWidth(Button button, Integer count) {
-        if(count > 9) {
-            button.setWidth("55px");
-        }
-        else {
-            button.setWidth("35px");
-        }
-    }
-
 
     @Override
     public void onChange(GraphViewChangeEvent event)

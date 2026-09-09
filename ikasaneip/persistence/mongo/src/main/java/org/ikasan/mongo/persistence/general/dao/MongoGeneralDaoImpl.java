@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.springframework.data.mongodb.core.query.TextQuery;
 
 import java.util.List;
 import java.util.Set;
@@ -104,15 +106,8 @@ public class MongoGeneralDaoImpl implements
                                                           String sortField, String sortOrder) {
         long queryStartTime = System.currentTimeMillis();
 
-        Query query = new Query();
-
-        // Build criteria
-        Criteria criteria = buildCriteria(moduleNames, flowNames, componentNames, eventId, searchString, startTime, endTime, entityTypes, negateQuery);
-        query.addCriteria(criteria);
-
-        // Add pagination
-        query.skip(offset);
-        query.limit(resultSize);
+        Query query = buildQuery(moduleNames, flowNames, componentNames, eventId
+            , searchString, startTime, endTime, entityTypes, negateQuery);
 
         // Add sorting
         if (sortField != null && !sortField.isEmpty() && sortOrder != null && !sortOrder.isEmpty()) {
@@ -129,16 +124,18 @@ public class MongoGeneralDaoImpl implements
         try {
             logger.debug("Executing MongoDB query: {}", query);
 
+            // Get total count for pagination
+            long totalCount = mongoTemplate.count(query, MongoIkasanDocument.class);
+
+            // Add pagination
+            query.skip(offset);
+            query.limit(resultSize);
+
             // Execute query
             List<IkasanESBDocument> results = mongoTemplate
                 .find(query, MongoIkasanDocument.class).stream()
                 .map(doc -> (IkasanESBDocument)doc)
                 .toList();
-
-            // Get total count for pagination
-            Query countQuery = new Query();
-            countQuery.addCriteria(criteria);
-            long totalCount = mongoTemplate.count(countQuery, MongoIkasanDocument.class);
 
             long queryTime = System.currentTimeMillis() - queryStartTime;
 
@@ -162,28 +159,47 @@ public class MongoGeneralDaoImpl implements
      * @param negateQuery whether to negate the query
      * @return the constructed criteria
      */
-    protected Criteria buildCriteria(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
+    protected Query buildQuery(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
                                       String eventId, String searchString, long startTime, long endTime, List<String> entityTypes, boolean negateQuery) {
         java.util.List<Criteria> criteriaList = new java.util.ArrayList<>();
 
         // Module names filter
         if (moduleNames != null && !moduleNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
+            if(moduleNames.size() == 1) {
+                criteriaList.add(Criteria.where(EntityFields.MODULE_NAME)
+                    .regex(".*"+moduleNames.stream().findFirst().get()+".*"));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
+            }
         }
 
-        // Flowimpl names filter
+        // Flow names filter
         if (flowNames != null && !flowNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
+            if(flowNames.size() == 1) {
+                criteriaList.add(Criteria.where(EntityFields.FLOW_NAME)
+                    .regex(".*"+flowNames.stream().findFirst().get()+".*"));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
+            }
         }
 
         // Component names filter
         if (componentNames != null && !componentNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
+            if(componentNames.size() == 1) {
+                criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME)
+                    .regex(".*"+componentNames.stream().findFirst().get()+".*"));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
+            }
         }
 
         // Event ID filter
         if (eventId != null && !eventId.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.EVENT).is(eventId));
+            criteriaList.add(new Criteria().orOperator(Criteria.where(EntityFields.EVENT).regex(".*"+eventId+".*"),
+                    Criteria.where(EntityFields.ERROR_URI).regex(".*"+eventId+".*")));
         }
 
         // Timestamp range filter
@@ -201,28 +217,25 @@ public class MongoGeneralDaoImpl implements
         }
 
         // Search string filter - search in payload and error details
+        Query query = null;
         if (searchString != null && !searchString.isEmpty()) {
-            Criteria searchCriteria = new Criteria().orOperator(
-                Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchString, "i"),
-                Criteria.where(EntityFields.ERROR_DETAIL).regex(searchString, "i"),
-                Criteria.where(EntityFields.ERROR_MESSAGE).regex(searchString, "i")
-            );
-
-            if (negateQuery) {
-                criteriaList.add(new Criteria().norOperator(searchCriteria));
-            } else {
-                criteriaList.add(searchCriteria);
-            }
+            query = TextQuery.query(TextCriteria.forDefaultLanguage()
+                .matchingAny(searchString).caseSensitive(false));
+        }
+        else {
+            query = new Query();
         }
 
         // Combine all criteria with AND
         if (criteriaList.isEmpty()) {
-            return new Criteria();
+            query.addCriteria(new Criteria());
         } else if (criteriaList.size() == 1) {
-            return criteriaList.get(0);
+            query.addCriteria(criteriaList.get(0));
         } else {
-            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
+
+        return query;
     }
 
     @Override
