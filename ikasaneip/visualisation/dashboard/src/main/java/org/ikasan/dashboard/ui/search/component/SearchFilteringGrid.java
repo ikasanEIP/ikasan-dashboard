@@ -184,7 +184,9 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
             moduleNames = new HashSet<>();
 
             if(this.canAccessAllModules(authentication)) {
-                moduleNames.add("*" + filter.getModuleNameFilter() + "*");
+                if(filter.getModuleNameFilter() != null) {
+                    moduleNames.add(filter.getModuleNameFilter());
+                }
             }
             else {
                 for(String allowedModuleName: allowedModuleNames){
@@ -222,7 +224,7 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
             {
                 moduleNames = filter.getModuleNamesFilterList()
                     .stream()
-                    .map(moduleName -> "*" + moduleName + "*")
+                    .filter(name -> !name.isEmpty())
                     .collect(Collectors.toSet());
             }
         }
@@ -231,7 +233,9 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
 
         if(filter.isValidFlowNameFilter()) {
             flowNames = new HashSet<>();
-            flowNames.add("*" + filter.getFlowNameFilter() + "*");
+            if(filter.getFlowNameFilter() != null && !filter.getFlowNameFilter().isEmpty()) {
+                flowNames.add(filter.getFlowNameFilter());
+            }
         }
         else if(filter.getFlowNameFilter() != null && !filter.getFlowNameFilter().isEmpty()) {
             flowNames = new HashSet<>();
@@ -239,10 +243,7 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
         }
         else if(filter.getFlowNamesFilterList() != null && !filter.getFlowNamesFilterList().isEmpty())
         {
-            flowNames = filter.getFlowNamesFilterList()
-                .stream()
-                .map(flowName -> "*" + flowName + "*")
-                .collect(Collectors.toSet());
+            flowNames = new HashSet<>(filter.getFlowNamesFilterList());
         }
 
         HashSet<String> componentNames = null;
@@ -250,14 +251,16 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
         if(filter.getComponentNameFilter() != null && !filter.getComponentNameFilter().isEmpty())
         {
             componentNames = new HashSet<>();
-            componentNames.add("*" + filter.getComponentNameFilter() + "*");
+            if(filter.getComponentNameFilter() != null && !filter.getComponentNameFilter().isEmpty()) {
+                componentNames.add(filter.getComponentNameFilter());
+            }
         }
 
         String eventId = null;
 
         if(filter.getEventIdFilter() != null && !filter.getEventIdFilter().isEmpty())
         {
-            eventId = "*" + filter.getEventIdFilter()+ "*";
+            eventId = filter.getEventIdFilter();
         }
 
         if(!this.canAccessAllModules(authentication) && moduleNames == null)
@@ -278,6 +281,7 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
                 startTime, endTime, offset, limit, types, negateQuery, sortField, sortOrder);
         }
         catch (Exception e) {
+            logger.error("An error has occurred performing search!", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

@@ -32,7 +32,13 @@ public class SolrTokenizerQueryBuilder {
         {
             if(token.contains("*"))
             {
-                query.append(negationQuery).append(type).append(COLON).append(SolrSpecialCharacterEscapeUtil.escape(token)).append(" ");
+                if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(token)) {
+                    query.append(negationQuery).append(type).append(COLON).append("\"")
+                        .append(SolrSpecialCharacterEscapeUtil.escape(token)).append("\" ");
+                }
+                else {
+                    query.append(negationQuery).append(type).append(COLON).append(token);
+                }
             }
             else if(LOGICAL_OPERATORS.contains(token))
             {

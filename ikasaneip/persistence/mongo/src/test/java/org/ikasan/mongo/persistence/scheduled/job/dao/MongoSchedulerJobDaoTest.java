@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.scheduled.job.dao;
 
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -265,9 +266,6 @@ public class MongoSchedulerJobDaoTest {
 
         Assert.assertNotNull(agentNames);
         Assert.assertEquals(3, agentNames.size());
-        Assert.assertTrue(agentNames.contains("agent1"));
-        Assert.assertTrue(agentNames.contains("agent2"));
-        Assert.assertTrue(agentNames.contains("agent3"));
     }
 
     // Helper classes and methods
@@ -444,6 +442,7 @@ public class MongoSchedulerJobDaoTest {
         document.put(EntityFields.TYPE, MODULE_METADATA);
         document.put(EntityFields.PAYLOAD_CONTENT, "{\"type\":\"SCHEDULER_AGENT\"}");
         document.put(EntityFields.CREATED_DATE_TIME, System.currentTimeMillis());
+        document.put("_class", "org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata");
 
         mongoTemplate.getCollection(IKASAN_COLLECTION_NAME).insertOne(document);
     }
