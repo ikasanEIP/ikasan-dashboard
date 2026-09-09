@@ -1447,6 +1447,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
     @Test
     public void register_with_params_non_concurrent_plan_and_assert_second_plan_is_not_registered() throws Exception {
+        contextName = "concurrentContext";
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
@@ -1500,7 +1501,8 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService, times(2)).findById(contextName);
-        verify(systemEventService, times(1)).logSystemEvent(anyString(), anyString(), anyString());
+        ArgumentCaptor<String> systemEventMessage = ArgumentCaptor.forClass(String.class);
+        verify(systemEventService, times(1)).logSystemEvent(anyString(), systemEventMessage.capture(), anyString());
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
@@ -1549,11 +1551,26 @@ public class ContextInstanceRegistrationServiceImplTest {
             = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
         assertNotNull(schedulerJobInstanceStateChangeEventListeners);
         assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
+        assertNotNull(contextMachines);
+        assertEquals(1, contextMachines.size());
+
+        ContextInstance runnningInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(instance -> !instance.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst().get();
+
+        assertEquals("Context [concurrentContext] has been configured so that concurrent instances of the same plan cannot run. " +
+            "This is done by setting the ableToRunConcurrently flag on the job plan to false." +
+            "\nThe instance we are attempting to initialise is [unknown].\n" +
+            "There is / are already active instance(s) ["+runnningInstance.getId()+"]! ", systemEventMessage.getValue());
     }
 
     @Test
     public void register_non_concurrent_plan_and_assert_second_plan_is_not_registered() throws Exception {
         // set up
+        contextName = "concurrentContext";
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
@@ -1598,7 +1615,8 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService, times(3)).findById(contextName);
-        verify(systemEventService, times(1)).logSystemEvent(anyString(), anyString(), anyString());
+        ArgumentCaptor<String> systemEventMessage = ArgumentCaptor.forClass(String.class);
+        verify(systemEventService, times(1)).logSystemEvent(anyString(), systemEventMessage.capture(), anyString());
         verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
@@ -1636,6 +1654,21 @@ public class ContextInstanceRegistrationServiceImplTest {
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
         assertNotNull(contextMachines);
         assertEquals(2, contextMachines.size());
+
+        ContextInstance preparedInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(instance -> instance.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst().get();
+
+        ContextInstance runningInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(instance -> !instance.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst().get();
+
+        assertEquals("Context [concurrentContext] has been configured so that concurrent instances of the same plan cannot run. " +
+            "This is done by setting the ableToRunConcurrently flag on the job plan to false." +
+            "\nThe instance we are attempting to initialise is ["+preparedInstance.getId()+"].\n" +
+            "There is / are already active instance(s) ["+runningInstance.getId()+"]! ", systemEventMessage.getValue());
 
         contextMachines.forEach(contextMachine -> {
             if(contextMachine.getContext().getStatus().equals(InstanceStatus.WAITING)) {
@@ -1678,6 +1711,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     @Test
     public void register_non_concurrent_plan_and_assert_second_plan_is_not_registered_prepared_already_in_cache() throws Exception {
         // set up
+        contextName = "concurrentContext";
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
@@ -1727,7 +1761,8 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService, times(3)).findById(contextName);
-        verify(systemEventService, times(1)).logSystemEvent(anyString(), anyString(), anyString());
+        ArgumentCaptor<String> systemEventMessage = ArgumentCaptor.forClass(String.class);
+        verify(systemEventService, times(1)).logSystemEvent(anyString(), systemEventMessage.capture(), anyString());
         verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
@@ -1765,6 +1800,21 @@ public class ContextInstanceRegistrationServiceImplTest {
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
         assertNotNull(contextMachines);
         assertEquals(2, contextMachines.size());
+
+        ContextInstance preparedInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(instance -> instance.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst().get();
+
+        ContextInstance runningInstance = contextMachines.stream()
+            .map(ContextMachine::getContext)
+            .filter(instance -> !instance.getStatus().equals(InstanceStatus.PREPARED))
+            .findFirst().get();
+
+        assertEquals("Context [concurrentContext] has been configured so that concurrent instances of the same plan cannot run. " +
+            "This is done by setting the ableToRunConcurrently flag on the job plan to false." +
+            "\nThe instance we are attempting to initialise is ["+preparedInstance.getId()+"].\n" +
+            "There is / are already active instance(s) ["+runningInstance.getId()+"]! ", systemEventMessage.getValue());
 
         contextMachines.forEach(contextMachine -> {
             if(contextMachine.getContext().getStatus().equals(InstanceStatus.WAITING)) {
