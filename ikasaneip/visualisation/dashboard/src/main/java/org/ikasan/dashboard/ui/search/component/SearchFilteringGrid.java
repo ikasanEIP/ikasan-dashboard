@@ -106,10 +106,6 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
 
     public void init(long startTime, long endTime, String searchTerm, List<String> types, boolean negateQuery, SearchFilter searchFilter)
     {
-        if(searchFilter != null) {
-            this.searchFilter = searchFilter;
-        }
-
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         dataProvider = DataProvider.fromFilteringCallbacks(query ->

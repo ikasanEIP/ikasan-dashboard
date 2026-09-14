@@ -46,28 +46,28 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
     public IkasanSolrDocumentSearchResults search(String searchString, long startTime, long endTime, int resultSize
         , List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(null, null, null, null, searchString
-            , startTime, endTime, 0, resultSize, null, negateQuery, sortField, sortOrder);
+            , startTime, endTime, 0, resultSize, null, negateQuery, sortField, sortOrder, true);
     }
 
     @Override
     public IkasanSolrDocumentSearchResults search(String searchString, long startTime, long endTime, int offset, int resultSize
         , List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(null, null, null, null, searchString, startTime
-            , endTime, offset, resultSize, null, negateQuery, sortField, sortOrder);
+            , endTime, offset, resultSize, null, negateQuery, sortField, sortOrder, true);
     }
 
     @Override
     public IkasanSolrDocumentSearchResults search(Set<String> moduleName, Set<String> flowNames, String searchString, long startTime
         , long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleName, flowNames, null, null, searchString, startTime, endTime
-            , 0, resultSize, null, negateQuery, sortField, sortOrder);
+            , 0, resultSize, null, negateQuery, sortField, sortOrder, true);
     }
 
     @Override
     public IkasanSolrDocumentSearchResults search(Set<String> moduleName, Set<String> flowNames, String searchString
         , long startTime, long endTime, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleName, flowNames, null, null, searchString, startTime, endTime
-            , 0, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            , 0, resultSize, entityTypes, negateQuery, sortField, sortOrder, false);
     }
 
     @Override
@@ -75,13 +75,13 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         , String eventId, String searchString, long startTime
         , long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleName, flowNames, componentNames, eventId, searchString, startTime, endTime, offset
-            , resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            , resultSize, entityTypes, negateQuery, sortField, sortOrder, true);
     }
 
     /**
      * Utility search method.
      *
-     * @param moduleName
+     * @param moduleNames
      * @param flowNames
      * @param componentNames
      * @param eventId
@@ -98,7 +98,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
      */
     protected IkasanSolrDocumentSearchResults searchBase(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames
         , String eventId, String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
-        , String sortField, String sortOrder) {
+        , String sortField, String sortOrder, boolean addWildCards) {
         SolrQuery query = new SolrQuery();
         query.setStart(offset);
         query.setRows(resultSize);
@@ -123,12 +123,8 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         String queryFilter;
 
         try {
-            if (searchString != null && !searchString.isEmpty()) {
-                searchString = "*"+searchString+"*";
-            }
-
             if (moduleNames != null && !moduleNames.isEmpty()) {
-                if (moduleNames.size() == 1 && !moduleNames.stream().findFirst().get().isEmpty()) {
+                if (moduleNames.size() == 1 && !moduleNames.stream().findFirst().get().isEmpty() && addWildCards) {
                     moduleNames = moduleNames.stream()
                         .map(moduleName -> "*"+moduleName+"*")
                         .collect(Collectors.toSet());
@@ -136,7 +132,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
             }
 
             if (flowNames != null && !flowNames.isEmpty() && !flowNames.stream().findFirst().get().isEmpty()) {
-                if(flowNames.size() == 1) {
+                if(flowNames.size() == 1 && !flowNames.stream().findFirst().get().isEmpty() && addWildCards) {
                     flowNames = flowNames.stream()
                         .map(flowName -> "*"+flowName+"*")
                         .collect(Collectors.toSet());
@@ -145,7 +141,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
 
             // Component names filter
             if (componentNames != null && !componentNames.isEmpty()) {
-                if(componentNames.size() == 1 && !componentNames.stream().findFirst().get().isEmpty()) {
+                if(componentNames.size() == 1 && !componentNames.stream().findFirst().get().isEmpty() && addWildCards) {
                     componentNames = componentNames.stream()
                         .map(componentName -> "*"+componentName+"*")
                         .collect(Collectors.toSet());
@@ -153,7 +149,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
             }
 
             // Event ID filter
-            if (eventId != null && !eventId.isEmpty()) {
+            if (eventId != null && !eventId.isEmpty() && addWildCards) {
                 eventId = "*"+eventId+"*";
             }
 
@@ -161,10 +157,9 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
                 , new Date(endTime), searchString, eventId, entityTypes, negateQuery);
         }
         catch (IOException e) {
-            throw new RuntimeException(String.format("An error has occurred building Sorl query.", e.getMessage()));
+            throw new RuntimeException(String.format("An error has occurred building Solr query.", e.getMessage()));
         }
 
-        System.out.println(queryFilter);
         query.setQuery(queryFilter);
 
         try

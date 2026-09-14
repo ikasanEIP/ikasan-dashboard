@@ -49,14 +49,49 @@ public class SearchFilteringGridTest extends UITest {
 
 
     public void setup_expectations() {
-        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.anySet(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(50));
 
-        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.anySet(), Mockito.isNull(), Mockito.anyString(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.anySet(), Mockito.isNull(), Mockito.isNull(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.anySet(), Mockito.isNull(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.isNull(), Mockito.anySet(), Mockito.isNull(),
+                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
+                Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1));
     }
 
