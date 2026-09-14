@@ -20,11 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ContextInstanceTestSearchResults implements SearchResults<ScheduledContextInstanceRecord> {
     private final int number;
     private final boolean insideOperatingWindow;
+    private final String cron;
+    private boolean createMultiple = true;
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();
 
-    public ContextInstanceTestSearchResults(int number, boolean insideOperatingWindow) {
+    public ContextInstanceTestSearchResults(int number, boolean insideOperatingWindow, String cron) {
         this.number = number;
         this.insideOperatingWindow = insideOperatingWindow;
+        this.cron = cron;
     }
 
     @Override
@@ -42,7 +45,12 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
                 // make operating window 24 hours
                 jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + "* * 0 ? * * *" + "\"" + ",");
                 jsonContext = jsonContext.replaceAll("\"projectedEndTime\".*", "\"projectedEndTime\" : " + (System.currentTimeMillis() + 86400000) + ",");
-            } else {
+            }
+            else if(cron!= null && !cron.isEmpty()) {
+                jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + cron + "\"" + ",");
+                jsonContext = jsonContext.replaceAll("\"projectedEndTime\".*", "\"projectedEndTime\" : " + System.currentTimeMillis() + ",");
+            }
+            else {
                 jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + "59 59 23 ? * * *" + "\"" + ",");
                 jsonContext = jsonContext.replaceAll("\"projectedEndTime\".*", "\"projectedEndTime\" : " + System.currentTimeMillis() + ",");
             }
@@ -57,9 +65,11 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
             ScheduledContextInstanceRecordImpl record = createRecord(contextInstance, System.currentTimeMillis(), RUNNING.name());
             results.add(record);
             // add multiple instances of the same context name - should have different ids
-            for (int j = 1; j < number + 1; j++) {
-                ScheduledContextInstanceRecordImpl newRecord = createRecord(contextInstance, System.currentTimeMillis() - (number * 1000L), WAITING.name());
-                results.add(newRecord);
+            if(this.createMultiple) {
+                for (int j = 1; j < number + 1; j++) {
+                    ScheduledContextInstanceRecordImpl newRecord = createRecord(contextInstance, System.currentTimeMillis() - (number * 1000L), WAITING.name());
+                    results.add(newRecord);
+                }
             }
         }
         return results;
@@ -82,5 +92,9 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
     @Override
     public long getQueryResponseTime() {
         throw new UnsupportedOperationException();
+    }
+
+    public void setCreateMultiple(boolean createMultiple) {
+        this.createMultiple = createMultiple;
     }
 }
