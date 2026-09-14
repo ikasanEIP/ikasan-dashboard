@@ -151,7 +151,7 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ContextInstanceImpl that = (ContextInstanceImpl) o;
-        return Objects.equals(super.getName(), that.getName());
+        return Objects.equals(this.id, that.getId());
     }
 
     @Override
