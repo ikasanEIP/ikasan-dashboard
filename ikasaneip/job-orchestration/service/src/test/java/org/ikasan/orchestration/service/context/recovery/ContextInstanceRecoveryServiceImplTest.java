@@ -1,5 +1,7 @@
 package org.ikasan.orchestration.service.context.recovery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.awaitility.Awaitility;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
@@ -61,6 +63,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.time.ZonedDateTime.now;
@@ -166,7 +169,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, false);
@@ -220,7 +223,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         prepared.setStartTime(System.currentTimeMillis() + 100000L);
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
@@ -270,7 +273,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false, true);
@@ -332,7 +335,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1), 1, 1));
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, false);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, false
+            , this.createCronExpressionWithOffset(60 * 60 * 1000));
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
@@ -380,7 +384,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, false);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, false, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
@@ -469,7 +473,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1, prepared2, prepared3), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
@@ -541,6 +545,107 @@ public class ContextInstanceRecoveryServiceImplTest {
     }
 
     @Test
+    public void should_create_context_machine_with_agents_ended_and_started_while_recovery_necessary_due_to_dashboard_restart() throws Exception {
+        // ensure no contexts
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+
+        ScheduledContextInstanceRecordImpl prepared1 = new ScheduledContextInstanceRecordImpl();
+        ContextInstance contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+        contextInstance.setStartTime(System.currentTimeMillis() - 100000L);
+        contextInstance.setName("ContextName1");
+        contextInstance.setStatus(PREPARED);
+        prepared1.setContextInstance(contextInstance);
+        prepared1.setContextName("ContextName1");
+        prepared1.setStartTime(System.currentTimeMillis() - 100000L);
+
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(prepared1), 1, 1));
+
+
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, false
+            , this.createCronExpressionWithOffsetAndWildcards(10000L));
+        instanceResults.setCreateMultiple(false);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
+
+        ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
+        when(scheduledContextService.findAll()).thenReturn(contextResults);
+
+        InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalJobResults.getResultList());
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults = new GlobalEventJobTestSearchResults(1);
+        schedulerJobInstanceService.save(globalEventJobRecordSearchResults.getResultList());
+        when(this.scheduledContextService.findById(anyString())).thenReturn(this.scheduledContextRecord);
+
+        ContextTemplate jobPlan = new ContextTemplateImpl();
+        jobPlan.setName(contextInstance.getName());
+        jobPlan.setTimeWindowStart(this.createCronExpressionWithOffsetAndWildcards(10000L));
+        jobPlan.setContextTtlMilliseconds(1000*60*60*5);
+        when(this.scheduledContextRecord.getContext()).thenReturn(jobPlan);
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
+        when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+
+        // execute
+        contextInstanceRecoveryServiceImpl.recoverInstances();
+
+        // verify
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextService).findAll();
+        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
+        verify(timeService).getDateNow();
+        verify(timeService, times(2)).getLocalDateNow();
+        verify(scheduledContextInstanceService, times(2)).save(any(ScheduledContextInstanceRecord.class));
+        verify(scheduledContextInstanceService, times(1)).deleteById(any(String.class));
+        verify(contextInstancePublicationService, times(3)).remove(any(String.class), any(ContextInstance.class));
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+        verify(scheduledContextService, times(1)).findById(anyString());
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            jobLockCacheService,
+            scheduledContextService,
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
+        );
+
+        Awaitility.await().atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size()));
+
+        assertEquals(1, ContextMachineCache.instance().contextNames().size());
+        assertEquals(2, ContextMachineCache.instance().contextInstanceIdentifiers().size());
+
+        AtomicInteger preparedCount = new AtomicInteger();
+        AtomicInteger waitingCount = new AtomicInteger();
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id -> {
+            if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(WAITING)) {
+                verifyContextMachineById(id);
+                waitingCount.getAndIncrement();
+            }
+            else if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(PREPARED)) {
+                preparedCount.getAndIncrement();
+            }
+        });
+
+        assertEquals(1, preparedCount.get());
+        assertEquals(1, waitingCount.get());
+    }
+
+    @Test
     public void should_create_context_machine_with_agents_all_inside_operating_window_requires_agent_synchronisation() throws Exception {
         // ensure no contexts
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -578,7 +683,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1, prepared2, prepared3), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         // Set the context to require a delayed synchronisation.
@@ -688,7 +793,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1, prepared2, prepared3), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
@@ -784,7 +889,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false
+            , this.createCronExpressionWithOffset(60 * 60 * 1000));
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
@@ -907,7 +1013,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false, this.createCronExpressionWithOffset(60 * 60 * 1000));
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
@@ -1030,7 +1136,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared1), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(1, false
+            , this.createCronExpressionWithOffset(60 * 60 * 1000));
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
@@ -1163,7 +1270,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(), 1, 1));
 
 
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
@@ -1213,6 +1320,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             this.schedulerJobService
         );
 
+
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName2").size());
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName3").size());
@@ -1256,7 +1364,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             .thenReturn(new SearchResultsImpl<>(List.of(prepared), 1, 1));
 
         // set up
-        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
@@ -1326,7 +1434,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     @Test
     public void does_nothing_if_no_context_instance_records_or_context_records() {
         // set up
-        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(0, true);
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(0, true, null);
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -1395,4 +1503,44 @@ public class ContextInstanceRecoveryServiceImplTest {
             = (ConcurrentHashMap)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheDataMap");
         return jobLockCacheDataMap.get("environment");
     }
+
+    /**
+     * Creates a Quartz cron expression offset by a specified number of milliseconds from the current time.
+     * The offset can be positive (future time) or negative (past time).
+     *
+     * @param offsetMillis the offset in milliseconds (positive for future, negative for past)
+     * @return a Quartz cron expression in the format "second minute hour day month ? year"
+     */
+    private String createCronExpressionWithOffset(long offsetMillis) {
+        Instant targetInstant = Instant.now().plusMillis(offsetMillis);
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(targetInstant, ZoneId.systemDefault());
+
+        int second = zonedDateTime.getSecond();
+        int minute = zonedDateTime.getMinute();
+        int hour = zonedDateTime.getHour();
+        int day = zonedDateTime.getDayOfMonth();
+        int month = zonedDateTime.getMonthValue();
+        int year = zonedDateTime.getYear();
+
+        return String.format("%d %d %d %s %s ? %s", second, minute, hour, day, month, year);
+    }
+
+    /**
+     * Creates a Quartz cron expression offset by a specified number of milliseconds from the current time.
+     * The offset can be positive (future time) or negative (past time).
+     *
+     * @param offsetMillis the offset in milliseconds (positive for future, negative for past)
+     * @return a Quartz cron expression in the format "second minute hour day month ? year"
+     */
+    private String createCronExpressionWithOffsetAndWildcards(long offsetMillis) {
+        Instant targetInstant = Instant.now().plusMillis(offsetMillis);
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(targetInstant, ZoneId.systemDefault());
+
+        int second = zonedDateTime.getSecond();
+        int minute = zonedDateTime.getMinute();
+        int hour = zonedDateTime.getHour();
+
+        return String.format("%d %d %d %s %s ? %s", second, minute, hour, "*", "*", "*");
+    }
+
 }

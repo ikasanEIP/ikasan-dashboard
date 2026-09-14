@@ -167,14 +167,14 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
         SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
             .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR, InstanceStatus.COMPLETE));
 
-        Map<String, List<ScheduledContextInstanceRecord>> contextNameToInstances = new HashMap<>();
+        Map<String, List<ContextInstance>> contextNameToInstances = new HashMap<>();
 
         for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
-            List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = contextNameToInstances.get(scheduledContextInstanceRecord.getContextName());
+            List<ContextInstance> scheduledContextInstanceRecords = contextNameToInstances.get(scheduledContextInstanceRecord.getContextName());
             if (scheduledContextInstanceRecords == null) {
-                contextNameToInstances.put(scheduledContextInstanceRecord.getContextName(), new ArrayList<>(List.of(scheduledContextInstanceRecord)));
+                contextNameToInstances.put(scheduledContextInstanceRecord.getContextName(), new ArrayList<>(List.of(scheduledContextInstanceRecord.getContextInstance())));
             } else {
-                scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
+                scheduledContextInstanceRecords.add(scheduledContextInstanceRecord.getContextInstance());
             }
         }
 
@@ -234,68 +234,46 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 }
 
                 // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register is triggered
-                List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = contextNameToInstances.get(context.getName());
+                List<ContextInstance> scheduledContextInstanceRecords = contextNameToInstances.get(context.getName());
 
                 if (scheduledContextInstanceRecords != null) {
-                    for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : scheduledContextInstanceRecords) {
+                    for (ContextInstance instance : scheduledContextInstanceRecords) {
                         try {
-                            if((scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() == 0 || scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() < System.currentTimeMillis())
-                                && !scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded()) {
+                            if((instance.getProjectedEndTime() == 0 || instance.getProjectedEndTime() < System.currentTimeMillis())
+                                && !instance.isRunContextUntilManuallyEnded()) {
                                 LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.",
-                                    scheduledContextInstanceRecord.getContextInstanceId(), scheduledContextInstanceRecord.getContextName());
-                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                                contextInstance.setEndTime(System.currentTimeMillis());
-                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
-                            }
-                            else if (QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(scheduledContextInstanceRecord.getContextInstance().getStartTime(), scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime(), System.currentTimeMillis())
-                                || (scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
-                                if (scheduledContextInstanceRecord != null) {
-                                    try {
-                                        ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                                        // @todo check with mick where the cron expressions are entered
-                                        if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
-                                            && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
-                                            initialiseContextMachine(context, contextInstance, false, false, null);
-                                            if (!contextInstance.isRunContextUntilManuallyEnded()) {
-                                                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
-                                                    , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
-                                                    , contextInstance.getTimezone(), contextInstance.getId());
-                                                LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
-                                            }
-                                        } else {
-                                            LOG.info(String.format("Not Recovering. Job Plan [%s] instance ID [%s] falls within a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
-                                            removeAgentInstances(contextInstance);
-                                            contextInstance.setEndTime(System.currentTimeMillis());
-                                            saveContextInstance(contextInstance, InstanceStatus.ENDED);
-                                        }
+                                    instance.getId(), instance.getName());
+                                removeAgentInstances(instance);
+                                instance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(instance, InstanceStatus.ENDED);
 
-                                    } catch (Exception e) {
-                                        // todo probably want to send a notification here.
-                                        LOG.error(String.format("Removing Job Plan [%s] instance ID [%s] due to an issue that makes it unrecoverable: ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
-                                        removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                        ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                                        contextInstance.setEndTime(System.currentTimeMillis());
-                                        saveContextInstance(contextInstance, InstanceStatus.ENDED);
-                                    }
+                                if (QuartzTimeWindowChecker.withinOperatingWindow(instance.getTimezone()
+                                    , instance.getTimeWindowStart(), instance.getContextTtlMilliseconds(), now)) {
+                                    String message = String.format("Recovering context [%s] has ended and a new instance needs to be created over the " +
+                                        "period the dashboard was down. Creating instance now!", scheduledContextRecord.getContextName());
+                                    LOG.info(message);
+                                    this.initialiseMissingJobPlanInstance(scheduledContextRecord);
                                 }
+                            }
+                            else if (QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(instance.getStartTime()
+                                , instance.getProjectedEndTime(), System.currentTimeMillis())
+                                || (instance.isRunContextUntilManuallyEnded())) {
+                                this.recoverInstance(context, instance, now);
                             } else {
                                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window. Ending it");
-                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                                contextInstance.setEndTime(System.currentTimeMillis());
-                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
+                                removeAgentInstances(instance);
+                                instance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(instance, InstanceStatus.ENDED);
                             }
                         } catch (Exception e) {
                             // todo probably want to send a notification here.
                             e.printStackTrace();
-                            if(scheduledContextInstanceRecord != null) {
+                            if(instance != null) {
                                 LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows. Ending it"
-                                    , scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
-                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                                contextInstance.setEndTime(System.currentTimeMillis());
-                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
+                                    , instance.getName(), instance.getId()), e);
+                                removeAgentInstances(instance);
+                                instance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(instance, InstanceStatus.ENDED);
                             }
                         }
                     }
@@ -304,19 +282,67 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     // we have a context record without an instance which should not be the case
                     String message = String.format("Recovering context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
                     LOG.info(message);
-                    MissingContextInstanceRecoveryRunnable missingContextInstanceRecoveryRunnable = new MissingContextInstanceRecoveryRunnable(
-                        this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
-                        this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
-                        scheduledContextRecord, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService,
-                        this.timeService, this.jobUtilsService, this.jobProvisionService, this.schedulerJobService);
-                    missingContextInstanceRecoveryRunnable.setContextMachineExecutorWaitTimeoutSeconds(super.contextMachineExecutorWaitTimeoutSeconds);
-                    missingContextInstanceRecoveryRunnable.setBlackListedMessageMaxRetries(super.blackListedMessageMaxRetries);
-                    missingContextInstanceRecoveryRunnable.setErrorRetrySleepInterval(super.errorRetrySleepInterval);
-                    missingContextInstanceRecoveryRunnable.setPublishRaiseEventsAfterJobPlanInstanceFlush(super.publishRaiseEventsAfterJobPlanInstanceFlush);
-
-                    executor.execute(missingContextInstanceRecoveryRunnable);
+                    this.initialiseMissingJobPlanInstance(scheduledContextRecord);
                 }
             }
         }
+    }
+
+    /**
+     * Recovers a specific context instance if it is determined that recovery is allowed based on its blackout
+     * window properties and current time. If recovery is not allowed, the instance is finalized.
+     *
+     * @param context The context template providing configuration and metadata for the context instance.
+     * @param contextInstance The context instance to be recovered or finalized based on time windows and schedules.
+     * @param now The current timestamp used to evaluate blackout windows and schedules.
+     */
+    private void recoverInstance(ContextTemplate context, ContextInstance contextInstance, Date now) {
+        try {
+            if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
+                && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
+                initialiseContextMachine(context, contextInstance, false, false, null);
+                if (!contextInstance.isRunContextUntilManuallyEnded()) {
+                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
+                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                        , contextInstance.getTimezone(), contextInstance.getId());
+                    LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
+                }
+            } else {
+                LOG.info(String.format("Not Recovering. Job Plan [%s] instance ID [%s] falls within a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
+                removeAgentInstances(contextInstance);
+                contextInstance.setEndTime(System.currentTimeMillis());
+                saveContextInstance(contextInstance, InstanceStatus.ENDED);
+            }
+
+        } catch (Exception e) {
+            // todo probably want to send a notification here.
+            LOG.error(String.format("Removing Job Plan [%s] instance ID [%s] due to an issue that makes it unrecoverable: "
+                , contextInstance.getName(), contextInstance.getId()), e);
+            removeAgentInstances(contextInstance);
+            contextInstance.setEndTime(System.currentTimeMillis());
+            saveContextInstance(contextInstance, InstanceStatus.ENDED);
+        }
+    }
+
+    /**
+     * Initializes a missing job plan instance for the given scheduled context record.
+     * This method creates a recovery task with all necessary services and parameters,
+     * configures required properties, and submits the task for execution.
+     *
+     * @param scheduledContextRecord The scheduled context record that requires
+     *                               initialization of a missing job plan instance.
+     */
+    private void initialiseMissingJobPlanInstance(ScheduledContextRecord scheduledContextRecord) {
+        MissingContextInstanceRecoveryRunnable missingContextInstanceRecoveryRunnable = new MissingContextInstanceRecoveryRunnable(
+            this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
+            this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
+            scheduledContextRecord, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService,
+            this.timeService, this.jobUtilsService, this.jobProvisionService, this.schedulerJobService);
+        missingContextInstanceRecoveryRunnable.setContextMachineExecutorWaitTimeoutSeconds(super.contextMachineExecutorWaitTimeoutSeconds);
+        missingContextInstanceRecoveryRunnable.setBlackListedMessageMaxRetries(super.blackListedMessageMaxRetries);
+        missingContextInstanceRecoveryRunnable.setErrorRetrySleepInterval(super.errorRetrySleepInterval);
+        missingContextInstanceRecoveryRunnable.setPublishRaiseEventsAfterJobPlanInstanceFlush(super.publishRaiseEventsAfterJobPlanInstanceFlush);
+
+        executor.execute(missingContextInstanceRecoveryRunnable);
     }
 }
