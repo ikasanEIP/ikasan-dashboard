@@ -32,22 +32,30 @@ public class SolrTokenizerQueryBuilder {
         {
             if(token.contains("*"))
             {
-                if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(token)) {
+                if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(token) && !token.startsWith("\"") && !token.endsWith("\"")) {
                     query.append(negationQuery).append(type).append(COLON).append("\"")
                         .append(SolrSpecialCharacterEscapeUtil.escape(token)).append("\" ");
                 }
                 else {
-                    query.append(negationQuery).append(type).append(COLON).append(token);
+                    query.append(negationQuery).append(type).append(COLON).append(token).append(" ");
                 }
             }
             else if(LOGICAL_OPERATORS.contains(token))
             {
                 query.append(SolrSpecialCharacterEscapeUtil.escape(token)).append(" ");
             }
+            else if(!SolrSpecialCharacterEscapeUtil.containsSpecialChar(token)) {
+                query.append(negationQuery).append(type).append(COLON).append("*").append(token).append("* ");
+            }
             else
             {
-                query.append(negationQuery).append(type).append(COLON).append("\"").append(token)
-                    .append("\"").append(" ");
+                if(token.startsWith("\"") && token.endsWith("\"")) {
+                    query.append(negationQuery).append(type).append(COLON).append(token).append(" ");
+                }
+                else {
+                    query.append(negationQuery).append(type).append(COLON).append("\"").append(token)
+                        .append("\"").append(" ");
+                }
             }
         });
 
@@ -56,6 +64,7 @@ public class SolrTokenizerQueryBuilder {
 
     private static List<String> tokenize(String query) throws IOException
     {
+        if(!query.contains(" ")) return List.of(query);
         StreamTokenizer streamTokenizer = new StreamTokenizer(new StringReader(query));
         streamTokenizer.wordChars(':',':');
         streamTokenizer.wordChars('-','-');

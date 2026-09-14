@@ -1,9 +1,8 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
-
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.*;
