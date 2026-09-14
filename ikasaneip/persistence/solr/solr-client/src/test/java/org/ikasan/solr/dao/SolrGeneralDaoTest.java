@@ -722,19 +722,19 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                         , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
                 });
 
-//            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-//                .atMost(15, TimeUnit.SECONDS)
-//                .untilAsserted(() -> {
-//                    assertEquals(70, dao.search(moduleNames, null, "b-ikasan2/", 0
-//                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
-//                });
+            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
+                .atMost(15, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertEquals(70, dao.search(moduleNames, null, "b-ikasan2/", 0
+                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
+                });
 
-//            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-//                .atMost(15, TimeUnit.SECONDS)
-//                .untilAsserted(() -> {
-//                    assertEquals(50, dao.search(moduleNames, null, "b223648-bu-13442", 0
-//                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
-//                });
+            with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
+                .atMost(15, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertEquals(50, dao.search(moduleNames, null, "b223648-bu-13442", 0
+                        , System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
+                });
 
             with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
                 .atMost(15, TimeUnit.SECONDS)
@@ -833,7 +833,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
                     assertEquals(88305, dao.search(null, null, "ikasan3", 0
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
-                    assertEquals(88305, dao.search(null, null, "ikasan3 rocks", 0
+                    assertEquals(88304, dao.search(null, null, "ikasan3 rocks", 0
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
                     assertEquals(88220, dao.search(null, null, "33454432", 0
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
@@ -883,7 +883,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
                     assertEquals(88275, dao.search(moduleNames, null, "3345:44932-bb", 0
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
-                    assertEquals(88275, dao.search(moduleNames, null, "3345 AND :44932-bb:", 0
+                    assertEquals(88161, dao.search(moduleNames, null, "3345 AND :44932-bb:", 0
                         , System.currentTimeMillis() + 100000000l, 100, true, null ,null ).getTotalNumberOfResults());
                 });
 

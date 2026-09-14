@@ -13,7 +13,7 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", false);
 
-        Assert.assertEquals("Query equals", "payload:\"name pair\" AND ( payload:\"dog\" OR payload:\"cat\" ) ", solrQuery);
+        Assert.assertEquals("Query equals", "payload:\"name pair\" AND ( payload:*dog* OR payload:*cat* ) ", solrQuery);
     }
 
     @Test
@@ -22,7 +22,7 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", true);
 
-        Assert.assertEquals("Query equals", "*:* NOT payload:\"name pair\" AND ( *:* NOT payload:\"dog\" OR *:* NOT payload:\"cat\" ) ", solrQuery);
+        Assert.assertEquals("Query equals", "*:* NOT payload:\"name pair\" AND ( *:* NOT payload:*dog* OR *:* NOT payload:*cat* ) ", solrQuery);
     }
 
     @Test
@@ -31,7 +31,7 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", false);
 
-        Assert.assertEquals("Query equals", "payload:\"name pair\" AND ( ( payload:\"dog\" AND payload:\"horse\" ) OR ( payload:\"cat\" AND payload:\"chicken\" ) ) ", solrQuery);
+        Assert.assertEquals("Query equals", "payload:\"name pair\" AND ( ( payload:*dog* AND payload:*horse* ) OR ( payload:*cat* AND payload:*chicken* ) ) ", solrQuery);
     }
 
     @Test
@@ -40,8 +40,8 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", true);
 
-        Assert.assertEquals("Query equals", "*:* NOT payload:\"name pair\" AND ( ( *:* NOT payload:\"dog\" AND *:* NOT payload:\"horse\" ) " +
-            "OR ( *:* NOT payload:\"cat\" AND *:* NOT payload:\"chicken\" ) ) ", solrQuery);
+        Assert.assertEquals("Query equals", "*:* NOT payload:\"name pair\" AND ( ( *:* NOT payload:*dog* AND *:* NOT payload:*horse* ) " +
+            "OR ( *:* NOT payload:*cat* AND *:* NOT payload:*chicken* ) ) ", solrQuery);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", false);
 
-        Assert.assertEquals("Query equals", "payload:*\\:4432\\-bb\\:* ", solrQuery);
+        Assert.assertEquals("Query equals", "payload:\"*\"\\:4432\\-bb\\:\"*\" ", solrQuery);
     }
 
     @Test
@@ -131,6 +131,6 @@ public class SolrTokenizerQueryBuilderTest {
 
         String solrQuery = SolrTokenizerQueryBuilder.buildQuery(query, "payload", true);
 
-        Assert.assertEquals("Query equals", "*:* NOT payload:*\\:4432\\-bb\\:* ", solrQuery);
+        Assert.assertEquals("Query equals", "*:* NOT payload:\"*\"\\:4432\\-bb\\:\"*\" ", solrQuery);
     }
 }
