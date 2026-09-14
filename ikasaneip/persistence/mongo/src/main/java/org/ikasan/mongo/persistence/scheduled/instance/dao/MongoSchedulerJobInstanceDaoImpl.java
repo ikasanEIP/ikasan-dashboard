@@ -466,11 +466,6 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             query.addCriteria(Criteria.where(EntityFields.END_TIME).lte(filter.getEndTimeWindowEnd()));
         }
 
-//        // Exclude start and terminal jobs if requested
-//        if (!filter.includeStartAndTerminalJobsInSearchResults()) {
-//            query.addCriteria(Criteria.where(EntityFields.TYPE).nin("ContextStartJob", "ContextTerminalJob"));
-//        }
-
         return query;
     }
 
