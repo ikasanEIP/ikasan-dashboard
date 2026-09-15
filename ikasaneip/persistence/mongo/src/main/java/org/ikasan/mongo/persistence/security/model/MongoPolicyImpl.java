@@ -39,14 +39,8 @@
  * ====================================================================
  */
 package org.ikasan.mongo.persistence.security.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
-import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.security.model.Policy;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
 import java.util.Objects;
@@ -59,7 +53,6 @@ import java.util.Objects;
 public class MongoPolicyImpl implements Policy {
 
     private String id;
-    private String type;
     private String name;
     private Date createdDateTime;
     private Date updatedDateTime;

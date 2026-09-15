@@ -194,6 +194,7 @@ public class MongoIkasanPrincipalImpl implements IkasanPrincipal {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;  // Add this line
         if (o == null || getClass() != o.getClass()) return false;
         MongoIkasanPrincipalImpl that = (MongoIkasanPrincipalImpl) o;
         return Objects.equals(id, that.id) && Objects.equals(name, that.name);
