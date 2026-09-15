@@ -337,7 +337,7 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SchedulerJobInstanceRecord that = (MongoSchedulerJobInstanceRecordImpl) o;
-        return id.equals(that.getId());
+        return Objects.equals(id, that.getId());
     }
 
     @Override

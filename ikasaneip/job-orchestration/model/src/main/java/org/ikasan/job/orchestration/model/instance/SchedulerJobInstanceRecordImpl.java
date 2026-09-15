@@ -272,7 +272,7 @@ public class SchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecor
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SchedulerJobInstanceRecordImpl that = (SchedulerJobInstanceRecordImpl) o;
-        return id.equals(that.id);
+        return Objects.equals(id, that.id);
     }
 
     @Override

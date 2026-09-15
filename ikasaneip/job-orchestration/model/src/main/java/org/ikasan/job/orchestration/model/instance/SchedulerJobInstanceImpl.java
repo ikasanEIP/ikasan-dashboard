@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements SchedulerJobInstance, StatefulEntity, Serializable {
     private String contextInstanceId;
@@ -105,15 +106,23 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     }
 
     @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (childContextName != null ? childContextName.hashCode() : 0);
-        return result;
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SchedulerJobInstanceImpl that = (SchedulerJobInstanceImpl) o;
+        return held == that.held && initiationEventRaised == that.initiationEventRaised
+            && skip == that.skip
+            && Objects.equals(contextInstanceId, that.contextInstanceId)
+            && Objects.equals(childContextName, that.childContextName)
+            && status == that.status
+            && Objects.equals(scheduledProcessEvent, that.scheduledProcessEvent)
+            && Objects.equals(errorAcknowledged, that.errorAcknowledged);
     }
 
     @Override
-    public boolean equals(Object other) {
-        return super.equals(other);
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), contextInstanceId, childContextName, held
+            , initiationEventRaised, status, scheduledProcessEvent, skip, errorAcknowledged);
     }
 
     @Override
