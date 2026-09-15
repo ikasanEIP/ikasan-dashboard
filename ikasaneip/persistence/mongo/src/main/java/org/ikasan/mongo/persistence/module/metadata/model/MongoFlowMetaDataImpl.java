@@ -105,15 +105,20 @@ public class MongoFlowMetaDataImpl implements FlowMetaData {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MongoFlowMetaDataImpl that = (MongoFlowMetaDataImpl) o;
-        return Objects.equals(name, that.name) &&
-            Objects.equals(configurationId, that.configurationId);
+        return Objects.equals(name, that.name)
+            && Objects.equals(consumer, that.consumer)
+            && Objects.equals(transitions, that.transitions)
+            && Objects.equals(flowElements, that.flowElements)
+            && Objects.equals(configurationId, that.configurationId)
+            && Objects.equals(flowStartupType, that.flowStartupType)
+            && Objects.equals(flowStartupComment, that.flowStartupComment);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, consumer, transitions, flowElements, configurationId, flowStartupType, flowStartupComment);
+        return Objects.hash(name, consumer, transitions, flowElements
+            , configurationId, flowStartupType, flowStartupComment);
     }
 }
