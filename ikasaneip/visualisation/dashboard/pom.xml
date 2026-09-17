@@ -376,6 +376,13 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-persistence-initialisation</artifactId>
+<!--            <scope>test</scope>-->
+            <version>5.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-cache</artifactId>
         </dependency>
 
@@ -949,12 +956,6 @@
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-persistence-initialisation</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 

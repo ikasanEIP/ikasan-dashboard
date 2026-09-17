@@ -78,6 +78,9 @@ import org.ikasan.mongo.persistence.scheduled.event.repository.MongoScheduledPro
 import org.ikasan.mongo.persistence.general.dao.MongoGeneralDaoImpl;
 import org.ikasan.mongo.persistence.general.repository.MongoIkasanDocumentRepository;
 import org.ikasan.mongo.persistence.general.service.MongoGeneralServiceImpl;
+import org.ikasan.mongo.persistence.setup.dao.MongoSetupDaoImpl;
+import org.ikasan.mongo.persistence.setup.repository.MongoDashboardPlatformSetupRepository;
+import org.ikasan.mongo.persistence.setup.service.MongoSetupServiceImpl;
 import org.ikasan.spec.housekeeping.HousekeepService;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
 import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
@@ -104,6 +107,8 @@ import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.security.dao.SecurityDao;
 import org.ikasan.spec.security.dao.UserDao;
+import org.ikasan.spec.persistence.dao.SetupDao;
+import org.ikasan.spec.persistence.service.SetupService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -139,7 +144,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
     "org.ikasan.mongo.persistence.wiretap.repository",
     "org.ikasan.mongo.persistence.scheduled.event.repository",
     "org.ikasan.mongo.persistence.general.repository",
-    "org.ikasan.mongo.persistence.scheduled.profile.repository"
+    "org.ikasan.mongo.persistence.scheduled.profile.repository",
+    "org.ikasan.mongo.persistence.setup.repository"
 })
 public class MongoPersistenceAutoConfiguration {
 
@@ -579,6 +585,20 @@ public class MongoPersistenceAutoConfiguration {
     public HousekeepService housekeepService(MongoGeneralDaoImpl mongoGeneralDao)
     {
         return esbSearchService(mongoGeneralDao);
+    }
+
+    // Setup Service and DAO
+
+    @Bean("mongoSetupDao")
+    public SetupDao mongoSetupDao(
+            MongoDashboardPlatformSetupRepository repository,
+            MongoTemplate mongoTemplate) {
+        return new MongoSetupDaoImpl(repository, mongoTemplate);
+    }
+
+    @Bean("setupService")
+    public SetupService setupService(SetupDao mongoSetupDao) {
+        return new MongoSetupServiceImpl(mongoSetupDao);
     }
 
 }
