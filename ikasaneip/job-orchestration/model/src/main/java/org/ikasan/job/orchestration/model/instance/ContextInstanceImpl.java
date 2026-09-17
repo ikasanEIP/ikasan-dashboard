@@ -156,7 +156,7 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.getName());
+        return Objects.hash(this.id);
     }
 
     @Override
