@@ -6,7 +6,7 @@
   "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "",
-  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'ANVIL_MHIRepoBonds'\\\");\" | ac_evalform - | ac_trigger_ado.sh -",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'ANVIL_ACMERepoBonds'\\\");\" | ac_evalform - | ac_trigger_ado.sh -",
   "minExecutionTime" : 2000,
   "maxExecutionTime" : 20000,
   "contextParameters" : [ ],

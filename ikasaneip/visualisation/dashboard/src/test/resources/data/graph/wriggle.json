@@ -31,20 +31,20 @@
       "y": 0
     },
     {
-      "id": "blbgToms-mhiTrade-sa.Ordered Trade Capture Flow",
-      "name": "blbgToms-mhiTrade-sa\nOrdered Trade Capture Flow",
+      "id": "blbgToms-acmeTrade-sa.Ordered Trade Capture Flow",
+      "name": "blbgToms-acmeTrade-sa\nOrdered Trade Capture Flow",
       "x": 400,
       "y": 0
     },
     {
-      "id": "blbgToms-mhiTrade-sa.Fix Outbound Flow",
-      "name": "blbgToms-mhiTrade-sa\nFix Outbound Flow",
+      "id": "blbgToms-acmeTrade-sa.Fix Outbound Flow",
+      "name": "blbgToms-acmeTrade-sa\nFix Outbound Flow",
       "x": 600,
       "y": 0
     },
     {
-      "id": "blbgToms-mhiTrade-sa.Bloomberg Trade Feed Consumer Flow",
-      "name": "blbgToms-mhiTrade-sa\nBloomberg Trade Feed\nConsumer Flow",
+      "id": "blbgToms-acmeTrade-sa.Bloomberg Trade Feed Consumer Flow",
+      "name": "blbgToms-acmeTrade-sa\nBloomberg Trade Feed\nConsumer Flow",
       "x": 1000,
       "y": 0
     },
@@ -53,8 +53,8 @@
         "type" : "xpath",
         "query" : "/cmfTrade/tradeDetails/tradeIdentifiers/bloombergTicketNumber/text()"
       },
-      "id": "blbgToms-mhiTrade-sa.Bloomberg Trade Feed Message Transformation Flow",
-      "name": "blbgToms-mhiTrade-sa\nBloomberg Trade Feed Message\nTransformation Flow",
+      "id": "blbgToms-acmeTrade-sa.Bloomberg Trade Feed Message Transformation Flow",
+      "name": "blbgToms-acmeTrade-sa\nBloomberg Trade Feed Message\nTransformation Flow",
       "x": 1200,
       "y": 0
     },
@@ -109,7 +109,7 @@
   ],
   "destinations": [
     {
-      "id": "bdm.mhi.trade.cmf.prebook",
+      "id": "bdm.acme.trade.cmf.prebook",
       "name": "bdm.mhi.trade.cmf.prebook",
       "x": 0,
       "y": 0

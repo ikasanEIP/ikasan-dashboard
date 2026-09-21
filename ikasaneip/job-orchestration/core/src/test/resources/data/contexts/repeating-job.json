@@ -5,7 +5,7 @@
   "contexts" : [ {
     "name" : "SIMPLE_ME",
     "jobDependencies" : [ {
-      "jobIdentifier" : "scheduler-agent-BE_MHI_EMIR_PFO",
+      "jobIdentifier" : "scheduler-agent-BE_ACME_EMIR_PFO",
       "logicalGrouping" : {
         "and" : [ {
           "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
@@ -14,9 +14,9 @@
     }],
     "scheduledJobs" : [ {
       "agentName" : "scheduler-agent",
-      "jobName" : "BE_MHI_EMIR_PFO",
+      "jobName" : "BE_ACME_EMIR_PFO",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+      "identifier" : "scheduler-agent-BE_ACME_EMIR_PFO"
     }, {
       "agentName" : "scheduler-agent",
       "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",

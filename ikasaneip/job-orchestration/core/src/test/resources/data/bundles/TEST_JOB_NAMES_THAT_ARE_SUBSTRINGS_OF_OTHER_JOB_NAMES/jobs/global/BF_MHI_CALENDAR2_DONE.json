@@ -1,9 +1,9 @@
 {
   "agentName" : "GLOBAL_EVENT",
-  "jobName" : "BF_MHI_CALENDAR2_DONE",
-  "jobDescription" : "BF_MHI_CALENDAR2_DONE",
+  "jobName" : "BF_acme_CALENDAR2_DONE",
+  "jobDescription" : "BF_acme_CALENDAR2_DONE",
   "contextName" : "GLOBAL_EVENT",
   "startupControlType" : "AUTOMATIC",
   "ordinal" : -1,
-  "identifier" : "GLOBAL_EVENT-BF_MHI_CALENDAR2_DONE"
+  "identifier" : "GLOBAL_EVENT-BF_acme_CALENDAR2_DONE"
 }

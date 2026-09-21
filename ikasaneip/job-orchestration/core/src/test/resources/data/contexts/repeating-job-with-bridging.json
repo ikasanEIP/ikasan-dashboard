@@ -7,7 +7,7 @@
       "name": "SIMPLE_ME",
       "jobDependencies": [
         {
-          "jobIdentifier": "scheduler-agent-BE_MHI_EMIR_PFO",
+          "jobIdentifier": "scheduler-agent-BE_ACME_EMIR_PFO",
           "logicalGrouping": {
             "and": [
               {
@@ -21,13 +21,13 @@
           "logicalGrouping": {
             "and": [
               {
-                "identifier": "scheduler-agent-BE_MHI_EMIR_PFO"
+                "identifier": "scheduler-agent-BE_ACME_EMIR_PFO"
               }
             ]
           }
         },
         {
-          "jobIdentifier": "scheduler-agent-BE_MHI_EMIR_PFO_2",
+          "jobIdentifier": "scheduler-agent-BE_ACME_EMIR_PFO_2",
           "logicalGrouping": {
             "and": [
               {
@@ -40,9 +40,9 @@
       "scheduledJobs": [
         {
           "agentName": "scheduler-agent",
-          "jobName": "BE_MHI_EMIR_PFO",
+          "jobName": "BE_ACME_EMIR_PFO",
           "startupControlType": "AUTOMATIC",
-          "identifier": "scheduler-agent-BE_MHI_EMIR_PFO"
+          "identifier": "scheduler-agent-BE_ACME_EMIR_PFO"
         },
         {
           "agentName": "scheduler-agent",
@@ -57,9 +57,9 @@
         },
         {
           "agentName": "scheduler-agent",
-          "jobName": "BE_MHI_EMIR_PFO_2",
+          "jobName": "BE_ACME_EMIR_PFO_2",
           "startupControlType": "AUTOMATIC",
-          "identifier": "scheduler-agent-BE_MHI_EMIR_PFO_2"
+          "identifier": "scheduler-agent-BE_ACME_EMIR_PFO_2"
         }
       ]
     }

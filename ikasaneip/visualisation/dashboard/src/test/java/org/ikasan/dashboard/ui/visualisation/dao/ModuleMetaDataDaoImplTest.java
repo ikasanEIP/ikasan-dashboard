@@ -21,6 +21,6 @@ public class ModuleMetaDataDaoImplTest
     {
         ModuleMetaDataDaoImpl dao = new ModuleMetaDataDaoImpl();
 
-        System.out.println(dao.getModuleMetaData("blbgToms-mhiTrade"));
+        System.out.println(dao.getModuleMetaData("blbgToms-acmeTrade"));
     }
 }

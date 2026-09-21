@@ -1,6 +1,6 @@
 {
   "name" : "bloomberg-trade",
-  "description" : "Bloomberg MHI TOMS Post Trade Feed and Trade Booking Application",
+  "description" : "Bloomberg ACME TOMS Post Trade Feed and Trade Booking Application",
   "version" : null,
   "flows" : [ {
     "name" : "Fix Inbound Flow",
@@ -8,7 +8,7 @@
       "componentName" : "Fix Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
-      "implementingClass" : "com.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$d655c7ed",
+      "implementingClass" : "org.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$d655c7ed",
       "configurationId" : "bloomberg-trade-fixConsumer",
       "invokerConfigurationId" : "bloomberg-tradeFix Inbound FlowFix ConsumerInvoker",
       "configurable" : true
@@ -80,7 +80,7 @@
       "componentName" : "Fix Message Unescape Converter",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.converter.FixMessageUnescapeConverter",
+      "implementingClass" : "com.ikasan.esb.acme.blbgToms.acmeTrade.component.converter.FixMessageUnescapeConverter",
       "configurationId" : null,
       "invokerConfigurationId" : "bloomberg-tradeFix Outbound FlowFix Message Unescape ConverterInvoker",
       "configurable" : false
@@ -1728,12 +1728,12 @@
       "to" : "Trade Feed Trade Purpose Broker",
       "name" : "default"
     }, {
-      "from" : "MHEU Trade Book Broker",
+      "from" : "ACME Trade Book Broker",
       "to" : "Trade Feed Decision Maker Broker",
       "name" : "default"
     }, {
       "from" : "Trade Feed Master Ticket Broker",
-      "to" : "MHEU Trade Book Broker",
+      "to" : "ACME Trade Book Broker",
       "name" : "default"
     }, {
       "from" : "Filter out duplicate trade feed messages",
@@ -1889,12 +1889,12 @@
       "invokerConfigurationId" : "bloomberg-tradeBloomberg Trade Feed Message Transformation FlowTrade Feed Decision Maker BrokerInvoker",
       "configurable" : true
     }, {
-      "componentName" : "MHEU Trade Book Broker",
+      "componentName" : "ACME Trade Book Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
       "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.broker.MheuTradeBookBroker",
       "configurationId" : "bloomberg-trade-mheuTradeBookBroker",
-      "invokerConfigurationId" : "bloomberg-tradeBloomberg Trade Feed Message Transformation FlowMHEU Trade Book BrokerInvoker",
+      "invokerConfigurationId" : "bloomberg-tradeBloomberg Trade Feed Message Transformation FlowACME Trade Book BrokerInvoker",
       "configurable" : true
     }, {
       "componentName" : "Trade Feed Master Ticket Broker",

@@ -1,6 +1,6 @@
 {
-  "name" : "blbgToms-mhiTrade-sa",
-  "description" : "Bloomberg MHI TOMS Post Trade Feed and Trade Booking Application",
+  "name" : "blbgToms-acmeTrade-sa",
+  "description" : "Bloomberg ACME TOMS Post Trade Feed and Trade Booking Application",
   "version" : null,
   "flows" : [ {
     "name" : "Nack Publishing Flow",
@@ -9,8 +9,8 @@
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.consumer.JmsContainerConsumer$$EnhancerBySpringCGLIB$$aa7bcce8",
-      "configurationId" : "blbgToms-mhiTrade-sa-exclusionJmsConsumer",
-      "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowExclusion Jms ConsumerInvoker",
+      "configurationId" : "blbgToms-acmeTrade-sa-exclusionJmsConsumer",
+      "invokerConfigurationId" : "blbgToms-acmeTrade-saNack Publishing FlowExclusion Jms ConsumerInvoker",
       "configurable" : true
     },
     "transitions" : [ {
@@ -130,17 +130,17 @@
       "componentName" : "CmfAcknowledgement State Ack Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.producer.TradeStateProducer",
-      "configurationId" : "blbgToms-mhiTrade-sa-collectionCmfAcknowledgementStateAckProducer",
-      "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowCmfAcknowledgement State Ack ProducerInvoker",
+      "implementingClass" : "org.ikasan.esb.acme.blbgToms.acmeTrade.component.producer.TradeStateProducer",
+      "configurationId" : "blbgToms-acmeTrade-sa-collectionCmfAcknowledgementStateAckProducer",
+      "invokerConfigurationId" : "blbgToms-acmeTrade-saNack Publishing FlowCmfAcknowledgement State Ack ProducerInvoker",
       "configurable" : true
     }, {
       "componentName" : "Collection CmfAcknowledgement Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "blbgToms-mhiTrade-sa-collectionCmfAcknowledgementProducer",
-      "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowCollection CmfAcknowledgement ProducerInvoker",
+      "configurationId" : "blbgToms-acmeTrade-sa-collectionCmfAcknowledgementProducer",
+      "invokerConfigurationId" : "blbgToms-acmeTrade-saNack Publishing FlowCollection CmfAcknowledgement ProducerInvoker",
       "configurable" : true
     }, {
       "componentName" : "CmfTradeCollection Ack MRR",
@@ -148,7 +148,7 @@
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
       "implementingClass" : "org.ikasan.component.router.multirecipient.RecipientListRouter",
       "configurationId" : null,
-      "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowCmfTradeCollection Ack MRRInvoker",
+      "invokerConfigurationId" : "blbgToms-acmeTrade-saNack Publishing FlowCmfTradeCollection Ack MRRInvoker",
       "configurable" : false
     }, {
       "componentName" : "CmfTradeCollection CmfAcknowledgement Validator",
@@ -186,7 +186,7 @@
       "componentName" : "TradeState Nak Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.producer.TradeStateProducer",
+      "implementingClass" : "org.ikasan.esb.mhi.blbgToms.mhiTrade.component.producer.TradeStateProducer",
       "configurationId" : "blbgToms-mhiTrade-sa-nakTradeStateProducer",
       "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowTradeState Nak ProducerInvoker",
       "configurable" : true
@@ -250,7 +250,7 @@
       "componentName" : "Nacke Trades Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.CmfTradeRouter",
+      "implementingClass" : "org.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.CmfTradeRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowNacke Trades RouterInvoker",
       "configurable" : false
@@ -274,7 +274,7 @@
       "componentName" : "TradeState Nak Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.producer.TradeStateProducer",
+      "implementingClass" : "org.ikasan.esb.mhi.blbgToms.mhiTrade.component.producer.TradeStateProducer",
       "configurationId" : "blbgToms-mhiTrade-sa-nakTradeStateProducer",
       "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowTradeState Nak ProducerInvoker",
       "configurable" : true
@@ -338,7 +338,7 @@
       "componentName" : "Nacke Trades Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.CmfTradeRouter",
+      "implementingClass" : "org.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.CmfTradeRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowNacke Trades RouterInvoker",
       "configurable" : false
@@ -346,7 +346,7 @@
       "componentName" : "Nack Type Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.XPathRouter",
+      "implementingClass" : "org.ikasan.esb.mhi.blbgToms.mhiTrade.component.routing.XPathRouter",
       "configurationId" : "blbgToms-mhiTrade-sa-nackTypeRouter",
       "invokerConfigurationId" : "blbgToms-mhiTrade-saNack Publishing FlowNack Type RouterInvoker",
       "configurable" : true

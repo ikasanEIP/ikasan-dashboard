@@ -11,7 +11,7 @@
   "persistentRecovery" : true,
   "recoveryTolerance" : 1800000,
   "filePath" : "/opt/mhi-ac/gateway/dev2/Anvil/in",
-  "filenames" : [ "/opt/mhi-ac/gateway/dev2/Anvil/in/MHIRepoEquities_20220606.xml" ],
+  "filenames" : [ "/opt/mhi-ac/gateway/dev2/Anvil/in/ACMERepoEquities_20220606.xml" ],
   "includeHeader" : false,
   "includeTrailer" : false,
   "sortByModifiedDateTime" : false,
@@ -21,5 +21,5 @@
   "ignoreFileRenameWhilstScanning" : true,
   "minFileAgeSeconds" : 15,
   "identifier" : "scheduler-agent-670147115",
-  "jobDescription" : "MHIRepoEquities_yyyymmdd.xml"
+  "jobDescription" : "ACMERepoEquities_yyyymmdd.xml"
 }
