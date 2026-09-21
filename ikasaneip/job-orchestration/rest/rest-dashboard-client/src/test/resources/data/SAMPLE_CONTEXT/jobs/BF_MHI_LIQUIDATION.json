@@ -1,14 +1,14 @@
 {
   "agentName" : "scheduler-agent",
-  "jobName" : "BF_MHI_LIQUIDATION",
+  "jobName" : "BF_ACME_LIQUIDATION",
   "contextId" : "MUREX3_WEEKEND",
   "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : ".",
-  "commandLine" : "#!/bin/bash\n#\n\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BF_MHI_LIQUIDATION MXPROCESSINGSCRIPT",
+  "commandLine" : "#!/bin/bash\n#\n\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BF_ACME_LIQUIDATION MXPROCESSINGSCRIPT",
   "minExecutionTime" : 2000,
   "maxExecutionTime" : 20000,
   "contextParameters" : [ ],
-  "identifier" : "scheduler-agent-BF_MHI_LIQUIDATION",
-  "jobDescription" : "BF_MHI_LIQUIDATION"
+  "identifier" : "scheduler-agent-BF_ACME_LIQUIDATION",
+  "jobDescription" : "BF_ACME_LIQUIDATION"
 }

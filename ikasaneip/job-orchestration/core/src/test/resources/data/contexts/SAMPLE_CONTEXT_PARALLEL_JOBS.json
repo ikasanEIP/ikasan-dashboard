@@ -180,7 +180,7 @@
     "contexts" : [ {
       "name" : "ETF_BSKT_PURGE",
       "jobDependencies" : [ {
-        "jobIdentifier" : "scheduler-agent-BF_MHI_PURGE_DT",
+        "jobIdentifier" : "scheduler-agent-BF_ACME_PURGE_DT",
         "logicalGrouping" : {
           "and" : [ {
             "identifier" : "scheduler-agent-PURGE_LOSTDATA"
@@ -190,15 +190,15 @@
         "jobIdentifier" : "scheduler-agent-BSP_BSK_PURGE",
         "logicalGrouping" : {
           "and" : [ {
-            "identifier" : "scheduler-agent-BF_MHI_PURGE_DT"
+            "identifier" : "scheduler-agent-BF_ACME_PURGE_DT"
           } ]
         }
       } ],
       "scheduledJobs" : [ {
         "agentName" : "scheduler-agent",
-        "jobName" : "BF_MHI_PURGE_DT",
+        "jobName" : "BF_ACME_PURGE_DT",
         "startupControlType" : "AUTOMATIC",
-        "identifier" : "scheduler-agent-BF_MHI_PURGE_DT"
+        "identifier" : "scheduler-agent-BF_ACME_PURGE_DT"
       }, {
         "agentName" : "scheduler-agent",
         "jobName" : "PURGE_LOSTDATA",
@@ -1115,7 +1115,7 @@
         "and" : [ {
           "identifier" : "scheduler-agent-BF_SETTLED_POS"
         }, {
-          "identifier" : "scheduler-agent-BF_MHI_LIQUIDATION"
+          "identifier" : "scheduler-agent-BF_ACME_LIQUIDATION"
         } ]
       }
     }, {
@@ -1133,7 +1133,7 @@
         } ]
       }
     }, {
-      "jobIdentifier" : "scheduler-agent-BF_MHI_LIQUIDATION",
+      "jobIdentifier" : "scheduler-agent-BF_ACME_LIQUIDATION",
       "logicalGrouping" : {
         "and" : [ {
           "identifier" : "scheduler-agent-START_LIVEBOOK_BOOKS"
@@ -1157,9 +1157,9 @@
       "identifier" : "scheduler-agent-BF_SETTLED_POS"
     }, {
       "agentName" : "scheduler-agent",
-      "jobName" : "BF_MHI_LIQUIDATION",
+      "jobName" : "BF_ACME_LIQUIDATION",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-BF_MHI_LIQUIDATION"
+      "identifier" : "scheduler-agent-BF_ACME_LIQUIDATION"
     }, {
       "agentName" : "scheduler-agent",
       "jobName" : "BE_POS_LIQUIDAT",

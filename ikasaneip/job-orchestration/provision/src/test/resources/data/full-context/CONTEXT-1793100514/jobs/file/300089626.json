@@ -10,7 +10,7 @@
   "persistentRecovery" : true,
   "recoveryTolerance" : 1800000,
   "filePath" : "/opt/mhi-ac/gateway/dev2/Anvil/in",
-  "filenames" : [ "/opt/mhi-ac/gateway/dev2/Anvil/in/MHIRepoPrevCloseBonds_20220606.xml" ],
+  "filenames" : [ "/opt/mhi-ac/gateway/dev2/Anvil/in/ACMERepoPrevCloseBonds_20220606.xml" ],
   "includeHeader" : false,
   "includeTrailer" : false,
   "sortByModifiedDateTime" : false,
@@ -20,5 +20,5 @@
   "ignoreFileRenameWhilstScanning" : true,
   "minFileAgeSeconds" : 15,
   "identifier" : "scheduler-agent-300089626",
-  "jobDescription" : "MHIRepoPrevCloseBonds_yyyymmdd.xml"
+  "jobDescription" : "ACMERepoPrevCloseBonds_yyyymmdd.xml"
 }

@@ -5,137 +5,137 @@
   "flows" : [ {
     "name" : "Inbound Routing Flow",
     "consumer" : {
-      "componentName" : "Postbook Trade MHI Consumer",
+      "componentName" : "Postbook Trade ACME Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
       "implementingClass" : "com.sun.proxy.$Proxy132",
       "configurationId" : "electronicTrade-postbookTradeConsumer",
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Postbook Trade MHI Consumer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Postbook Trade ACME Consumer_1165847135_I",
       "configurable" : true
     },
     "transitions" : [ {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "RF"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "CRF"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "XRF"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "MT"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "CMT"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "XMT"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "PCM"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
-      "to" : "Ignore MHEU E2 RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME E2 RF Ticket",
       "name" : "PXM"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E2 SB Producer",
       "name" : "SB"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E2 SB Producer",
       "name" : "CSB"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E2 SB Producer",
       "name" : "XSB"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E2 SB Producer",
       "name" : "PCB"
     }, {
-      "from" : "MHEU SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E2 SB Producer",
       "name" : "PXB"
     }, {
       "from" : "E1 or E2 Ticket Router",
-      "to" : "MHEU SB or RF - MT Router",
+      "to" : "ACME SB or RF - MT Router",
       "name" : "true"
     }, {
       "from" : "E1 or E2 Ticket Router",
       "to" : "E1 Producer",
       "name" : "false"
     }, {
-      "from" : "MHI or MHEU Ticket",
+      "from" : "ACME or ACME Ticket",
       "to" : "E1 or E2 Ticket Router",
       "name" : "true"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "RF"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "CRF"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "XRF"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "MT"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "CMT"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "XMT"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "PCM"
     }, {
-      "from" : "MHI SB or RF - MT Router",
-      "to" : "Ignore MHI RF Ticket",
+      "from" : "ACME SB or RF - MT Router",
+      "to" : "Ignore ACME RF Ticket",
       "name" : "PXM"
     }, {
-      "from" : "MHI SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E3 SB Producer",
       "name" : "SB"
     }, {
-      "from" : "MHI SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E3 SB Producer",
       "name" : "CSB"
     }, {
-      "from" : "MHI SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E3 SB Producer",
       "name" : "XSB"
     }, {
-      "from" : "MHI SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E3 SB Producer",
       "name" : "PCB"
     }, {
-      "from" : "MHI SB or RF - MT Router",
+      "from" : "ACME SB or RF - MT Router",
       "to" : "E3 SB Producer",
       "name" : "PXB"
     }, {
-      "from" : "MHI or MHEU Ticket",
-      "to" : "MHI SB or RF - MT Router",
+      "from" : "ACME or ACME Ticket",
+      "to" : "ACME SB or RF - MT Router",
       "name" : "false"
     }, {
       "from" : "Inbound Ticket Type Router",
-      "to" : "MHI or MHEU Ticket",
+      "to" : "ACME or ACME Ticket",
       "name" : "true"
     }, {
       "from" : "Inbound Ticket Type Router",
@@ -150,73 +150,73 @@
       "to" : "Not Electronic Ticket Ignore",
       "name" : "true"
     }, {
-      "from" : "Postbook Trade MHI Consumer",
+      "from" : "Postbook Trade ACME Consumer",
       "to" : "Is Electronic Ticket Router",
       "name" : "default"
     } ],
     "flowElements" : [ {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHEU E2 RF Ticket",
+      "componentName" : "Ignore ACME E2 RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHEU E2 RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME E2 RF Ticket_1165847135_I",
       "configurable" : false
     }, {
       "componentName" : "E2 SB Producer",
@@ -259,12 +259,12 @@
       "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_E2 SB Producer_1165847135_I",
       "configurable" : true
     }, {
-      "componentName" : "MHEU SB or RF - MT Router",
+      "componentName" : "ACME SB or RF - MT Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.XPathSelectorRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.XPathSelectorRouter",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_MHEU SB or RF - MT Router_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_ACME SB or RF - MT Router_1165847135_I",
       "configurable" : false
     }, {
       "componentName" : "E1 Producer",
@@ -278,73 +278,73 @@
       "componentName" : "E1 or E2 Ticket Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_E1 or E2 Ticket Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Ignore MHI RF Ticket",
+      "componentName" : "Ignore ACME RF Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore MHI RF Ticket_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Ignore ACME RF Ticket_1165847135_I",
       "configurable" : false
     }, {
       "componentName" : "E3 SB Producer",
@@ -387,20 +387,20 @@
       "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_E3 SB Producer_1165847135_I",
       "configurable" : true
     }, {
-      "componentName" : "MHI SB or RF - MT Router",
+      "componentName" : "ACME SB or RF - MT Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.XPathSelectorRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.XPathSelectorRouter",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_MHI SB or RF - MT Router_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_ACME SB or RF - MT Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "MHI or MHEU Ticket",
+      "componentName" : "ACME or ACME Ticket",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.XpathMatchRouter",
-      "configurationId" : "electronicTrade_Inbound Routing Flow_MHI or MHEU Ticket_-988854557_C",
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_MHI or MHEU Ticket_1165847135_I",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.XpathMatchRouter",
+      "configurationId" : "electronicTrade_Inbound Routing Flow_ACME or ACME Ticket_-988854557_C",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_ACME or ACME Ticket_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "Unsupported Inbound Ticket Type Endpoint",
@@ -414,7 +414,7 @@
       "componentName" : "Inbound Ticket Type Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Inbound Ticket Type Router_1165847135_I",
       "configurable" : false
@@ -430,29 +430,29 @@
       "componentName" : "Is Electronic Ticket Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Is Electronic Ticket Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Postbook Trade MHI Consumer",
+      "componentName" : "Postbook Trade ACME Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
       "implementingClass" : "com.sun.proxy.$Proxy132",
       "configurationId" : "electronicTrade-postbookTradeConsumer",
-      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Postbook Trade MHI Consumer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Inbound Routing Flow_Postbook Trade ACME Consumer_1165847135_I",
       "configurable" : true
     } ],
     "configurationId" : "electronicTrade-Inbound Routing Flow"
   }, {
     "name" : "E1 Flow",
     "consumer" : {
-      "componentName" : "Postbook Trade MHI Consumer",
+      "componentName" : "Postbook Trade ACME Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
       "implementingClass" : "com.sun.proxy.$Proxy132",
       "configurationId" : "electronicTrade-privateE2SBInboundConsumer",
-      "invokerConfigurationId" : "electronicTrade_E1 Flow_Postbook Trade MHI Consumer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E1 Flow_Postbook Trade ACME Consumer_1165847135_I",
       "configurable" : true
     },
     "transitions" : [ {
@@ -1232,7 +1232,7 @@
       "to" : "Internal Trade Ignore",
       "name" : "true"
     }, {
-      "from" : "Postbook Trade MHI Consumer",
+      "from" : "Postbook Trade ACME Consumer",
       "to" : "Is Internal Trade Router",
       "name" : "default"
     } ],
@@ -1248,7 +1248,7 @@
       "componentName" : "Cancel Not Stamped Endpoint",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelNotStampedEndpoint",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.endpoint.StateModelNotStampedEndpoint",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Cancel Not Stamped Endpoint_1165847135_I",
       "configurable" : false
@@ -1264,7 +1264,7 @@
       "componentName" : "E1 No Stamp Retail Feed Ticket Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.InitialiseAllocationStateModelJMSEventPublisherPlugin",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.endpoint.InitialiseAllocationStateModelJMSEventPublisherPlugin",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_E1 No Stamp Retail Feed Ticket Broker_1165847135_I",
       "configurable" : false
@@ -1272,7 +1272,7 @@
       "componentName" : "Not Stamped Is Cancel Trade Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Not Stamped Is Cancel Trade Router_1165847135_I",
       "configurable" : false
@@ -1296,7 +1296,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1320,7 +1320,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "org.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1344,7 +1344,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1368,7 +1368,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1376,7 +1376,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1400,7 +1400,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1408,7 +1408,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1432,7 +1432,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1440,7 +1440,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1464,7 +1464,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1472,7 +1472,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1480,7 +1480,7 @@
       "componentName" : "E1 Trade State Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.AllocationTradeStateRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.AllocationTradeStateRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_E1 Trade State Router_1165847135_I",
       "configurable" : false
@@ -1504,7 +1504,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1528,7 +1528,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1552,7 +1552,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1576,7 +1576,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1584,7 +1584,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1608,7 +1608,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1616,7 +1616,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1640,7 +1640,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1648,7 +1648,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1672,7 +1672,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1680,7 +1680,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1688,7 +1688,7 @@
       "componentName" : "E1 Trade State Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.AllocationTradeStateRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.AllocationTradeStateRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_E1 Trade State Router_1165847135_I",
       "configurable" : false
@@ -1712,7 +1712,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1736,7 +1736,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1760,7 +1760,7 @@
       "componentName" : "New RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_New RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1784,7 +1784,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1792,7 +1792,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1816,7 +1816,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -1824,7 +1824,7 @@
       "componentName" : "Allocation Nominal Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.AllocationNominalBroker",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.endpoint.AllocationNominalBroker",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Allocation Nominal Broker_1165847135_I",
       "configurable" : false
@@ -1848,7 +1848,7 @@
       "componentName" : "Amended RF Ticket Distribution Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.MultiRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.StateModelRecipientListRouter",
+      "implementingClass" : "com.ikasan.esb.acme.r2r.common.component.router.StateModelRecipientListRouter",
       "configurationId" : null,
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Amended RF Ticket Distribution Router_-255997752_I",
       "configurable" : false
@@ -2797,12 +2797,12 @@
       "invokerConfigurationId" : "electronicTrade_E1 Flow_Is Internal Trade Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Postbook Trade MHI Consumer",
+      "componentName" : "Postbook Trade ACME Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
       "implementingClass" : "com.sun.proxy.$Proxy132",
       "configurationId" : "electronicTrade-privateE2SBInboundConsumer",
-      "invokerConfigurationId" : "electronicTrade_E1 Flow_Postbook Trade MHI Consumer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E1 Flow_Postbook Trade ACME Consumer_1165847135_I",
       "configurable" : true
     } ],
     "configurationId" : "electronicTrade-E1 Flow"
@@ -2889,7 +2889,7 @@
     },
     "transitions" : [ {
       "from" : "Create E2 Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "Cmf Trade Validator",
@@ -2909,12 +2909,12 @@
       "name" : "default"
     } ],
     "flowElements" : [ {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Create Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Create Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "Create E2 Broker",
@@ -2983,7 +2983,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -2991,7 +2991,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -2999,7 +2999,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3007,7 +3007,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3043,7 +3043,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3051,7 +3051,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3059,7 +3059,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3067,7 +3067,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3103,7 +3103,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3111,7 +3111,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3119,7 +3119,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3127,7 +3127,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3163,7 +3163,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3171,7 +3171,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3179,7 +3179,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3187,7 +3187,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3223,7 +3223,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3231,7 +3231,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3239,7 +3239,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3247,7 +3247,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3283,7 +3283,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3291,7 +3291,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3299,7 +3299,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3307,7 +3307,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3343,7 +3343,7 @@
       "name" : "AB"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3351,7 +3351,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3359,7 +3359,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3367,7 +3367,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Amend Trade State Router",
@@ -3427,12 +3427,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3443,12 +3443,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3459,12 +3459,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3475,132 +3475,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E2 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3667,12 +3547,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3683,12 +3563,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3699,12 +3579,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3715,132 +3595,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E2 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3907,12 +3667,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3923,12 +3683,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3939,12 +3699,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -3955,132 +3715,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E2 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "A2 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E2 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHI Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -4147,12 +3787,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -4163,12 +3803,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -4179,12 +3819,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -4195,12 +3835,372 @@
       "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E2 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E2 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E2 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE2AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E2 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Post E1 To E2 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "A2 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_A2 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E2 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_E2 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E2 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Amend E1 Block Broker",
@@ -4305,7 +4305,7 @@
       "name" : "XB"
     }, {
       "from" : "E2 Cancel Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Cancel Trade State Router",
@@ -4313,7 +4313,7 @@
       "name" : "AR"
     }, {
       "from" : "E2 Cancel Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Cancel Trade State Router",
@@ -4321,7 +4321,7 @@
       "name" : "AA"
     }, {
       "from" : "E2 Cancel Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Cancel Trade State Router",
@@ -4329,7 +4329,7 @@
       "name" : "CA"
     }, {
       "from" : "E2 Cancel Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Cancel Trade State Router",
@@ -4337,7 +4337,7 @@
       "name" : "AN"
     }, {
       "from" : "E2 Cancel Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Cancel Trade State Router",
@@ -4393,12 +4393,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_E2 Cancel E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Cancel Broker",
@@ -4409,12 +4409,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_E2 Cancel Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Cancel Broker",
@@ -4425,12 +4425,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_E2 Cancel Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Cancel Broker",
@@ -4441,12 +4441,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_E2 Cancel Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Cancel Broker",
@@ -4457,12 +4457,12 @@
       "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_E2 Cancel Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E2 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E2 Cancel Broker",
@@ -4561,7 +4561,7 @@
     },
     "transitions" : [ {
       "from" : "Create E3 Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "Cmf Trade Validator",
@@ -4581,12 +4581,12 @@
       "name" : "default"
     } ],
     "flowElements" : [ {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Create Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Create Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "Create E3 Broker",
@@ -4655,7 +4655,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4663,7 +4663,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4699,7 +4699,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4707,7 +4707,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4743,7 +4743,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4751,7 +4751,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4787,7 +4787,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4795,7 +4795,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4831,7 +4831,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4839,7 +4839,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4875,7 +4875,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4883,7 +4883,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4919,7 +4919,7 @@
       "name" : "AB"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4927,7 +4927,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Amend E1 Block Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Amend Trade State Router",
@@ -4987,12 +4987,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5003,100 +5003,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5163,12 +5075,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5179,100 +5091,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5339,12 +5163,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5355,100 +5179,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend Trade State Router",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Cmf Trade Validator",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
-      "configurationId" : "electronicTrade-cmfTradeValidator",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Transformer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
-      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "E3 Amend E1 Block Endpoint",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
-      "configurable" : true
-    }, {
-      "componentName" : "E3 Amend E1 Block Broker",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
-      "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
-      "configurable" : false
-    }, {
-      "componentName" : "Prebook Trade MHEU Producer",
-      "description" : null,
-      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
-      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
-      "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5515,12 +5251,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5531,12 +5267,276 @@
       "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend Trade State Router",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.TradeStateRouter",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend Trade State Router_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Cmf Trade Validator",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.validator.xml.XMLValidator",
+      "configurationId" : "electronicTrade-cmfTradeValidator",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Cmf Trade Validator_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Transformer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.transformation.Converter",
+      "implementingClass" : "org.ikasan.component.converter.xml.ThreadSafeXsltConverter",
+      "configurationId" : "electronicTrade-postE1ToE3AmendTransformer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Transformer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "Post E1 To E3 Amend Dynamic Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.R2RIdentifierBroker",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Post E1 To E3 Amend Dynamic Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "E3 Amend E1 Block Endpoint",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelEndpoint",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Endpoint_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
+      "configurable" : true
+    }, {
+      "componentName" : "E3 Amend E1 Block Broker",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Broker",
+      "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.endpoint.StateModelJMSEventPublisherPlugin",
+      "configurationId" : null,
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_E3 Amend E1 Block Broker_1165847135_I",
+      "configurable" : false
+    }, {
+      "componentName" : "Prebook Trade ACME Producer",
+      "description" : null,
+      "componentType" : "org.ikasan.spec.component.endpoint.Producer",
+      "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
+      "configurationId" : "electronicTrade-prebookTradeProducer",
+      "invokerConfigurationId" : "electronicTrade_E3 Amend Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Amend E1 Block Broker",
@@ -5641,7 +5641,7 @@
       "name" : "XB"
     }, {
       "from" : "E3 Cancel Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Cancel Trade State Router",
@@ -5649,7 +5649,7 @@
       "name" : "AA"
     }, {
       "from" : "E3 Cancel Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Cancel Trade State Router",
@@ -5705,12 +5705,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_E3 Cancel E1 Block Endpoint_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Cancel Broker",
@@ -5721,12 +5721,12 @@
       "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_E3 Cancel Broker_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Cancel Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "E3 Cancel Broker",
@@ -5790,16 +5790,16 @@
       "configurable" : true
     },
     "transitions" : [ {
-      "from" : "Is MHEU 2 MHI Trade",
+      "from" : "Is ACME 2 ACME Trade",
       "to" : "Allocation Producer",
       "name" : "true"
     }, {
-      "from" : "Is MHEU 2 MHI Trade",
-      "to" : "Not MHEU 2 MHI Trade",
+      "from" : "Is ACME 2 ACME Trade",
+      "to" : "Not ACME 2 ACME Trade",
       "name" : "false"
     }, {
       "from" : "Allocation Consumer",
-      "to" : "Is MHEU 2 MHI Trade",
+      "to" : "Is ACME 2 ACME Trade",
       "name" : "default"
     } ],
     "flowElements" : [ {
@@ -5811,20 +5811,20 @@
       "invokerConfigurationId" : "electronicTrade_E3 Allocation Flow_Allocation Producer_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Not MHEU 2 MHI Trade",
+      "componentName" : "Not ACME 2 ACME Trade",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Allocation Flow_Not MHEU 2 MHI Trade_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Allocation Flow_Not ACME 2 ACME Trade_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Is MHEU 2 MHI Trade",
+      "componentName" : "Is ACME 2 ACME Trade",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
       "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_E3 Allocation Flow_Is MHEU 2 MHI Trade_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_E3 Allocation Flow_Is ACME 2 ACME Trade_1165847135_I",
       "configurable" : false
     }, {
       "componentName" : "Allocation Consumer",
@@ -5881,7 +5881,7 @@
       "name" : "e1TicketPath"
     }, {
       "from" : "Blocked E2 Broker",
-      "to" : "Prebook Trade MHI Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E2 Replace Vendor TicketId Transformer",
@@ -5925,7 +5925,7 @@
       "name" : "E2"
     }, {
       "from" : "Blocked E3 Broker",
-      "to" : "Prebook Trade MHEU Producer",
+      "to" : "Prebook Trade ACME Producer",
       "name" : "default"
     }, {
       "from" : "E3 Replace Vendor TicketId Transformer",
@@ -5968,16 +5968,16 @@
       "to" : "Not Electronic Trade Endpoint",
       "name" : "voice"
     }, {
-      "from" : "Is MHEU2MHI Trade Router",
+      "from" : "Is ACME2ACME Trade Router",
       "to" : "Ack StateModel Type Router",
       "name" : "true"
     }, {
-      "from" : "Is MHEU2MHI Trade Router",
-      "to" : "Not MHEU2MHI Trade",
+      "from" : "Is ACME2ACME Trade Router",
+      "to" : "Not ACME2ACME Trade",
       "name" : "false"
     }, {
       "from" : "Is Accepted Ack Type Router",
-      "to" : "Is MHEU2MHI Trade Router",
+      "to" : "Is ACME2ACME Trade Router",
       "name" : "true"
     }, {
       "from" : "Is Accepted Ack Type Router",
@@ -6053,12 +6053,12 @@
       "invokerConfigurationId" : "electronicTrade_Ack Flow_Pending Ack E1 Translator_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHI Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_Ack Flow_Prebook Trade MHI Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Ack Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "Blocked E2 Broker",
@@ -6141,12 +6141,12 @@
       "invokerConfigurationId" : "electronicTrade_Ack Flow_E2 Ack Nack Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Prebook Trade MHEU Producer",
+      "componentName" : "Prebook Trade ACME Producer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer",
       "configurationId" : "electronicTrade-prebookTradeProducer",
-      "invokerConfigurationId" : "electronicTrade_Ack Flow_Prebook Trade MHEU Producer_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Ack Flow_Prebook Trade ACME Producer_1165847135_I",
       "configurable" : true
     }, {
       "componentName" : "Blocked E3 Broker",
@@ -6237,20 +6237,20 @@
       "invokerConfigurationId" : "electronicTrade_Ack Flow_Ack StateModel Type Router_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Not MHEU2MHI Trade",
+      "componentName" : "Not ACME2ACME Trade",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Producer",
       "implementingClass" : "org.ikasan.component.endpoint.util.producer.DevNull",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Ack Flow_Not MHEU2MHI Trade_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Ack Flow_Not ACME2ACME Trade_1165847135_I",
       "configurable" : false
     }, {
-      "componentName" : "Is MHEU2MHI Trade Router",
+      "componentName" : "Is ACME2ACME Trade Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
       "implementingClass" : "com.ikasan.esb.mhi.r2r.common.component.router.BinaryRouter",
       "configurationId" : null,
-      "invokerConfigurationId" : "electronicTrade_Ack Flow_Is MHEU2MHI Trade Router_1165847135_I",
+      "invokerConfigurationId" : "electronicTrade_Ack Flow_Is ACME2ACME Trade Router_1165847135_I",
       "configurable" : false
     }, {
       "componentName" : "Not Accepted Ack Type Ignore Endpoint",

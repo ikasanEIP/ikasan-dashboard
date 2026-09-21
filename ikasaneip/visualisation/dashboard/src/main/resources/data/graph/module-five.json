@@ -8,7 +8,7 @@
       "componentName" : "Fix Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
-      "implementingClass" : "com.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$ae91e1f8",
+      "implementingClass" : "org.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$ae91e1f8",
       "configurationId" : "trading-place-trade-sa-fixConsumer",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -30,7 +30,7 @@
       "componentName" : "Fix Consumer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Consumer",
-      "implementingClass" : "com.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$ae91e1f8",
+      "implementingClass" : "org.ikasan.esb.fix.consumer.FIXMessageConsumer$$EnhancerBySpringCGLIB$$ae91e1f8",
       "configurationId" : "trading-place-trade-sa-fixConsumer",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -68,7 +68,7 @@
       "componentName" : "Fixed Format To Bespoke Xml Transformer",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.transformer.XMLReaderTransformer",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.transformer.XMLReaderTransformer",
       "configurationId" : null,
       "invokerConfigurationId" : null,
       "configurable" : false
@@ -142,7 +142,7 @@
       "componentName" : "Ignore Tokyo Salesperson Notification Event Enricher",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.transformer.EmailPayloadConverter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.transformer.EmailPayloadConverter",
       "configurationId" : "${ikasan.module.name}-ignoreTokyoSalespersonNotificationEventEnricher",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -150,7 +150,7 @@
       "componentName" : "Ignore Tokyo Salesperson Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.router.XPathIgnoreRouter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.router.XPathIgnoreRouter",
       "configurationId" : "trading-place-jgbPostTradeSrc-ignoreTokyoSalespersonRouter",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -166,7 +166,7 @@
       "componentName" : "Ignore Non London Trades Notification Event Enricher",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.transformer.EmailPayloadConverter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.transformer.EmailPayloadConverter",
       "configurationId" : "${ikasan.module.name}-ignoreNonLondonTradesNotificationEventEnricher",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -174,7 +174,7 @@
       "componentName" : "Trade Location Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.router.XPathIgnoreRouter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.router.XPathIgnoreRouter",
       "configurationId" : "trading-place-jgbPostTradeSrc-tradeLocationRouter",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -236,7 +236,7 @@
       "componentName" : "Message Type Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.router.XPathIgnoreRouter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.router.XPathIgnoreRouter",
       "configurationId" : "trading-place-jgbPostTradeSrc-ignoreTokyoSalespersonRouter",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -318,7 +318,7 @@
       "componentName" : "Unknown Trade Type Notification Event Enricher",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.transformer.EmailPayloadConverter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.transformer.EmailPayloadConverter",
       "configurationId" : "${ikasan.module.name}-unknownTradeTypeNotificationEventEnricher",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -326,7 +326,7 @@
       "componentName" : "Trade Type Router",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.routing.SingleRecipientRouter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.router.XPathSelectorRouter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.router.XPathSelectorRouter",
       "configurationId" : "trading-place-jgbPostTradeSrc-ignoreTokyoSalespersonRouter",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -372,7 +372,7 @@
       "componentName" : "Swap Trade Splitter",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.splitting.Splitter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.sequencer.SwapTradeSplitter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.sequencer.SwapTradeSplitter",
       "configurationId" : "trading-place-jgbPostTradeSrc-swapTradeSplitter",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -442,7 +442,7 @@
       "componentName" : "Sequence Enricher",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.transformation.Converter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.transformer.TradewebSequenceEnricher",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.transformer.TradewebSequenceEnricher",
       "configurationId" : "trading-place-jgbPostTradeSrc-sequenceEnricher",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -520,7 +520,7 @@
       "componentName" : "MCS Contra Book Lookup Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.broker.OrganisationIdCdwLookupBroker",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.broker.OrganisationIdCdwLookupBroker",
       "configurationId" : "trading-place-jgbPostTradeSrc-organisationIdCdwLookupTransformer",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -528,7 +528,7 @@
       "componentName" : "Organisation Id Cdw Lookup Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.broker.OrganisationIdCdwLookupBroker",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.broker.OrganisationIdCdwLookupBroker",
       "configurationId" : "trading-place-jgbPostTradeSrc-organisationIdCdwLookupTransformer",
       "invokerConfigurationId" : null,
       "configurable" : true
@@ -536,7 +536,7 @@
       "componentName" : "RF MCS Windows Lookup Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.broker.McsWindowsLookupBroker",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.broker.McsWindowsLookupBroker",
       "configurationId" : null,
       "invokerConfigurationId" : null,
       "configurable" : false
@@ -606,7 +606,7 @@
       "componentName" : "TT MCS Windows Lookup Broker",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.endpoint.Broker",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.broker.McsWindowsLookupBroker",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.broker.McsWindowsLookupBroker",
       "configurationId" : null,
       "invokerConfigurationId" : null,
       "configurable" : false
@@ -652,7 +652,7 @@
       "componentName" : "CMF Trader Ticket Trade Splitter",
       "description" : null,
       "componentType" : "org.ikasan.spec.component.splitting.Splitter",
-      "implementingClass" : "com.ikasan.esb.mhi.trading-place.trade.component.sequencer.TradeNominalSplitter",
+      "implementingClass" : "org.ikasan.esb.acme.trading-place.trade.component.sequencer.TradeNominalSplitter",
       "configurationId" : "trading-place-jgbPostTradeSrc-cmfTTTradeSplitter",
       "invokerConfigurationId" : null,
       "configurable" : true

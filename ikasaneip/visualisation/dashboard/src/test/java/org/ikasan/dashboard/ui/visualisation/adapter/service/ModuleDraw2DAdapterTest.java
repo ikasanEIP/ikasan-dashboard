@@ -273,7 +273,7 @@ public class ModuleDraw2DAdapterTest
 
         Assertions.assertEquals("bloomberg-trade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
-        Assertions.assertEquals("Bloomberg MHI TOMS Post Trade Feed and Trade Booking Application", module.getDescription(), "module descriptions equals");
+        Assertions.assertEquals("Bloomberg ACME TOMS Post Trade Feed and Trade Booking Application", module.getDescription(), "module descriptions equals");
         Assertions.assertEquals(18, module.getFlows().size(), "number of flows equal");
     }
 

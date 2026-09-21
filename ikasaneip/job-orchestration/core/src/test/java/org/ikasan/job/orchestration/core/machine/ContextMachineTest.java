@@ -6076,7 +6076,7 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals("PURGE_LOSTDATA", this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "PURGE_BREACHOSP", true).get(0).getJobName());
 
-        Assert.assertEquals("BF_MHI_PURGE_DT", this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals("BF_ACME_PURGE_DT", this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "PURGE_LOSTDATA", true).get(0).getJobName());
 
         this.assertContextStatus(contextMachine, "PARALLEL_SAMPLE", InstanceStatus.RUNNING);
@@ -6091,7 +6091,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "LIQ_MUREX_REC", InstanceStatus.WAITING);
 
         Assert.assertEquals("BSP_BSK_PURGE", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_MHI_PURGE_DT", true).get(0).getJobName());
+            (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_ACME_PURGE_DT", true).get(0).getJobName());
 
         schedulerJobInitiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BSP_BSK_PURGE", true);
@@ -6251,7 +6251,7 @@ public class ContextMachineTest extends AbstractTest {
         schedulerJobInitiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "START_LIVEBOOK_BOOKS", true);
         Assert.assertEquals("BF_SETTLED_POS", schedulerJobInitiationEvents.get(0).getJobName());
-        Assert.assertEquals("BF_MHI_LIQUIDATION", schedulerJobInitiationEvents.get(1).getJobName());
+        Assert.assertEquals("BF_ACME_LIQUIDATION", schedulerJobInitiationEvents.get(1).getJobName());
 
         this.assertContextStatus(contextMachine, "PARALLEL_SAMPLE", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "MUREX_RESTART", InstanceStatus.COMPLETE);
@@ -6268,7 +6268,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_SETTLED_POS", true).size());
 
         Assert.assertEquals("BF_POS_LIQUIDAT", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_MHI_LIQUIDATION", true).get(0).getJobName());
+            (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_ACME_LIQUIDATION", true).get(0).getJobName());
 
         Assert.assertEquals("BE_POS_LIQUIDAT", this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_POS_LIQUIDAT", true).get(0).getJobName());
@@ -6321,9 +6321,9 @@ public class ContextMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "SIMPLE_ME_ScheduledJob_06:01:00", true);
         Assert.assertEquals(3, schedulerJobInitiationEvents.size());
-        Assert.assertEquals("BF_MHBK_FXSLLDW", schedulerJobInitiationEvents.get(0).getJobName());
+        Assert.assertEquals("BF_ACME_FXSLLDW", schedulerJobInitiationEvents.get(0).getJobName());
         Assert.assertEquals("PRC_SCF_DETAILS", schedulerJobInitiationEvents.get(1).getJobName());
-        Assert.assertEquals("BE_IPV_FBS_MHBK", schedulerJobInitiationEvents.get(2).getJobName());
+        Assert.assertEquals("BE_IPV_FBS_ACME", schedulerJobInitiationEvents.get(2).getJobName());
 
 
 
@@ -6332,63 +6332,63 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
-        Assert.assertEquals("BF_MHBK_FXSLUSD", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MHBK_FXSLLDW", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHEU_SCF_COM", this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals("BF_ACME_FXSLUSD", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_ACME_FXSLLDW", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_SCF_COM", this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "PRC_SCF_DETAILS", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHEU_AWV_LNB", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_IPV_FBS_MHBK", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHEU_SALES", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHEU_AWV_LNB", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHI_MIFID_RP", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHEU_SALES", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_AWV_LNB", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_IPV_FBS_ACME", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_SALES", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_AWV_LNB", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_MIFID_RP", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_SALES", true).get(0).getJobName());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHI_MIFID_RP", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_MIFID_RP", true).size());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
-        Assert.assertEquals("BF_MHBK_FXDLTCC", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MHBK_FXSLUSD", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHEU_SCF_INT", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHEU_SCF_COM", true).get(0).getJobName());
+        Assert.assertEquals("BF_ACME_FXDLTCC", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_ACME_FXSLUSD", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_SCF_INT", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_SCF_COM", true).get(0).getJobName());
 
-        Assert.assertEquals("BE_MHBK_FXSLLDW", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MHBK_FXDLTCC", true).get(0).getJobName());
-        Assert.assertEquals("BE_MHI_EMIR_PFO", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHEU_SCF_INT", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_FXSLLDW", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_ACME_FXDLTCC", true).get(0).getJobName());
+        Assert.assertEquals("BE_ACME_EMIR_PFO", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_SCF_INT", true).get(0).getJobName());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHBK_FXSLLDW", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_FXSLLDW", true).size());
         Assert.assertEquals("BSP_IPV_ALL_TR", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_MHI_EMIR_PFO", true).get(0).getJobName());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_ACME_EMIR_PFO", true).get(0).getJobName());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
         schedulerJobInitiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
@@ -6396,7 +6396,7 @@ public class ContextMachineTest extends AbstractTest {
 
         Assert.assertEquals(5, schedulerJobInitiationEvents.size());
         Assert.assertEquals("BF_MD_CRDCRV_ME", schedulerJobInitiationEvents.get(0).getJobName());
-        Assert.assertEquals("BF_MHI_SIMCDCRV", schedulerJobInitiationEvents.get(1).getJobName());
+        Assert.assertEquals("BF_ACME_SIMCDCRV", schedulerJobInitiationEvents.get(1).getJobName());
         Assert.assertEquals("BF_SIM_REPO_ME", schedulerJobInitiationEvents.get(2).getJobName());
         Assert.assertEquals("BF_MD_RTCRV_ME", schedulerJobInitiationEvents.get(3).getJobName());
         Assert.assertEquals("BF_SIM_FWD_ME", schedulerJobInitiationEvents.get(4).getJobName());
@@ -6404,7 +6404,7 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MD_CRDCRV_ME", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MHI_SIMCDCRV", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_ACME_SIMCDCRV", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIM_REPO_ME", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
@@ -6416,42 +6416,42 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BE_REPO_INT_ME", true);
 
         Assert.assertEquals(5, schedulerJobInitiationEvents.size());
-        Assert.assertEquals("BF_MHBK_PLDEIPV", schedulerJobInitiationEvents.get(0).getJobName());
-        Assert.assertEquals("BF_RTCRV_MHBK", schedulerJobInitiationEvents.get(1).getJobName());
-        Assert.assertEquals("BF_SIMFIPV_MHBK", schedulerJobInitiationEvents.get(2).getJobName());
-        Assert.assertEquals("BF_SIM_FWD_MHBK", schedulerJobInitiationEvents.get(3).getJobName());
-        Assert.assertEquals("BF_SIM_REP_MHBK", schedulerJobInitiationEvents.get(4).getJobName());
+        Assert.assertEquals("BF_ACME_PLDEIPV", schedulerJobInitiationEvents.get(0).getJobName());
+        Assert.assertEquals("BF_RTCRV_ACME", schedulerJobInitiationEvents.get(1).getJobName());
+        Assert.assertEquals("BF_SIMFIPV_ACME", schedulerJobInitiationEvents.get(2).getJobName());
+        Assert.assertEquals("BF_SIM_FWD_ACME", schedulerJobInitiationEvents.get(3).getJobName());
+        Assert.assertEquals("BF_SIM_REP_ACME", schedulerJobInitiationEvents.get(4).getJobName());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_MHBK_PLDEIPV", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_ACME_PLDEIPV", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_RTCRV_MHBK", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_RTCRV_ACME", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIMFIPV_MHBK", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIMFIPV_ACME", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIM_FWD_MHBK", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIM_FWD_ACME", true).size());
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIM_REP_MHBK", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BF_SIM_REP_ACME", true).size());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.WAITING);
 
-        Assert.assertEquals("BSP_MHIPLD_TMEC", this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals("BSP_ACMEPLD_TMEC", this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "SIMPLE_ME_COPY_ScheduledJob_09:30:00", true).get(0).getJobName());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.RUNNING);
@@ -6459,24 +6459,24 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.RUNNING);
 
-        Assert.assertEquals("BSP_MHITPA_TMEC", this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BSP_MHIPLD_TMEC", true).get(0).getJobName());
+        Assert.assertEquals("BSP_ACMETPA_TMEC", this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BSP_ACMEPLD_TMEC", true).get(0).getJobName());
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
-            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BSP_MHITPA_TMEC", true).size());
+            (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "BSP_ACMETPA_TMEC", true).size());
 
         this.assertContextStatus(contextMachine, "SIMPLE_MONTH_END", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "FX_SELLDOWN_SPOT_BOOKING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "AWV_REPORTING", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "IPV_PRU_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_FEEDERS", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_PREP", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "IPV_MHBK_EXTRACTIONS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_FEEDERS", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_PREP", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "IPV_ACME_EXTRACTIONS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "SIMPLE_ME_COPY", InstanceStatus.COMPLETE);
 
     }
@@ -7049,7 +7049,7 @@ public class ContextMachineTest extends AbstractTest {
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-1.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7111,7 +7111,7 @@ public class ContextMachineTest extends AbstractTest {
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-1.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7175,7 +7175,7 @@ public class ContextMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7186,9 +7186,9 @@ public class ContextMachineTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+        Assert.assertEquals("BE_ACME_EMIR_PFO_2", events.get(0).getJobName());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO_2",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7202,7 +7202,7 @@ public class ContextMachineTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7214,9 +7214,9 @@ public class ContextMachineTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+        Assert.assertEquals("BE_ACME_EMIR_PFO_2", events.get(0).getJobName());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO_2",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7231,7 +7231,7 @@ public class ContextMachineTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7243,9 +7243,9 @@ public class ContextMachineTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+        Assert.assertEquals("BE_ACME_EMIR_PFO_2", events.get(0).getJobName());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO_2",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7260,7 +7260,7 @@ public class ContextMachineTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);
@@ -7272,9 +7272,9 @@ public class ContextMachineTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+        Assert.assertEquals("BE_ACME_EMIR_PFO_2", events.get(0).getJobName());
 
-        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+        eventInstance = scheduledProcessEventInstance("BE_ACME_EMIR_PFO_2",
             "scheduler-agent", true, true);
 
         events = contextMachine.eventReceived(eventInstance);

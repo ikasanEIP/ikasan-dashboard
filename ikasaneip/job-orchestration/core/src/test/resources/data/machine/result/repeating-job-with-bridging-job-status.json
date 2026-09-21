@@ -5,7 +5,7 @@
     "contextName" : "SIMPLE_ME",
     "instanceStatus" : "COMPLETE",
     "schedulerJobInstanceStatuses" : [ {
-      "jobName" : "BE_MHI_EMIR_PFO",
+      "jobName" : "BE_ACME_EMIR_PFO",
       "agentName" : "scheduler-agent",
       "instanceStatus" : "COMPLETE"
     }, {
@@ -17,7 +17,7 @@
       "agentName" : "BRIDGING_JOB",
       "instanceStatus" : "COMPLETE"
     }, {
-      "jobName" : "BE_MHI_EMIR_PFO_2",
+      "jobName" : "BE_ACME_EMIR_PFO_2",
       "agentName" : "scheduler-agent",
       "instanceStatus" : "COMPLETE"
     } ]

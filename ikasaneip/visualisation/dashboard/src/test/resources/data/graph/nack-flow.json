@@ -1,6 +1,6 @@
 {
   "name" : "blbgToms-mhiTrade-sa",
-  "description" : "Bloomberg MHI TOMS Post Trade Feed and Trade Booking Application",
+  "description" : "Bloomberg ACME TOMS Post Trade Feed and Trade Booking Application",
   "version" : null,
   "flows" : [ {
     "name" : "Nack Publishing Flow",

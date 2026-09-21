@@ -1,48 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-# //
-# //
-# // $Id$
-# // $URL$
-# //
-# // ====================================================================
-# // Ikasan Enterprise Integration Platform
-# //
-# // Distributed under the Modified BSD License.
-# // Copyright notice: The copyright for this software and a full listing
-# // of individual contributors are as shown in the packaged copyright.txt
-# // file.
-# //
-# // All rights reserved.
-# //
-# // Redistribution and use in source and binary forms, with or without
-# // modification, are permitted provided that the following conditions are met:
-# //
-# //  - Redistributions of source code must retain the above copyright notice,
-# //    this list of conditions and the following disclaimer.
-# //
-# //  - Redistributions in binary form must reproduce the above copyright notice,
-# //    this list of conditions and the following disclaimer in the documentation
-# //    and/or other materials provided with the distribution.
-# //
-# //  - Neither the name of the ORGANIZATION nor the names of its contributors may
-# //    be used to endorse or promote products derived from this software without
-# //    specific prior written permission.
-# //
-# // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-# // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# // ====================================================================
-# //
-# // Author:  Ikasan Development Team
-# //
+
+ ====================================================================
+ Ikasan Enterprise Integration Platform
+
+ Distributed under the Modified BSD License.
+ Copyright notice: The copyright for this software and a full listing
+ of individual contributors are as shown in the packaged copyright.txt
+ file.
+
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+  - Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  - Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  - Neither the name of the ORGANIZATION nor the names of its contributors may
+    be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ====================================================================
+
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -406,6 +400,12 @@
         <version.postgres>42.7.12</version.postgres>
         <version.classgraph>4.8.175</version.classgraph>
         <version.org.glassfish.hk2>3.1.1</version.org.glassfish.hk2>
+        <version.jakarta.activation>2.1.1</version.jakarta.activation>
+        <version.testcontainers.postgres>2.0.4</version.testcontainers.postgres>
+        <version.testcontainers.mongo>2.0.4</version.testcontainers.mongo>
+        <version.testcontainers.solr>2.0.4</version.testcontainers.solr>
+        <version.jspecify>1.0.0</version.jspecify>
+        <version.vaadin.popup>24.0.1</version.vaadin.popup>
     </properties>
 
     <!-- Distribution for releases -->
@@ -885,6 +885,12 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-spec-cache</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-persistence-initialisation</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
 
@@ -1549,6 +1555,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.vaadin.componentfactory</groupId>
+                <artifactId>popup</artifactId>
+                <version>${version.vaadin.popup}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
                 <version>${version.javax.validation-api}</version>
@@ -1618,6 +1630,12 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>jstl</artifactId>
                 <version>${version.javax.servlet.jstl}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${version.jakarta.activation}</version>
             </dependency>
 
             <dependency>
@@ -1812,6 +1830,13 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${version.postgres}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-postgresql</artifactId>
+                <version>${version.testcontainers.postgres}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -2535,12 +2560,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongo-java-driver</artifactId>
-                <version>${version.org.mongodb.mongo-java-driver}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>de.flapdoodle.embed</groupId>
                 <artifactId>de.flapdoodle.embed.mongo</artifactId>
                 <version>${version.de.flapdoodle.embed}</version>
@@ -2942,6 +2961,33 @@
                         <artifactId>zookeeper-jute</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-solr</artifactId>
+                <version>${version.testcontainers.solr}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Mongo -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-mongodb</artifactId>
+                <version>${version.org.springboot}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>${version.jspecify}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-mongodb</artifactId>
+                <version>${version.testcontainers.mongo}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>

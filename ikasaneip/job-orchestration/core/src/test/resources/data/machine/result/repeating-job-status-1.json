@@ -5,7 +5,7 @@
     "contextName" : "SIMPLE_ME",
     "instanceStatus" : "RUNNING",
     "schedulerJobInstanceStatuses" : [ {
-      "jobName" : "BE_MHI_EMIR_PFO",
+      "jobName" : "BE_ACME_EMIR_PFO",
       "agentName" : "scheduler-agent",
       "instanceStatus" : "WAITING"
     }, {
