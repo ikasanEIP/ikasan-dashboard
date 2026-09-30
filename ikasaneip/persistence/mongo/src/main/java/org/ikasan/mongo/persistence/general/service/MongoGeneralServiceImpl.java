@@ -42,6 +42,11 @@ public class MongoGeneralServiceImpl implements
     }
 
     @Override
+    public IkasanDocumentSearchResults search(Set<String> identifiers, int offset, int resultSize, String sortField, String sortOrder) {
+        return this.mongoGeneralDao.search(identifiers, offset, resultSize, sortField, sortOrder);
+    }
+
+    @Override
     public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames,
                                                      String searchString, long startTime, long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder) {
         return this.mongoGeneralDao.search(moduleNames, flowNames, searchString, startTime, endTime, resultSize, negateQuery, sortField, sortOrder);
@@ -72,6 +77,15 @@ public class MongoGeneralServiceImpl implements
     public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames, String eventId, String searchString, long startTime,
                                                      long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.mongoGeneralDao.search(moduleNames, flowNames, componentNames, eventId, searchString, startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+    }
+
+    @Override
+    public IkasanDocumentSearchResults searchByHarvestReceivedTime(Set<String> moduleNames, Set<String> flowNames
+        , Set<String> componentNames, String eventId, String searchString, long harvestReceivedStartTime
+        , long harvestReceivedEndTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
+        , String sortField, String sortOrder) {
+        return this.mongoGeneralDao.searchByHarvestReceivedTime(moduleNames, flowNames, componentNames, eventId, searchString, harvestReceivedStartTime, harvestReceivedEndTime, offset,
+            resultSize, entityTypes, negateQuery, sortField, sortOrder);
     }
 
     @Override

@@ -103,7 +103,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      */
     protected String buildQuery(Collection<String> moduleNames, Collection<String> flowNames, Collection<String> componentNames, Date fromDate
             , Date untilDate, String payloadContent, String eventId, String type, boolean negateQuery) throws IOException {
-        return this.buildQuery(moduleNames, flowNames, componentNames, fromDate, untilDate, payloadContent, eventId, List.of(type), negateQuery);
+        return this.buildQuery(moduleNames, flowNames, componentNames, fromDate, untilDate, payloadContent, eventId
+            , List.of(type), negateQuery, false);
     }
 
     /**
@@ -120,13 +121,16 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      * @return String
      */
     protected String buildQuery(Collection<String> moduleNames, Collection<String> flowNames, Collection<String> componentNames, Date fromDate
-            , Date untilDate, String searchTerm, String eventId, List<String> types, boolean negateQuery) throws IOException
+            , Date untilDate, String searchTerm, String eventId, List<String> types, boolean negateQuery, boolean harvestReceivedTimestamp) throws IOException
     {
         // Setup the predicates
         StringBuffer moduleNamesBuffer =  this.buildStringListQueryPart(moduleNames, MODULE_NAME);
         StringBuffer flowNamesBuffer = this.buildStringListQueryPart(flowNames, FLOW_NAME);
         StringBuffer componentNamesBuffer = this.buildStringListQueryPart(componentNames, COMPONENT_NAME);
         StringBuffer dateBuffer = this.buildDatePredicate(CREATED_DATE_TIME, fromDate, untilDate);
+        if(harvestReceivedTimestamp) {
+            dateBuffer = this.buildDatePredicate(HARVEST_RECEIVED_TIMESTAMP, fromDate, untilDate);
+        }
         StringBuffer payloadBuffer = this.buildSearchStringPredicate(searchTerm, PAYLOAD_CONTENT, negateQuery);
         StringBuffer errorBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_DETAIL, negateQuery);
         StringBuffer errorUriBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_URI, negateQuery);

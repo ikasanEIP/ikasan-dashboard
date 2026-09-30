@@ -30,6 +30,7 @@ public class SolrExclusionEventDao extends SolrDaoBase<ExclusionEvent> implement
         document.addField(PAYLOAD_CONTENT, new String(exclusionEvent.getEvent()));
         document.addField(CREATED_DATE_TIME, exclusionEvent.getTimestamp());
         document.setField(EXPIRY, expiry);
+        document.setField(HARVEST_RECEIVED_TIMESTAMP, System.currentTimeMillis());
 
         return document;
     }

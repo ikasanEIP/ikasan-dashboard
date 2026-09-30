@@ -177,7 +177,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         {
             query.setQuery(super.buildQuery(agentName!= null?List.of(agentName):List.of(), jobGroupName!=null?List.of(jobGroupName):List.of()
                 , jobName!=null?List.of(jobName):List.of(), new Date(startTime), new Date(endTime), null, null
-                , List.of("scheduledProcessEvent"), false));
+                , List.of("scheduledProcessEvent"), false, false));
 
             if(sortOrder != null && !sortOrder.isEmpty())
             {

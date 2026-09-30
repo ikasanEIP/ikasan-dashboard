@@ -1,20 +1,50 @@
 ![Problem Domain](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 # Rest Dashboard
-The Ikasan Dashboard exposes a number of REST service endpoints that allow for integration modules
-to push both transient data to the dashboard as well as data that describes the runtime details of the 
-module along with the runtime state. The dashboard acts as an aggregator for the transient data and pushes
-the transient data to a Solr text index or a database depending on the manner in which Ikasan is configured. 
-The runtime metadata is also pushed to a data store and is used to build visual representations of the underlying topology,
-while the runtime state can be used for monitoring and control purposes. 
 
-All Ikasan Dashboard REST service endpoints require Authorisation HTTP header to be send along with data payload. 
-Authorisation Header has a form of "Bearer {JWT TOKEN}". The {JWT TOKEN} can be obtained from Authorisation Endpoint by
-providing user credentials.
+## Table of Contents
+- [Overview](#overview)
+- [Authentication](#authentication)
+- [Data Harvesting Services](#data-harvesting-services)
+  - [Error Harvesting Service](#error-harvesting-service)
+  - [Exclusions Harvesting Service](#exclusions-harvesting-service)
+  - [Metrics Harvesting Service](#metrics-harvesting-service)
+  - [Replay Events Harvesting Service](#replay-events-harvesting-service)
+  - [Wiretap Events Harvesting Service](#wiretap-events-harvesting-service)
+- [Metadata Services](#metadata-services)
+  - [Module Metadata Service](#module-metadata-service)
+  - [Configuration Service](#configuration-service)
+- [Data Sharing Services](#data-sharing-services)
+  - [Query Wiretap Events](#query-wiretap-events)
+  - [Query Error Occurrences](#query-error-occurrences)
+  - [Query Exclusion Events](#query-exclusion-events)
+  - [Query Replay Events](#query-replay-events)
+  - [Query Module Metadata](#query-module-metadata)
+  - [Query Configuration Metadata](#query-configuration-metadata)
 
-## Authorization Endpoint
+## Overview
+
+The Ikasan Dashboard exposes a comprehensive set of REST service endpoints that enable integration modules to:
+
+1. **Push transient event data** - Runtime events from modules are aggregated and stored in Solr (text index) or MongoDB, depending on configuration
+2. **Share module metadata** - Structural and configuration metadata describing the module topology and component details
+3. **Query aggregated data** - Retrieve wiretap events, errors, exclusions, replays, and metadata using flexible query parameters
+
+The dashboard acts as a central aggregation point for distributed Ikasan integration modules, providing both data ingestion (harvesting) and data retrieval (sharing) capabilities.
+
+## Authentication
+
+All Ikasan Dashboard REST service endpoints require an `Authorization` HTTP header containing a JWT bearer token:
+
+```
+Authorization: Bearer {JWT_TOKEN}
+```
+
+The JWT token can be obtained from the Authentication Endpoint by providing valid user credentials.
+
+### Authorization Endpoint
 Authentication and Authorization Service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | POST |
 | Service Context | {dashboard-root-context}/authenticate |
@@ -30,7 +60,7 @@ Authentication and Authorization Service.
      "password":"SecretPassword"
 }
 ````
- 
+
 </p>
 
 
@@ -52,10 +82,16 @@ Authentication and Authorization Service.
 
 </details>
 
-## Error Harvesting Service
+---
+
+## Data Harvesting Services
+
+Data harvesting services allow Ikasan integration modules to push runtime event data to the dashboard for aggregation and persistence.
+
+### Error Harvesting Service
 Aggregation service for errors produced by the Ikasan Hospital service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/harvest/errors |
@@ -127,14 +163,14 @@ Aggregation service for errors produced by the Ikasan Hospital service.
   }
 ]
 ````
- 
+
 </p>
 </details>
 
-## Exclusions Harvesting Service
+### Exclusions Harvesting Service
 Aggregation service for exclusions produced by the Ikasan Hospital service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/harvest/exclusions |
@@ -180,14 +216,14 @@ Aggregation service for exclusions produced by the Ikasan Hospital service.
   }
 ]
 ````
- 
+
 </p>
 </details>
 
-## Metrics Harvesting Service
+### Metrics Harvesting Service
 Aggregation service for metrics produced by the Ikasan Metrics service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/harvest/metrics |
@@ -1241,14 +1277,14 @@ Aggregation service for metrics produced by the Ikasan Metrics service.
   }
 ]
 ````
- 
+
 </p>
 </details>
 
-## Replay Events Harvesting Service
+### Replay Events Harvesting Service
 Aggregation service for replay events produced by the Ikasan Replay service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/harvest/replay |
@@ -1296,14 +1332,14 @@ Aggregation service for replay events produced by the Ikasan Replay service.
   "harvestedDateTime" : 0
 }]
 ````
- 
+
 </p>
 </details>
 
-## Wiretap Events Harvesting Service
+### Wiretap Events Harvesting Service
 Aggregation service for wiretap events produced by the Ikasan Wiretap service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/harvest/wiretaps |
@@ -1347,14 +1383,20 @@ Aggregation service for wiretap events produced by the Ikasan Wiretap service.
   }
 ]
 ````
- 
+
 </p>
 </details>
 
-## Metadata Service
+---
+
+## Metadata Services
+
+Metadata services allow Ikasan integration modules to publish their structural and configuration metadata to the dashboard.
+
+### Module Metadata Service
 Aggregation service for module meta data produced by the Ikasan Topology service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/module/metadata |
@@ -1539,14 +1581,14 @@ Aggregation service for module meta data produced by the Ikasan Topology service
   ]
 }
 ````
- 
+
 </p>
 </details>
 
-## Configuration Service
+### Configuration Service
 Aggregation service for module meta data produced by the Ikasan Topology service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/module/configuration |
@@ -1639,6 +1681,239 @@ Aggregation service for module meta data produced by the Ikasan Topology service
     } ]
   }]
 ````
- 
+
 </p>
 </details>
+
+---
+
+## Data Sharing Services
+
+Data Sharing Services (IKASAN-2793) provide query capabilities for retrieving aggregated event data and metadata from the dashboard. These services enable external systems or dashboards to query wiretap events, error occurrences, exclusions, replays, module metadata, and configuration metadata using flexible filtering, pagination, and sorting.
+
+All Data Sharing Services endpoints:
+- Require JWT authentication via `Authorization: Bearer {JWT_TOKEN}` header
+- Support flexible query parameters for filtering
+- Return paginated results with total count metadata
+- Support custom sorting by field and order
+- Use specialized converters to transform internal documents to REST DTOs
+
+### Query Wiretap Events
+
+Query service for retrieving wiretap events with flexible filtering and pagination.
+
+**Endpoint:** `GET /rest/data-sharing/wiretap`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `fromTimestamp` | Long | **Yes** | - | Start timestamp (milliseconds) |
+| `toTimestamp` | Long | **Yes** | - | End timestamp (milliseconds) |
+| `moduleNames` | List&lt;String&gt; | No | - | Filter by module names |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Response:** JSON object containing:
+- `data`: Array of [WiretapEvent](src/main/java/org/ikasan/rest/dashboard/model/wiretap/WiretapEventImpl.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/wiretap?fromTimestamp=1609459200000&toTimestamp=1612137600000&moduleNames=MyModule&offset=0&limit=50
+Authorization: Bearer eyJhbGc...
+```
+
+**Count Endpoint:** `GET /rest/data-sharing/wiretap/count`
+
+Uses same parameters (`fromTimestamp`, `toTimestamp`, `moduleNames`) and returns total count.
+
+### Query Error Occurrences
+
+Query service for retrieving error occurrences with flexible filtering and pagination.
+
+**Endpoint:** `GET /rest/data-sharing/errors`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `fromTimestamp` | Long | **Yes** | - | Start timestamp (milliseconds) |
+| `toTimestamp` | Long | **Yes** | - | End timestamp (milliseconds) |
+| `moduleNames` | List&lt;String&gt; | No | - | Filter by module names |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Response:** JSON object containing:
+- `data`: Array of [ErrorOccurrence](src/main/java/org/ikasan/rest/dashboard/model/error/ErrorOccurrenceImpl.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/errors?fromTimestamp=1609459200000&toTimestamp=1612137600000&moduleNames=MyModule&limit=25
+Authorization: Bearer eyJhbGc...
+```
+
+**Count Endpoint:** `GET /rest/data-sharing/errors/count`
+
+Uses same parameters (`fromTimestamp`, `toTimestamp`, `moduleNames`) and returns total count.
+
+### Query Exclusion Events
+
+Query service for retrieving exclusion events with flexible filtering and pagination.
+
+**Endpoint:** `GET /rest/data-sharing/exclusions`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `fromTimestamp` | Long | **Yes** | - | Start timestamp (milliseconds) |
+| `toTimestamp` | Long | **Yes** | - | End timestamp (milliseconds) |
+| `moduleNames` | List&lt;String&gt; | No | - | Filter by module names |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Response:** JSON object containing:
+- `data`: Array of [ExclusionEvent](src/main/java/org/ikasan/rest/dashboard/model/exclusion/ExclusionEventImpl.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/exclusions?fromTimestamp=1609459200000&toTimestamp=1612137600000&moduleNames=MyModule&offset=0&limit=100
+Authorization: Bearer eyJhbGc...
+```
+
+**Count Endpoint:** `GET /rest/data-sharing/exclusions/count`
+
+Uses same parameters (`fromTimestamp`, `toTimestamp`, `moduleNames`) and returns total count.
+
+### Query Replay Events
+
+Query service for retrieving replay events with flexible filtering and pagination.
+
+**Endpoint:** `GET /rest/data-sharing/replays`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `fromTimestamp` | Long | **Yes** | - | Start timestamp (milliseconds) |
+| `toTimestamp` | Long | **Yes** | - | End timestamp (milliseconds) |
+| `moduleNames` | List&lt;String&gt; | No | - | Filter by module names |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Response:** JSON object containing:
+- `data`: Array of [ReplayEvent](src/main/java/org/ikasan/rest/dashboard/model/replay/ReplayEventImpl.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/replays?fromTimestamp=1609459200000&toTimestamp=1612137600000&moduleNames=MyModule&offset=0&limit=50
+Authorization: Bearer eyJhbGc...
+```
+
+**Count Endpoint:** `GET /rest/data-sharing/replays/count`
+
+Uses same parameters (`fromTimestamp`, `toTimestamp`, `moduleNames`) and returns total count.
+
+### Query Module Metadata
+
+Query service for retrieving module metadata by module names.
+
+**Endpoint:** `GET /rest/data-sharing/module-metadata`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `moduleNames` | List&lt;String&gt; | **Yes** | - | Module names to query (used as identifiers) |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Note:** For module metadata queries, the module name **is** the identifier. The service searches for module metadata documents by matching against module names.
+
+**Response:** JSON object containing:
+- `data`: Array of [ModuleMetaData](src/main/java/org/ikasan/rest/dashboard/model/metadata/module/ModuleMetaDataImpl.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/module-metadata?moduleNames=OrderModule,InventoryModule&limit=10
+Authorization: Bearer eyJhbGc...
+```
+
+### Query Configuration Metadata
+
+Query service for retrieving configuration metadata by configuration IDs.
+
+**Endpoint:** `GET /rest/data-sharing/configuration`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `configurationIdentifiers` | List&lt;String&gt; | **Yes** | - | Configuration IDs to query (used as identifiers) |
+| `offset` | Integer | No | 0 | Pagination offset |
+| `limit` | Integer | No | 1000 | Result size limit |
+
+**Note:** For configuration queries, the configuration ID **is** the identifier. The service searches for configuration documents by matching against configuration IDs.
+
+**Response:** JSON object containing:
+- `data`: Array of [ConfigurationMetaData](../../spec/metadata/src/main/java/org/ikasan/spec/metadata/ConfigurationMetaData.java)
+- `totalCount`: Total number of matching results
+- `hasMore`: Boolean indicating if more results are available
+
+**Example Request:**
+```
+GET /rest/data-sharing/configuration?configurationIdentifiers=FLOW_CONFIG_1,CONSUMER_CONFIG_2&offset=0&limit=50
+Authorization: Bearer eyJhbGc...
+```
+
+---
+
+## Implementation Notes
+
+### Document Converters
+
+The Data Sharing Services use specialized converters to transform internal `IkasanESBDocument` instances to specific REST DTOs:
+
+- [IkasanESBDocumentToWiretapEventConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToWiretapEventConverter.java) - Converts to WiretapEvent
+- [IkasanESBDocumentToErrorOccurenceConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToErrorOccurenceConverter.java) - Converts to ErrorOccurrence
+- [IkasanESBDocumentToExclusionEventConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToExclusionEventConverter.java) - Converts to ExclusionEvent
+- [IkasanESBDocumentToReplayEventConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToReplayEventConverter.java) - Converts to ReplayEvent
+- [IkasanESBDocumentToModuleMetaDataConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToModuleMetaDataConverter.java) - Converts to ModuleMetaData
+- [IkasanESBDocumentToConfigurationMetaDataConverter](src/main/java/org/ikasan/rest/dashboard/component/converter/IkasanESBDocumentToConfigurationMetaDataConverter.java) - Converts to ConfigurationMetaData
+
+### Search by Identifiers
+
+The underlying search implementation ([DataSharingController](src/main/java/org/ikasan/rest/dashboard/DataSharingController.java)) uses the `ESBSearchService.search(Set<String> identifiers, ...)` method which performs efficient ID-based lookups:
+
+- **Solr Implementation:** Uses OR query construction: `id:"identifier1" OR id:"identifier2" OR ...`
+- **MongoDB Implementation:** Uses `$in` operator: `{ _id: { $in: ["identifier1", "identifier2", ...] } }`
+
+Both implementations support offset-based pagination and flexible sorting with default fallback to timestamp descending.
+
+### Error Handling
+
+All Data Sharing Services return standard HTTP status codes:
+- `200 OK` - Successful query
+- `401 Unauthorized` - Missing or invalid JWT token
+- `400 Bad Request` - Invalid query parameters
+- `500 Internal Server Error` - Server-side processing error
+
+### Security
+
+All Data Sharing Services require valid JWT authentication. Ensure the JWT token is included in the `Authorization` header for all requests:
+
+```
+Authorization: Bearer {JWT_TOKEN}
+```
+
+Tokens can be obtained via the [Authentication Endpoint](#authorization-endpoint).

@@ -76,6 +76,11 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-spec-entity</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-metadata</artifactId>
         </dependency>
 

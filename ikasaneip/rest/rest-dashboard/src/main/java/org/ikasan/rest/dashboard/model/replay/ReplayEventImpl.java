@@ -36,15 +36,22 @@ public class ReplayEventImpl implements ReplayEvent
      */
     public Long getId()
     {
-        return new Long(id);
+        if (id==null)return -1L;
+        try {
+            Long.parseLong(this.id);
+            return Long.parseLong(id);
+        }
+        catch (NumberFormatException e) {
+            return Long.parseLong(id.substring(id.lastIndexOf("-")+1));
+        }
     }
 
     /**
      * @param id the id to set
      */
-    public void setId(Long id)
+    public void setId(String id)
     {
-        this.id = id.toString();
+        this.id = id;
     }
 
 

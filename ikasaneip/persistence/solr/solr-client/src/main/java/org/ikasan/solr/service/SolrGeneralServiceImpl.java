@@ -42,40 +42,57 @@ public class SolrGeneralServiceImpl extends SolrServiceBase implements SolrGener
 
 
     @Override
-    public IkasanDocumentSearchResults search(Set<String> moduleName, Set<String> flowNames,
-                                                  String searchString, long startTime, long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder) {
-        this.solrGeneralDao.setSolrUsername(this.solrUsername);
-        this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(moduleName, flowNames, searchString, startTime, endTime, resultSize, negateQuery, sortField, sortOrder);
+    public IkasanDocumentSearchResults search(Set<String> identifiers, int offset, int resultSize
+        , String sortField, String sortOrder) {
+        return this.solrGeneralDao.search(identifiers, offset, resultSize, sortField, sortOrder);
     }
 
     @Override
-    public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames, String searchString, long startTime
+    public IkasanDocumentSearchResults search(Set<String> moduleName, Set<String> flowNames, String searchString
+        , long startTime, long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder) {
+        this.solrGeneralDao.setSolrUsername(this.solrUsername);
+        this.solrGeneralDao.setSolrPassword(this.solrPassword);
+        return this.solrGeneralDao.search(moduleName, flowNames, searchString, startTime, endTime, resultSize
+            , negateQuery, sortField, sortOrder);
+    }
+
+    @Override
+    public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames, String searchString
+        , long startTime
         , long endTime, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         this.solrGeneralDao.setSolrUsername(this.solrUsername);
         this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(moduleNames, flowNames, searchString, startTime, endTime, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+        return this.solrGeneralDao.search(moduleNames, flowNames, searchString, startTime, endTime, resultSize
+            , entityTypes, negateQuery, sortField, sortOrder);
     }
 
     @Override
-    public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
+    public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int resultSize
+        , List<String> entityTypes
+        , boolean negateQuery, String sortField, String sortOrder) {
         this.solrGeneralDao.setSolrUsername(this.solrUsername);
         this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(searchString, startTime, endTime, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+        return this.solrGeneralDao.search(searchString, startTime, endTime, resultSize, entityTypes, negateQuery
+            , sortField, sortOrder);
     }
 
     @Override
-    public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
+    public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int offset, int resultSize
+        , List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         this.solrGeneralDao.setSolrUsername(this.solrUsername);
         this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(searchString, startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+        return this.solrGeneralDao.search(searchString, startTime, endTime, offset, resultSize, entityTypes, negateQuery
+            , sortField, sortOrder);
     }
 
     @Override
-    public IkasanDocumentSearchResults search(Set<String> moduleNames, String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder)  {
+    public IkasanDocumentSearchResults search(Set<String> moduleNames, String searchString, long startTime
+        , long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField
+        , String sortOrder)  {
         this.solrGeneralDao.setSolrUsername(this.solrUsername);
         this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(moduleNames, null, null, null, searchString, startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+        return this.solrGeneralDao.search(moduleNames, null, null, null, searchString
+            , startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
     }
 
     @Override
@@ -83,7 +100,14 @@ public class SolrGeneralServiceImpl extends SolrServiceBase implements SolrGener
         , long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         this.solrGeneralDao.setSolrUsername(this.solrUsername);
         this.solrGeneralDao.setSolrPassword(this.solrPassword);
-        return this.solrGeneralDao.search(moduleNames, flowNames, componentNames, eventId, searchString, startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+        return this.solrGeneralDao.search(moduleNames, flowNames, componentNames, eventId, searchString, startTime
+            , endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+    }
+
+    @Override
+    public IkasanDocumentSearchResults searchByHarvestReceivedTime(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames, String eventId, String searchString, long harvestReceivedStartTime, long harvestReceivedEndTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
+        return this.solrGeneralDao.searchByHarvestReceivedTime(moduleNames, flowNames, componentNames, eventId, searchString
+            , harvestReceivedStartTime, harvestReceivedEndTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
     }
 
     @Override

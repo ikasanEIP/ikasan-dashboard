@@ -179,6 +179,7 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
 
         entity.setTimestamp(errorOccurrence.getTimestamp());
         entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
+        entity.setHarvestReceivedTimestamp(System.currentTimeMillis());
 
         return entity;
     }

@@ -48,31 +48,78 @@ public class MongoGeneralDaoImpl implements
     }
 
     @Override
+    public IkasanDocumentSearchResults search(Set<String> identifiers, int offset, int resultSize, String sortField, String sortOrder) {
+        if (identifiers == null || identifiers.isEmpty()) {
+            return new MongoIkasanDocumentSearchResults(List.of(), 0L, 0L);
+        }
+
+        long queryStartTime = System.currentTimeMillis();
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.ID).in(identifiers));
+
+        // Add sorting
+        if (sortField != null && !sortField.isEmpty() && sortOrder != null && !sortOrder.isEmpty()) {
+            if (sortOrder.equals(DESCENDING)) {
+                query.with(Sort.by(Sort.Direction.DESC, sortField));
+            } else {
+                query.with(Sort.by(Sort.Direction.ASC, sortField));
+            }
+        } else {
+            // Default sort by timestamp descending
+            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
+        }
+
+        try {
+            logger.debug("Executing MongoDB query by identifiers: {}", query);
+
+            // Get total count for pagination
+            long totalCount = mongoTemplate.count(query, MongoIkasanDocument.class);
+
+            // Add pagination
+            query.skip(offset);
+            query.limit(resultSize);
+
+            // Execute query
+            List<IkasanESBDocument> results = mongoTemplate
+                .find(query, MongoIkasanDocument.class).stream()
+                .map(doc -> (IkasanESBDocument)doc)
+                .toList();
+
+            long queryTime = System.currentTimeMillis() - queryStartTime;
+
+            return new MongoIkasanDocumentSearchResults(results, totalCount, queryTime);
+        } catch (Exception e) {
+            throw new RuntimeException("Caught exception performing MongoDB search by identifiers!", e);
+        }
+    }
+
+    @Override
     public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int resultSize,
                                                      List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(null, null, null, null, searchString,
-            startTime, endTime, 0, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            startTime, endTime, 0, resultSize, entityTypes, negateQuery, sortField, sortOrder, false);
     }
 
     @Override
     public IkasanDocumentSearchResults search(String searchString, long startTime, long endTime, int offset, int resultSize,
                                                      List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(null, null, null, null, searchString, startTime,
-            endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder, false);
     }
 
     @Override
     public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames, String searchString, long startTime,
                                                      long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleNames, flowNames, null, null, searchString, startTime, endTime,
-            0, resultSize, null, negateQuery, sortField, sortOrder);
+            0, resultSize, null, negateQuery, sortField, sortOrder,  false);
     }
 
     @Override
     public IkasanDocumentSearchResults search(Set<String> moduleNames, Set<String> flowNames, String searchString,
                                                      long startTime, long endTime, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleNames, flowNames, null, null, searchString, startTime, endTime,
-            0, resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            0, resultSize, entityTypes, negateQuery, sortField, sortOrder, false);
     }
 
     @Override
@@ -80,7 +127,16 @@ public class MongoGeneralDaoImpl implements
                                                      String eventId, String searchString, long startTime,
                                                      long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder) {
         return this.searchBase(moduleNames, flowNames, componentNames, eventId, searchString, startTime, endTime, offset,
-            resultSize, entityTypes, negateQuery, sortField, sortOrder);
+            resultSize, entityTypes, negateQuery, sortField, sortOrder, false);
+    }
+
+    @Override
+    public IkasanDocumentSearchResults searchByHarvestReceivedTime(Set<String> moduleNames, Set<String> flowNames
+        , Set<String> componentNames, String eventId, String searchString, long harvestReceivedStartTime
+        , long harvestReceivedEndTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
+        , String sortField, String sortOrder) {
+        return this.searchBase(moduleNames, flowNames, componentNames, eventId, searchString, harvestReceivedStartTime, harvestReceivedEndTime, offset,
+            resultSize, entityTypes, negateQuery, sortField, sortOrder, true);
     }
 
     /**
@@ -103,11 +159,11 @@ public class MongoGeneralDaoImpl implements
      */
     protected IkasanDocumentSearchResults searchBase(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
                                                           String eventId, String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery,
-                                                          String sortField, String sortOrder) {
+                                                          String sortField, String sortOrder, boolean harvestReceivedTimestamp) {
         long queryStartTime = System.currentTimeMillis();
 
         Query query = buildQuery(moduleNames, flowNames, componentNames, eventId
-            , searchString, startTime, endTime, entityTypes, negateQuery);
+            , searchString, startTime, endTime, entityTypes, negateQuery, harvestReceivedTimestamp);
 
         // Add sorting
         if (sortField != null && !sortField.isEmpty() && sortOrder != null && !sortOrder.isEmpty()) {
@@ -159,8 +215,9 @@ public class MongoGeneralDaoImpl implements
      * @param negateQuery whether to negate the query
      * @return the constructed criteria
      */
-    protected Query buildQuery(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
-                                      String eventId, String searchString, long startTime, long endTime, List<String> entityTypes, boolean negateQuery) {
+    protected Query buildQuery(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames
+        , String eventId, String searchString, long startTime, long endTime, List<String> entityTypes
+        , boolean negateQuery, boolean harvestReceivedTimestamp) {
         java.util.List<Criteria> criteriaList = new java.util.ArrayList<>();
 
         // Module names filter
@@ -204,11 +261,26 @@ public class MongoGeneralDaoImpl implements
 
         // Timestamp range filter
         if (startTime > 0 && endTime > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
+            if(harvestReceivedTimestamp) {
+                criteriaList.add(Criteria.where(EntityFields.HARVEST_RECEIVED_TIMESTAMP).gte(startTime).lte(endTime));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
+            }
         } else if (startTime > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime));
+            if(harvestReceivedTimestamp) {
+                criteriaList.add(Criteria.where(EntityFields.HARVEST_RECEIVED_TIMESTAMP).gte(startTime));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime));
+            }
         } else if (endTime > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(endTime));
+            if(harvestReceivedTimestamp) {
+                criteriaList.add(Criteria.where(EntityFields.HARVEST_RECEIVED_TIMESTAMP).lte(endTime));
+            }
+            else {
+                criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(endTime));
+            }
         }
 
         // Entity types filter

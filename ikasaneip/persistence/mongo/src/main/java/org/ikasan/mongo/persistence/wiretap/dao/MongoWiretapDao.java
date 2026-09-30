@@ -125,6 +125,7 @@ public class MongoWiretapDao implements EntityDao<WiretapEvent> {
         entity.setEvent(wiretapEvent.getEvent().toString());
         entity.setTimestamp(wiretapEvent.getTimestamp());
         entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
+        entity.setHarvestReceivedTimestamp(System.currentTimeMillis());
 
         return entity;
     }

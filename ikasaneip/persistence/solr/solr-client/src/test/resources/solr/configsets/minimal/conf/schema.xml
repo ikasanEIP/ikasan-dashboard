@@ -91,4 +91,5 @@
     <field name="surname" type="text_general" multiValued="false" stored="true"/>
     <field name="department" type="text_general" multiValued="false" stored="true"/>
     <field name="order" type="plongs" multiValued="false" stored="true"/>
+    <field name="harvestReceivedTimestamp" type="plongs" multiValued="false" stored="true"/>
 </schema>

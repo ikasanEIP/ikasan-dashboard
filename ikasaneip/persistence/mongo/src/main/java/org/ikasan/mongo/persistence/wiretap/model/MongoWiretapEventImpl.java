@@ -54,6 +54,10 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
+    @Indexed
+    @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
+    private long harvestReceivedTimestamp;
+
     /**
      * Default constructor for MongoDB
      */
@@ -155,6 +159,14 @@ public class MongoWiretapEventImpl implements WiretapEvent<String> {
 
     public void setRelatedEventId(String relatedEventId) {
         this.relatedEventId = relatedEventId;
+    }
+
+    public long getHarvestReceivedTimestamp() {
+        return harvestReceivedTimestamp;
+    }
+
+    public void setHarvestReceivedTimestamp(long harvestReceivedTimestamp) {
+        this.harvestReceivedTimestamp = harvestReceivedTimestamp;
     }
 
     @Override

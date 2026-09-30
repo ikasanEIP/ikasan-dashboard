@@ -36,6 +36,7 @@ public class SolrReplayDao extends SolrDaoBase<ReplayEvent> implements EntityDao
         document.addField(PAYLOAD_CONTENT_RAW, replayEvent.getEvent());
         document.addField(CREATED_DATE_TIME, replayEvent.getTimestamp());
         document.setField(EXPIRY, expiry);
+        document.setField(HARVEST_RECEIVED_TIMESTAMP, System.currentTimeMillis());
 
         return document;
     }

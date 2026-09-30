@@ -29,7 +29,14 @@ public class WiretapEventImpl implements WiretapEvent<String>
     @Override
     public long getIdentifier()
     {
-        return new Long(identifier);
+        if (identifier==null)return -1;
+        try {
+            Long.parseLong(this.identifier);
+            return Long.parseLong(identifier);
+        }
+        catch (NumberFormatException e) {
+            return Long.parseLong(identifier.substring(identifier.lastIndexOf("-")+1));
+        }
     }
 
     @Override
@@ -65,7 +72,7 @@ public class WiretapEventImpl implements WiretapEvent<String>
     @Override
     public long getExpiry()
     {
-        return this.getExpiry();
+        return this.expiry;
     }
 
     @Override

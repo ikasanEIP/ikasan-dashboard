@@ -50,6 +50,7 @@ import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -120,6 +121,10 @@ public class IkasanRestAutoConfiguration
     @Qualifier("metricsEntityService")
     private MetricsService metricsService;
 
+
+    @Autowired
+    private ESBSearchService esbSearchService;
+
     @Autowired
     private BigQueueModuleService bigQueueModuleService;
 
@@ -175,6 +180,11 @@ public class IkasanRestAutoConfiguration
     @Bean
     public MetricsController metricsApplication() {
         return new MetricsController(this.flowInvocationMetricBatchInsert, this.metricsService);
+    }
+
+    @Bean
+    public DataSharingController dataSharingController() {
+        return new DataSharingController(this.esbSearchService);
     }
 
     @Bean

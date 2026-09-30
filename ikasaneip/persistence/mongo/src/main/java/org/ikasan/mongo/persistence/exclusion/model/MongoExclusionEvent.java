@@ -49,6 +49,10 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
     @Field(EntityFields.EXPIRY)
     private long expiry;
 
+    @Indexed
+    @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
+    private long harvestReceivedTimestamp;
+
     /**
      * Default constructor
      */
@@ -173,6 +177,14 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
 
     public void setExpiry(long expiry) {
         this.expiry = expiry;
+    }
+
+    public long getHarvestReceivedTimestamp() {
+        return harvestReceivedTimestamp;
+    }
+
+    public void setHarvestReceivedTimestamp(long harvestReceivedTimestamp) {
+        this.harvestReceivedTimestamp = harvestReceivedTimestamp;
     }
 
     @Override
