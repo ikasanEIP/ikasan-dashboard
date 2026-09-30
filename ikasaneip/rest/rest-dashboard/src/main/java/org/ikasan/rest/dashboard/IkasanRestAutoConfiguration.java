@@ -51,6 +51,7 @@ import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
@@ -132,6 +133,10 @@ public class IkasanRestAutoConfiguration
     @Autowired
     private ScheduledContextService scheduledContextService;
 
+
+    @Autowired
+    private ESBSearchService esbSearchService;
+
     @Autowired
     private BigQueueModuleService bigQueueModuleService;
 
@@ -190,6 +195,11 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
+    public DataSharingController dataSharingController() {
+        return new DataSharingController(this.esbSearchService);
+    }
+
+    @Bean
     public UserController userController(UserService userService)
     {
         return new UserController(userService, this.userServiceUserCacheTimeoutSeconds);
@@ -230,6 +240,16 @@ public class IkasanRestAutoConfiguration
         return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
     }
 
+    @Bean
+    public JobContextController jobContextController() {
+        return new JobContextController(contextParametersInstanceService);
+    }
+
+    @Bean
+    public SecurityController securityController() {
+        return new SecurityController(this.securityService, this.moduleMetadataService, this.scheduledContextService);
+    }
+
     @Bean("jwtAuthenticationEntryPoint")
     public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
         return new JwtAuthenticationEntryPoint();
@@ -240,16 +260,6 @@ public class IkasanRestAutoConfiguration
         , @Lazy SecurityContextRepository securityContextRepository) {
         return new JwtRequestFilter(userService, jwtTokenUtil
             , securityContextRepository, jwtRequestFilterUserCacheTimeoutSeconds);
-    }
-
-    @Bean
-    public JobContextController jobContextController() {
-        return new JobContextController(contextParametersInstanceService);
-    }
-
-    @Bean
-    public SecurityController securityController() {
-        return new SecurityController(this.securityService, this.moduleMetadataService, this.scheduledContextService);
     }
 
     @Bean

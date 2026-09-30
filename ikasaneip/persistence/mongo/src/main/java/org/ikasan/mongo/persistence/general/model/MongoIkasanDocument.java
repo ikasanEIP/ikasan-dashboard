@@ -3,6 +3,7 @@ package org.ikasan.mongo.persistence.general.model;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -18,7 +19,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     private String id;
 
     @Field(EntityFields.PAYLOAD_CONTENT)
-    private String event;
+    private String payload;
 
     @Field(EntityFields.TYPE)
     private String type;
@@ -39,7 +40,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     private long expiry;
 
     @Field(EntityFields.EVENT)
-    private String eventId;
+    private String event;
 
     @Field(EntityFields.ERROR_ACTION)
     private String errorAction;
@@ -58,6 +59,10 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Field(EntityFields.PAYLOAD_CONTENT_RAW)
     private byte[] payloadRaw;
+
+    @Indexed
+    @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
+    private long harvestReceivedTimestamp;
 
     @Override
     public String getId() {
@@ -91,7 +96,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public String getEvent() {
-        return event;
+        return payload;
     }
 
     @Override
@@ -101,7 +106,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public String getEventId() {
-        return this.eventId;
+        return this.event;
     }
 
     @Override
@@ -126,7 +131,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public void setEvent(String event) {
-        this.event = event;
+        this.payload = event;
     }
 
     @Override
@@ -156,7 +161,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public void setEventId(String eventId) {
-        this.eventId = eventId;
+        this.event = eventId;
     }
 
     @Override
@@ -219,18 +224,26 @@ public class MongoIkasanDocument implements IkasanESBDocument {
         this.payloadRaw = payloadRaw;
     }
 
+    public long getHarvestReceivedTimestamp() {
+        return harvestReceivedTimestamp;
+    }
+
+    public void setHarvestReceivedTimestamp(long harvestReceivedTimestamp) {
+        this.harvestReceivedTimestamp = harvestReceivedTimestamp;
+    }
+
     @Override
     public String toString() {
         return "MongoIkasanDocument{" +
             "id='" + id + '\'' +
-            ", event='" + event + '\'' +
+            ", event='" + payload + '\'' +
             ", type='" + type + '\'' +
             ", moduleName='" + moduleName + '\'' +
             ", flowName='" + flowName + '\'' +
             ", componentName='" + componentName + '\'' +
             ", timeStamp=" + timeStamp +
             ", expiry=" + expiry +
-            ", eventId='" + eventId + '\'' +
+            ", eventId='" + event + '\'' +
             ", errorAction='" + errorAction + '\'' +
             ", errorUri='" + errorUri + '\'' +
             ", errorDetail='" + errorDetail + '\'' +

@@ -35,6 +35,7 @@ public class SolrErrorReportingServiceDaoImpl extends SolrDaoBase<ErrorOccurrenc
         document.addField(ERROR_MESSAGE, errorOccurrence.getErrorMessage());
         document.addField(EXCEPTION_CLASS, errorOccurrence.getExceptionClass());
         document.setField(EXPIRY, expiry);
+        document.setField(HARVEST_RECEIVED_TIMESTAMP, System.currentTimeMillis());
 
         return document;
     }

@@ -177,6 +177,7 @@ public class MongoExclusionEventDaoImpl implements EntityDao<ExclusionEvent> {
         entity.setErrorUri(exclusionEvent.getErrorUri());
         entity.setHarvested(exclusionEvent.isHarvested());
         entity.setExpiry(this.daysToKeep * TimeUnit.DAYS.toMillis(1) + System.currentTimeMillis());
+        entity.setHarvestReceivedTimestamp(System.currentTimeMillis());
 
         return entity;
     }

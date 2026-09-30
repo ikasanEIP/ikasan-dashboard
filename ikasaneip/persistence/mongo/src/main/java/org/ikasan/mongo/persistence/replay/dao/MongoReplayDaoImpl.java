@@ -141,6 +141,7 @@ public class MongoReplayDaoImpl implements EntityDao<ReplayEvent> {
         entity.setEvent(replayEvent.getEvent());
         entity.setTimestamp(replayEvent.getTimestamp());
         entity.setExpiry(replayEvent.getExpiry());
+        entity.setHarvestReceivedTimestamp(System.currentTimeMillis());
 
         return entity;
     }
