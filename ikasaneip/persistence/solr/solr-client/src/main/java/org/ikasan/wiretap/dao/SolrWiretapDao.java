@@ -31,6 +31,7 @@ public class SolrWiretapDao extends SolrDaoBase<WiretapEvent> implements EntityD
         document.addField(PAYLOAD_CONTENT, wiretapEvent.getEvent());
         document.addField(CREATED_DATE_TIME, wiretapEvent.getTimestamp());
         document.setField(EXPIRY, expiry);
+        document.setField(HARVEST_RECEIVED_TIMESTAMP, System.currentTimeMillis());
 
         return document;
     }

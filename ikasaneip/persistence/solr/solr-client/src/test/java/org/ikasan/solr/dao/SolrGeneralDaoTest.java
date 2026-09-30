@@ -935,6 +935,1019 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
 
     @Test
     @DirtiesContext
+    public void test_search_by_identifiers_success() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 1");
+            doc.addField("expiry", 100l);
+            doc.addField("timestamp", 100l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 2");
+            doc.addField("expiry", 100l);
+            doc.addField("timestamp", 200l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 3");
+            doc.addField("timestamp", 300l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-4");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 4");
+            doc.addField("timestamp", 400l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-1");
+            identifiers.add("id-3");
+
+            var results = dao.search(identifiers, 0, 10, null, null);
+
+            assertEquals(2, results.getResultList().size());
+            assertEquals(2, results.getTotalNumberOfResults());
+
+            List<String> ids = results.getResultList().stream()
+                .map(IkasanESBDocument::getId)
+                .toList();
+
+            Assert.assertTrue(ids.contains("id-1"));
+            Assert.assertTrue(ids.contains("id-3"));
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_with_offset() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for (int i = 1; i <= 10; i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("id", "id-" + i);
+                doc.addField("type", "type");
+                doc.addField("payload", "test payload " + i);
+                doc.addField("timestamp", (long) i * 100);
+                doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+                server.add("ikasan", doc);
+            }
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            for (int i = 1; i <= 10; i++) {
+                identifiers.add("id-" + i);
+            }
+
+            var results = dao.search(identifiers, 3, 5, null, null);
+
+            assertEquals(5, results.getResultList().size());
+            assertEquals(10, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_with_result_size() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for (int i = 1; i <= 10; i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("id", "id-" + i);
+                doc.addField("type", "type");
+                doc.addField("payload", "test payload " + i);
+                doc.addField("timestamp", (long) i * 100);
+                doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+                server.add("ikasan", doc);
+            }
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            for (int i = 1; i <= 10; i++) {
+                identifiers.add("id-" + i);
+            }
+
+            var results = dao.search(identifiers, 0, 3, null, null);
+
+            assertEquals(3, results.getResultList().size());
+            assertEquals(10, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_sort_ascending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "c payload");
+            doc.addField("timestamp", 300l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "a payload");
+            doc.addField("timestamp", 100l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("payload", "b payload");
+            doc.addField("timestamp", 200l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-1");
+            identifiers.add("id-2");
+            identifiers.add("id-3");
+
+            var results = dao.search(identifiers, 0, 10, "payload", SolrGeneralDaoImpl.ASCENDING);
+
+            assertEquals(3, results.getResultList().size());
+            Assert.assertEquals("id-2", results.getResultList().get(0).getId());
+            Assert.assertEquals("id-3", results.getResultList().get(1).getId());
+            Assert.assertEquals("id-1", results.getResultList().get(2).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_sort_descending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "c payload");
+            doc.addField("timestamp", 300l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "a payload");
+            doc.addField("timestamp", 100l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("payload", "b payload");
+            doc.addField("timestamp", 200l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-1");
+            identifiers.add("id-2");
+            identifiers.add("id-3");
+
+            var results = dao.search(identifiers, 0, 10, "payload", SolrGeneralDaoImpl.DESCENDING);
+
+            assertEquals(3, results.getResultList().size());
+            Assert.assertEquals("id-1", results.getResultList().get(0).getId());
+            Assert.assertEquals("id-3", results.getResultList().get(1).getId());
+            Assert.assertEquals("id-2", results.getResultList().get(2).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_sort_default() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "payload 1");
+            doc.addField("timestamp", 100l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "payload 2");
+            doc.addField("timestamp", 200l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("payload", "payload 3");
+            doc.addField("timestamp", 300l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-1");
+            identifiers.add("id-2");
+            identifiers.add("id-3");
+
+            // When sort field and order are null, should default to timestamp descending
+            var results = dao.search(identifiers, 0, 10, null, null);
+
+            assertEquals(3, results.getResultList().size());
+            // Should be sorted by timestamp descending by default
+            Assert.assertEquals("id-3", results.getResultList().get(0).getId());
+            Assert.assertEquals("id-2", results.getResultList().get(1).getId());
+            Assert.assertEquals("id-1", results.getResultList().get(2).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_null_identifiers() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            var results = dao.search(null, 0, 10, null, null);
+
+            assertEquals(0, results.getResultList().size());
+            assertEquals(0, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_empty_identifiers() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            Set<String> identifiers = new HashSet<>();
+            var results = dao.search(identifiers, 0, 10, null, null);
+
+            assertEquals(0, results.getResultList().size());
+            assertEquals(0, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_no_matching_ids() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload");
+            doc.addField("timestamp", 100l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-999");
+            identifiers.add("id-888");
+
+            var results = dao.search(identifiers, 0, 10, null, null);
+
+            assertEquals(0, results.getResultList().size());
+            assertEquals(0, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_single_identifier() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 1");
+            doc.addField("timestamp", 100l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "test payload 2");
+            doc.addField("timestamp", 200l);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            identifiers.add("id-1");
+
+            var results = dao.search(identifiers, 0, 10, null, null);
+
+            assertEquals(1, results.getResultList().size());
+            Assert.assertEquals("id-1", results.getResultList().get(0).getId());
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    @DirtiesContext
+    public void test_search_by_identifiers_exception() throws Exception
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                oneOf(server).request(with(any(SolrRequest.class)));
+                will(throwException(new RuntimeException("Error")));
+            }
+        });
+
+        dao = new SolrGeneralDaoImpl();
+        dao.setSolrClient(server);
+
+        Set<String> identifiers = new HashSet<>();
+        identifiers.add("id-1");
+
+        dao.search(identifiers, 0, 10, null, null);
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_search_by_identifiers_with_pagination() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for (int i = 1; i <= 20; i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("id", "id-" + i);
+                doc.addField("type", "type");
+                doc.addField("payload", "test payload " + i);
+                doc.addField("timestamp", (long) i * 100);
+                doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+                server.add("ikasan", doc);
+            }
+
+            server.commit();
+
+            Set<String> identifiers = new HashSet<>();
+            for (int i = 1; i <= 20; i++) {
+                identifiers.add("id-" + i);
+            }
+
+            // First page
+            var page1 = dao.search(identifiers, 0, 5, "timestamp", SolrGeneralDaoImpl.ASCENDING);
+            assertEquals(5, page1.getResultList().size());
+            assertEquals(20, page1.getTotalNumberOfResults());
+
+            // Second page
+            var page2 = dao.search(identifiers, 5, 5, "timestamp", SolrGeneralDaoImpl.ASCENDING);
+            assertEquals(5, page2.getResultList().size());
+            assertEquals(20, page2.getTotalNumberOfResults());
+
+            // Third page
+            var page3 = dao.search(identifiers, 10, 5, "timestamp", SolrGeneralDaoImpl.ASCENDING);
+            assertEquals(5, page3.getResultList().size());
+            assertEquals(20, page3.getTotalNumberOfResults());
+
+            // Last page
+            var page4 = dao.search(identifiers, 15, 5, "timestamp", SolrGeneralDaoImpl.ASCENDING);
+            assertEquals(5, page4.getResultList().size());
+            assertEquals(20, page4.getTotalNumberOfResults());
+
+            // Verify no overlap between pages
+            Assert.assertEquals("id-1", page1.getResultList().get(0).getId());
+            Assert.assertEquals("id-6", page2.getResultList().get(0).getId());
+            Assert.assertEquals("id-11", page3.getResultList().get(0).getId());
+            Assert.assertEquals("id-16", page4.getResultList().get(0).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_time_range() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            // Create documents with different harvest timestamps
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("payload", "test");
+            doc.addField("harvestReceivedTimestamp", now - 5000); // Before range
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("payload", "test");
+            doc.addField("harvestReceivedTimestamp", now); // In range
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("payload", "test");
+            doc.addField("harvestReceivedTimestamp", now + 2000); // In range
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-4");
+            doc.addField("type", "type");
+            doc.addField("payload", "test");
+            doc.addField("harvestReceivedTimestamp", now + 10000); // After range
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now - 1000, now + 5000, 0, 10, null, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+
+            List<String> ids = results.getResultList().stream()
+                .map(IkasanESBDocument::getId)
+                .toList();
+
+            Assert.assertTrue(ids.contains("id-2"));
+            Assert.assertTrue(ids.contains("id-3"));
+            Assert.assertFalse(ids.contains("id-1"));
+            Assert.assertFalse(ids.contains("id-4"));
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_module_and_flow() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module1");
+            doc.addField("flowName", "flow1");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module1");
+            doc.addField("flowName", "flow2");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module2");
+            doc.addField("flowName", "flow1");
+            doc.addField("harvestReceivedTimestamp", now + 2000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> moduleNames = new HashSet<>();
+            moduleNames.add("module1");
+            Set<String> flowNames = new HashSet<>();
+            flowNames.add("flow1");
+
+            var results = dao.searchByHarvestReceivedTime(moduleNames, flowNames, null, null, null,
+                now - 1000, now + 10000, 0, 10, null, false, null, null);
+
+            assertEquals(1, results.getResultList().size());
+            Assert.assertEquals("module1", results.getResultList().get(0).getModuleName());
+            Assert.assertEquals("flow1", results.getResultList().get(0).getFlowName());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_component_names() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("componentName", "component1");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("componentName", "component2");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> componentNames = new HashSet<>();
+            componentNames.add("component1");
+
+            var results = dao.searchByHarvestReceivedTime(null, null, componentNames, null, null,
+                now - 1000, now + 10000, 0, 10, null, false, null, null);
+
+            assertEquals(1, results.getResultList().size());
+            Assert.assertEquals("component1", results.getResultList().get(0).getComponentName());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_entity_types() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "wiretap");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "error");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "replay");
+            doc.addField("harvestReceivedTimestamp", now + 2000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            List<String> entityTypes = new ArrayList<>();
+            entityTypes.add("wiretap");
+            entityTypes.add("error");
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now - 1000, now + 10000, 0, 10, entityTypes, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+
+            List<String> types = results.getResultList().stream()
+                .map(IkasanESBDocument::getType)
+                .toList();
+
+            Assert.assertTrue(types.contains("wiretap"));
+            Assert.assertTrue(types.contains("error"));
+            Assert.assertFalse(types.contains("replay"));
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_pagination() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            // Create 5 documents
+            for (int i = 0; i < 5; i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("id", "id-" + i);
+                doc.addField("type", "type");
+                doc.addField("harvestReceivedTimestamp", now + (i * 1000));
+                doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+                server.add("ikasan", doc);
+            }
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now - 1000, now + 10000, 2, 2, null, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+            assertEquals(5, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_sort_ascending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 3000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 2000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 10000, 0, 10, null, false, "harvestReceivedTimestamp", "ASCENDING");
+
+            assertEquals(3, results.getResultList().size());
+            Assert.assertEquals("id-2", results.getResultList().get(0).getId());
+            Assert.assertEquals("id-3", results.getResultList().get(1).getId());
+            Assert.assertEquals("id-1", results.getResultList().get(2).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_sort_descending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 3000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 2000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 10000, 0, 10, null, false, "harvestReceivedTimestamp", "DESCENDING");
+
+            assertEquals(3, results.getResultList().size());
+            Assert.assertEquals("id-2", results.getResultList().get(0).getId());
+            Assert.assertEquals("id-3", results.getResultList().get(1).getId());
+            Assert.assertEquals("id-1", results.getResultList().get(2).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_no_results_outside_range() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now - 10000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 5000, 0, 10, null, false, null, null);
+
+            assertEquals(0, results.getResultList().size());
+            assertEquals(0, results.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_all_parameters() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "wiretap");
+            doc.addField("moduleName", "module1");
+            doc.addField("flowName", "flow1");
+            doc.addField("componentName", "component1");
+            doc.addField("event", "event-123");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> moduleNames = new HashSet<>();
+            moduleNames.add("module1");
+            Set<String> flowNames = new HashSet<>();
+            flowNames.add("flow1");
+            Set<String> componentNames = new HashSet<>();
+            componentNames.add("component1");
+            List<String> entityTypes = new ArrayList<>();
+            entityTypes.add("wiretap");
+
+            var results = dao.searchByHarvestReceivedTime(moduleNames, flowNames, componentNames,
+                "event-123", null, now - 1000, now + 10000, 0, 10, entityTypes, false, null, null);
+
+            assertEquals(1, results.getResultList().size());
+            Assert.assertEquals("module1", results.getResultList().get(0).getModuleName());
+            Assert.assertEquals("flow1", results.getResultList().get(0).getFlowName());
+            Assert.assertEquals("component1", results.getResultList().get(0).getComponentName());
+            Assert.assertEquals("event-123", results.getResultList().get(0).getEventId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_multiple_modules() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module1");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module2");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-3");
+            doc.addField("type", "type");
+            doc.addField("moduleName", "module3");
+            doc.addField("harvestReceivedTimestamp", now + 2000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            Set<String> moduleNames = new HashSet<>();
+            moduleNames.add("module1");
+            moduleNames.add("module2");
+
+            var results = dao.searchByHarvestReceivedTime(moduleNames, null, null, null, null,
+                now - 1000, now + 10000, 0, 10, null, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+
+            List<String> modules = results.getResultList().stream()
+                .map(IkasanESBDocument::getModuleName)
+                .toList();
+
+            Assert.assertTrue(modules.contains("module1"));
+            Assert.assertTrue(modules.contains("module2"));
+            Assert.assertFalse(modules.contains("module3"));
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_empty_filters() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "wiretap");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "error");
+            doc.addField("harvestReceivedTimestamp", now + 1000);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now - 1000, now + 10000, 0, 10, null, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_with_multiple_pages() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            // Create 20 documents
+            for (int i = 1; i <= 20; i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("id", "id-" + i);
+                doc.addField("type", "type");
+                doc.addField("harvestReceivedTimestamp", now + (i * 100));
+                doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+                server.add("ikasan", doc);
+            }
+
+            server.commit();
+
+            // First page
+            var page1 = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 10000, 0, 5, null, false, "harvestReceivedTimestamp", "ASCENDING");
+            assertEquals(5, page1.getResultList().size());
+            assertEquals(20, page1.getTotalNumberOfResults());
+
+            // Second page
+            var page2 = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 10000, 5, 5, null, false, "harvestReceivedTimestamp", "ASCENDING");
+            assertEquals(5, page2.getResultList().size());
+            assertEquals(20, page2.getTotalNumberOfResults());
+
+            // Verify no overlap
+            Assert.assertEquals("id-1", page1.getResultList().get(0).getId());
+            Assert.assertEquals("id-6", page2.getResultList().get(0).getId());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_query_response_time() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now);
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now - 1000, now + 10000, 0, 10, null, false, null, null);
+
+            assertNotNull(results);
+            assertTrue(results.getQueryResponseTime() >= 0);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_boundary_timestamps() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            long now = System.currentTimeMillis();
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "id-1");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now); // Exact start time
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "id-2");
+            doc.addField("type", "type");
+            doc.addField("harvestReceivedTimestamp", now + 5000); // Exact end time
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+
+            server.commit();
+
+            var results = dao.searchByHarvestReceivedTime(null, null, null, null, null,
+                now, now + 5000, 0, 10, null, false, null, null);
+
+            assertEquals(2, results.getResultList().size());
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    @DirtiesContext
+    public void test_searchByHarvestReceivedTime_exception() throws Exception
+    {
+        mockery.checking(new Expectations()
+        {
+            {
+                oneOf(server).request(with(any(SolrRequest.class)));
+                will(throwException(new RuntimeException("Error")));
+            }
+        });
+
+        dao = new SolrGeneralDaoImpl();
+        dao.setSolrClient(server);
+
+        long now = System.currentTimeMillis();
+        dao.searchByHarvestReceivedTime(null, null, null, null, "test",
+            now - 1000, now + 10000, 0, 100, null, false, null, null);
+    }
+
+    @Test
+    @DirtiesContext
     public void test_backup_index_success() throws Exception {
         final String backupPath = tmppath.toString();
         final int numberOfBackupsToKeep = 1;

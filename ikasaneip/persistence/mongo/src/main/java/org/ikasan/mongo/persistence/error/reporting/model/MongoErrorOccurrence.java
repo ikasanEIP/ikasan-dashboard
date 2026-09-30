@@ -63,6 +63,10 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
     @Field(EntityFields.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Indexed
+    @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
+    private long harvestReceivedTimestamp;
+
     public MongoErrorOccurrence() {
     }
 
@@ -302,6 +306,14 @@ public class MongoErrorOccurrence implements ErrorOccurrence<byte[]>, HarvestEve
     public void setHarvested(boolean harvested)
     {
         throw new UnsupportedOperationException();
+    }
+
+    public long getHarvestReceivedTimestamp() {
+        return harvestReceivedTimestamp;
+    }
+
+    public void setHarvestReceivedTimestamp(long harvestReceivedTimestamp) {
+        this.harvestReceivedTimestamp = harvestReceivedTimestamp;
     }
 
     @Override

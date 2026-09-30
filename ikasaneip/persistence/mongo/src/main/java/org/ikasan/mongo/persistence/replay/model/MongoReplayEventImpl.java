@@ -47,6 +47,10 @@ public class MongoReplayEventImpl implements ReplayEvent {
     @Field(EntityFields.EXPIRY)
     private long expiry;
 
+    @Indexed
+    @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
+    private long harvestReceivedTimestamp;
+
     /**
      * Default constructor
      */
@@ -172,6 +176,14 @@ public class MongoReplayEventImpl implements ReplayEvent {
     @Override
     public void setEventAsString(String eventAsString) {
         this.eventAsString = eventAsString;
+    }
+
+    public long getHarvestReceivedTimestamp() {
+        return harvestReceivedTimestamp;
+    }
+
+    public void setHarvestReceivedTimestamp(long harvestReceivedTimestamp) {
+        this.harvestReceivedTimestamp = harvestReceivedTimestamp;
     }
 
     @Override
