@@ -141,6 +141,11 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-esb-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-security-ldap</artifactId>
             <exclusions>
                 <exclusion>
@@ -177,6 +182,11 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-job-orchestration-provision</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-esb-service</artifactId>
         </dependency>
 
         <!-- spring web -->

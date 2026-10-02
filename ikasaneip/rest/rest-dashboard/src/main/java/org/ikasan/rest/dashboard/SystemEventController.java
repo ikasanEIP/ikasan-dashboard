@@ -40,23 +40,34 @@
  */
 package org.ikasan.rest.dashboard;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.esb.service.support.DirectoryZipUtil;
+import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.systemevent.SystemEventImpl;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventRecord;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Module application implementing the REST contract
@@ -67,19 +78,27 @@ public class SystemEventController
 {
     private static Logger logger = LoggerFactory.getLogger(SystemEventController.class);
 
-    private ObjectMapper mapper;
-
     private BatchInsert<SystemEvent> batchInsert;
 
-    public SystemEventController(BatchInsert<SystemEvent> batchInsert)
+    private SystemEventSearchService systemEventSearchService;
+
+    private final JsonMapper mapper = JsonMapper.builder()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .build();
+
+    public SystemEventController(BatchInsert<SystemEvent> batchInsert,
+                                 SystemEventSearchService systemEventSearchService)
     {
         this.batchInsert = batchInsert;
         if (this.batchInsert == null)
         {
             throw new IllegalArgumentException("BatchInsert cannot be null!");
         }
-        this.mapper = new ObjectMapper();
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.systemEventSearchService = systemEventSearchService;
+        if (this.systemEventSearchService == null)
+        {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
+        }
     }
 
     @RequestMapping(method = RequestMethod.PUT,
@@ -103,5 +122,45 @@ public class SystemEventController
                 HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = {"/systemevents/last24hours/zip"}, produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity<StreamingResponseBody> systemEventZip() {
+        // Get last 24 hours system events
+        SystemEventSearchFilter systemEventSearchFilter = new SystemEventSearchFilterImpl();
+        systemEventSearchFilter.setStartTime(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
+        systemEventSearchFilter.setEndTime(System.currentTimeMillis());
+        try {
+            AtomicInteger counter = new AtomicInteger(1);
+            Map<String, String> systemEvents = this.systemEventSearchService
+                .findByFilter(systemEventSearchFilter, -1, -1, null, null).getResultList()
+                .stream().map(systemEvent -> ((SystemEventRecord)systemEvent).getPayload())
+                .collect(Collectors.toMap(systemEvent -> "systemEvent-"+counter.incrementAndGet()+".json"
+                    , Function.identity()));
+
+            StreamingResponseBody body = outputStream ->
+                DirectoryZipUtil.zipFileContents(systemEvents, outputStream);
+
+            return ResponseEntity
+                .ok()
+                .header("Content-Disposition", "attachment;filename=systemEvents-"
+                    + System.currentTimeMillis() + ".zip")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(body);
+        } catch (Exception e) {
+            logger.error("A general error has occurred when trying to download the zipped system events from [{}], to [{}]!"
+                , systemEventSearchFilter.getStartTime(), systemEventSearchFilter.getEndTime(), e);
+            return ResponseEntity
+                .internalServerError()
+                .header("Content-Disposition", "attachment;filename=error.txt")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(outputStream -> {
+                    String errorMsg = String.format("A general error has occurred when trying to download the zipped system events from [%s], to [%s]!"
+                        , systemEventSearchFilter.getStartTime(), systemEventSearchFilter.getEndTime());
+                    outputStream.write(errorMsg.getBytes());
+                    outputStream.close();
+                });
+        }
     }
 }

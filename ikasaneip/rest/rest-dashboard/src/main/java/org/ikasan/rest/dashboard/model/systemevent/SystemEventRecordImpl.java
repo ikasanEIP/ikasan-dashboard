@@ -1,8 +1,5 @@
-package org.ikasan.systemevent.model;
+package org.ikasan.rest.dashboard.model.systemevent;
 
-import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.entity.EntityFields;
-import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventRecord;
 
 import java.util.Date;
@@ -11,34 +8,16 @@ import java.util.StringJoiner;
 /**
  * Created by Ikasan Development Team.
  */
-public class SolrSystemEventRecordImpl implements SystemEventRecord
+public class SystemEventRecordImpl implements SystemEventRecord
 {
-
-    @Field(EntityFields.ID)
     private String id;
-
-    @Field(EntityFields.TYPE)
     private String type;
-
-    @Field(EntityFields.MODULE_NAME)
     private String moduleName;
-
-    @Field(EntityFields.ACTOR)
     private String actor;
-
-    @Field(EntityFields.PAYLOAD_CONTENT)
     private String payload;
-
-    @Field(EntityFields.SYSTEM_EVENT_ACTION)
     private String action;
-
-    @Field(EntityFields.SYSTEM_EVENT_SUBJECT)
     private String subject;
-
-    @Field(EntityFields.CREATED_DATE_TIME)
     private long timestampLong;
-
-    @Field(EntityFields.EXPIRY)
     private long expiryLong;
 
 
@@ -151,7 +130,7 @@ public class SolrSystemEventRecordImpl implements SystemEventRecord
     @Override
     public String toString()
     {
-        return new StringJoiner(", ", SolrSystemEventRecordImpl.class.getSimpleName() + "[", "]").add("id='" + id + "'").add(
+        return new StringJoiner(", ", SystemEventRecordImpl.class.getSimpleName() + "[", "]").add("id='" + id + "'").add(
             "moduleName='" + moduleName + "'").add("actor='" + actor + "'").add("action='" + action + "'")
                                                                                        .add("subject='" + subject + "'")
                                                                                        .add("timestamp=" + timestampLong)

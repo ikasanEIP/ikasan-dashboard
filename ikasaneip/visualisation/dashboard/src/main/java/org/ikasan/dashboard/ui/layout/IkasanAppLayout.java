@@ -62,6 +62,7 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem dashboardMenuItem;
     private SideNavItem searchMenuItem;
     private SideNavItem schedulerMenuItem;
+    private SideNavItem supportMenuItem;
     private SideNavItem systemEventMenuItem;
     private SideNavItem userManagementMenuItem;
     private SideNavItem groupManagementMenuItem;
@@ -197,6 +198,12 @@ public class IkasanAppLayout extends AppLayout {
         this.adminMenuItem = new SideNavItem(getTranslation("menu-item.administration", getLocale()));
         this.adminMenuItem.setPrefixComponent(VaadinIcon.TOOLS.create());
         this.adminMenuItem.setId("adminMenuItem");
+
+        this.supportMenuItem = new SideNavItem(getTranslation("menu-item.support", getLocale(), null)
+            , AdministrationSupportView.class, VaadinIcon.WRENCH.create());
+        this.supportMenuItem.setId("supportMenuItem");
+        adminMenuItem.addItem(this.supportMenuItem);
+
         this.systemEventMenuItem = new SideNavItem(getTranslation("menu-item.administration-events", getLocale(), null)
             , AdministrationSearchView.class, VaadinIcon.CROSSHAIRS.create());
         this.systemEventMenuItem.setId("systemEventMenuItem");
@@ -268,6 +275,10 @@ public class IkasanAppLayout extends AppLayout {
                 , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
                 , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN)
                 && isIkasanEnterpriseSchedulerInstance);
+
+            this.supportMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
+                SecurityConstants.SYSTEM_EVENT_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
+                , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN));
 
             this.systemEventMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
                 SecurityConstants.SYSTEM_EVENT_WRITE));
