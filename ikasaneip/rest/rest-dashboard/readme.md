@@ -1557,7 +1557,7 @@ Downloads all log files from the Ikasan Dashboard instance as a compressed zip f
 | Response Type | application/octet-stream |
 | Response | A zip file containing all dashboard log files |
 
-**Description:** This endpoint creates a zip archive of all log files from the dashboard's `logs` directory, including any subdirectories. The zip file is streamed directly to the client for download.
+**Description:** This endpoint creates a zip archive of all log files from the dashboard's `logs` directory, including any subdirectories. The zip file is streamed directly to the client for download. The log directory location is determined by the `dashboard.log.dir` configuration property. If not specified, it defaults to `{user.dir}/logs`.
 
 **Response Headers:**
 - `Content-Type`: application/octet-stream
@@ -1566,6 +1566,14 @@ Downloads all log files from the Ikasan Dashboard instance as a compressed zip f
 **Error Responses:**
 - `500 Internal Server Error`: If the logs directory does not exist or cannot be accessed
 - `401 Unauthorized`: If the authorization token is invalid or missing
+
+**Configuration:**
+The dashboard log directory can be configured using the `dashboard.log.dir` property:
+```properties
+dashboard.log.dir=/path/to/dashboard/logs
+```
+
+If not configured, the service will default to using the `logs` directory under the current working directory (`{user.dir}/logs`).
 
 ### Module Logs Download Service
 Downloads all log files from a specific Ikasan Module instance as a compressed zip file.
