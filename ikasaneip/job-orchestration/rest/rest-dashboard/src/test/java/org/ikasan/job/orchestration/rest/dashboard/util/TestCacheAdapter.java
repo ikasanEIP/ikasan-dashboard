@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.rest.dashboard.util;
 
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
+import org.ikasan.spec.flow.FlowState;
 
 import java.util.HashMap;
 
@@ -18,5 +19,10 @@ public class TestCacheAdapter implements FlowStateCacheAdapter
     public String get(String key)
     {
         return this.hashMap.get(key);
+    }
+
+    @Override
+    public FlowState get(String moduleName, String flowName) {
+        return null;
     }
 }
