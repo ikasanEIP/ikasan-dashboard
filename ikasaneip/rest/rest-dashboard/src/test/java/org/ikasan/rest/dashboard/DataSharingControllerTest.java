@@ -1,7 +1,9 @@
 package org.ikasan.rest.dashboard;
 
+import org.ikasan.rest.dashboard.util.TestCacheAdapter;
 import org.ikasan.rest.dashboard.util.TestESBSearchService;
 import org.ikasan.rest.dashboard.util.TestIkasanESBDocument;
+import org.ikasan.rest.dashboard.util.TestModuleMetaDataService;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,11 +51,21 @@ public class DataSharingControllerTest extends AbstractRestMvcTest {
     @Autowired
     TestESBSearchService esbSearchService;
 
+    @Autowired
+    TestModuleMetaDataService moduleMetaDataService;
+
+    @Autowired
+    TestCacheAdapter flowStateCacheAdapter;
+
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         // Reset the search service before each test
         esbSearchService.reset();
+        // Reset module metadata service before each test
+        moduleMetaDataService.clear();
+        // Reset flow state cache before each test
+        flowStateCacheAdapter.clear();
     }
 
     // ========== WIRETAP TESTS ==========
@@ -753,5 +765,330 @@ public class DataSharingControllerTest extends AbstractRestMvcTest {
         doc.setComponentName("component-" + id);
         doc.setEventId("event-" + id);
         return doc;
+    }
+
+    // ========== FLOW STATES TESTS ==========
+
+    @Test
+    public void test_flowStates_with_all_modules() throws Exception {
+        // Setup test data - 2 modules with flows
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("module1");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow2"));
+
+        TestModuleMetaDataService.TestModuleMetaData module2 = new TestModuleMetaDataService.TestModuleMetaData("module2");
+        module2.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow3"));
+
+        moduleMetaDataService.addModule(module1);
+        moduleMetaDataService.addModule(module2);
+
+        // Setup flow states in cache
+        flowStateCacheAdapter.putFlowState("module1", "flow1", "running");
+        flowStateCacheAdapter.putFlowState("module1", "flow2", "stopped");
+        flowStateCacheAdapter.putFlowState("module2", "flow3", "stoppedInError");
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Verify all flow states are returned
+        assertThat(content, containsString("module1"));
+        assertThat(content, containsString("flow1"));
+        assertThat(content, containsString("running"));
+        assertThat(content, containsString("flow2"));
+        assertThat(content, containsString("stopped"));
+        assertThat(content, containsString("module2"));
+        assertThat(content, containsString("flow3"));
+        assertThat(content, containsString("stoppedInError"));
+    }
+
+    @Test
+    public void test_flowStates_with_specific_module_names() throws Exception {
+        // Setup test data - 3 modules
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("module1");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+
+        TestModuleMetaDataService.TestModuleMetaData module2 = new TestModuleMetaDataService.TestModuleMetaData("module2");
+        module2.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow2"));
+
+        TestModuleMetaDataService.TestModuleMetaData module3 = new TestModuleMetaDataService.TestModuleMetaData("module3");
+        module3.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow3"));
+
+        moduleMetaDataService.addModule(module1);
+        moduleMetaDataService.addModule(module2);
+        moduleMetaDataService.addModule(module3);
+
+        // Setup flow states
+        flowStateCacheAdapter.putFlowState("module1", "flow1", "running");
+        flowStateCacheAdapter.putFlowState("module2", "flow2", "stopped");
+        flowStateCacheAdapter.putFlowState("module3", "flow3", "running");
+
+        // Query only module1 and module2
+        String uri = "/rest/data-sharing/flowstates?moduleNames=module1&moduleNames=module2";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Verify only requested modules are returned
+        assertThat(content, containsString("module1"));
+        assertThat(content, containsString("flow1"));
+        assertThat(content, containsString("module2"));
+        assertThat(content, containsString("flow2"));
+
+        // Verify module3 is NOT returned
+        assertTrue(!content.contains("module3"));
+        assertTrue(!content.contains("flow3"));
+    }
+
+    @Test
+    public void test_flowStates_with_single_module_name() throws Exception {
+        // Setup test data - 2 modules
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("singleModule");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow2"));
+
+        TestModuleMetaDataService.TestModuleMetaData module2 = new TestModuleMetaDataService.TestModuleMetaData("otherModule");
+        module2.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow3"));
+
+        moduleMetaDataService.addModule(module1);
+        moduleMetaDataService.addModule(module2);
+
+        flowStateCacheAdapter.putFlowState("singleModule", "flow1", "running");
+        flowStateCacheAdapter.putFlowState("singleModule", "flow2", "running");
+        flowStateCacheAdapter.putFlowState("otherModule", "flow3", "stopped");
+
+        String uri = "/rest/data-sharing/flowstates?moduleNames=singleModule";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        assertThat(content, containsString("singleModule"));
+        assertThat(content, containsString("flow1"));
+        assertThat(content, containsString("flow2"));
+        assertTrue(!content.contains("otherModule"));
+    }
+
+    @Test
+    public void test_flowStates_with_no_modules() throws Exception {
+        // No modules added to service
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Should return empty array
+        assertEquals("[]", content);
+    }
+
+    @Test
+    public void test_flowStates_with_module_having_no_flows() throws Exception {
+        // Setup module with no flows
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("emptyModule");
+        moduleMetaDataService.addModule(module1);
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Should return empty array since no flows
+        assertEquals("[]", content);
+    }
+
+    @Test
+    public void test_flowStates_with_multiple_flows_per_module() throws Exception {
+        // Setup module with multiple flows
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("multiFlowModule");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow2"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow3"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow4"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow5"));
+
+        moduleMetaDataService.addModule(module1);
+
+        // Setup all flow states
+        flowStateCacheAdapter.putFlowState("multiFlowModule", "flow1", "running");
+        flowStateCacheAdapter.putFlowState("multiFlowModule", "flow2", "stopped");
+        flowStateCacheAdapter.putFlowState("multiFlowModule", "flow3", "recovering");
+        flowStateCacheAdapter.putFlowState("multiFlowModule", "flow4", "stoppedInError");
+        flowStateCacheAdapter.putFlowState("multiFlowModule", "flow5", "paused");
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Verify all flows and states are returned
+        assertThat(content, containsString("flow1"));
+        assertThat(content, containsString("running"));
+        assertThat(content, containsString("flow2"));
+        assertThat(content, containsString("stopped"));
+        assertThat(content, containsString("flow3"));
+        assertThat(content, containsString("recovering"));
+        assertThat(content, containsString("flow4"));
+        assertThat(content, containsString("stoppedInError"));
+        assertThat(content, containsString("flow5"));
+        assertThat(content, containsString("paused"));
+    }
+
+    @Test
+    public void test_flowStates_with_null_flow_state_in_cache() throws Exception {
+        // Setup module with flow
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("module1");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+
+        moduleMetaDataService.addModule(module1);
+
+        // Don't add flow state to cache - it will return null
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Should contain null in the array
+        assertThat(content, containsString("null"));
+    }
+
+    @Test
+    public void test_flowStates_with_empty_module_names_parameter() throws Exception {
+        // Setup test data
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("module1");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+
+        moduleMetaDataService.addModule(module1);
+        flowStateCacheAdapter.putFlowState("module1", "flow1", "running");
+
+        // Pass empty moduleNames parameter - should return all modules
+        String uri = "/rest/data-sharing/flowstates?moduleNames=";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Should return all modules when moduleNames is empty
+        assertThat(content, containsString("module1"));
+        assertThat(content, containsString("flow1"));
+    }
+
+    @Test
+    public void test_flowStates_with_non_existent_module_name() throws Exception {
+        // Setup test data
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("module1");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("flow1"));
+
+        moduleMetaDataService.addModule(module1);
+        flowStateCacheAdapter.putFlowState("module1", "flow1", "running");
+
+        // Query non-existent module
+        String uri = "/rest/data-sharing/flowstates?moduleNames=nonExistentModule";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Should return empty array
+        assertEquals("[]", content);
+    }
+
+    @Test
+    public void test_flowStates_with_multiple_modules_and_mixed_states() throws Exception {
+        // Setup complex scenario with multiple modules and various states
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("orderModule");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("orderInbound"));
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("orderProcessing"));
+
+        TestModuleMetaDataService.TestModuleMetaData module2 = new TestModuleMetaDataService.TestModuleMetaData("inventoryModule");
+        module2.addFlow(new TestModuleMetaDataService.TestFlowMetaData("inventorySync"));
+
+        TestModuleMetaDataService.TestModuleMetaData module3 = new TestModuleMetaDataService.TestModuleMetaData("notificationModule");
+        module3.addFlow(new TestModuleMetaDataService.TestFlowMetaData("emailNotification"));
+        module3.addFlow(new TestModuleMetaDataService.TestFlowMetaData("smsNotification"));
+
+        moduleMetaDataService.addModule(module1);
+        moduleMetaDataService.addModule(module2);
+        moduleMetaDataService.addModule(module3);
+
+        flowStateCacheAdapter.putFlowState("orderModule", "orderInbound", "running");
+        flowStateCacheAdapter.putFlowState("orderModule", "orderProcessing", "stopped");
+        flowStateCacheAdapter.putFlowState("inventoryModule", "inventorySync", "stoppedInError");
+        flowStateCacheAdapter.putFlowState("notificationModule", "emailNotification", "running");
+        flowStateCacheAdapter.putFlowState("notificationModule", "smsNotification", "paused");
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Verify all modules and flows are present
+        assertThat(content, containsString("orderModule"));
+        assertThat(content, containsString("orderInbound"));
+        assertThat(content, containsString("orderProcessing"));
+        assertThat(content, containsString("inventoryModule"));
+        assertThat(content, containsString("inventorySync"));
+        assertThat(content, containsString("notificationModule"));
+        assertThat(content, containsString("emailNotification"));
+        assertThat(content, containsString("smsNotification"));
+
+        // Verify states
+        assertThat(content, containsString("running"));
+        assertThat(content, containsString("stopped"));
+        assertThat(content, containsString("stoppedInError"));
+        assertThat(content, containsString("paused"));
+    }
+
+    @Test
+    public void test_flowStates_verify_json_structure() throws Exception {
+        // Setup simple test case
+        TestModuleMetaDataService.TestModuleMetaData module1 = new TestModuleMetaDataService.TestModuleMetaData("testModule");
+        module1.addFlow(new TestModuleMetaDataService.TestFlowMetaData("testFlow"));
+
+        moduleMetaDataService.addModule(module1);
+        flowStateCacheAdapter.putFlowState("testModule", "testFlow", "running");
+
+        String uri = "/rest/data-sharing/flowstates";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        // Verify JSON structure has expected fields
+        assertThat(content, containsString("moduleName"));
+        assertThat(content, containsString("flowName"));
+        assertThat(content, containsString("state"));
+        assertTrue(content.startsWith("["));
+        assertTrue(content.endsWith("]"));
     }
 }

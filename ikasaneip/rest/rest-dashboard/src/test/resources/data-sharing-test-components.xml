@@ -42,4 +42,8 @@
 
     <bean id="esbSearchService" class="org.ikasan.rest.dashboard.util.TestESBSearchService" />
 
+    <bean id="moduleMetaDataService" class="org.ikasan.rest.dashboard.util.TestModuleMetaDataService" />
+
+<!--    <bean id="flowStateCacheAdapter" class="org.ikasan.rest.dashboard.util.TestCacheAdapter" />-->
+
 </beans>

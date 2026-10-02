@@ -184,7 +184,8 @@ public class IkasanRestAutoConfiguration
 
     @Bean
     public DataSharingController dataSharingController() {
-        return new DataSharingController(this.esbSearchService);
+        return new DataSharingController(this.esbSearchService
+            , this.moduleMetadataService, this.cacheAdapter);
     }
 
     @Bean

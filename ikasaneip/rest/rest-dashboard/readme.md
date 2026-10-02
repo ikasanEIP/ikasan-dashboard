@@ -20,6 +20,7 @@
   - [Query Replay Events](#query-replay-events)
   - [Query Module Metadata](#query-module-metadata)
   - [Query Configuration Metadata](#query-configuration-metadata)
+  - [Query Flow States](#query-flow-states)
 
 ## Overview
 
@@ -1875,6 +1876,59 @@ Query service for retrieving configuration metadata by configuration IDs.
 GET /rest/data-sharing/configuration?configurationIdentifiers=FLOW_CONFIG_1,CONSUMER_CONFIG_2&offset=0&limit=50
 Authorization: Bearer eyJhbGc...
 ```
+
+### Query Flow States
+
+Query service for retrieving current flow states for modules and their flows.
+
+**Endpoint:** `GET /rest/data-sharing/flowstates`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `moduleNames` | List&lt;String&gt; | No | - | Filter by module names. If not specified or empty, returns states for all modules |
+
+**Note:** This endpoint does not support pagination as it returns the current runtime state snapshot. Flow states are cached in memory and retrieved in real-time.
+
+**Response:** JSON array of [FlowState](../../spec/flow/src/main/java/org/ikasan/spec/flow/FlowState.java) objects, each containing:
+- `moduleName`: The name of the module
+- `flowName`: The name of the flow
+- `state`: The current state of the flow (e.g., `running`, `stopped`, `stoppedInError`, `recovering`, `paused`)
+
+**Example Request:**
+```
+GET /rest/data-sharing/flowstates?moduleNames=OrderModule,InventoryModule
+Authorization: Bearer eyJhbGc...
+```
+
+**Example Response:**
+```json
+[
+  {
+    "moduleName": "OrderModule",
+    "flowName": "orderInbound",
+    "state": "running"
+  },
+  {
+    "moduleName": "OrderModule",
+    "flowName": "orderProcessing",
+    "state": "stopped"
+  },
+  {
+    "moduleName": "InventoryModule",
+    "flowName": "inventorySync",
+    "state": "stoppedInError"
+  }
+]
+```
+
+**Possible Flow States:**
+- `running` - Flow is actively processing events
+- `stopped` - Flow is stopped (normal state)
+- `stoppedInError` - Flow stopped due to an error condition
+- `recovering` - Flow is in recovery mode
+- `paused` - Flow is temporarily paused
 
 ---
 
