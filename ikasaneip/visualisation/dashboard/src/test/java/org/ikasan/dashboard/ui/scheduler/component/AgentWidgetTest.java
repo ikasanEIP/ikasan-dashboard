@@ -185,7 +185,7 @@ public class AgentWidgetTest extends AbstractSchedulerViewTest {
         // Verify grid configuration
         Assert.assertTrue(grid.isVisible());
         Assert.assertEquals("100%", grid.getWidth());
-        Assert.assertEquals("100.0%", grid.getHeight());
+        Assert.assertEquals("40.0vh", grid.getHeight());
 
         // Verify grid has columns configured
         Assert.assertEquals(2, grid.getColumns().size());

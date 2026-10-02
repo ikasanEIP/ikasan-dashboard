@@ -42,4 +42,6 @@
 
     <bean id="esbSearchService" class="org.ikasan.rest.dashboard.util.TestESBSearchService" />
 
+    <bean primary="true" id="testDataSharingModuleMetaDataService" class="org.ikasan.rest.dashboard.util.TestDataSharingModuleMetaDataService" />
+
 </beans>

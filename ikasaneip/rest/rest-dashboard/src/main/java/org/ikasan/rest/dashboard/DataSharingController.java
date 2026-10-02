@@ -42,7 +42,12 @@ package org.ikasan.rest.dashboard;
 
 import org.ikasan.rest.dashboard.component.converter.*;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
+import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.entity.EntityDao;
+import org.ikasan.spec.flow.FlowState;
+import org.ikasan.spec.metadata.model.FlowMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.search.service.ESBSearchService;
@@ -77,7 +82,12 @@ public class DataSharingController {
 
     private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
-    private final IkasanESBDocumentToWiretapEventConverter wiretapEventConverter = new IkasanESBDocumentToWiretapEventConverter();
+    private FlowStateCacheAdapter flowStateCacheAdapter;
+
+    private ModuleMetaDataService moduleMetaDataService;
+
+    private final IkasanESBDocumentToWiretapEventConverter wiretapEventConverter
+        = new IkasanESBDocumentToWiretapEventConverter();
     private final IkasanESBDocumentToErrorOccurenceConverter esbDocumentToErrorOccurenceConverter
         = new IkasanESBDocumentToErrorOccurenceConverter();
     private final IkasanESBDocumentToExclusionEventConverter esbDocumentToExclusionEventConverter
@@ -90,14 +100,29 @@ public class DataSharingController {
         = new IkasanESBDocumentToReplayEventConverter();
 
     /**
-     * Constructor
+     * Constructs a new instance of the DataSharingController.
      *
-     * @param esbSearchService the ESB search service for querying entity data
+     * @param esbSearchService the ESBSearchService responsible for searching ESB documents.
+     *                         Cannot be null; an {@link IllegalArgumentException} will be thrown if null.
+     * @param moduleMetaDataService the service used to retrieve module metadata.
+     *                              Cannot be null; an {@link IllegalArgumentException} will be thrown if null.
+     * @param flowStateCacheAdapter the adapter for caching flow states.
+     *                              Cannot be null; an {@link IllegalArgumentException} will be thrown if null.
      */
-    public DataSharingController(@Qualifier("esbSearchService") ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService) {
+    public DataSharingController(@Qualifier("esbSearchService") ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
+                                 ModuleMetaDataService moduleMetaDataService,
+                                 FlowStateCacheAdapter flowStateCacheAdapter) {
         this.esbSearchService = esbSearchService;
         if (this.esbSearchService == null) {
             throw new IllegalArgumentException("esbSearchService cannot be null!");
+        }
+        this.moduleMetaDataService = moduleMetaDataService;
+        if (this.moduleMetaDataService == null) {
+            throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
+        this.flowStateCacheAdapter = flowStateCacheAdapter;
+        if (this.flowStateCacheAdapter == null) {
+            throw new IllegalArgumentException("cacheAdapter cannot be null!");
         }
     }
 
@@ -620,6 +645,87 @@ public class DataSharingController {
             return new ResponseEntity(
                     new ErrorDto("An error occurred counting replay data: " + e.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/flowstates")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity<List<FlowState>> flowStates(
+        @RequestParam(value = "moduleNames", required = false) List<String> moduleNames ){
+
+        try {
+            List<ModuleMetaData> moduleMetaData;
+
+            if(moduleNames != null && !moduleNames.isEmpty()) {
+                moduleMetaData = this.moduleMetaDataService.find(moduleNames).getResultList();
+            }
+            else {
+                moduleMetaData = this.moduleMetaDataService.findAll();
+            }
+
+            List<FlowState> flowStates = moduleMetaData.stream()
+                .map(module -> {
+                    List<FlowState> states = new ArrayList<>();
+                    module.getFlows().forEach(flow
+                        -> states.add(flowStateCacheAdapter.get(module.getName(), flow.getName())));
+
+                    return states;
+                })
+                .flatMap(states -> states.stream())
+                .map(state -> state == null ? null : (FlowState)new InnerFlowState(state.getModuleName()
+                    , state.getFlowName(), state.getState()))
+                .toList();
+
+
+            return new ResponseEntity<>(flowStates, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error querying flow states", e);
+            return new ResponseEntity(
+                new ErrorDto("An error occurred querying flow states: " + e.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private class InnerFlowState implements FlowState {
+
+        private String moduleName;
+        private String flowName;
+        private String state;
+
+        public InnerFlowState(String moduleName, String flowName, String state) {
+            this.moduleName = moduleName;
+            this.flowName = flowName;
+            this.state = state;
+        }
+
+        @Override
+        public String getModuleName() {
+            return moduleName;
+        }
+
+        @Override
+        public void setModuleName(String moduleName) {
+            this.moduleName = moduleName;
+        }
+
+        @Override
+        public String getFlowName() {
+            return flowName;
+        }
+
+        @Override
+        public void setFlowName(String flowName) {
+            this.flowName = flowName;
+        }
+
+        @Override
+        public String getState() {
+            return state;
+        }
+
+        @Override
+        public void setState(String state) {
+            this.state = state;
         }
     }
 }
