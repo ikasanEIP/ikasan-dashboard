@@ -122,7 +122,7 @@ public class EsbServiceAutoConfiguration {
         return new ReplayServiceImpl(replayDao);
     }
 
-    @Bean
+    @Bean("systemEventSearchService")
     public SystemEventSearchService systemEventSearchService(@Qualifier("systemEventEntityDao") SystemEventSearchDao systemEventSearchDao) {
         return new SystemEventSearchServiceImpl(systemEventSearchDao);
     }

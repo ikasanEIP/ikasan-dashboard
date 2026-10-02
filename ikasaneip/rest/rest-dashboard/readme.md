@@ -1543,10 +1543,167 @@ Aggregation service for module meta data produced by the Ikasan Topology service
 </p>
 </details>
 
+## Log File Download Services
+Diagnostic services for downloading log files from the Dashboard, Modules, and Solr instances. These services provide convenient access to log files for troubleshooting and diagnostics.
+
+### Dashboard Logs Download Service
+Downloads all log files from the Ikasan Dashboard instance as a compressed zip file.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | GET |
+| Service Context | {dashboard-root-context}/rest/logs/dashboard/zip |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Response Type | application/octet-stream |
+| Response | A zip file containing all dashboard log files |
+
+**Description:** This endpoint creates a zip archive of all log files from the dashboard's `logs` directory, including any subdirectories. The zip file is streamed directly to the client for download.
+
+**Response Headers:**
+- `Content-Type`: application/octet-stream
+- `Content-Disposition`: attachment;filename=dashboardLogs{timestamp}.zip
+
+**Error Responses:**
+- `500 Internal Server Error`: If the logs directory does not exist or cannot be accessed
+- `401 Unauthorized`: If the authorization token is invalid or missing
+
+### Module Logs Download Service
+Downloads all log files from a specific Ikasan Module instance as a compressed zip file.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | GET |
+| Service Context | {dashboard-root-context}/rest/logs/module/zip?moduleName={moduleName} |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Request Parameter | moduleName (required) - The name of the module |
+| Response Type | application/octet-stream |
+| Response | A zip file containing all module log files |
+
+**Description:** This endpoint retrieves the module metadata from the dashboard's database, connects to the module's REST service endpoint, downloads all available log files, and packages them into a zip archive. This allows centralized log collection from distributed module instances.
+
+**Request Example:**
+```
+GET /rest/logs/module/zip?moduleName=MyIntegrationModule
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
+```
+
+**Response Headers:**
+- `Content-Type`: application/octet-stream
+- `Content-Disposition`: attachment;filename=dashboardLogs{timestamp}.zip
+
+**Error Responses:**
+- `500 Internal Server Error`: If the module metadata does not exist or the module logs cannot be retrieved
+- `400 Bad Request`: If the moduleName parameter is missing
+- `401 Unauthorized`: If the authorization token is invalid or missing
+
+### Solr Logs Download Service
+Downloads all log files from the Solr instance as a compressed zip file.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | GET |
+| Service Context | {dashboard-root-context}/rest/logs/solr/zip |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Response Type | application/octet-stream |
+| Response | A zip file containing all Solr log files |
+
+**Description:** This endpoint creates a zip archive of all log files from the Solr server's logs directory. The location is determined by the `solr.install.dir` configuration property. If not specified, it defaults to `{user.dir}/solr/server/logs`.
+
+**Response Headers:**
+- `Content-Type`: application/octet-stream
+- `Content-Disposition`: attachment;filename=solrLogs-{timestamp}.zip
+
+**Error Responses:**
+- `500 Internal Server Error`: If the Solr logs directory does not exist or cannot be accessed
+- `401 Unauthorized`: If the authorization token is invalid or missing
+
+**Configuration:**
+The Solr installation directory can be configured using the `solr.install.dir` property:
+```properties
+solr.install.dir=/path/to/solr
+```
+
+## System Events Download Service
+Diagnostic service for downloading system events from the Dashboard as a compressed zip file containing JSON files. This service provides convenient access to recent system events for troubleshooting, auditing, and diagnostics.
+
+### System Events Last 24 Hours Download Service
+Downloads all system events from the last 24 hours as a compressed zip file containing individual JSON files for each event.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | GET |
+| Service Context | {dashboard-root-context}/rest/systemevents/last24hours/zip |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Response Type | application/octet-stream |
+| Response | A zip file containing system event JSON files |
+
+**Description:** This endpoint queries the system event search service for all events that occurred within the last 24 hours (from current time - 24 hours to current time). Each system event is serialized as a formatted JSON file and packaged into a zip archive. The JSON files are named sequentially as `systemEvent1.json`, `systemEvent2.json`, etc. This provides a convenient way to export system events for offline analysis, auditing, or archiving.
+
+**System Event Data:**
+Each JSON file in the zip contains a [SystemEvent](../../spec/service/system-event/src/main/java/org/ikasan/spec/systemevent/SystemEvent.java) object with the following fields:
+- `id`: Unique identifier for the event
+- `moduleName`: Name of the module that generated the event
+- `action`: The action that was performed (e.g., START, STOP, PAUSE, RESUME)
+- `actor`: The user or system that triggered the action
+- `subject`: Description or details of the event
+- `timestamp`: Date/time when the event occurred
+- `expiry`: Date/time when the event will expire
+
+**Request Example:**
+```
+GET /rest/systemevents/last24hours/zip
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
+```
+
+**Response Headers:**
+- `Content-Type`: application/octet-stream
+- `Content-Disposition`: attachment;filename=systemEvents-{timestamp}.zip
+
+**Sample System Event JSON:**
+<details>
+    <summary>Click to view sample system event JSON content</summary>
+<p>
+
+```json
+{
+  "id": 12345,
+  "moduleName": "MyIntegrationModule",
+  "action": "START",
+  "actor": "admin@example.com",
+  "subject": "Flow 'CustomerOrderFlow' started successfully",
+  "timestamp": 1234567890000,
+  "expiry": 1237246290000
+}
+```
+
+</p>
+</details>
+
+**Error Responses:**
+- `500 Internal Server Error`: If the system event search service encounters an error or if no events are found (empty result set)
+  - When an error occurs, the response will include:
+    - `Content-Disposition`: attachment;filename=error.txt
+    - `Content-Type`: application/octet-stream
+    - Body: Error message describing the failure
+- `401 Unauthorized`: If the authorization token is invalid or missing
+
+**Use Cases:**
+- **Audit Trail**: Export system events for compliance and audit purposes
+- **Troubleshooting**: Download recent events to analyze system behavior during incidents
+- **Archiving**: Periodic export of events for long-term storage
+- **Analysis**: Offline processing and analysis of system activity patterns
+- **Reporting**: Generate reports from exported event data
+
+**Notes:**
+- The service uses pretty-printed JSON for better readability
+- Events are queried using a 24-hour sliding window from the current time
+- The zip file is streamed directly to the client for memory efficiency
+- Empty or no results will return a 500 error with an error.txt file
+
 ## Configuration Service
 Aggregation service for module meta data produced by the Ikasan Topology service.
 
-| Parameter | Value  | 
+| Parameter | Value  |
 |--- | --- |
 | Request Method | PUT |
 | Service Context | {dashboard-root-context}/rest/module/configuration |

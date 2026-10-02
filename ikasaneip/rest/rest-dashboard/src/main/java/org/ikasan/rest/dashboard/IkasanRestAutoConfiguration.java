@@ -51,6 +51,7 @@ import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.security.service.UserService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,8 +61,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.context.SecurityContextRepository;
-
-import javax.annotation.Resource;
 
 @Configuration
 public class IkasanRestAutoConfiguration
@@ -107,6 +106,10 @@ public class IkasanRestAutoConfiguration
     @Autowired
     @Qualifier("flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
+
+    @Autowired
+    @Qualifier("systemEventSearchService")
+    private SystemEventSearchService systemEventSearchService;
 
 
     @Autowired
@@ -163,7 +166,7 @@ public class IkasanRestAutoConfiguration
     @Bean
     public SystemEventController systemEventController()
     {
-        return new SystemEventController(this.systemEventBatchInsert);
+        return new SystemEventController(this.systemEventBatchInsert, this.systemEventSearchService);
     }
 
     @Bean
@@ -205,6 +208,11 @@ public class IkasanRestAutoConfiguration
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public BigQueueModuleController bigQueueModuleController() {
         return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
+    }
+
+    @Bean
+    public DownloadLogFileController downloadLogFileController() {
+        return new DownloadLogFileController();
     }
 
     @Bean

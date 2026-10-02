@@ -105,7 +105,8 @@ import org.springframework.test.context.DynamicPropertySource;
     ContextTemplateDraw2dAdapterTest.class,
     ContextTemplateToDagConverterTest.class,
     DurationFormatUtilsTest.class,
-    LogStreamerTest.class
+    LogStreamerTest.class,
+    AdministrationSupportViewTest.class
 })
 public class SolrIntegrationTestSuite {
 
