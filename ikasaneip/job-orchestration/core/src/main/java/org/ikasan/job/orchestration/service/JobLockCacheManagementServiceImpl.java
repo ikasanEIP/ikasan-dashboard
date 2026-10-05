@@ -22,7 +22,7 @@ public class JobLockCacheManagementServiceImpl implements JobLockCacheManagement
                 if (ContextMachineCache.instance().containsInstanceIdentifier(queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())) {
                     try {
                         JobLockCacheImpl.instance().lock(queuedEvent.getSchedulerJobInitiationEvent()
-                            .getInternalEventDrivenJob().getIdentifier(), contextName, environment);
+                            .getInternalEventDrivenJob().getIdentifier(), queuedEvent.getContextName(), environment);
                         ContextMachineCache.instance().getByContextInstanceId
                                 (queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())
                             .publishJobInitiationEvent(queuedEvent.getSchedulerJobInitiationEvent());
