@@ -2958,4 +2958,127 @@ public class JobLogicMachineTest extends AbstractTest {
         internalEventDrivenJobInstance.setContextParameters(null);
         return internalEventDrivenJobInstance;
     }
+
+    /**
+     * Test that SKIPPED status is now treated as satisfied in AND logic grouping.
+     * This tests the fix for IKASAN-2796 where SKIPPED status was added to the assessAnd() method.
+     */
+    @Test
+    public void test_simple_context_and_dependency_with_skipped_job() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstanceWithNullContextParameters());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", internalEventDrivenJobInstanceWithNullContextParameters());
+
+        // Set first job to SKIPPED status
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Event should be raised because SKIPPED is now treated as satisfied
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName3", events.get(0).getAgentName());
+        Assert.assertEquals("jobName3", events.get(0).getJobName());
+    }
+
+    /**
+     * Test that job locks are only taken for jobs in WAITING status.
+     * This tests the fix for IKASAN-2796 where we only lock WAITING jobs.
+     */
+    @Test
+    public void test_job_lock_only_taken_for_waiting_jobs() throws IOException {
+        // Setup a job lock with the actual jobs from the context
+        JobLockCacheImpl.instance().reset("test-environment");
+
+        org.ikasan.job.orchestration.builder.context.JobLockBuilder jobLockBuilder
+            = new org.ikasan.job.orchestration.builder.context.JobLockBuilder();
+        jobLockBuilder.withLockName("TEST-LOCK");
+        jobLockBuilder.withLockCount(1);
+
+        org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl participant
+            = new org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl();
+        participant.setJobName("jobName2");
+        participant.setAgentName("agentName2");
+        participant.setIdentifier("agentName2-jobName2");
+        participant.setContextName("Context1");
+        participant.setLockCount(1);
+        jobLockBuilder.withJob("Context1", participant);
+
+        JobLockCacheImpl.instance().addLocks(jobLockBuilder.build(), "test-environment");
+
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.setEnvironmentGroup("test-environment");
+
+        // Set up the internal event driven job
+        InternalEventDrivenJobInstance internalEventDrivenJobInstance
+            = internalEventDrivenJobInstanceWithNullContextParameters();
+        internalEventDrivenJobInstance.setJobName("jobName2");
+        internalEventDrivenJobInstance.setAgentName("agentName2");
+        internalEventDrivenJobInstance.setIdentifier("agentName2-jobName2");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstance);
+
+        // First, trigger the event when job is in WAITING status
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.WAITING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Event should be raised and lock should be taken
+        Assert.assertEquals(1, events.size());
+        Assert.assertTrue(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "test-environment"));
+
+        // Release the lock for next test
+        JobLockCacheImpl.instance().release("agentName2-jobName2", "Context1", "test-environment");
+
+        // Now set the job to a different status (e.g., RUNNING) and reset the test
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.RUNNING);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setInitiationEventRaised(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Event should NOT be raised when job is RUNNING (not WAITING)
+        Assert.assertEquals(0, events.size());
+        Assert.assertFalse(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "test-environment"));
+    }
+
+    /**
+     * Helper method to create a job lock for testing.
+     */
+    private org.ikasan.spec.scheduled.context.model.JobLock makeJobLock(String lockName, int numberOfJobs, int lockCount) {
+        org.ikasan.job.orchestration.builder.context.JobLockBuilder jobLockBuilder
+            = new org.ikasan.job.orchestration.builder.context.JobLockBuilder();
+
+        jobLockBuilder.withLockName(lockName);
+        jobLockBuilder.withLockCount(lockCount);
+
+        for(int i = 0; i < numberOfJobs; i++) {
+            org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl participant
+                = new org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl();
+            participant.setJobName(lockName + "-JobName" + i);
+            participant.setAgentName("AgentName" + i);
+            participant.setIdentifier("AgentName" + i + "-" + lockName + "-JobName" + i);
+            participant.setContextName("Context1");
+            participant.setLockCount(1);
+            jobLockBuilder.withJob("Context1", participant);
+        }
+
+        return jobLockBuilder.build().get(0);
+    }
 }
