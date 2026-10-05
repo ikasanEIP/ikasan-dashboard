@@ -196,6 +196,57 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
+    public void test_release_detached_lock_saves_and_publishes_event() {
+        ArgumentCaptor<JobLockCacheRecord> captor = ArgumentCaptor.forClass(JobLockCacheRecord.class);
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        ReflectionTestUtils.setField(jlc, "jobLockCacheService", null);
+        when(jobLockCacheService.get(anyString())).thenReturn(null);
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        // Create a mock event listener to verify event publishing
+        AtomicInteger eventCount = new AtomicInteger(0);
+        AtomicReference<JobLockCacheEvent.EventType> lastEventType = new AtomicReference<>();
+        jlc.addJobLockCacheEventListener(event -> {
+            eventCount.incrementAndGet();
+            lastEventType.set(event.getEvent());
+        });
+
+        doNothing().when(jobLockCacheService).save(captor.capture());
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
+
+        String contextId = UUID.randomUUID().toString();
+        String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
+
+        // Lock a job
+        assertTrue(jlc.lock(jobIdentifier, contextId, "environment"));
+
+        // Reset the mock to capture the release operation
+        Mockito.reset(jobLockCacheService);
+        doNothing().when(jobLockCacheService).save(captor.capture());
+        int initialEventCount = eventCount.get();
+
+        // Remove the job from the lock index to simulate a detached lock
+        ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap
+            = (ConcurrentHashMap)ReflectionTestUtils.getField(jlc, "jobLockCacheDataMap");
+        JobLockCacheData jobLockCacheData = jobLockCacheDataMap.get("environment");
+        jobLockCacheData.getJobLocksByIdentifier().remove(jobIdentifier);
+
+        // Now release the lock - this should handle the detached lock case
+        assertTrue(jlc.release(jobIdentifier, contextId, "environment"));
+
+        // Verify save was called
+        verify(jobLockCacheService, times(1)).save(any(JobLockCacheRecordImpl.class));
+        JobLockCacheRecord actual = captor.getValue();
+        assertNotNull(actual.getJobLockCache());
+
+        // Verify event was published
+        assertTrue(eventCount.get() > initialEventCount);
+        assertEquals(JobLockCacheEvent.EventType.LOCK_RELEASED, lastEventType.get());
+
+        verifyNoMoreInteractions(jobLockCacheService);
+    }
+
+    @Test
     public void test_remove_queued_event() {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);

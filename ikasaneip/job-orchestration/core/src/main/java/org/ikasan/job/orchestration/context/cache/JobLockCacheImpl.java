@@ -231,6 +231,9 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 if(lh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextName)) {
                     lh.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
                     removed.set(true);
+                    saveJobLockCacheRecord(environment);
+                    this.publishJobLockCacheEvent(lh.getLockName(), jobIdentifier, contextName, environment
+                        , JobLockCacheEvent.EventType.LOCK_RELEASED);
                 }
             });
         }
@@ -443,25 +446,21 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
             JobLockHolder jobLockHolder = this.getJobLockCacheData(environment).getJobLocksByLockName()
                 .get(this.getJobLockCacheData(environment).getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null) {
-
-                if(jobLockHolder.isExclusiveJobLock()) {
+                if (jobLockHolder.isExclusiveJobLock()) {
                     if (!this.getJobLockCacheData(environment).getExclusiveLockSchedulerJobInitiationEventWaitQueue().isEmpty()) {
                         removed = List.of(this.getJobLockCacheData(environment).getExclusiveLockSchedulerJobInitiationEventWaitQueue().poll());
-                    }
-                    else {
+                    } else {
                         removed = new ArrayList<>();
-                        for(JobLockHolder jlh: this.getJobLockCacheData(environment).getJobLocksByLockName().values()) {
-                            if(!jlh.isExclusiveJobLock() && !jlh.getSchedulerJobInitiationEventWaitQueue().isEmpty()) {
+                        for (JobLockHolder jlh : this.getJobLockCacheData(environment).getJobLocksByLockName().values()) {
+                            if (!jlh.isExclusiveJobLock() && !jlh.getSchedulerJobInitiationEventWaitQueue().isEmpty()) {
                                 removed.add(jlh.getSchedulerJobInitiationEventWaitQueue().poll());
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     if (jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size() > 0) {
                         removed = List.of(jobLockHolder.getSchedulerJobInitiationEventWaitQueue().poll());
-                    }
-                    else if (this.getJobLockCacheData(environment).getExclusiveLockSchedulerJobInitiationEventWaitQueue().size() > 0) {
+                    } else if (this.getJobLockCacheData(environment).getExclusiveLockSchedulerJobInitiationEventWaitQueue().size() > 0) {
                         removed = List.of(this.getJobLockCacheData(environment).getExclusiveLockSchedulerJobInitiationEventWaitQueue().poll());
                     }
                 }
