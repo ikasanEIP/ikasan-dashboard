@@ -422,10 +422,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 } else {
                     // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
                     // the initiation event will be sent to the relevant agent.
-                    this.jobLockCache.lock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName()
-                        , parentContextInstance.getEnvironmentGroup());
-                    logger.info("Lock {}", event.getInternalEventDrivenJob());
-                    finalSchedulerJobInitiationEvents.add(event);
+                    SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap().get(event.getInternalEventDrivenJob().getIdentifier());
+                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+                        // we only lock waiting jobs!!
+                        this.jobLockCache.lock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName()
+                            , parentContextInstance.getEnvironmentGroup());
+                        logger.info("Lock {}", event.getInternalEventDrivenJob());
+                        finalSchedulerJobInitiationEvents.add(event);
+                    }
                 }
             }
             else {

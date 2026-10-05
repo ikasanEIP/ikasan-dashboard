@@ -348,4 +348,76 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
             // Expected - this tests the current behavior
         }
     }
+
+    /**
+     * Test that verifies the fix for IKASAN-2796 where queuedEvent.getContextName()
+     * is now correctly used instead of the incorrect contextName parameter.
+     * This ensures that when a queued job is released and locked again,
+     * the correct context name from the queued event is used.
+     */
+    @Test
+    public void test_released_locked_job_uses_queued_event_context_name() throws IOException {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String originalContextName = "originalContextName";
+        String queuedEventContextName = "queuedEventContextName";
+        String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
+
+        // Lock the original job with originalContextName
+        assertTrue(jlc.lock(jobIdentifier, originalContextName, "environment"));
+        assertTrue(jlc.locked(jobIdentifier, originalContextName, "environment"));
+
+        ContextInstance contextInstance = new ContextInstanceImpl();
+        contextInstance.setId("contextInstanceId");
+
+        when(this.contextMachine.getContext()).thenReturn(contextInstance);
+        ContextMachineCache.instance().put(contextMachine);
+
+        InternalEventDrivenJobInstance instance = new InternalEventDrivenJobInstanceImpl();
+        instance.setJobName("JobName1");
+        instance.setIdentifier("AgentName1-TEST-LOCK-JobName1");
+        // IMPORTANT: The queued event has a DIFFERENT context name
+        instance.setContextName(queuedEventContextName);
+        instance.setContextInstanceId("contextInstanceId");
+        instance.setChildContextName("child");
+        instance.setStatus(InstanceStatus.WAITING);
+
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        // IMPORTANT: The event's context name should be queuedEventContextName
+        schedulerJobInitiationEvent.setContextName(queuedEventContextName);
+        schedulerJobInitiationEvent.setJobName("AgentName1-TEST-LOCK-JobName1");
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(instance);
+        schedulerJobInitiationEvent.setChildContextNames(List.of("child"));
+        schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
+
+        // Queue the job with queuedEventContextName
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", queuedEventContextName
+            , schedulerJobInitiationEvent, "environment");
+
+        JobLockCacheManagementService managementService = new JobLockCacheManagementServiceImpl();
+        // Release the original lock - this should process the queued event
+        managementService.releaseLockedJob(jobIdentifier, originalContextName, "environment");
+
+        // The original job no longer has the lock
+        assertFalse(jlc.hasLock(jobIdentifier, originalContextName, "environment"));
+
+        // CRITICAL ASSERTION: The queued job should have the lock with its OWN context name (queuedEventContextName)
+        // not the context name from the release call (originalContextName)
+        assertTrue(jlc.hasLock("AgentName1-TEST-LOCK-JobName1", queuedEventContextName, "environment"));
+
+        // Also verify it doesn't have a lock with the wrong context name
+        assertFalse(jlc.hasLock("AgentName1-TEST-LOCK-JobName1", originalContextName, "environment"));
+
+        // The queued job should no longer be in the queue
+        assertNull(JobLockCacheImpl.instance().pollSchedulerJobInitiationEventWaitQueue("AgentName1-TEST-LOCK-JobName1"
+            , queuedEventContextName, "environment"));
+
+        verify(this.contextMachine, times(3)).getContext();
+        verify(this.contextMachine, times(1)).registerToNotificationMonitors();
+        verify(this.contextMachine, times(1)).publishJobInitiationEvent(any());
+        verifyNoMoreInteractions(contextMachine);
+    }
 }
