@@ -288,7 +288,6 @@ public class LogFileDownloadAndZipUtilTest {
 
         // Verify
         assertFalse("Operation should fail when no files found", result);
-//        assertFalse("Zip file should not exist", Files.exists(zipFile));
     }
 
     @Test
@@ -419,7 +418,6 @@ public class LogFileDownloadAndZipUtilTest {
 
         // Verify
         assertFalse("Operation should fail on list exception", result);
-//        assertFalse("Zip file should not exist", Files.exists(zipFile));
     }
 
     @Test
