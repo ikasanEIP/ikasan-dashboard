@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.core.machine;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
@@ -378,23 +379,27 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         //         job types that can participate in a lock.
         //      2. We are not interested in jobs that are flagged as starting as they CANNOT release jobs when starting.
         if(!lockRaised.booleanValue() && scheduledProcessEvent.getInternalEventDrivenJob() != null && !scheduledProcessEvent.isJobStarting() &&
-            this.jobLockCache.hasLock(jobIdentifier, contextInstance.getName(), parentContextInstance.getEnvironmentGroup())) {
+            this.jobLockCache.hasLock(jobIdentifier, parentContextInstance.getName(), contextInstance.getName()
+                , parentContextInstance.getId(), parentContextInstance.getEnvironmentGroup())) {
             lockRaised.setTrue();
 
             logger.info("Release {}", scheduledProcessEvent.getInternalEventDrivenJob());
             // Once we have determined that the job is holding the lock, release it.
-            this.jobLockCache.release(jobIdentifier, contextInstance.getName(), parentContextInstance.getEnvironmentGroup());
+            this.jobLockCache.release(jobIdentifier, parentContextInstance.getName(), contextInstance.getName()
+                , parentContextInstance.getId(), parentContextInstance.getEnvironmentGroup());
 
             // Now determine if there are any queued initiation events waiting for the lock to be released.
             List<ContextualisedSchedulerJobInitiationEvent> queuedEvents = this.jobLockCache.pollSchedulerJobInitiationEventWaitQueue
-                (jobIdentifier, contextInstance.getName(), parentContextInstance.getEnvironmentGroup());
+                (jobIdentifier, parentContextInstance.getName(), contextInstance.getName(), parentContextInstance.getEnvironmentGroup());
 
             if (queuedEvents != null) {
                 // Having determined that there is a queued event, it then takes a lock.
                 queuedEvents.forEach(contextualisedSchedulerJobInitiationEvent -> {
                     this.jobLockCache.lock(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
-                        .getInternalEventDrivenJob().getIdentifier(), contextualisedSchedulerJobInitiationEvent.getContextName()
-                        , parentContextInstance.getEnvironmentGroup());
+                        .getInternalEventDrivenJob().getIdentifier(), contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextName()
+                        , contextualisedSchedulerJobInitiationEvent.getContextName(), contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()
+                        , ContextMachineCache.instance().getByContextInstanceId(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()).getContext()
+                            .getEnvironmentGroup());
 
                     // And finally we add it to the finalSchedulerJobInitiationEvents so that the initiation event will be sent to
                     // the relevant agent.
@@ -407,14 +412,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         // For jobLock, check if internalEventDrivenJob exist on the event, else just add the event
         schedulerJobInitiationEvents.forEach(event -> {
             if(event.getInternalEventDrivenJob() != null &&
-                this.jobLockCache.doesJobParticipateInLock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName()
+                this.jobLockCache.doesJobParticipateInLock(event.getInternalEventDrivenJob().getIdentifier(), parentContextInstance.getName(), contextInstance.getName()
                     , parentContextInstance.getEnvironmentGroup())) {
                 logger.info("Job participates in lock {}", event.getInternalEventDrivenJob());
 
 
                 // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
                 // is already locked.
-                if (this.jobLockCache.locked(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName()
+                if (this.jobLockCache.locked(event.getInternalEventDrivenJob().getIdentifier(), parentContextInstance.getName(), contextInstance.getName()
                     , parentContextInstance.getEnvironmentGroup())) {
                     this.addQueuedSchedulerJobInitiationEvent(contextInstance, parentContextInstance, event.getInternalEventDrivenJob().getIdentifier()
                         , event);
@@ -424,8 +429,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap().get(event.getInternalEventDrivenJob().getIdentifier());
                     if(schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                         // we only lock waiting jobs!!
-                        this.jobLockCache.lock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName()
-                            , parentContextInstance.getEnvironmentGroup());
+                        this.jobLockCache.lock(event.getInternalEventDrivenJob().getIdentifier(), parentContextInstance.getName(), contextInstance.getName()
+                            , parentContextInstance.getId(), parentContextInstance.getEnvironmentGroup());
                         logger.info("Lock {}", event.getInternalEventDrivenJob());
                         finalSchedulerJobInitiationEvents.add(event);
                     }
@@ -457,8 +462,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 this.jobLockCache = JobLockCacheImpl.instance();
             }
             // If already locked, we add the job to the queued jobs, as the lock is held by another job.
-            this.jobLockCache.addQueuedSchedulerJobInitiationEvent(jobIdentifier, contextInstance.getName(), event
-                , parentContextInstance.getEnvironmentGroup());
+            this.jobLockCache.addQueuedSchedulerJobInitiationEvent(jobIdentifier, parentContextInstance.getName(), contextInstance.getName()
+                , parentContextInstance.getId(), event, parentContextInstance.getEnvironmentGroup());
 
             SchedulerJobInstance schedulerJobInstance = event.getInternalEventDrivenJob();
 

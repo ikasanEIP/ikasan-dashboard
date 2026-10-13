@@ -22,6 +22,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.cache.JobLockIdentifierBuilder;
 import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -281,9 +282,10 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
                     if(jobLockHolders != null && !jobLockHolders.isEmpty()) {
                         jobLockHolders.forEach(lockHolder -> {
-                            String contextName = lockHolder.substring(lockHolder.indexOf(JobLockCacheImpl.CONTEXT_ID)+JobLockCacheImpl.CONTEXT_ID.length());
-                            String jobIdentifier = lockHolder.substring(0
-                                , lockHolder.indexOf(JobLockCacheImpl.CONTEXT_ID));
+                            String contextName = JobLockIdentifierBuilder.getContextName(lockHolder);
+                            String jobIdentifier = JobLockIdentifierBuilder.getJobIdentifier(lockHolder);
+                            String parentContextName = JobLockIdentifierBuilder.getParentContextName(lockHolder);
+                            String contextInstanceId = JobLockIdentifierBuilder.getContextInstanceId(lockHolder);
 
                             if(jobLockHolder.getSchedulerJobs() == null) {
                                 logger.info("Lock Holder Scheduler Jobs are Null! Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]", jobLockHolder.getLockName()
@@ -298,7 +300,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 return;
                             }
                             else if(schedulerJobs == null) {
-                                this.addUnattachedJobManagementButtons(jobIdentifier, contextName, ikasanAuthentication, verticalLayout);
+                                this.addUnattachedJobManagementButtons(jobIdentifier, parentContextName, contextName
+                                    , contextInstanceId, ikasanAuthentication, verticalLayout);
                                 String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().keySet(), ',');
                                 logger.info("Could not obtain scheduler jobs from lock holder[{}] scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
                                     "The keys contained in the scheduler job map are[{}]", lockHolder, contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
@@ -311,7 +314,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 .orElse(null);
 
                             if(job == null) {
-                                this.addUnattachedJobManagementButtons(jobIdentifier, contextName, ikasanAuthentication, verticalLayout);
+                                this.addUnattachedJobManagementButtons(jobIdentifier, parentContextName
+                                    , contextName, contextInstanceId, ikasanAuthentication, verticalLayout);
                                 StringBuffer keyedJobs = new StringBuffer();
 
                                 jobLockHolder.getSchedulerJobs().entrySet().forEach(entry-> {
@@ -331,8 +335,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                             lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
                             lockHolderButton.getElement().getStyle().set("margin-bottom", "5px");
                             lockHolderButton.getElement().setAttribute("title",
-                            getTranslation("label.context-name")+": "+ job.getContextName() +
-                                "\n"+getTranslation("label.child-context-name")+": " + contextName);
+                                getTranslation("label.context-name")+": "+ parentContextName +
+                                    "\n"+getTranslation("label.child-context-name")+": " + contextName +
+                                    "\n"+getTranslation("label.context-instance-id")+": " + contextInstanceId);
                             lockHolderButton.setIcon(VaadinIcon.SITEMAP.create());
 
                             Button releaseLockedJobButton = new Button(getTranslation("button.job-lock-cache-release", UI.getCurrent().getLocale()));
@@ -356,7 +361,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     executor.execute(() -> {
                                         boolean error = false;
                                         try {
-                                            this.jobLockCacheManagementService.releaseLockedJob(job.getIdentifier(), contextName, this.contextInstance.getEnvironmentGroup());
+                                            this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, parentContextName, contextName
+                                                , contextInstanceId, this.contextInstance.getEnvironmentGroup());
                                             systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
                                                 , String.format("Released lock on job [%s] job plan [%s], child context [%s]."
                                                     , job.getJobName(), job.getContextName(), contextName), ikasanAuthentication.getName());
@@ -580,7 +586,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
      * @param ikasanAuthentication The authentication details of the user
      * @param verticalLayout The VerticalLayout to which the buttons will be added
      */
-    private void addUnattachedJobManagementButtons(String jobIdentifier, String contextName, IkasanAuthentication ikasanAuthentication, VerticalLayout verticalLayout) {
+    private void addUnattachedJobManagementButtons(String jobIdentifier, String parentContextName, String contextName
+        , String contextInstanceId, IkasanAuthentication ikasanAuthentication, VerticalLayout verticalLayout) {
         Button lockHolderButton = new Button("! " + jobIdentifier);
         lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.IKASAN_ORANGE);
         lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
@@ -613,7 +620,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                 executor.execute(() -> {
                     boolean error = false;
                     try {
-                        this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, contextName, this.contextInstance.getEnvironmentGroup());
+                        this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, parentContextName, contextName
+                            , contextInstanceId, this.contextInstance.getEnvironmentGroup());
                         systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
                             , String.format("Released lock on job [%s] child context [%s]."
                                 , jobIdentifier,  contextName), ikasanAuthentication.getName());

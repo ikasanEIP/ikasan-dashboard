@@ -120,6 +120,10 @@ public class SchedulerJobLockParticipantBuilder  {
         schedulerJob.setJobDescription(this.description);
         schedulerJob.setStartupControlType(this.startupControlType);
         schedulerJob.setLockCount(this.lockCount);
+        schedulerJob.setContextName(this.contextName);
+        if(this.childContextNames != null && !this.childContextNames.isEmpty()) {
+            schedulerJob.setChildContextName(this.childContextNames.get(0));
+        }
 
         return schedulerJob;
     }

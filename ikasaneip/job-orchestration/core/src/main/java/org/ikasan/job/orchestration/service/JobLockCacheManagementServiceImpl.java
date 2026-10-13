@@ -12,17 +12,22 @@ import java.io.IOException;
 import java.util.List;
 
 public class JobLockCacheManagementServiceImpl implements JobLockCacheManagementService {
+
     @Override
-    public void releaseLockedJob(String jobIdentifier, String contextName, String environment) {
-        JobLockCacheImpl.instance().release(jobIdentifier, contextName, environment);
+    public void releaseLockedJob(String jobIdentifier, String parentContextName, String contextName
+        , String contextInstanceId, String environment) {
+        JobLockCacheImpl.instance().release(jobIdentifier, parentContextName, contextName,  contextInstanceId, environment);
         List<ContextualisedSchedulerJobInitiationEvent> queuedEvents = JobLockCacheImpl.instance()
-            .pollSchedulerJobInitiationEventWaitQueue(jobIdentifier, contextName, environment);
+            .pollSchedulerJobInitiationEventWaitQueue(jobIdentifier, parentContextName, contextName, environment);
         if (queuedEvents != null && !queuedEvents.isEmpty()) {
             for (ContextualisedSchedulerJobInitiationEvent queuedEvent : queuedEvents) {
                 if (ContextMachineCache.instance().containsInstanceIdentifier(queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())) {
                     try {
                         JobLockCacheImpl.instance().lock(queuedEvent.getSchedulerJobInitiationEvent()
-                            .getInternalEventDrivenJob().getIdentifier(), queuedEvent.getContextName(), environment);
+                            .getInternalEventDrivenJob().getIdentifier(),queuedEvent.getSchedulerJobInitiationEvent()
+                            .getInternalEventDrivenJob().getContextName(), queuedEvent.getSchedulerJobInitiationEvent()
+                            .getInternalEventDrivenJob().getChildContextName(), queuedEvent.getSchedulerJobInitiationEvent()
+                            .getInternalEventDrivenJob().getContextInstanceId(), environment);
                         ContextMachineCache.instance().getByContextInstanceId
                                 (queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())
                             .publishJobInitiationEvent(queuedEvent.getSchedulerJobInitiationEvent());

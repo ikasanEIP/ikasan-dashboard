@@ -74,7 +74,7 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
     }
@@ -95,7 +95,7 @@ public class JobLockCacheInitialisationServiceImplTest {
         AtomicBoolean contextOneInitComplete = new AtomicBoolean(false);
         Executors.newSingleThreadExecutor().execute(() -> {
             for(int i=0; i<100; i++) {
-                service.initialiseJobLockCache(context, true);
+                service.initialiseJobLockCache(context, true, true);
             }
             contextOneInitComplete.set(true);
         });
@@ -103,7 +103,7 @@ public class JobLockCacheInitialisationServiceImplTest {
         AtomicBoolean contextTwoInitComplete = new AtomicBoolean(false);
         Executors.newSingleThreadExecutor().execute(() -> {
             for(int i=0; i<100; i++) {
-                service.initialiseJobLockCache(contextWithSameLocks, true);
+                service.initialiseJobLockCache(contextWithSameLocks, true, true);
             }
             contextTwoInitComplete.set(true);
         });
@@ -131,13 +131,13 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
 
         context = this.contextService.getContextTemplate(this.jsonContextJobsAddedToLocks);
 
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertJobLockCacheWithJobsAdded();
     }
@@ -147,13 +147,13 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
 
         context = this.contextService.getContextTemplate(this.jsonContextJobsRemovedFromLocks);
 
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertJobLockCacheWithLocksRemovedFromContext();
     }
@@ -163,19 +163,19 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
 
         context = this.contextService.getContextTemplate(this.jsonContextJobsAddedToLocks);
 
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertJobLockCacheWithJobsAdded();
 
         context = this.contextService.getContextTemplate(this.jsonContextJobsRemovedFromLocks);
 
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertJobLockCacheWithLocksRemovedFromContext();
     }
@@ -185,11 +185,11 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         context = this.contextService.getContextTemplate(jsonContext2);
 
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
         this.assertOriginalJobLockCacheForSecondContext();
@@ -200,11 +200,11 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context1 = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context1, true);
+        service.initialiseJobLockCache(context1, true, true);
 
         ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext2);
 
-        service.initialiseJobLockCache(context2, true);
+        service.initialiseJobLockCache(context2, true, true);
 
         this.assertOriginalJobLockCache();
         this.assertOriginalJobLockCacheForSecondContext();
@@ -214,7 +214,7 @@ public class JobLockCacheInitialisationServiceImplTest {
         this.assertOriginalJobLockCacheRemoved();
         this.assertOriginalJobLockCacheForSecondContext();
 
-        service.initialiseJobLockCache(context1, true);
+        service.initialiseJobLockCache(context1, true, true);
 
         this.assertOriginalJobLockCache();
         this.assertOriginalJobLockCacheForSecondContext();
@@ -225,13 +225,13 @@ public class JobLockCacheInitialisationServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
-        service.initialiseJobLockCache(context, true);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
+        service.initialiseJobLockCache(context, true, true);
 
         context = this.contextService.getContextTemplate(jsonContext2);
 
-        service.initialiseJobLockCache(context, true);
-        service.initialiseJobLockCache(context, true);
+        service.initialiseJobLockCache(context, true, true);
+        service.initialiseJobLockCache(context, true, true);
 
         this.assertOriginalJobLockCache();
         this.assertOriginalJobLockCacheForSecondContext();

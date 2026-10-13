@@ -1,18 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
-import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
-
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
@@ -38,6 +27,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
+
+import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextMachineJobLocksTest extends AbstractTest {
@@ -71,6 +72,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
     @After
     public void tearDown() {
         JobLockCacheImpl.instance().reset();
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test
@@ -98,6 +100,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , internalEventDrivenJobs2, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), queueDir, new HashMap<>(), moduleMetadataService, jobLockCache, contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
@@ -356,6 +361,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
+
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
         instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
@@ -521,6 +529,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , internalEventDrivenJobs2, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), queueDir, new HashMap<>(), moduleMetadataService, jobLockCache, contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
@@ -691,6 +702,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
+
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
         instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
@@ -857,6 +871,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , internalEventDrivenJobs2, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), queueDir, new HashMap<>(), moduleMetadataService, jobLockCache, contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
@@ -1168,6 +1185,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , internalEventDrivenJobs2, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), queueDir, new HashMap<>(), moduleMetadataService, jobLockCache, contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
@@ -2649,6 +2669,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine);
+
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
@@ -4072,6 +4094,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine);
+
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", false);
         eventInstance.setJobStarting(true);
@@ -4146,7 +4170,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         // We now have one exclusive lock holder which is jobName4
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName4-jobName4:context-id:Context3", super.getJobLockCacheData()
+        Assert.assertEquals("agentName4-jobName4:parent-context-name:Context3:context-name:Context3:context-id:"
+            + contextMachine.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().iterator().next());
 
         // We still have 1 exclusive job queued - jobName5
@@ -4176,7 +4201,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
         Assert.assertEquals(1, super.getJobLockCacheData().getExclusiveLockHolder()
             .getLockHolders().size());
-        Assert.assertEquals("agentName5-jobName5:context-id:Context3", super.getJobLockCacheData().getExclusiveLockHolder()
+        Assert.assertEquals("agentName5-jobName5:parent-context-name:Context3:context-name:Context3:context-id:"
+            + contextMachine.getContext().getId(), super.getJobLockCacheData().getExclusiveLockHolder()
             .getLockHolders().iterator().next());
         Assert.assertEquals(0, super.getJobLockCacheData()
             .getExclusiveLockSchedulerJobInitiationEventWaitQueue().size());
@@ -4279,6 +4305,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
+
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
         instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
@@ -4330,7 +4359,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getSchedulerJobInitiationEvent().getJobName());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName2-jobName2:context-id:Context-Locks-1", super.getJobLockCacheData()
+        Assert.assertEquals("agentName2-jobName2:parent-context-name:Context-Locks-1:context-name:Context-Locks-1:context-id:"
+            + contextMachine1.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
 
         instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -4370,7 +4400,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getSchedulerJobInitiationEvent().getJobName());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName3-jobName3:context-id:Context-Locks-1", super.getJobLockCacheData()
+        Assert.assertEquals("agentName3-jobName3:parent-context-name:Context-Locks-1:context-name:Context-Locks-1:context-id:"
+            + contextMachine1.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
 
         instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -4405,7 +4436,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getSchedulerJobInitiationEvent().getJobName());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName6-jobName6:context-id:Context-Locks-2", super.getJobLockCacheData()
+        Assert.assertEquals("agentName6-jobName6:parent-context-name:Context-Locks-2:context-name:Context-Locks-2:context-id:"
+            + contextMachine2.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
 
         instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -4435,7 +4467,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getExclusiveLockSchedulerJobInitiationEventWaitQueue().size());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName7-jobName7:context-id:Context-Locks-2", super.getJobLockCacheData()
+        Assert.assertEquals("agentName7-jobName7:parent-context-name:Context-Locks-2:context-name:Context-Locks-2:context-id:"
+            + contextMachine2.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
 
         eventInstance1 = scheduledProcessEventInstance("jobName7", "agentName7", true);
@@ -4544,6 +4577,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService, this.jobUtilsService);
 
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
+
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
         assertEquals(InstanceStatus.WAITING, instanceStatus);
         instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
@@ -4591,7 +4627,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getSchedulerJobInitiationEvent().getJobName());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName2-jobName2:context-id:Context-Locks-1", super.getJobLockCacheData()
+        Assert.assertEquals("agentName2-jobName2:parent-context-name:Context-Locks-1:context-name:Context-Locks-1:context-id:"
+            +contextMachine1.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
         Assert.assertEquals(0, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().size());
@@ -4635,7 +4672,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getExclusiveLockSchedulerJobInitiationEventWaitQueue().size());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().size());
-        Assert.assertEquals("agentName3-jobName3:context-id:Context-Locks-1", super.getJobLockCacheData()
+        Assert.assertEquals("agentName3-jobName3:parent-context-name:Context-Locks-1:context-name:Context-Locks-1:context-id:"
+            + contextMachine1.getContext().getId(), super.getJobLockCacheData()
             .getExclusiveLockHolder().getLockHolders().stream().collect(Collectors.toList()).get(0));
         Assert.assertEquals(0, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().size());
@@ -4680,7 +4718,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getExclusiveLockHolder().getLockHolders().size());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().size());
-        Assert.assertEquals("agentName6-jobName6:context-id:Context-Locks-2", super.getJobLockCacheData()
+        Assert.assertEquals("agentName6-jobName6:parent-context-name:Context-Locks-2:context-name:Context-Locks-2:context-id:"
+            + contextMachine2.getContext().getId(), super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().stream().collect(Collectors.toList()).get(0));
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getSchedulerJobInitiationEventWaitQueue().size());
@@ -4715,7 +4754,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
             .getExclusiveLockHolder().getLockHolders().size());
         Assert.assertEquals(1, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().size());
-        Assert.assertEquals("agentName7-jobName7:context-id:Context-Locks-2", super.getJobLockCacheData()
+        Assert.assertEquals("agentName7-jobName7:parent-context-name:Context-Locks-2:context-name:Context-Locks-2:context-id:" +
+            contextMachine2.getContext().getId(), super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getLockHolders().stream().collect(Collectors.toList()).get(0));
         Assert.assertEquals(0, super.getJobLockCacheData()
             .getJobLocksByLockName().get("TEST-LOCK-DIFF-2").getSchedulerJobInitiationEventWaitQueue().size());

@@ -108,8 +108,35 @@ public abstract class AbstractJobLockCacheTest {
         jobLockBuilder.withLockCount(jobLockCount);
         for (int i = 0; i < count; i++) {
             SchedulerJobLockParticipant job = makeSchedulerJobLockParticipant(i, newOrNot, jobLockName, 1);
-            job.setContextName(UUID.randomUUID().toString());
-            jobLockBuilder.withJob("contextName"+i, job);
+            job.setContextName("parent");
+            job.setChildContextName("child");
+            job.setChildContextNames(List.of("child"));
+            jobLockBuilder.withJob(job);
+        }
+        return jobLockBuilder.build().get(0);
+    }
+
+    /**
+     * Creates a JobLock with the given set of parameters, which includes job details and context settings.
+     *
+     * @param jobLockName The name of the JobLock to be created.
+     * @param count The number of SchedulerJobLockParticipant jobs to add to the JobLock.
+     * @param jobLockCount The lock count for the JobLock.
+     * @param newOrNot An extra identifier for controlling the creation of SchedulerJobLockParticipant instances.
+     * @param contextName The name of the context to associate with each SchedulerJobLockParticipant.
+     * @param childContextName The name of the child context to associate with each SchedulerJobLockParticipant.
+     * @return The created JobLock instance based on the provided parameters.
+     */
+    protected JobLock makeJobLock(String jobLockName, int count, int jobLockCount, String newOrNot, String contextName, String childContextName) {
+        JobLockBuilder jobLockBuilder = new JobLockBuilder();
+        jobLockBuilder.withLockName(jobLockName);
+        jobLockBuilder.withLockCount(jobLockCount);
+        for (int i = 0; i < count; i++) {
+            SchedulerJobLockParticipant job = makeSchedulerJobLockParticipant(i, newOrNot, jobLockName, 1);
+            job.setContextName(contextName);
+            job.setChildContextName(childContextName);
+            job.setChildContextNames(List.of(childContextName));
+            jobLockBuilder.withJob(job);
         }
         return jobLockBuilder.build().get(0);
     }
@@ -127,6 +154,9 @@ public abstract class AbstractJobLockCacheTest {
         String extra = newOrNot == null ? "" : newOrNot;
         SchedulerJobLockParticipant job = new SchedulerJobLockParticipantImpl();
         job.setAgentName("AgentName" + count + extra);
+        job.setContextName("parentContext");
+        job.setChildContextName("childContext");
+        job.setChildContextNames(List.of("childContext"));
         job.setJobName(jobLockName + "-" + "JobName" + count + extra);
         job.setIdentifier(job.getAgentName() + "-" + job.getJobName());
         job.setJobDescription("Job" + count + extra + " Description");

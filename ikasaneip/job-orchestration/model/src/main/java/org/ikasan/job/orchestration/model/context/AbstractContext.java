@@ -136,8 +136,14 @@ public abstract class AbstractContext<CONTEXT extends Context, JOB extends Sched
         jobLocks.forEach(jobLock -> {
             if(jobLock.getJobs() != null) {
                 jobLock.getJobs()
-                    .values().forEach(jobs -> jobs
-                        .forEach(job -> job.setContextName(this.getName())));
+                    .entrySet().forEach(jobEntry -> jobEntry.getValue()
+                        .forEach(job -> {
+                            job.setContextName(this.getName());
+                            job.setChildContextName(jobEntry.getKey());
+                            List<String> contextList = new ArrayList<>();
+                            contextList.add(jobEntry.getKey());
+                            job.setChildContextNames(contextList);
+                        }));
             }
         });
         return jobLocks;

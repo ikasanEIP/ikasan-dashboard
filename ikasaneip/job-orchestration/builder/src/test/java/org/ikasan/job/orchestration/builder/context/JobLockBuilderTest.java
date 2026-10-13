@@ -50,75 +50,96 @@ public class JobLockBuilderTest {
     @Test
     public void test_build_with_single_job() {
         SchedulerJobLockParticipant job = new SchedulerJobLockParticipantImpl();
+        job.setContextName("parent1");
+        job.setChildContextName("child1");
+        job.setChildContextNames(List.of("child1"));
         job.setJobName("job1");
 
         List<JobLock> jobLocks = new JobLockBuilder()
             .withLockName("testLock")
-            .withJob("context1", job)
+            .withJob(job)
             .build();
 
         Assert.assertNotNull(jobLocks);
         Assert.assertEquals(1, jobLocks.size());
         Assert.assertNotNull(jobLocks.get(0).getJobs());
-        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("context1"));
-        Assert.assertEquals(1, jobLocks.get(0).getJobs().get("context1").size());
+        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("parent1:CHILD:child1"));
+        Assert.assertEquals(1, jobLocks.get(0).getJobs().get("parent1:CHILD:child1").size());
     }
 
     @Test
     public void test_build_with_multiple_jobs_same_context() {
         SchedulerJobLockParticipant job1 = new SchedulerJobLockParticipantImpl();
+        job1.setContextName("parent1");
+        job1.setChildContextName("child1");
+        job1.setChildContextNames(List.of("child1"));
         job1.setJobName("job1");
 
         SchedulerJobLockParticipant job2 = new SchedulerJobLockParticipantImpl();
+        job2.setContextName("parent1");
+        job2.setChildContextName("child1");
+        job2.setChildContextNames(List.of("child1"));
         job2.setJobName("job2");
 
         List<JobLock> jobLocks = new JobLockBuilder()
             .withLockName("testLock")
-            .withJob("context1", job1)
-            .withJob("context1", job2)
+            .withJob(job1)
+            .withJob(job2)
             .build();
 
         Assert.assertNotNull(jobLocks);
         Assert.assertEquals(1, jobLocks.size());
-        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("context1"));
-        Assert.assertEquals(2, jobLocks.get(0).getJobs().get("context1").size());
+        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("parent1:CHILD:child1"));
+        Assert.assertEquals(2, jobLocks.get(0).getJobs().get("parent1:CHILD:child1").size());
     }
 
     @Test
     public void test_build_with_jobs_in_different_contexts() {
         SchedulerJobLockParticipant job1 = new SchedulerJobLockParticipantImpl();
+        job1.setContextName("parent1");
+        job1.setChildContextName("child1");
+        job1.setChildContextNames(List.of("child1"));
         job1.setJobName("job1");
 
         SchedulerJobLockParticipant job2 = new SchedulerJobLockParticipantImpl();
+        job2.setContextName("parent2");
+        job2.setChildContextName("child2");
+        job2.setChildContextNames(List.of("child2"));
         job2.setJobName("job2");
 
         List<JobLock> jobLocks = new JobLockBuilder()
             .withLockName("testLock")
-            .withJob("context1", job1)
-            .withJob("context2", job2)
+            .withJob(job1)
+            .withJob(job2)
             .build();
 
         Assert.assertNotNull(jobLocks);
         Assert.assertEquals(1, jobLocks.size());
         Assert.assertEquals(2, jobLocks.get(0).getJobs().size());
-        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("context1"));
-        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("context2"));
+        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("parent1:CHILD:child1"));
+        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("parent2:CHILD:child2"));
     }
 
     @Test
     public void test_build_complete_configuration() {
         SchedulerJobLockParticipant job1 = new SchedulerJobLockParticipantImpl();
+        job1.setContextName("parent1");
+        job1.setChildContextName("child1");
+        job1.setChildContextNames(List.of("child1"));
         job1.setJobName("job1");
 
         SchedulerJobLockParticipant job2 = new SchedulerJobLockParticipantImpl();
+        job2.setContextName("parent1");
+        job2.setChildContextName("child1");
+        job2.setChildContextNames(List.of("child1"));
         job2.setJobName("job2");
 
         List<JobLock> jobLocks = new JobLockBuilder()
             .withLockName("testLock")
             .withLockCount(3)
             .withExclusiveJobLock(true)
-            .withJob("context1", job1)
-            .withJob("context2", job2)
+            .withJob(job1)
+            .withJob(job2)
             .build();
 
         Assert.assertNotNull(jobLocks);
@@ -128,7 +149,7 @@ public class JobLockBuilderTest {
         Assert.assertEquals("testLock", jobLock.getName());
         Assert.assertEquals(3, jobLock.getLockCount());
         Assert.assertTrue(jobLock.isExclusiveJobLock());
-        Assert.assertEquals(2, jobLock.getJobs().size());
+        Assert.assertEquals(1, jobLock.getJobs().size());
     }
 
     @Test
@@ -185,7 +206,7 @@ public class JobLockBuilderTest {
 
         JobLockBuilder builder = new JobLockBuilder()
             .withLockName("testLock")
-            .withJob("context1", job);
+            .withJob(job);
 
         List<JobLock> locks1 = builder.build();
         List<JobLock> locks2 = builder.build();
@@ -202,11 +223,11 @@ public class JobLockBuilderTest {
 
         List<JobLock> jobLocks = new JobLockBuilder()
             .withLockName("testLock")
-            .withJob(null, job)
+            .withJob(job)
             .build();
 
         Assert.assertNotNull(jobLocks);
-        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey(null));
+        Assert.assertTrue(jobLocks.get(0).getJobs().containsKey("null:CHILD:null"));
     }
 
     @Test

@@ -107,13 +107,12 @@
       "name": "TEST-LOCK-1",
       "lockCount": 1,
       "jobs": {
-        "context1": [{
+        "Context3": [{
           "agentName": "agentName2",
           "jobName": "jobName2",
           "identifier": "agentName2-jobName2",
           "jobDescription": "Job2 Description"
-        }],
-        "context2": [{
+        },{
           "agentName": "agentName3",
           "jobName": "jobName3",
           "identifier": "agentName3-jobName3",
@@ -126,13 +125,13 @@
       "lockCount": 1,
       "exclusiveJobLock": true,
       "jobs": {
-        "context1": [{
+        "Context3": [{
           "agentName": "agentName4",
           "jobName": "jobName4",
           "identifier": "agentName4-jobName4",
           "jobDescription": "Job5 Description"
-        }],
-        "context2": [{
+        }
+        ,{
           "agentName": "agentName5",
           "jobName": "jobName5",
           "identifier": "agentName5-jobName5",

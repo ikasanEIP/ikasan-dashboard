@@ -3007,8 +3007,10 @@ public class JobLogicMachineTest extends AbstractTest {
         participant.setAgentName("agentName2");
         participant.setIdentifier("agentName2-jobName2");
         participant.setContextName("Context1");
+        participant.setChildContextName("Context1");
+        participant.setChildContextNames(List.of("Context1"));
         participant.setLockCount(1);
-        jobLockBuilder.withJob("Context1", participant);
+        jobLockBuilder.withJob(participant);
 
         JobLockCacheImpl.instance().addLocks(jobLockBuilder.build(), "test-environment");
 
@@ -3018,7 +3020,10 @@ public class JobLogicMachineTest extends AbstractTest {
         // Set up the internal event driven job
         InternalEventDrivenJobInstance internalEventDrivenJobInstance
             = internalEventDrivenJobInstanceWithNullContextParameters();
+        internalEventDrivenJobInstance.setContextName("parent");
+        internalEventDrivenJobInstance.setChildContextName("Context1");
         internalEventDrivenJobInstance.setJobName("jobName2");
+        internalEventDrivenJobInstance.setContextInstanceId(context.getId());
         internalEventDrivenJobInstance.setAgentName("agentName2");
         internalEventDrivenJobInstance.setIdentifier("agentName2-jobName2");
 
@@ -3037,10 +3042,10 @@ public class JobLogicMachineTest extends AbstractTest {
 
         // Event should be raised and lock should be taken
         Assert.assertEquals(1, events.size());
-        Assert.assertTrue(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "test-environment"));
+        Assert.assertTrue(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "Context1", context.getId(), "test-environment"));
 
         // Release the lock for next test
-        JobLockCacheImpl.instance().release("agentName2-jobName2", "Context1", "test-environment");
+        JobLockCacheImpl.instance().release("agentName2-jobName2", "Context1", "Context1", context.getId(), "test-environment");
 
         // Now set the job to a different status (e.g., RUNNING) and reset the test
         context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.RUNNING);
@@ -3055,30 +3060,6 @@ public class JobLogicMachineTest extends AbstractTest {
 
         // Event should NOT be raised when job is RUNNING (not WAITING)
         Assert.assertEquals(0, events.size());
-        Assert.assertFalse(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "test-environment"));
-    }
-
-    /**
-     * Helper method to create a job lock for testing.
-     */
-    private org.ikasan.spec.scheduled.context.model.JobLock makeJobLock(String lockName, int numberOfJobs, int lockCount) {
-        org.ikasan.job.orchestration.builder.context.JobLockBuilder jobLockBuilder
-            = new org.ikasan.job.orchestration.builder.context.JobLockBuilder();
-
-        jobLockBuilder.withLockName(lockName);
-        jobLockBuilder.withLockCount(lockCount);
-
-        for(int i = 0; i < numberOfJobs; i++) {
-            org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl participant
-                = new org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl();
-            participant.setJobName(lockName + "-JobName" + i);
-            participant.setAgentName("AgentName" + i);
-            participant.setIdentifier("AgentName" + i + "-" + lockName + "-JobName" + i);
-            participant.setContextName("Context1");
-            participant.setLockCount(1);
-            jobLockBuilder.withJob("Context1", participant);
-        }
-
-        return jobLockBuilder.build().get(0);
+        Assert.assertFalse(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "Context1", context.getId(), "test-environment"));
     }
 }

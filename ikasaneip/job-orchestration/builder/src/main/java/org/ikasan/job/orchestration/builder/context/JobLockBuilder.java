@@ -1,9 +1,7 @@
 package org.ikasan.job.orchestration.builder.context;
 
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
 import java.util.ArrayList;
@@ -12,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class JobLockBuilder {
+    public static final String CONTEXT_SEPARATOR = ":CHILD:";
 
     private String lockName;
     private Map<String, List<SchedulerJobLockParticipant>> schedulerJobs;
@@ -36,25 +35,38 @@ public class JobLockBuilder {
     }
 
     /**
-     * Adds a job to the builder with the given context name.
-     * If the schedulerJobs map is null, it will be initialized.
-     * If the context name is not present in the map, a new entry will be created.
-     * The job will then be added to the list of jobs for the context.
+     * Adds a job to the builder using the context name derived from the provided job object.
      *
-     * @param contextName The name of the context for the job
-     * @param job The job to add
-     * @return The JobLockBuilder instance with the added job
+     * This method serves as a convenience wrapper for the overloaded {@code withJob} method,
+     * automatically setting the parent and child context names based on the {@code job} parameter.
+     *
+     * @param job the job to be added, which provides its context name
+     * @return the current instance of {@code JobLockBuilder} for method chaining
      */
-    public JobLockBuilder withJob(String contextName, SchedulerJobLockParticipant job) {
+    public JobLockBuilder withJob(SchedulerJobLockParticipant job) {
+        return withJob(job.getContextName(), job.getChildContextName(), job);
+    }
+
+    /**
+     * Adds a job to the schedulerJobs map for a given context name.
+     * If the map does not already include the context name, it initializes a new list
+     * and then adds the specified job to the list.
+     *
+     * @param parentContextName the name of the parent context, used for referential purposes
+     * @param contextName the name of the context where the job will be added
+     * @param job the job to be added to the specified context
+     * @return the current instance of {@code JobLockBuilder} for method chaining
+     */
+    public JobLockBuilder withJob(String parentContextName, String contextName, SchedulerJobLockParticipant job) {
         if(this.schedulerJobs == null) {
             schedulerJobs = new HashMap<>();
         }
 
-        if(!schedulerJobs.containsKey(contextName)) {
-            schedulerJobs.put(contextName, new ArrayList<>());
+        if(!schedulerJobs.containsKey(parentContextName + CONTEXT_SEPARATOR + contextName)) {
+            schedulerJobs.put(parentContextName + CONTEXT_SEPARATOR + contextName, new ArrayList<>());
         }
 
-        schedulerJobs.get(contextName).add(job);
+        schedulerJobs.get(parentContextName + CONTEXT_SEPARATOR + contextName).add(job);
         return this;
     }
 

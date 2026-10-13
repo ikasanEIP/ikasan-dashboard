@@ -346,7 +346,7 @@ public abstract class ContextInstanceServiceBase {
         ContextMachineImpl contextMachine = new ContextMachineImpl(context, instance, scheduledContextInstanceService, globalEventJobMap,
             quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap,
             localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
-            moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService,
+            moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation, false), contextParametersInstanceService,
             this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService,
             this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
@@ -598,8 +598,8 @@ public abstract class ContextInstanceServiceBase {
      * @param isRefresh Whether to refresh the job lock cache or not.
      * @return The initialized JobLockCache.
      */
-    private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh) {
-        this.jobLockCacheInitialisationService.initialiseJobLockCache(context, isRefresh);
+    private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh, boolean clearPreviousLocks) {
+        this.jobLockCacheInitialisationService.initialiseJobLockCache(context, isRefresh, clearPreviousLocks);
         return JobLockCacheImpl.instance();
     }
 
