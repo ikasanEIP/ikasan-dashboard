@@ -393,7 +393,7 @@
         <version.carrotsearch.randomizedtesting>2.8.3</version.carrotsearch.randomizedtesting>
         <version.google.gson>2.11.0</version.google.gson>
         <version.system.rules>1.19.0</version.system.rules>
-        <version.micrometer>1.16.6</version.micrometer>
+        <version.micrometer>1.16.7</version.micrometer>
         <version.org.hibernate>6.4.1.Final</version.org.hibernate>
         <version.org.hibernate-validator>8.0.1.Final</version.org.hibernate-validator>
         <version.apache.zookeeper>3.9.5</version.apache.zookeeper>
