@@ -28,7 +28,7 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
     }
 
     @Override
-    public void initialiseJobLockCache(Context context, boolean isRefresh) {
+    public void initialiseJobLockCache(Context context, boolean isRefresh, boolean clearPreviousLocks) {
         LOGGER.info(String.format("Initialising job lock cache for context[%s], refresh[%s]", context.getName(), isRefresh));
         JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get(context.getEnvironmentGroup());
 
@@ -37,7 +37,9 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
         }
 
         if(isRefresh) {
-            JobLockCacheImpl.instance().removeJobsLocksForContext(context);
+            if(clearPreviousLocks) {
+                JobLockCacheImpl.instance().removeJobsLocksForContext(context);
+            }
             JobLockCacheImpl.instance().addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
         }
         LOGGER.info(String.format("Successfully initialised job lock cache for context[%s]", context.getName()));

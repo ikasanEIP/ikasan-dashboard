@@ -26,11 +26,13 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.cache.JobLockIdentifierBuilder;
 import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -167,12 +170,25 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
 
                     if(!environmentCacheItem.getJobLockHolder().getLockHolders().isEmpty()) {
                         environmentCacheItem.getJobLockHolder().getLockHolders().forEach(jlh -> {
-                            String jobIdentifier = jlh.substring(0, jlh.indexOf(":"));
-                            String context = jlh.substring(jlh.lastIndexOf(":") + 1, jlh.length());
-                            Button lockHolderButton = new Button(jobIdentifier);
+                            String contextName = JobLockIdentifierBuilder.getContextName(jlh);
+                            String jobIdentifier = JobLockIdentifierBuilder.getJobIdentifier(jlh);
+                            String parentContextName = JobLockIdentifierBuilder.getParentContextName(jlh);
+                            String contextInstanceId = JobLockIdentifierBuilder.getContextInstanceId(jlh);
+
+                            SchedulerJob job = environmentCacheItem.jobLockHolder.getSchedulerJobs().values().stream()
+                                .flatMap(Collection::stream)
+                                .filter(schedulerJobLockParticipant -> schedulerJobLockParticipant.getIdentifier().equals(jobIdentifier))
+                                .findAny()
+                                .orElse(null);
+
+                            Button lockHolderButton = new Button(job != null ? job.getJobName() : jobIdentifier);
                             lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
                             lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
                             lockHolderButton.getElement().getStyle().set("margin-bottom", "5px");
+                            lockHolderButton.getElement().setAttribute("title",
+                                getTranslation("label.context-name")+": "+ parentContextName +
+                                    "\n"+getTranslation("label.child-context-name")+": " + contextName +
+                                    "\n"+getTranslation("label.context-instance-id")+": " + contextInstanceId);
                             lockHolderButton.setIcon(VaadinIcon.SITEMAP.create());
 
                             Button releaseLockedJobButton = new Button(getTranslation("button.job-lock-cache-release", UI.getCurrent().getLocale()));
@@ -197,10 +213,11 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
                                     executor.execute(() -> {
                                         boolean error = false;
                                         try {
-                                            this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, context, environmentCacheItem.getEnvironment());
+                                            this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, parentContextName,
+                                                contextName, contextInstanceId, environmentCacheItem.getEnvironment());
                                             systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
                                                 , String.format("Released lock on job [%s] child context [%s], environment [%s]."
-                                                    , jobIdentifier, context, environmentCacheItem.getEnvironment()), ikasanAuthentication.getName());
+                                                    , jobIdentifier, contextName, environmentCacheItem.getEnvironment()), ikasanAuthentication.getName());
                                         } catch (Exception e) {
                                             error = true;
                                             ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation
@@ -329,8 +346,8 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
                     verticalLayout.setSpacing(false);
                     verticalLayout.setPadding(false);
 
-                    Button endSessionButton = new Button(getTranslation("button.reset"));
-                    endSessionButton.addClickListener(event -> {
+                    Button resetLockButton = new Button(getTranslation("button.reset"));
+                    resetLockButton.addClickListener(event -> {
                         ConfirmDialog confirmDialog = new ConfirmDialog();
                         confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-lock-header", UI.getCurrent().getLocale()));
                         confirmDialog.setText(getTranslation("confirm-dialog.reset-job-lock-text", UI.getCurrent().getLocale()));
@@ -346,7 +363,7 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
                             this.environmentCacheItemGrid.getDataProvider().refreshAll();
                         });
                     });
-                    verticalLayout.add(endSessionButton);
+                    verticalLayout.add(resetLockButton);
 
                     return verticalLayout;
                 }))

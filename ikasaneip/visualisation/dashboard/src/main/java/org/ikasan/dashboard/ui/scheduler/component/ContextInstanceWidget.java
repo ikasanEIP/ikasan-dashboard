@@ -1381,7 +1381,8 @@ public class ContextInstanceWidget extends VerticalLayout
                 ContextInstanceStateChangeEventBroadcaster.instance().broadcast(new ContextInstanceStateChangeEventImpl(
                     machine.getContext().getId(), machine.getContext(), previousStatus, InstanceStatus.ENDED));
                 machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
-                    JobLockCacheImpl.instance().resetLock(jobLockInstance.getName(), this.contextInstance.getEnvironmentGroup());
+                    JobLockCacheImpl.instance().resetLock(this.contextInstance.getId()
+                        , jobLockInstance.getName(), this.contextInstance.getEnvironmentGroup());
                 });
                 this.statusDiv.setStatus(InstanceStatus.ENDED);
                 ContextMachineCache.instance().remove(machine);

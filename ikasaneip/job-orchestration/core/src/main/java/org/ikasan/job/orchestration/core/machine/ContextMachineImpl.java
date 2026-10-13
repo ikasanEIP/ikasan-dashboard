@@ -43,10 +43,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.DryRunParameters;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.*;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
@@ -513,7 +510,7 @@ public class ContextMachineImpl implements ContextMachine {
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));
 
             // Initialise the job lock cache for the new instance
-            this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
+            this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true, false);
             this.saveContext();
 
             stopWatch.stop();
@@ -1537,12 +1534,66 @@ public class ContextMachineImpl implements ContextMachine {
             job.setContextInstanceId(this.contextInstance.getId());
 
             // We need to release the lock if a job currently holds it!
-            if(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName(), this.contextInstance.getEnvironmentGroup())) {
-                JobLockCacheImpl.instance().release(job.getIdentifier(), job.getContextName(), this.contextInstance.getEnvironmentGroup());
+            if(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName(), job.getChildContextName()
+                , job.getContextInstanceId(), this.contextInstance.getEnvironmentGroup())) {
+                JobLockCacheImpl.instance().release(job.getIdentifier(), job.getContextName(), job.getChildContextName()
+                    , job.getContextInstanceId(), this.contextInstance.getEnvironmentGroup());
             }
-
             JobLockCacheImpl.instance().removeQueuedSchedulerJob(job, this.contextInstance.getEnvironmentGroup());
         });
+
+       if(!runningJobs.isEmpty()) {
+           // Now determine if there are any queued initiation events waiting for the lock to be released.
+           SchedulerJobInstance job = runningJobs.getFirst();
+           List<ContextualisedSchedulerJobInitiationEvent> queuedEvents = new ArrayList<>();
+
+           while (true) {
+               List<ContextualisedSchedulerJobInitiationEvent> polledEvents = this.jobLockCache.pollSchedulerJobInitiationEventWaitQueue
+                   (job.getIdentifier(), job.getContextName(), job.getChildContextName(), this.contextInstance.getEnvironmentGroup());
+
+               if(polledEvents == null || polledEvents.isEmpty()) {
+                   break;
+               }
+               else {
+                   queuedEvents.addAll(polledEvents);
+               }
+           }
+
+           if (!queuedEvents.isEmpty()) {
+               // Having determined that there is a queued event, it then takes a lock.
+               queuedEvents.forEach(contextualisedSchedulerJobInitiationEvent -> {
+                   // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
+                   // is already locked.
+                   if (this.jobLockCache.locked(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getIdentifier()
+                       , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextName(), contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                           .getInternalEventDrivenJob().getChildContextName(), ContextMachineCache.instance()
+                           .getByContextInstanceId(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()).getContext().getEnvironmentGroup())) {
+
+                       ContextMachineCache.instance()
+                           .getByContextInstanceId(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId())
+                           .addQueuedSchedulerJobInitiationEvent(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent());
+                   } else {
+                       // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
+                       // the initiation event will be sent to the relevant agent.
+                       this.jobLockCache.lock(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getIdentifier()
+                           , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getContextName()
+                           , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getChildContextName()
+                           , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()
+                           , ContextMachineCache.instance()
+                               .getByContextInstanceId(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()).getContext().getEnvironmentGroup());
+                       logger.info("Lock {}", contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getInternalEventDrivenJob());
+
+                       try {
+                           this.publishJobInitiationEvent(contextualisedSchedulerJobInitiationEvent
+                               .getSchedulerJobInitiationEvent());
+                       } catch (IOException e) {
+                           throw new RuntimeException(String.format("An error has occurred publishing locked job initiation event[%s]!"
+                               , contextualisedSchedulerJobInitiationEvent),  e);
+                       }
+                   }
+               });
+           }
+       }
     }
 
     /**

@@ -3,6 +3,8 @@ package org.ikasan.scheduled.event.model;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 
+import java.util.StringJoiner;
+
 public class SolrContextualisedSchedulerJobInitiationEventImpl implements ContextualisedSchedulerJobInitiationEvent {
 
     private SchedulerJobInitiationEvent schedulerJobInitiationEvent;
@@ -26,5 +28,13 @@ public class SolrContextualisedSchedulerJobInitiationEventImpl implements Contex
     @Override
     public String getContextName() {
         return this.contextName;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", SolrContextualisedSchedulerJobInitiationEventImpl.class.getSimpleName() + "[", "]")
+            .add("schedulerJobInitiationEvent=" + schedulerJobInitiationEvent)
+            .add("contextName='" + contextName + "'")
+            .toString();
     }
 }

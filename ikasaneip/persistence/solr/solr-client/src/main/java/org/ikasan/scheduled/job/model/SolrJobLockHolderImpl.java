@@ -10,7 +10,7 @@ import java.util.*;
 public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;
     private long lockCount = 1;
-    private final Set<String> lockHolders = new HashSet<>();
+    private Set<String> lockHolders = new HashSet<>();
 
     private boolean exclusiveJobLock = false;
     private Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEvents
@@ -38,6 +38,10 @@ public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobL
 
     public Set<String> getLockHolders() {
         return lockHolders;
+    }
+
+    public void setLockHolders(Set<String> lockHolders) {
+        this.lockHolders = lockHolders;
     }
 
     public void addLockHolder(String jobIdentifier) {

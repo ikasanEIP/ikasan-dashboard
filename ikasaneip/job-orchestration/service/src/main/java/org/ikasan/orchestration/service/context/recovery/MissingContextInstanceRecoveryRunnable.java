@@ -119,9 +119,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
 
                     if(results != null && results.getTotalNumberOfResults() > 0 && QuartzTimeWindowChecker.withinOperatingWindow(contextInstance.getTimezone()
                         , contextInstance.getTimeWindowStart(), contextInstance.getContextTtlMilliseconds(), new Date(results.getResultList().get(0).getContextInstance().getStartTime()))) {
-                        LOG.info(String.format("Job Plan[%] that has been configured to end automatically when complete, with start cron[%s] and ttl[%s milliseconds]," +
-                            " will not create a new job plan instance as instance[%s] has already run within this time window.", contextInstance.getName(), contextInstance.getTimeWindowStart()
-                            , contextInstance.getContextTtlMilliseconds(), contextInstance.getId()));
+                        LOG.info("Job Plan[{}] that has been configured to end automatically when complete, with start cron[{}] and ttl[{} milliseconds]," +
+                            " will not create a new job plan instance as instance[{}] has already run within this time window.", contextInstance.getName(), contextInstance.getTimeWindowStart(), contextInstance.getContextTtlMilliseconds(), contextInstance.getId());
                     }
                     else {
                         this.initialiseContextInstanceAndRegisterEndJob(contextInstance);

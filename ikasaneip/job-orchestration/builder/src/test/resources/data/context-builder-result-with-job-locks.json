@@ -130,7 +130,7 @@
     "name" : "TEST-LOCK-1",
     "lockCount" : 1,
     "jobs" : {
-      "context1" : [ {
+      "context1:CHILD:" : [ {
         "agentName" : "AgentName",
         "jobName" : "Job1",
         "startupControlType" : "AUTOMATIC",
@@ -139,7 +139,7 @@
         "lockCount" : 1,
         "jobDescription" : "Job1 Description"
       } ],
-      "context2" : [ {
+      "context2:CHILD:" : [ {
         "agentName" : "AgentName",
         "jobName" : "Job2",
         "startupControlType" : "AUTOMATIC",
@@ -154,7 +154,7 @@
     "name" : "TEST-LOCK-2",
     "lockCount" : 1,
     "jobs" : {
-      "context1" : [ {
+      "context1:CHILD:" : [ {
         "agentName" : "AgentName",
         "jobName" : "Job3",
         "startupControlType" : "AUTOMATIC",
@@ -163,7 +163,7 @@
         "lockCount" : 1,
         "jobDescription" : "Job3 Description"
       } ],
-      "context2" : [ {
+      "context2:CHILD:" : [ {
         "agentName" : "AgentName",
         "jobName" : "Job4",
         "startupControlType" : "AUTOMATIC",
