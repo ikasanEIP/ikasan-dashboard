@@ -227,6 +227,7 @@ public class SchedulerStatusWidget extends DashboardWidget implements FlowStateB
         returnIcon.getElement().getStyle().set( "cursor", "pointer");
         returnIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
             this.createStatusView();
+            this.recalculate();
         });
 
         filerTextField.getElement().getStyle().set("margin-left", "auto");
@@ -242,7 +243,8 @@ public class SchedulerStatusWidget extends DashboardWidget implements FlowStateB
         this.flowsGrid.removeAllColumns();
         this.flowsGrid.setVisible(true);
         this.flowsGrid.setWidthFull();
-        this.flowsGrid.setHeight("100%");
+        this.flowsGrid.setAllRowsVisible(false);
+        this.flowsGrid.setHeight(45, Unit.VH);
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
             .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
