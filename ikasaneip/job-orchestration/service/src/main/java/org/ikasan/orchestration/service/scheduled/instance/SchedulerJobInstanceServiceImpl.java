@@ -175,7 +175,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
             List<SchedulerJobInstance> schedulerJobInstances = new ArrayList<>();
             for (SchedulerJobRecord schedulerJobRecord : schedulerJobRecordSearchResults.getResultList()) {
-                if(schedulerJobRecord.getJob() instanceof FileEventDrivenJobImpl) {
+                if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
                     schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
                         , FileEventDrivenJobInstanceImpl.class));
                 }

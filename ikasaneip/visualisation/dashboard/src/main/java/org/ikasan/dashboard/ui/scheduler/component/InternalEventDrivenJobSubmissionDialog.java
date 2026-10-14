@@ -189,7 +189,7 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
                     // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
                     // the initiation event will be sent to the relevant agent.
                     JobLockCacheImpl.instance().lock(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
-                        , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName()
+                        , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName()
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()
                         , this.contextInstance.getEnvironmentGroup());

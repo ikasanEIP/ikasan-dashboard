@@ -104,9 +104,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private ScheduledContextService scheduledContextService;
 
     @Autowired
-    private JobLockCacheService jobLockCacheService;
-
-    @Autowired
     private SchedulerJobService schedulerJobService;
 
     @Autowired
