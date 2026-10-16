@@ -5,6 +5,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 @Theme(themeClass = Material.class)
 @PWA(name = "Ikasan Visualisation Dashboard",
     shortName = "Ikasan")
+@LoadDependenciesOnStartup
 public class IkasanAppShellConfigurator implements AppShellConfigurator {
 
     @Override
