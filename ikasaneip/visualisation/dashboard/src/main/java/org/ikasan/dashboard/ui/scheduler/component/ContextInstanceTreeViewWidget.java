@@ -1215,7 +1215,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         horizontalLayout.add(release);
 
-        Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-all-nested-jobs", UI.getCurrent().getLocale()
+        Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("tooltip.skip-all-nested-jobs", UI.getCurrent().getLocale()
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         skip.addClickListener(event -> {
             if(!this.canPerformAction(true)) {
@@ -1393,7 +1393,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         Icon skip;
         if(!iconMap.containsKey(SKIP_ICON)) {
-            skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            skip = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
 
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(!this.canPerformAction(true)) {

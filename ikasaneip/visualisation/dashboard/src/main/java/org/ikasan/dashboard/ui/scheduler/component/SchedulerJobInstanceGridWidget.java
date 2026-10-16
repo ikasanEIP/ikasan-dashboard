@@ -365,7 +365,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
             HorizontalLayout layout = new HorizontalLayout();
             layout.setWidth("300px");
 
-            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job"), "14pt", "rgba(0, 0, 0, 1.0)");
+            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("tooltip.skip-job"), "14pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(!canPerformAction()) {
                     return;

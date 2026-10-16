@@ -544,7 +544,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             layout.add(downloadAnchor);
 
-            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job"
+            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("tooltip.skip-job"
                 , UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob && ((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()

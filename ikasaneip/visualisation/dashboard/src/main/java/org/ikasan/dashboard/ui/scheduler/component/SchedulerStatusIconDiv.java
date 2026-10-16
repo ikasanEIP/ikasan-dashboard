@@ -69,7 +69,7 @@ public class SchedulerStatusIconDiv extends Div {
         else if(status.equals(InstanceStatus.SKIPPED.name()) || status.equals(InstanceStatus.SKIPPED_RUNNING.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), tooltip, "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.FAST_FORWARD.create(), tooltip, "14pt", "#FFF"));
         }
         else if(status.equals(InstanceStatus.DISABLED.name())) {
             super.getElement().getStyle().set("background-color", "#000000");
