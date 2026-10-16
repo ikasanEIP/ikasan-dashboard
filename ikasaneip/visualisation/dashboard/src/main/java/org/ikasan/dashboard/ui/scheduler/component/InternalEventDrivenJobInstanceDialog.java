@@ -355,7 +355,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        this.skipButton = new Button(getTranslation("button.skip", UI.getCurrent().getLocale()), new Icon(VaadinIcon.BAN));
+        this.skipButton = new Button(getTranslation("button.skip", UI.getCurrent().getLocale()), new Icon(VaadinIcon.FAST_FORWARD));
         this.skipButton.setIconAfterText(true);
 
         this.skipButton.addClickListener(event -> {
