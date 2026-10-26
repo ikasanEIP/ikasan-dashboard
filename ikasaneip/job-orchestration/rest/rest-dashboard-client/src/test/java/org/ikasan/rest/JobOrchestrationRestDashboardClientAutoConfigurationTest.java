@@ -1,5 +1,6 @@
-package org.ikasan.job.orchestration.rest.dashboard;
+package org.ikasan.rest;
 
+import org.ikasan.job.orchestration.rest.client.JobOrchestrationRestDashboardClientAutoConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +14,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ClusterBroadcastAutoConfigurationTest {
+public class JobOrchestrationRestDashboardClientAutoConfigurationTest {
 
     // Numeric IPs are used for peer URLs throughout these tests so that InetAddress.getAllByName()
     // returns immediately without a DNS lookup. Non-existent hostnames would each block for up to
@@ -21,11 +22,11 @@ public class ClusterBroadcastAutoConfigurationTest {
     private static final String PEER1 = "http://192.168.1.101:9090";
     private static final String PEER2 = "http://192.168.1.102:9090";
 
-    private ClusterBroadcastAutoConfiguration uut;
+    private JobOrchestrationRestDashboardClientAutoConfiguration uut;
 
     @Before
     public void setUp() {
-        uut = new ClusterBroadcastAutoConfiguration();
+        uut = new JobOrchestrationRestDashboardClientAutoConfiguration();
         ReflectionTestUtils.setField(uut, "serverPort", 9090);
     }
 

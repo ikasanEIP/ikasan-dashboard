@@ -2,7 +2,9 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -11,41 +13,53 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.ErrorAcknowledgedPositionedDialog;
-import org.ikasan.dashboard.ui.scheduler.component.JsonViewerDialog;
-import org.ikasan.dashboard.ui.scheduler.component.LogFileHistoryDialog;
-import org.ikasan.dashboard.ui.scheduler.component.TextViewerDialog;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.stream.Collectors;
 
 public class CommandExecutionJobPositionedDialog extends PositionedDialog {
-    private Logger logger = LoggerFactory.getLogger(CommandExecutionJobPositionedDialog.class);
-    private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
-    private LogStreamingService logStreamingService;
-    private ModuleMetaDataService moduleMetaDataService;
-    private SchedulerJobInstanceService schedulerJobInstanceService;
-    private ScheduledContextInstanceService scheduledContextInstanceService;
-    private ContextInstance contextInstance;
+    private final Logger logger = LoggerFactory.getLogger(CommandExecutionJobPositionedDialog.class);
+    private final SchedulerJobInstanceRecord schedulerJobInstanceRecord;
+    private final LogStreamingService logStreamingService;
+    private final ModuleMetaDataService moduleMetaDataService;
+    private final SchedulerJobInstanceService schedulerJobInstanceService;
+    private final ScheduledContextInstanceService scheduledContextInstanceService;
+    private final ContextInstance contextInstance;
+    private final ConfigurationService configurationRestService;
+    private final ModuleControlService moduleControlRestService;
+    private final MetaDataService metaDataRestService;
+    private final SystemEventLogger systemEventLogger;
+    private final JobInitiationService jobInitiationService;
+    private final JobUtilsService jobUtilsService;
 
 
     public CommandExecutionJobPositionedDialog(SchedulerJobInstanceRecord schedulerJobInstanceRecord, LogStreamingService logStreamingService,
                                                ModuleMetaDataService moduleMetaDataService,SchedulerJobInstanceService schedulerJobInstanceService,
-                                               ScheduledContextInstanceService scheduledContextInstanceService, ContextInstance contextInstance) {
+                                               ScheduledContextInstanceService scheduledContextInstanceService, ContextInstance contextInstance,
+                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                                               SystemEventLogger systemEventLogger, JobInitiationService jobInitiationService, JobUtilsService jobUtilsService) {
         super(450, 400);
         this.schedulerJobInstanceRecord = schedulerJobInstanceRecord;
         this.logStreamingService = logStreamingService;
@@ -53,11 +67,25 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.contextInstance = contextInstance;
+        this.configurationRestService = configurationRestService;
+        this.moduleControlRestService = moduleControlRestService;
+        this.metaDataRestService = metaDataRestService;
+        this.systemEventLogger = systemEventLogger;
+        this.jobInitiationService = jobInitiationService;
+        this.jobUtilsService = jobUtilsService;
         this.init();
     }
 
     private void init() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
+
+        Icon openJob = IconDecorator.decorate(new Icon(VaadinIcon.MODAL), getTranslation("tooltip.open-job"
+            , UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
+        openJob.addClickListener((ComponentEventListener<ClickEvent<Icon>>) event -> {
+            this.openCommandExecutionJob(this.schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
+                schedulerJobInstanceRecord.getJobName());
+        });
+
 
         Icon logFile = IconDecorator.decorate(new Icon(VaadinIcon.FILE_PROCESS), getTranslation("tooltip.view-log-file"
             , UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
@@ -129,7 +157,7 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
             errorAcknowledgedPositionedDialog.open();
         });
 
-        buttonLayout.add(logFile, errorLogFile, logFileHistory, event, executionDetails, acknowledgedIcon);
+        buttonLayout.add(openJob, logFile, errorLogFile, logFileHistory, event, executionDetails, acknowledgedIcon);
         buttonLayout.getStyle().set("position", "absolute");
         buttonLayout.getStyle().set("right", "20px");
 
@@ -215,7 +243,26 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
         formLayout.add(last5ExecutionDurations);
 
         formLayout.getStyle().set("padding-top", "30px");
+        buttonLayout.getStyle().set("z-index", "1000");
         super.add(buttonLayout, formLayout);
+        this.setModality(ModalityMode.STRICT);
+    }
+
+    /**
+     * Open the command execution job dialog.
+     *
+     * @param identifier of the job
+     */
+    private void openCommandExecutionJob(String identifier, String jobName) {
+        InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog
+            (moduleMetaDataService.findById(this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName()),
+                configurationRestService, moduleControlRestService,
+                metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance,
+                this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService,
+                this.scheduledContextInstanceService);
+
+        internalEventDrivenJobInstanceDialog.setJob(schedulerJobInstanceRecord);
+        internalEventDrivenJobInstanceDialog.open();
     }
 
     /**

@@ -21,7 +21,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
@@ -56,6 +56,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
     private Icon viewRawJobButton;
     private Icon viewProcessExecutionButton;
 
+    private Button disableButton;
+    private Button reinstateDisabledJobButton;
     private Button holdButton;
     private Button releaseButton;
     private Button submitButton;
@@ -137,6 +139,49 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
         this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
 
         formLayout.add(this.statusDiv, 2);
+
+        this.disableButton = new Button(getTranslation("button.disable", UI.getCurrent().getLocale()), new Icon(VaadinIcon.BAN));
+        this.disableButton.setIconAfterText(true);
+
+        this.disableButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
+
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.disable-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.disable-job", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent ->
+                this.disableJob());
+        });
+
+        this.reinstateDisabledJobButton = new Button(getTranslation("tooltip.reinstate-disabled-job"
+            , UI.getCurrent().getLocale()), new Icon(VaadinIcon.CHECK));
+        this.reinstateDisabledJobButton.setIconAfterText(true);
+
+        this.reinstateDisabledJobButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
+
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reinstate-disabled-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.reinstate-disabled-job", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent ->
+                this.reinstateJob());
+        });
 
         this.holdButton = new Button(getTranslation("button.hold", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HAND));
         this.holdButton.setIconAfterText(true);
@@ -279,7 +324,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
         });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(this.holdButton, this.releaseButton, this.skipButton, this.enableButton, this.submitButton);
+        actionsLayout.add(this.disableButton, this.reinstateDisabledJobButton, this.holdButton, this.releaseButton, this.skipButton, this.enableButton, this.submitButton);
         actionsLayout.setMargin(false);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
@@ -593,6 +638,85 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
     }
 
     /**
+     * Disables a scheduled job associated with the current dialog instance.
+     *
+     * This method retrieves the context machine associated with the job's context instance ID
+     * and attempts to disable the job. If the context machine is not active or cannot be found,
+     * an error notification is displayed, and no further actions are performed. In successful
+     * scenarios, job state is updated to "DISABLED", and a system event is logged to record
+     * the action. Any exceptions encountered during the disabling process are logged, and an
+     * error notification is displayed to the user.
+     */
+    private void disableJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-skipped"
+                , UI.getCurrent().getLocale()));
+            return;
+        }
+
+        try {
+            contextMachine.disableJob(this.localEventJobInstance.getIdentifier(), this.localEventJobInstance.getChildContextName());
+            this.updateJobState(this.localEventJobInstance, InstanceStatus.DISABLED);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DISABLED, String.format("Agent Name[%s], Scheduled Job Name[%s], Disabled[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.localEventJobInstance.getAgentName(), localEventJobInstance.getJobName(), true, localEventJobInstance.getContextName()
+                , localEventJobInstance.getContextInstanceId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.disabled-general-error", UI.getCurrent().getLocale()));
+        }
+
+    }
+
+    /**
+     * Reinstates a previously disabled scheduled job associated with the current context.
+     *
+     * This method attempts to re-enable a scheduled job by first retrieving the
+     * corresponding context machine using the context instance ID from the
+     * scheduler job instance record.
+     *
+     * If the context machine is not active or cannot be found, an error notification is
+     * shown to the user and the method exits without taking further actions.
+     *
+     * On successful reinstatement of the job, the job's state is updated to "WAITING",
+     * and a system event is logged to record the operation.
+     *
+     * In cases where an exception occurs during the process, an error message
+     * is logged, and a general error notification is displayed to the user.
+     *
+     * This method requires access to the context machine, scheduler job instance record,
+     * and internal services for logging, localization, and UI notifications.
+     */
+    protected void reinstateJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-enabled"));
+            return;
+        }
+
+        try {
+            contextMachine.reinstateDisabledJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(this.localEventJobInstance, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_DISABLED_SCHEDULED_JOB_REINSTATED, String.format("Agent Name[%s], Scheduled Job Name[%s], Disabled[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false, this.contextInstance.getName()
+                , this.contextInstance.getId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            logger.error("An error has occurred reinstating disabled job! Agent Name[{}], Scheduled Job Name[{}], Job Plan Name[{}], Child Context Name[{}], Job Plan Instance Id[{}]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
+                , this.contextInstance.getName() , this.localEventJobInstance.getChildContextName(), this.contextInstance.getId(), e);
+            NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
+        }
+    }
+
+    /**
      * Helper method to update a jobs state and persist it before broadcasting the state change.
      *
      * @param localEventJobInstance
@@ -627,6 +751,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
 
     private void setButtonVisibility() {
         if(this.localEventJobInstance.getStatus().equals(InstanceStatus.RUNNING)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(false);
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
@@ -634,6 +760,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
             this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(false);
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
@@ -641,6 +769,11 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
             this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+            this.disableButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.reinstateDisabledJobButton.setVisible(false);
             this.submitButton.setVisible(true &&
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
@@ -657,6 +790,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
             this.enableButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(false);
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
@@ -669,6 +804,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
             this.localEventJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
             this.localEventJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(false);
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(true &&
@@ -679,6 +816,20 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
             this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(false);
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+        }
+        else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+            this.disableButton.setVisible(false);
+            this.reinstateDisabledJobButton.setVisible(
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);

@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.integration.inbound.component.endpoint;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

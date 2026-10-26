@@ -12,7 +12,7 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;

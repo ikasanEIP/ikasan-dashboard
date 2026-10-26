@@ -1787,6 +1787,46 @@ public class ContextHelper {
     }
 
     /**
+     * Disables all jobs in the provided context by setting their state to "disabled".
+     *
+     * @param context The context instance where the jobs are disabled.
+     * @param schedulerJobInstanceMap A map of scheduler job instances to be disabled.
+     */
+    public static void disableAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        _disableAllJobs(context, schedulerJobInstanceMap);
+    }
+
+    /**
+     * Disables all jobs that are either in the WAITING or RELEASED status, and sets their status to DISABLED.
+     * Additionally, it sets the child contexts of these jobs as disabled, and updates their status to DISABLED.
+     *
+     * @param context The ContextInstance object to disable the jobs.
+     * @param schedulerJobInstanceMap A map containing the instances of SchedulerJobInstance objects, with their identifiers as keys.
+     */
+    private static void _disableAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        if(context.getScheduledJobs() != null) {
+            context.getScheduledJobs().forEach(job -> {
+                if(schedulerJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())
+                    && (job.getStatus().equals(InstanceStatus.WAITING) || job.getStatus().equals(InstanceStatus.RELEASED))) {
+                    if (job.getChildContextNames() != null) {
+                        Map<String, Boolean> disabledMap = new HashMap<>();
+                        job.getChildContextNames()
+                            .forEach(name -> disabledMap.put(name, Boolean.TRUE));
+                        job.setDisabledContexts(disabledMap);
+                    }
+
+                    job.setDisabled(true);
+                    job.setStatus(InstanceStatus.DISABLED);
+                }
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> _disableAllJobs(c, schedulerJobInstanceMap));
+        }
+    }
+
+    /**
      * Sets the status of all job instances in the given internal event-driven job instance map.
      *
      * @param context The context instance.

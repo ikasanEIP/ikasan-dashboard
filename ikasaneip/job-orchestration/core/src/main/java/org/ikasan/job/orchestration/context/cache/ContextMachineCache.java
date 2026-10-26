@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.context.cache;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;

@@ -52,6 +52,9 @@ public class MongoInternalEventDrivenJobRecordImpl implements InternalEventDrive
     @Field(EntityFields.SKIPPED)
     private boolean skipped;
 
+    @Field(EntityFields.DISABLED)
+    private boolean disabled;
+
     @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
@@ -181,6 +184,16 @@ public class MongoInternalEventDrivenJobRecordImpl implements InternalEventDrive
     @Override
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

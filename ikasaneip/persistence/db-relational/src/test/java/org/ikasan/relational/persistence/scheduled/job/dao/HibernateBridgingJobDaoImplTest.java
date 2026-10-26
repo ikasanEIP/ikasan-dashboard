@@ -274,6 +274,7 @@ public class HibernateBridgingJobDaoImplTest {
         private String startupControlType;
         private Map<String, Boolean> skippedContexts;
         private Map<String, Boolean> heldContexts;
+        private Map<String, Boolean> disabledContexts;
         private int ordinal;
         private Boolean isTemplateJob;
         private Boolean isTemplateBased;
@@ -385,6 +386,14 @@ public class HibernateBridgingJobDaoImplTest {
         @Override
         public Map<String, Boolean> getHeldContexts() {
             return heldContexts;
+        }
+
+        public Map<String, Boolean> getDisabledContexts() {
+            return disabledContexts;
+        }
+
+        public void setDisabledContexts(Map<String, Boolean> disabledContexts) {
+            this.disabledContexts = disabledContexts;
         }
 
         @Override

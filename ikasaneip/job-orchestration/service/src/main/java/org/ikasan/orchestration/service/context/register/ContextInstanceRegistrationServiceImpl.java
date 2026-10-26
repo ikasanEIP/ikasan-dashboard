@@ -48,7 +48,7 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;

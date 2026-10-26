@@ -6,7 +6,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.TimeService;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;

@@ -30,6 +30,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -150,6 +151,228 @@ public class ContextMachineTest extends AbstractTest {
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-success-context-status.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
+        eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job3-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job2-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName4",
+            "agentName4", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job4-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job5-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus())
+            , JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job6-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName7",
+            "agentName7", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job7-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName8",
+            "agentName8", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job8-success-context-status-no-lock.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName9",
+            "agentName9", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job9-success-context-status-no-lock.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName10",
+            "agentName10", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job10-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName11",
+            "agentName11", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job11-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName12",
+            "agentName12", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job12-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName13",
+            "agentName13", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job13-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName14",
+            "agentName14", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job14-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName15",
+            "agentName15", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job15-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName16",
+            "agentName16", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job16-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_disabled_job_reinstated() throws IOException, JSONException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new LocalEventJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-running-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+
+        // We disable the job!
+        contextMachine.disableJob("agentName5-jobName5", "Context3");
+        events = contextMachine.eventReceived(eventInstance);
+
+        // We do not expect that the subsequent downstream event is raised
+        Assert.assertEquals(0, events.size());
+
+        // We reinstatee the disabled job!
+        contextMachine.reinstateDisabledJob("agentName5-jobName5", "Context3");
+        // republish the upstream job
+        events = contextMachine.eventReceived(eventInstance);
+
+        // We now expect the downstream job to be raised
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        // Now work our way through the rest of the job plan and make sure it is completed successfully!
         eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", true);
         InstanceStatus status = contextMachine.getContextStatus("Context3");
@@ -1225,6 +1448,210 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(InstanceStatus.WAITING,
             contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
                 .getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    @Test
+    public void test_disable_jobs_delegates_to_service_and_fires_state_change_events() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.disableJobsWithinContext(any(), any()))
+            .thenReturn(List.of(schedulerJobInstanceRecord));
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.disableJobs("Context3");
+
+        verify(schedulerJobInstanceService).disableJobsWithinContext(any(), eq("Context3"));
+    }
+
+    @Test
+    public void test_disable_job_sets_job_to_disabled_and_saves_to_db() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        InternalEventDrivenJobInstanceImpl jobInstance = new InternalEventDrivenJobInstanceImpl();
+        jobInstance.setIdentifier("agentName1-jobName1");
+        jobInstance.setJobName("jobName1");
+        jobInstance.setChildContextName("Context3");
+        jobInstance.setStatus(InstanceStatus.WAITING);
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(jobInstance);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.disableJob("agentName1-jobName1", "Context3");
+
+        Assert.assertEquals(InstanceStatus.DISABLED,
+            contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+                .getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+        Assert.assertTrue(contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").isDisabled());
+        verify(schedulerJobInstanceService).save((SchedulerJobInstanceRecord) any());
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_disable_job_throws_exception_when_job_not_found() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.disableJob("non-existent-job", "Context3");
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_disable_job_throws_exception_when_job_in_invalid_state() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.disableJob("agentName1-jobName1", "Context3");
+    }
+
+    @Test
+    public void test_reinstate_disabled_jobs_delegates_to_service_and_releases_jobs() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.DISABLED);
+
+        InternalEventDrivenJobInstanceImpl jobInstance = new InternalEventDrivenJobInstanceImpl();
+        jobInstance.setIdentifier("agentName1-jobName1");
+        jobInstance.setJobName("jobName1");
+        jobInstance.setChildContextName("Context3");
+        jobInstance.setStatus(InstanceStatus.DISABLED);
+
+        when(this.schedulerJobInstanceService.getJobsToEnableWithinContext(any(), any()))
+            .thenReturn(List.of(schedulerJobInstanceRecord));
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(jobInstance);
+        when(this.schedulerJobInstanceRecord.getChildContextName()).thenReturn("Context3");
+        lenient().when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.reinstateDisabledJobs("Context3");
+
+        verify(schedulerJobInstanceService).getJobsToEnableWithinContext(any(), eq("Context3"));
+    }
+
+    @Test
+    public void test_reinstate_disabled_job_sets_job_to_waiting_and_saves_to_db() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.DISABLED);
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setDisabled(true);
+
+        InternalEventDrivenJobInstanceImpl jobInstance = new InternalEventDrivenJobInstanceImpl();
+        jobInstance.setIdentifier("agentName1-jobName1");
+        jobInstance.setJobName("jobName1");
+        jobInstance.setChildContextName("Context3");
+        jobInstance.setStatus(InstanceStatus.DISABLED);
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(jobInstance);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.reinstateDisabledJob("agentName1-jobName1", "Context3");
+
+        Assert.assertEquals(InstanceStatus.WAITING,
+            contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+                .getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+        Assert.assertFalse(contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").isDisabled());
+        verify(schedulerJobInstanceService).save((SchedulerJobInstanceRecord)any());
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_reinstate_disabled_job_throws_exception_when_job_not_found() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.reinstateDisabledJob("non-existent-job", "Context3");
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_reinstate_disabled_job_throws_exception_when_job_not_disabled() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.reinstateDisabledJob("agentName1-jobName1", "Context3");
     }
 
     @Test

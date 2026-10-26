@@ -1,11 +1,11 @@
 package org.ikasan.job.orchestration.core.component.converter;
 
-import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
-import org.ikasan.job.orchestration.model.status.SchedulerJobInstanceStatus;
 import org.ikasan.spec.component.transformation.Converter;
 import org.ikasan.spec.component.transformation.TransformationException;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceStatus;
 
 import java.util.ArrayList;
 import java.util.List;

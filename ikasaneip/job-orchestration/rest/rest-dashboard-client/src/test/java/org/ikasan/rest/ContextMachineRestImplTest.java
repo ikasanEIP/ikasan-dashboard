@@ -1,9 +1,10 @@
-package org.ikasan.job.orchestration.rest.dashboard;
+package org.ikasan.rest;
 
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
+import org.ikasan.job.orchestration.rest.client.ContextMachineRestImpl;
+import org.ikasan.job.orchestration.rest.client.delegate.ContextMachineRestServiceDelegate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.junit.Before;
@@ -37,8 +38,8 @@ public class ContextMachineRestImplTest {
     private static final String JOB_NAME            = "job-name";
     private static final String MESSAGE_ID          = "message-1";
 
-    private ContextMachineRestServiceImpl mockSvc;
-    private Map<String, ContextMachineRestServiceImpl> peersByUrl;
+    private ContextMachineRestServiceDelegate mockSvc;
+    private Map<String, ContextMachineRestServiceDelegate> peersByUrl;
 
     // Mutable field read by the lambda supplier — lets tests control leader availability
     private String leaderUrl;
@@ -50,7 +51,7 @@ public class ContextMachineRestImplTest {
 
     @Before
     public void setUp() {
-        mockSvc = mock(ContextMachineRestServiceImpl.class);
+        mockSvc = mock(ContextMachineRestServiceDelegate.class);
         peersByUrl = new HashMap<>();
         peersByUrl.put(LEADER_URL.toLowerCase(), mockSvc);
 

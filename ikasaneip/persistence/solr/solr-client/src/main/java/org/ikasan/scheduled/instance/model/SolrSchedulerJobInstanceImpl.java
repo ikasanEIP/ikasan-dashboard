@@ -13,6 +13,7 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
     private String childContextName;
     private boolean held = false;
     private boolean initiationEventRaised = false;
+    private boolean disabled = false;
     private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
     private Boolean errorAcknowledged;
@@ -46,6 +47,16 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     public void setHeld(boolean held) {
         this.held = held;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     public boolean isInitiationEventRaised() {

@@ -1,10 +1,8 @@
-package org.ikasan.job.orchestration.rest.dashboard;
+package org.ikasan.job.orchestration.rest.client;
 
 import org.ikasan.bigqueue.IBigQueue;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
-import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.rest.client.delegate.ContextMachineRestServiceDelegate;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -14,10 +12,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +27,7 @@ import java.util.function.Supplier;
 
 /**
  * A {@link ContextMachine} implementation that proxies operations to the leader cluster node via
- * REST. Used by {@link ContextMachineCache}'s fallback mechanism when a context instance is not
+ * REST. Used by ContextMachineCache's fallback mechanism when a context instance is not
  * present in the local cache, meaning it lives on another node.
  * The leader's URL is resolved on each call via the supplied {@link Supplier}, which reads from
  * ZooKeeper, avoiding the N-1 wasted calls of a fan-out approach. If the targeted leader returns
@@ -47,13 +42,13 @@ public class ContextMachineRestImpl implements ContextMachine {
 
     private final String contextInstanceId;
     private final Supplier<String> leaderUrlSupplier;
-    private final Map<String, ContextMachineRestServiceImpl> peersByUrl;
+    private final Map<String, ContextMachineRestServiceDelegate> peersByUrl;
     private final int leaderLookupRetries;
     private final long leaderLookupRetryIntervalMs;
 
     public ContextMachineRestImpl(String contextInstanceId,
                                   Supplier<String> leaderUrlSupplier,
-                                  Map<String, ContextMachineRestServiceImpl> peersByUrl,
+                                  Map<String, ContextMachineRestServiceDelegate> peersByUrl,
                                   int leaderLookupRetries,
                                   long leaderLookupRetryIntervalMs) {
         this.contextInstanceId = contextInstanceId;
@@ -65,7 +60,7 @@ public class ContextMachineRestImpl implements ContextMachine {
 
     // ── Routing helpers ─────────────────────────────────────────────────────────────────────────
 
-    private ContextMachineRestServiceImpl resolveLeader() {
+    private ContextMachineRestServiceDelegate resolveLeader() {
         String url = leaderUrlSupplier.get();
         if (url == null) return null;
         return peersByUrl.get(url.toLowerCase());
@@ -76,9 +71,9 @@ public class ContextMachineRestImpl implements ContextMachine {
      * times (with a sleep between each) when the leader is unreachable or returns false.
      * Logs a warning after all attempts are exhausted.
      */
-    private void doWrite(Function<ContextMachineRestServiceImpl, Boolean> op, String opName) {
+    private void doWrite(Function<ContextMachineRestServiceDelegate, Boolean> op, String opName) {
         for (int attempt = 0; attempt <= leaderLookupRetries; attempt++) {
-            ContextMachineRestServiceImpl svc = resolveLeader();
+            ContextMachineRestServiceDelegate svc = resolveLeader();
             if (svc != null) {
                 try {
                     if (op.apply(svc)) return;
@@ -99,9 +94,9 @@ public class ContextMachineRestImpl implements ContextMachine {
     /**
      * Calls { op} against the current leader and retries on false or network errors.
      */
-    private boolean doBooleanWrite(Function<ContextMachineRestServiceImpl, Boolean> op, String opName) {
+    private boolean doBooleanWrite(Function<ContextMachineRestServiceDelegate, Boolean> op, String opName) {
         for (int attempt = 0; attempt <= leaderLookupRetries; attempt++) {
-            ContextMachineRestServiceImpl svc = resolveLeader();
+            ContextMachineRestServiceDelegate svc = resolveLeader();
             if (svc != null) {
                 try {
                     if (op.apply(svc)) {
@@ -127,9 +122,9 @@ public class ContextMachineRestImpl implements ContextMachine {
      * when the leader is unreachable or returns null. Returns {@code fallback} if all attempts
      * are exhausted.
      */
-    private <T> T doRead(Function<ContextMachineRestServiceImpl, T> op, T fallback, String opName) {
+    private <T> T doRead(Function<ContextMachineRestServiceDelegate, T> op, T fallback, String opName) {
         for (int attempt = 0; attempt <= leaderLookupRetries; attempt++) {
-            ContextMachineRestServiceImpl svc = resolveLeader();
+            ContextMachineRestServiceDelegate svc = resolveLeader();
             if (svc != null) {
                 try {
                     // Any non-exceptional return (including null) is a definitive server answer.
@@ -202,6 +197,26 @@ public class ContextMachineRestImpl implements ContextMachine {
     @Override
     public void skipJobs(String childContextName, boolean skipFlag) {
         doWrite(svc -> svc.skipAllJobs(contextInstanceId, childContextName, skipFlag), "skipJobs");
+    }
+
+    @Override
+    public void disableJobs(String childContextName) {
+        doWrite(svc -> svc.disableJobs(contextInstanceId, childContextName), "disableJobs");
+    }
+
+    @Override
+    public void disableJob(String jobIdentifier, String childContextName) {
+        doWrite(svc -> svc.disableJob(contextInstanceId, jobIdentifier, childContextName), "disableJob");
+    }
+
+    @Override
+    public void reinstateDisabledJobs(String childContextName) {
+        doWrite(svc -> svc.reinstateDisabledJobs(contextInstanceId, childContextName), "reinstateDisabledJobs");
+    }
+
+    @Override
+    public void reinstateDisabledJob(String jobIdentifier, String childContextName) {
+        doWrite(svc -> svc.reinstateDisabledJobs(contextInstanceId, jobIdentifier), "reinstateDisabledJob");
     }
 
     @Override

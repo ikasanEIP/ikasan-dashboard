@@ -2142,4 +2142,180 @@ public class ContextHelperTest {
         Assert.assertNotNull(transitions);
         // Should handle non-InternalEventDrivenJob instances correctly
     }
+
+    @Test
+    public void test_disable_all_jobs_for_context_instance() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/-1793100514.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        AggregateContextInstanceStatus aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
+
+        Assert.assertTrue(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+    }
+
+    @Test
+    public void test_disable_all_jobs_sets_correct_status_and_flags() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/-1793100514.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        // Verify all jobs are initially WAITING
+        contextInstance.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+            Assert.assertFalse(job.isDisabled());
+        });
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        // Verify all jobs are now DISABLED with correct flags
+        contextInstance.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.DISABLED, job.getStatus());
+            Assert.assertTrue(job.isDisabled());
+        });
+    }
+
+    @Test
+    public void test_disable_all_jobs_when_job_in_error() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+
+        // Set all jobs to ERROR status
+        contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> schedulerJobInstance.setStatus(InstanceStatus.ERROR));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        AggregateContextInstanceStatus aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
+
+        // Jobs in ERROR should not be disabled
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+    }
+
+    @Test
+    public void test_disable_all_jobs_when_job_in_running() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+
+        // Set all jobs to RUNNING status
+        contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> schedulerJobInstance.setStatus(InstanceStatus.RUNNING));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        AggregateContextInstanceStatus aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
+
+        // Jobs in RUNNING should not be disabled
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+    }
+
+    @Test
+    public void test_disable_all_jobs_only_affects_waiting_and_released_jobs() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        // Set different statuses for different jobs
+        List<SchedulerJobInstance> jobs = contextInstance.getScheduledJobs();
+        if (jobs.size() >= 4) {
+            jobs.get(0).setStatus(InstanceStatus.WAITING);
+            jobs.get(1).setStatus(InstanceStatus.RELEASED);
+            jobs.get(2).setStatus(InstanceStatus.RUNNING);
+            jobs.get(3).setStatus(InstanceStatus.COMPLETE);
+
+            ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+            // Only WAITING and RELEASED should be disabled
+            Assert.assertEquals(InstanceStatus.DISABLED, jobs.get(0).getStatus());
+            Assert.assertTrue(jobs.get(0).isDisabled());
+            Assert.assertEquals(InstanceStatus.DISABLED, jobs.get(1).getStatus());
+            Assert.assertTrue(jobs.get(1).isDisabled());
+            Assert.assertEquals(InstanceStatus.RUNNING, jobs.get(2).getStatus());
+            Assert.assertFalse(jobs.get(2).isDisabled());
+            Assert.assertEquals(InstanceStatus.COMPLETE, jobs.get(3).getStatus());
+            Assert.assertFalse(jobs.get(3).isDisabled());
+        }
+    }
+
+    @Test
+    public void test_disable_all_jobs_sets_disabled_contexts() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/-1793100514.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        // Verify that jobs with child contexts have disabledContexts set
+        contextInstance.getScheduledJobs().forEach(job -> {
+            if (job.getStatus().equals(InstanceStatus.DISABLED) && job.getChildContextNames() != null && !job.getChildContextNames().isEmpty()) {
+                Assert.assertNotNull(job.getDisabledContexts());
+                job.getChildContextNames().forEach(childContextName -> {
+                    Assert.assertTrue(job.getDisabledContexts().containsKey(childContextName));
+                    Assert.assertTrue(job.getDisabledContexts().get(childContextName));
+                });
+            }
+        });
+    }
+
+    @Test
+    public void test_disable_all_jobs_recursive_on_nested_contexts() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/-1793100514.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.disableAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
+
+        // Verify that nested contexts also have their jobs disabled
+        if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+            for (ContextInstance childContext : contextInstance.getContexts()) {
+                if (childContext.getScheduledJobs() != null) {
+                    for (SchedulerJobInstance job : childContext.getScheduledJobs()) {
+                        // Jobs in WAITING or RELEASED should be disabled
+                        if (job.getStatus().equals(InstanceStatus.DISABLED)) {
+                            Assert.assertTrue(job.isDisabled());
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

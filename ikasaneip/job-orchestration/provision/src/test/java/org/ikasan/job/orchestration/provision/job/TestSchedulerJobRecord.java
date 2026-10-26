@@ -12,6 +12,11 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord<SchedulerJob> 
     }
 
     @Override
+    public boolean isDisabled() {
+        return false;
+    }
+
+    @Override
     public String getId() {
         return null;
     }

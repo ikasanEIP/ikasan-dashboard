@@ -221,6 +221,7 @@ public class HibernateSchedulerJobDaoImplTest {
         private String contextSearchFilter;
         private boolean held;
         private boolean skipped;
+        private boolean disabled;
         private Boolean targetResidingContextOnly;
         private Boolean participatesInLock;
         private List<String> contextNames;
@@ -304,6 +305,16 @@ public class HibernateSchedulerJobDaoImplTest {
         @Override
         public void setSkipped(boolean skipped) {
             this.skipped = skipped;
+        }
+
+        @Override
+        public boolean isDisabled() {
+            return disabled;
+        }
+
+        @Override
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
         }
 
         @Override

@@ -682,6 +682,83 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_findByFilter_disabled() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            String contextId = "disabledContext";
+
+            // Insert jobs with disabled flag set to true
+            this.insertInternalEventDrivenRecordsWithDisabled("disabledAgent", 5, contextId, true);
+
+            // Insert jobs with disabled flag set to false
+            this.insertInternalEventDrivenRecordsWithDisabled("enabledAgent", 3, contextId, false);
+
+            server.commit();
+
+            // Test filtering by disabled = true
+            SolrSchedulerJobSearchFilterImpl filterDisabled = new SolrSchedulerJobSearchFilterImpl();
+            filterDisabled.setDisabled(true);
+            SearchResults<SchedulerJobRecord> resultsDisabled = this.dao.findByFilter(filterDisabled, 10, 0, null, null);
+
+            Assert.assertNotNull(resultsDisabled);
+            Assert.assertEquals(5, resultsDisabled.getTotalNumberOfResults());
+            resultsDisabled.getResultList().forEach(record -> Assert.assertTrue(record.isDisabled()));
+        }
+    }
+
+    @Test
+    public void test_findByFilter_disabled_with_other_filters() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            String contextId = "mixedFlagsContext";
+
+            // Insert jobs with different flag combinations
+            this.insertInternalEventDrivenRecordsWithAllFlags("agent1", 10, contextId, true, false, false);  // held only
+            this.insertInternalEventDrivenRecordsWithAllFlags("agent2", 10, contextId, false, true, false);  // skipped only
+            this.insertInternalEventDrivenRecordsWithAllFlags("agent3", 10, contextId, false, false, true);  // disabled only
+            this.insertInternalEventDrivenRecordsWithAllFlags("agent4", 10, contextId, true, true, true);    // all flags
+
+            server.commit();
+
+            // Test filtering by disabled AND held
+            SolrSchedulerJobSearchFilterImpl filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setDisabled(true);
+            filter.setHeld(true);
+            SearchResults<SchedulerJobRecord> results = this.dao.findByFilter(filter, 50, 0, null, null);
+
+            Assert.assertNotNull(results);
+            Assert.assertEquals(11, results.getTotalNumberOfResults()); // Only agent4 jobs match both criteria
+            results.getResultList().forEach(record -> {
+                Assert.assertTrue(record.isDisabled());
+                Assert.assertTrue(record.isHeld());
+            });
+
+            // Test filtering by disabled AND skipped
+            filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setDisabled(true);
+            filter.setSkipped(true);
+            results = this.dao.findByFilter(filter, 50, 0, null, null);
+
+            Assert.assertNotNull(results);
+            Assert.assertEquals(12, results.getTotalNumberOfResults()); // Only agent4 jobs match both criteria
+            results.getResultList().forEach(record -> {
+                Assert.assertTrue(record.isDisabled());
+                Assert.assertTrue(record.isSkipped());
+            });
+
+            // Test filtering by disabled only
+            filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setDisabled(true);
+            results = this.dao.findByFilter(filter, 50, 0, null, null);
+
+            Assert.assertNotNull(results);
+            Assert.assertEquals(20, results.getTotalNumberOfResults()); // agent3 + agent4
+        }
+    }
+
     private void insertFileEventRecords(String idPrefix, int num, String contextId) {
         this.insertFileEventRecords(idPrefix, num, contextId, null);
     }
@@ -748,6 +825,18 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
         this.insertInternalEventDrivenRecords(idPrefix, num, contextId, null);
     }
     private void insertInternalEventDrivenRecords(String idPrefix, int num, String contextId, String agentName) {
+        this.insertInternalEventDrivenRecordsWithAllFlags(idPrefix, num, contextId, agentName, false, false, false);
+    }
+
+    private void insertInternalEventDrivenRecordsWithDisabled(String idPrefix, int num, String contextId, boolean disabled) {
+        this.insertInternalEventDrivenRecordsWithAllFlags(idPrefix, num, contextId, null, false, false, disabled);
+    }
+
+    private void insertInternalEventDrivenRecordsWithAllFlags(String idPrefix, int num, String contextId, boolean held, boolean skipped, boolean disabled) {
+        this.insertInternalEventDrivenRecordsWithAllFlags(idPrefix, num, contextId, null, held, skipped, disabled);
+    }
+
+    private void insertInternalEventDrivenRecordsWithAllFlags(String idPrefix, int num, String contextId, String agentName, boolean held, boolean skipped, boolean disabled) {
         List<InternalEventDrivenJobRecord> records = new ArrayList<>();
         IntStream.range(0, num).forEach(i -> {
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
@@ -768,8 +857,9 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJobRecord.setContextName(contextId);
             solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
             solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
-            solrInternalEventDrivenJobRecord.setHeld(i%10==0);
-            solrInternalEventDrivenJobRecord.setSkipped(i%5==0);
+            solrInternalEventDrivenJobRecord.setHeld(held || i%10==0);
+            solrInternalEventDrivenJobRecord.setSkipped(skipped || i%5==0);
+            solrInternalEventDrivenJobRecord.setDisabled(disabled);
 
             records.add(solrInternalEventDrivenJobRecord);
         });

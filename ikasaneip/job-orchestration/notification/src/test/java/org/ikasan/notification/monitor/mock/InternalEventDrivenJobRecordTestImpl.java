@@ -124,6 +124,16 @@ public class InternalEventDrivenJobRecordTestImpl implements InternalEventDriven
     }
 
     @Override
+    public boolean isDisabled() {
+        return false;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+
+    }
+
+    @Override
     public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
 
     }

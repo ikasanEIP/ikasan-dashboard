@@ -39,7 +39,7 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBro
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -147,6 +147,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
     private Icon onHoldCheck;
     private Button skippedFilterButton;
     private Icon skippedCheck;
+    private Button disabledFilterButton;
+    private Icon disabledCheck;
     private Button errorFilterButton ;
     private Icon errorCheck;
 
@@ -368,6 +370,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
             this.queuedCheck.setVisible(false);
             this.runningCheck.setVisible(false);
             this.skippedCheck.setVisible(false);
+            this.disabledCheck.setVisible(false);
             this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
         });
 
@@ -718,6 +721,37 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                 return horizontalLayout;
             })).setFlexGrow(3)
             .setKey("skippedStatusCounts");
+        contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.DISABLED)
+                        + " " + getTranslation(InstanceStatus.DISABLED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.BLACK, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.DISABLED), "100px");
+                statusButton.setId("disabledStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.DISABLED)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.DISABLED));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.DISABLED)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
+
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.BLACK, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.DISABLED)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.DISABLED.name()));
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
+
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+
+                horizontalLayout.add(statusButton, breakOut);
+
+                return horizontalLayout;
+            })).setFlexGrow(3)
+            .setKey("disabledStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
 
@@ -1344,6 +1378,29 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("skippedStatusCounts")).setComponent(skippedLayout);
 
+        this.disabledFilterButton = this.buildStatusCountButton(5
+                + " " + getTranslation(InstanceStatus.DISABLED.getTranslationLabel(), UI.getCurrent().getLocale())
+            , IkasanColours.BLACK, IkasanColours.WHITE, 5, "120px");
+        this.disabledFilterButton.setId("disabledFilterButton");
+        this.disabledFilterButton.getElement().getStyle().set("cursor", "pointer");
+        this.disabledFilterButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
+
+        this.disabledCheck = VaadinIcon.CHECK.create();
+        this.disabledCheck.setSize("8pt");
+        this.disabledCheck.setVisible(false);
+
+        this.disabledFilterButton.addClickListener(event -> {
+            this.disabledCheck.setVisible(!this.disabledCheck.isVisible());
+            this.statusFilter.setFilterDisabled(this.disabledCheck.isVisible());
+            this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+        });
+
+        HorizontalLayout disabledLayout = new HorizontalLayout(this.disabledFilterButton, this.disabledCheck);
+        skippedLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.disabledCheck);
+
+        hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("disabledStatusCounts")).setComponent(disabledLayout);
+
         this.errorFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale())
             , IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE, 5, "120px");
@@ -1389,6 +1446,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         AtomicInteger onHold = new AtomicInteger();
         AtomicInteger skipped = new AtomicInteger();
         AtomicInteger queued = new AtomicInteger();
+        AtomicInteger disabled = new AtomicInteger();
         AtomicInteger error = new AtomicInteger();
         aggregateContextInstanceStatuses.forEach(status -> {
             waiting.addAndGet(status.getStatusCount(InstanceStatus.WAITING));
@@ -1397,6 +1455,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
             onHold.addAndGet(status.getStatusCount(InstanceStatus.ON_HOLD));
             skipped.addAndGet(status.getStatusCount(InstanceStatus.SKIPPED));
             queued.addAndGet(status.getStatusCount(InstanceStatus.LOCK_QUEUED));
+            disabled.addAndGet(status.getStatusCount(InstanceStatus.DISABLED));
             error.addAndGet(status.getStatusCount(InstanceStatus.ERROR));
         });
 
@@ -1406,6 +1465,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         this.onHoldFilterButton.setText(onHold.get() + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel()));
         this.skippedFilterButton.setText(skipped.get() + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel()));
         this.queuedFilterButton.setText(queued.get() + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel()));
+        this.disabledFilterButton.setText(disabled.get() + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel()));
         this.errorFilterButton.setText(error.get() + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel()));
     }
 
@@ -1734,6 +1794,10 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                     filter = item.getStatusCount(InstanceStatus.SKIPPED) > 0;
                 }
 
+                if(statusFilter.isFilterDisabled() && filter) {
+                    filter = item.getStatusCount(InstanceStatus.DISABLED) > 0;
+                }
+
                 if(statusFilter.isFilterError() && filter) {
                     filter = (item.getStatusCount(InstanceStatus.ERROR) > 0
                         || item.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED) > 0);
@@ -1905,6 +1969,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         private boolean filterOnHold = false;
         private boolean filterQueued = false;
         private boolean filterSkipped = false;
+        private boolean filterDisabled = false;
         private boolean filterError = false;
 
         public String getContextName() {
@@ -1969,6 +2034,14 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
         public void setFilterSkipped(boolean filterSkipped) {
             this.filterSkipped = filterSkipped;
+        }
+
+        public boolean isFilterDisabled() {
+            return filterDisabled;
+        }
+
+        public void setFilterDisabled(boolean filterDisabled) {
+            this.filterDisabled = filterDisabled;
         }
 
         public boolean isFilterError() {

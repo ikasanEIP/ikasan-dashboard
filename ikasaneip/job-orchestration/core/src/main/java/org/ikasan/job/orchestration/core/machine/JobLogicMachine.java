@@ -287,9 +287,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInitiationEvent event = createGlobalSchedulerJobInitiationEvent(jobInstance, globalEventJobInstance
                             , dryRunParameters, parentContextInstance, contextInstance, scheduledProcessEvent);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
-                        }
+                        schedulerJobInitiationEvents.add(event);
                     }
                     else if (!jobInstance.isInitiationEventRaised() && contextStartJobInstance != null) {
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
@@ -297,9 +295,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInitiationEvent event = createContextStartJobInitiationEvent(contextStartJobInstance
                             , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
-                        }
+                        schedulerJobInitiationEvents.add(event);
                     }
                     else if (!jobInstance.isInitiationEventRaised() && contextTerminalJobInstance != null) {
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
@@ -307,9 +303,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInitiationEvent event = createContextTerminalJobInitiationEvent(contextTerminalJobInstance
                             , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
-                        }
+                        schedulerJobInitiationEvents.add(event);
                     }
                     else if (!jobInstance.isInitiationEventRaised() && localEventJobInstance != null) {
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
@@ -317,9 +311,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInitiationEvent event = createLocalEventJobInitiationEvent(localEventJobInstance
                             , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
-                        }
+                        schedulerJobInitiationEvents.add(event);
                     }
                     else if (bridgingJobInstance != null) {
                         // if the event that is the catalyst for initiating the bridging job is an internal event driven job
@@ -333,13 +325,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                             SchedulerJobInitiationEvent event = createBridgingJobInitiationEvent(bridgingJobInstance
                                 , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
-                            if (event != null) {
-                                schedulerJobInitiationEvents.add(event);
-                            }
+                            schedulerJobInitiationEvents.add(event);
                         }
                     }
                     else if (jobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
                         (!jobInstance.isInitiationEventRaised()
+                            && !jobInstance.getStatus().equals(InstanceStatus.DISABLED)
                             && !jobInstance.getStatus().equals(InstanceStatus.COMPLETE)
                             && !jobInstance.getStatus().equals(InstanceStatus.ERROR)) ||
                         (internalEventDrivenJob != null
@@ -350,9 +341,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob
                             , dryRunParameters, contextParameters, parentContextInstance, scheduledProcessEvent, contextInstance);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
-                        }
+                        schedulerJobInitiationEvents.add(event);
                     }
                 }
             }
@@ -456,7 +445,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     protected void addQueuedSchedulerJobInitiationEvent(ContextInstance contextInstance, ContextInstance parentContextInstance
         , String jobIdentifier, SchedulerJobInitiationEvent event) {
         if(!contextInstance.getScheduledJobsMap().get(event.getInternalEventDrivenJob().getIdentifier()).getStatus()
-            .equals(InstanceStatus.ON_HOLD)) {
+            .equals(InstanceStatus.ON_HOLD) &&
+            !contextInstance.getScheduledJobsMap().get(event.getInternalEventDrivenJob().getIdentifier()).getStatus()
+                .equals(InstanceStatus.DISABLED)) {
             logger.info("Add queued scheduler job {}", event.getInternalEventDrivenJob());
             if(this.jobLockCache == null) {
                 this.jobLockCache = JobLockCacheImpl.instance();

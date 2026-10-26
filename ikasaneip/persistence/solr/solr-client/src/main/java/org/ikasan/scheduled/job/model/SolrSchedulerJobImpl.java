@@ -21,6 +21,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected boolean skip = false;
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     protected Map<String, Boolean> heldContexts = new HashMap<>();
+    protected Map<String, Boolean> disabledContexts = new HashMap<>();
     protected int ordinal = -1;
     protected Boolean templateJob;
     protected Boolean templateBased;
@@ -135,6 +136,14 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setHeldContexts(Map<String, Boolean> heldContexts) {
         this.heldContexts = heldContexts;
+    }
+
+    public Map<String, Boolean> getDisabledContexts() {
+        return disabledContexts;
+    }
+
+    public void setDisabledContexts(Map<String, Boolean> disabledContexts) {
+        this.disabledContexts = disabledContexts;
     }
 
     @Override

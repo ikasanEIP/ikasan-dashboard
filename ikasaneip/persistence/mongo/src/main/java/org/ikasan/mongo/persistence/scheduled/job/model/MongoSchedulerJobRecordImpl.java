@@ -56,6 +56,9 @@ public class MongoSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Field(EntityFields.SKIPPED)
     private boolean skipped;
 
+    @Field(EntityFields.DISABLED)
+    private boolean disabled;
+
     @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
@@ -212,6 +215,15 @@ public class MongoSchedulerJobRecordImpl implements SchedulerJobRecord {
 
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

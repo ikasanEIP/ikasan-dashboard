@@ -2,7 +2,6 @@ package org.ikasan.mongo.persistence.scheduled.job.dao;
 
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.*;
-import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -25,12 +24,12 @@ import java.util.List;
 import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
 import static org.ikasan.spec.metadata.dao.ModuleMetadataDao.MODULE_METADATA;
 
-public class MongoSchedulerJobDaoTest {
+public class MongoSchedulerJobDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoSchedulerJobRepository repository;
-    private MongoSchedulerJobDao dao;
+    private MongoSchedulerJobDaoImpl dao;
 
     @Before
     public void setup() {
@@ -47,7 +46,7 @@ public class MongoSchedulerJobDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoSchedulerJobRepository.class);
 
-        dao = new MongoSchedulerJobDao(repository, mongoTemplate);
+        dao = new MongoSchedulerJobDaoImpl(repository, mongoTemplate);
     }
 
     @After
@@ -249,6 +248,56 @@ public class MongoSchedulerJobDaoTest {
         results.getResultList().forEach(record -> Assert.assertTrue(record.isSkipped()));
     }
 
+    @Test
+    public void test_find_by_filter_disabled() {
+        insertFileEventDrivenJobsWithDisabled("id", 50, "context1", true);
+        insertFileEventDrivenJobsWithDisabled("id2", 30, "context1", false);
+
+        TestSchedulerJobSearchFilter filter = new TestSchedulerJobSearchFilter();
+        filter.setDisabled(true);
+
+        SearchResults<SchedulerJobRecord> results = dao.findByFilter(filter, 100, 0, null, null);
+
+        Assert.assertEquals(50, results.getTotalNumberOfResults());
+        results.getResultList().forEach(record -> Assert.assertTrue(record.isDisabled()));
+    }
+
+    @Test
+    public void test_find_by_filter_disabled_false() {
+        insertFileEventDrivenJobsWithDisabled("id", 50, "context1", true);
+        insertFileEventDrivenJobsWithDisabled("id2", 30, "context1", false);
+
+        TestSchedulerJobSearchFilter filter = new TestSchedulerJobSearchFilter();
+        filter.setDisabled(false);
+
+        SearchResults<SchedulerJobRecord> results = dao.findByFilter(filter, 100, 0, null, null);
+
+        // When disabled is false, it doesn't add the filter criteria, so we get all records
+        Assert.assertEquals(80, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void test_find_by_filter_multiple_flags() {
+        // Create jobs with different combinations of flags
+        insertFileEventDrivenJobsWithAllFlags("id1", 10, "context1", true, false, false);  // held only
+        insertFileEventDrivenJobsWithAllFlags("id2", 10, "context1", false, true, false);  // skipped only
+        insertFileEventDrivenJobsWithAllFlags("id3", 10, "context1", false, false, true);  // disabled only
+        insertFileEventDrivenJobsWithAllFlags("id4", 10, "context1", true, true, true);    // all flags
+
+        TestSchedulerJobSearchFilter filter = new TestSchedulerJobSearchFilter();
+        filter.setDisabled(true);
+        filter.setHeld(true);
+
+        SearchResults<SchedulerJobRecord> results = dao.findByFilter(filter, 100, 0, null, null);
+
+        // Should only return jobs that are both disabled AND held
+        Assert.assertEquals(10, results.getTotalNumberOfResults());
+        results.getResultList().forEach(record -> {
+            Assert.assertTrue(record.isDisabled());
+            Assert.assertTrue(record.isHeld());
+        });
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void test_save_throws_exception() {
         MongoSchedulerJobRecordImpl record = createFileEventDrivenJobRecord("test", "job", "context", "agent");
@@ -280,6 +329,7 @@ public class MongoSchedulerJobDaoTest {
         private String contextSearchFilter;
         private boolean held;
         private boolean skipped;
+        private boolean disabled;
         private Boolean targetResidingContextOnly;
         private Boolean participatesInLock;
 
@@ -319,6 +369,17 @@ public class MongoSchedulerJobDaoTest {
         public boolean isSkipped() { return skipped; }
         @Override
         public void setSkipped(boolean skipped) { this.skipped = skipped; }
+
+        @Override
+        public boolean isDisabled() {
+            return disabled;
+        }
+
+        @Override
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
+        }
+
         @Override
         public Boolean isTargetResidingContextOnly() { return targetResidingContextOnly; }
         @Override
@@ -355,6 +416,18 @@ public class MongoSchedulerJobDaoTest {
     }
 
     private void insertFileEventDrivenJobsWithFlags(String idPrefix, int num, String contextId, String agentName, boolean held, boolean skipped) {
+        insertFileEventDrivenJobsWithAllFlags(idPrefix, num, contextId, agentName, held, skipped, false);
+    }
+
+    private void insertFileEventDrivenJobsWithDisabled(String idPrefix, int num, String contextId, boolean disabled) {
+        insertFileEventDrivenJobsWithAllFlags(idPrefix, num, contextId, null, false, false, disabled);
+    }
+
+    private void insertFileEventDrivenJobsWithAllFlags(String idPrefix, int num, String contextId, boolean held, boolean skipped, boolean disabled) {
+        insertFileEventDrivenJobsWithAllFlags(idPrefix, num, contextId, null, held, skipped, disabled);
+    }
+
+    private void insertFileEventDrivenJobsWithAllFlags(String idPrefix, int num, String contextId, String agentName, boolean held, boolean skipped, boolean disabled) {
         for (int i = 0; i < num; i++) {
             String agent = agentName != null ? agentName : idPrefix + "agentName" + i;
             String id = "fileEventDrivenJob_" + idPrefix + agent + "_jobName" + i + "_" + contextId;
@@ -363,6 +436,7 @@ public class MongoSchedulerJobDaoTest {
             record.setDisplayName("displayName" + i);
             record.setHeld(held);
             record.setSkipped(skipped);
+            record.setDisabled(disabled);
 
             repository.save(record);
         }

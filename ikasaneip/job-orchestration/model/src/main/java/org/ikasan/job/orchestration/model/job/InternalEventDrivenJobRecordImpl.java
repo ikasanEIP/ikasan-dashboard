@@ -20,6 +20,7 @@ public class InternalEventDrivenJobRecordImpl implements InternalEventDrivenJobR
     private String modifiedBy;
     private boolean held;
     private boolean skipped;
+    private boolean disabled;
     private boolean targetResidingContextOnly;
     boolean participatesInLock;
 
@@ -122,6 +123,16 @@ public class InternalEventDrivenJobRecordImpl implements InternalEventDrivenJobR
     @Override
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

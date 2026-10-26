@@ -327,6 +327,11 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
                             contextualisedInstance.setHeld(true);
                             contextualisedInstance.setStatus(InstanceStatus.ON_HOLD);
                         }
+                        else if (instance.getDisabledContexts().containsKey(schedulerJobInstance.getChildContextName())
+                            && instance.getDisabledContexts().get(schedulerJobInstance.getChildContextName())) {
+                            contextualisedInstance.setHeld(true);
+                            contextualisedInstance.setStatus(InstanceStatus.DISABLED);
+                        }
                     }
                     else if(instance instanceof GlobalEventJobInstance
                         && instance.getSkippedContexts().containsKey(contextInstance.getName())) {
@@ -434,6 +439,40 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     @Override
     public List<SchedulerJobInstanceRecord> holdJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        return this.holdOrDisableJobsWithinContext(contextInstance, childContextName, InstanceStatus.ON_HOLD);
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
+        return this.getJobsToReleaseOrEnableWithinContext(contextInstance, childContextName, InstanceStatus.ON_HOLD);
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> disableJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        return this.holdOrDisableJobsWithinContext(contextInstance, childContextName, InstanceStatus.DISABLED);
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> getJobsToEnableWithinContext(ContextInstance contextInstance, String childContextName) {
+        return this.getJobsToReleaseOrEnableWithinContext(contextInstance, childContextName, InstanceStatus.DISABLED);
+    }
+
+    /**
+     * Processes and updates the status of jobs within a specified context, either holding or disabling them
+     * based on the provided instance status. It retrieves the child context, enriches its jobs, and updates
+     * related job instances accordingly.
+     *
+     * @param contextInstance The root context instance containing the jobs to process.
+     * @param childContextName The name of the child context within which the jobs reside.
+     * @param instanceStatus The status to set for the jobs in the context (e.g., ON_HOLD or DISABLED).
+     * @return A list of updated {@code SchedulerJobInstanceRecord} objects reflecting the changes made to the jobs.
+     */
+    private List<SchedulerJobInstanceRecord> holdOrDisableJobsWithinContext
+        (ContextInstance contextInstance, String childContextName, InstanceStatus instanceStatus) {
+        if(!instanceStatus.equals(InstanceStatus.ON_HOLD) && !instanceStatus.equals(InstanceStatus.DISABLED)) {
+            return new ArrayList<>();
+        }
+
         ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
         ContextHelper.enrichJobs(childContext);
         Map<String, SchedulerJobInstance> childContextJobs = ContextHelper.getAllJobs(childContext);
@@ -467,12 +506,19 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
                     .get(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
                         + schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
 
-                if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof LocalEventJobInstance) {
-                    schedulerJobInstanceRecord.setStatus(InstanceStatus.ON_HOLD.name());
+                if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof LocalEventJobInstance ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    schedulerJobInstanceRecord.setStatus(instanceStatus.name());
                     SchedulerJobInstance instance
                         = schedulerJobInstanceRecord.getSchedulerJobInstance();
-                    instance.setStatus(InstanceStatus.ON_HOLD);
-                    instance.setHeld(true);
+                    instance.setStatus(instanceStatus);
+
+                    if(instance.equals(InstanceStatus.ON_HOLD)) {
+                        instance.setHeld(true);
+                    }
+                    else {
+                        instance.setDisabled(true);
+                    }
 
                     if(instance instanceof LocalEventJobInstance) {
                         instance.setChildContextNames(ContextHelper.getContextsWhereJobNameMatchResides
@@ -480,15 +526,29 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
                     }
 
                     if (instance.getChildContextNames() != null) {
-                        HashMap<String, Boolean> heldContexts = new HashMap<>();
+                        HashMap<String, Boolean> actionedContexts = new HashMap<>();
                         instance.getChildContextNames().forEach(name -> {
-                            heldContexts.put(name, Boolean.TRUE);
+                            actionedContexts.put(name, Boolean.TRUE);
                             ContextHelper.getSchedulerJobInstance(instance.getJobName(), name,
-                                contextInstance).setStatus(InstanceStatus.ON_HOLD);
-                            ContextHelper.getSchedulerJobInstance(instance.getJobName(), name,
-                                contextInstance).setHeld(true);
+                                contextInstance).setStatus(instanceStatus);
+
+                            if(instance.equals(InstanceStatus.ON_HOLD)) {
+                                ContextHelper.getSchedulerJobInstance(instance.getJobName(), name,
+                                    contextInstance).setHeld(true);
+                            }
+                            else {
+                                ContextHelper.getSchedulerJobInstance(instance.getJobName(), name,
+                                    contextInstance).setDisabled(true);
+                            }
                         });
-                        instance.setHeldContexts(heldContexts);
+
+                        if(instance.equals(InstanceStatus.ON_HOLD)) {
+                            instance.setHeldContexts(actionedContexts);
+                        }
+                        else {
+                            instance.setDisabledContexts(actionedContexts);
+                        }
+
                     }
 
                     schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
@@ -497,18 +557,24 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
                 else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
                     !((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly() ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().equals(job.getChildContextName())) {
-                    schedulerJobInstanceRecord.setStatus(InstanceStatus.ON_HOLD.name());
+                    schedulerJobInstanceRecord.setStatus(instanceStatus.name());
                     InternalEventDrivenJobInstance instance
                         = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
-                    instance.setStatus(InstanceStatus.ON_HOLD);
+                    instance.setStatus(instanceStatus);
                     instance.setHeld(true);
 
                     if (instance.getChildContextNames() != null) {
-                        HashMap<String, Boolean> heldContexts = new HashMap<>();
+                        HashMap<String, Boolean> actionedContexts = new HashMap<>();
                         instance.getChildContextNames().forEach(name -> {
-                            heldContexts.put(name, Boolean.TRUE);
+                            actionedContexts.put(name, Boolean.TRUE);
                         });
-                        instance.setHeldContexts(heldContexts);
+
+                        if(instance.equals(InstanceStatus.ON_HOLD)) {
+                            instance.setHeldContexts(actionedContexts);
+                        }
+                        else {
+                            instance.setDisabledContexts(actionedContexts);
+                        }
                     }
 
                     schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
@@ -525,7 +591,23 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         return updatedRecords;
     }
 
-    public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
+    /**
+     * Retrieves a list of {@code SchedulerJobInstanceRecord} objects that need to be released or enabled
+     * within the specified context. This method processes job instances based on the provided
+     * {@code InstanceStatus}, enriching and filtering the jobs within the context as necessary.
+     *
+     * @param contextInstance The root {@code ContextInstance} containing the jobs to process.
+     * @param childContextName The name of the child context within which the jobs reside.
+     * @param instanceStatus The status of the job instances to be processed, such as {@code ON_HOLD} or {@code DISABLED}.
+     * @return A list of {@code SchedulerJobInstanceRecord} objects that meet the criteria for release or enabling
+     * based on the provided {@code InstanceStatus}.
+     */
+    private List<SchedulerJobInstanceRecord> getJobsToReleaseOrEnableWithinContext(ContextInstance contextInstance
+        , String childContextName, InstanceStatus instanceStatus) {
+        if(!instanceStatus.equals(InstanceStatus.ON_HOLD) && !instanceStatus.equals(InstanceStatus.DISABLED)) {
+            return new ArrayList<>();
+        }
+
         ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
         ContextHelper.enrichJobs(childContext);
         Map<String, SchedulerJobInstance> contextJobs = ContextHelper.getAllJobs(childContext);
@@ -544,7 +626,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
         List<SchedulerJobInstanceRecord> updatedRecords = new ArrayList<>();
         searchResults.getResultList().forEach(schedulerJobInstanceRecord -> {
-            if (schedulerJobInstanceRecord.getStatus().equals(InstanceStatus.ON_HOLD.name())
+            if (schedulerJobInstanceRecord.getStatus().equals(instanceStatus.name())
                 && contextJobs.containsKey(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
                 + schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
                 SchedulerJobInstance job = contextJobs
@@ -553,8 +635,8 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
                 if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof LocalEventJobInstance ||
                     (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
-                    !((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly() ||
-                    schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().equals(job.getChildContextName()))) {
+                        !((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly() ||
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().equals(job.getChildContextName()))) {
 
                     updatedRecords.add(schedulerJobInstanceRecord);
                 }

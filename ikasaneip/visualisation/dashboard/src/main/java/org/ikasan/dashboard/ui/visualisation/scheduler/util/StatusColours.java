@@ -21,6 +21,7 @@ public class StatusColours {
         STATUS_COLOURS.put(InstanceStatus.RELEASED, IkasanColours.SCHEDULER_RELEASED);
         STATUS_COLOURS.put(InstanceStatus.LOCK_QUEUED, IkasanColours.SCHEDULER_LOCK_QUEUED);
         STATUS_COLOURS.put(InstanceStatus.PREPARED, IkasanColours.IKASAN_ORANGE);
+        STATUS_COLOURS.put(InstanceStatus.DISABLED, IkasanColours.DARK_GREY);
     }
 
     public static String getInstanceStatusColour(InstanceStatus status) {

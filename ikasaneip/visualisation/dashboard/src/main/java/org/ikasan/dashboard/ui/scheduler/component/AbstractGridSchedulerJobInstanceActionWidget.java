@@ -13,7 +13,7 @@ import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -50,13 +50,14 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     protected LogStreamingService logStreamingService;
 
     /**
-     * Constructor
+     * Constructs an instance of AbstractGridSchedulerJobInstanceActionWidget.
      *
-     * @param moduleMetaDataService
-     * @param systemEventLogger
-     * @param logStreamingService
-     * @param contextInstance
-     * @param schedulerJobInstanceService
+     * @param moduleMetaDataService the service responsible for handling module metadata; must not be null.
+     * @param systemEventLogger the logger used for recording system events; must not be null.
+     * @param logStreamingService the service responsible for handling log streaming; must not be null.
+     * @param contextInstance the context instance associated with this widget; must not be null.
+     * @param schedulerJobInstanceService the service responsible for managing scheduler job instances; must not be null.
+     * @throws IllegalArgumentException if any of the provided parameters are null.
      */
     public AbstractGridSchedulerJobInstanceActionWidget(ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger,
                                                         LogStreamingService logStreamingService, ContextInstance contextInstance,
@@ -96,11 +97,14 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
      */
     protected abstract void getJobInstanceActionComponents(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
 
+
     /**
-     * Helper method to stream job log files.
+     * Streams the log (either error or output) associated with a given scheduler job instance.
+     * If a valid log is identified, it will be displayed in a log viewer dialog. Otherwise,
+     * a notification is shown to inform the user that no log is available for the specified job.
      *
-     * @param schedulerJobInstanceRecord
-     * @param getErrorLog
+     * @param schedulerJobInstanceRecord the record containing details about the scheduler job instance
+     * @param getErrorLog a flag indicating whether to retrieve the error log (true) or the output log (false)
      */
     protected void streamLog(SchedulerJobInstanceRecord schedulerJobInstanceRecord, boolean getErrorLog) {
         boolean displayLog = false;
@@ -131,9 +135,14 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Helper method to skip the job.
+     * Skips the execution of a scheduler job instance associated with a specific context.
+     * This method first checks if the context machine for the specified job instance
+     * is active. If the context machine is inactive, an error notification is displayed,
+     * and the operation is aborted. If the context machine is active, the job is skipped,
+     * the job state is updated to "SKIPPED", and a corresponding system event is logged.
      *
-     * @return
+     * @param schedulerJobInstanceRecord the record representing the scheduler job instance to be skipped
+     * @return true if the job is successfully skipped, false otherwise
      */
     protected boolean skipJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
@@ -164,9 +173,14 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Helper method to enable the job.
+     * Enables a scheduler job instance associated with a specific context.
+     * This method verifies if the context machine for the given job instance is active before proceeding
+     * with the enable operation. If the context machine is inactive, an error notification is displayed,
+     * and the operation is aborted. On successful enablement, the job state is updated, and a corresponding
+     * system event is logged.
      *
-     * @return
+     * @param schedulerJobInstanceRecord the record representing the scheduler job instance to be enabled
+     * @return true if the job is successfully enabled, false otherwise
      */
     protected boolean enableJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
@@ -195,9 +209,43 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Helper method to hold the job.
+     * Attempts to reinstate a disabled job instance associated with a specific context machine.
+     * If the associated context machine is inactive or an error occurs during reinstatement,
+     * an error notification is displayed, and the operation fails.
      *
-     * @return
+     * @param schedulerJobInstanceRecord The record of the scheduler job instance to be reinstated.
+     *                                   Contains details about the job instance and its context.
+     */
+    protected void reinstateJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-reinstated", UI.getCurrent().getLocale()));
+            return;
+        }
+
+        try {
+            contextMachine.reinstateDisabledJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_DISABLED_SCHEDULED_JOB_REINSTATED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Child Context Name[%s], Job Plan Instance Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), this.contextInstance.getId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            logger.error("An error has occurred reinstating disabled job[{}]!", schedulerJobInstanceRecord.getSchedulerJobInstance(), e);
+            NotificationHelper.showErrorNotification(getTranslation("error.reinstated-general-error"));
+        }
+
+    }
+
+    /**
+     * Puts the specified job into a hold state. This action prevents the job from being processed further
+     * until it is explicitly released.
+     *
+     * @param schedulerJobInstanceRecord the record representing the job instance to be held
+     * @return true if the job is successfully put on hold, false if the hold operation fails
      */
     protected boolean holdJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
@@ -226,9 +274,49 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Helper method to release the job.
+     * Disables the specified scheduler job instance. This operation prevents the job
+     * from being executed while maintaining its record in the system. If the corresponding
+     * context is not active, an error notification is displayed.
      *
-     * @return
+     * @param schedulerJobInstanceRecord the record representing the scheduler job instance to be disabled
+     * @return true if the job is successfully disabled, false otherwise
+     */
+    protected boolean disableJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-disable"));
+            return false;
+        }
+
+        try {
+            contextMachine.disableJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.DISABLED);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DISABLED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Child Context Name[%s], Job Plan Instance Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), this.contextInstance.getId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            logger.error("An error has occurred disabling job[{}]!", schedulerJobInstanceRecord.getSchedulerJobInstance(), e);
+            NotificationHelper.showErrorNotification(getTranslation("error.held-general-disable"));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Releases a scheduler job instance associated with a specific context. This method
+     * checks if the context machine for the given job instance is active before attempting
+     * the release operation. If the context is not active or an error occurs during the
+     * release, an error notification is displayed. On successful release, the job state
+     * is updated and a system event is logged.
+     *
+     * @param schedulerJobInstanceRecord the record representing the scheduler job instance to be released
+     * @return true if the job is successfully released, false otherwise
      */
     protected boolean releaseJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
@@ -257,10 +345,10 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Helper method to update the state of a job and to broadcast that state change.
+     * Updates the state of a scheduler job instance and broadcasts a state change event.
      *
-     * @param schedulerJobInstanceRecord
-     * @param newStatus
+     * @param schedulerJobInstanceRecord the record representing the scheduler job instance to be updated
+     * @param newStatus the new status to assign to the scheduler job instance
      */
     protected void updateJobState(SchedulerJobInstanceRecord schedulerJobInstanceRecord, InstanceStatus newStatus) {
         InstanceStatus previousStatus = schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus();
@@ -277,10 +365,11 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
-     * Update a scheduled job.
+     * Updates the specified scheduled job instance record with the current timestamp,
+     * the name of the authenticated user, and the status of the associated scheduler job.
      *
-     * @param schedulerJobInstanceRecord
-     * @param authentication
+     * @param schedulerJobInstanceRecord the record representing the scheduled job instance to be updated
+     * @param authentication the authentication object containing the details of the authenticated user
      */
     protected void updateScheduledJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord, IkasanAuthentication authentication) {
 
@@ -291,6 +380,14 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
         this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
     }
 
+    /**
+     * Resets the specified scheduler job instance. If the job belongs to a context that is no longer active,
+     * an error notification is displayed and the reset operation is aborted. Otherwise, the job is reset,
+     * and a corresponding system event is logged.
+     *
+     * @param schedulerJobInstance the scheduler job instance to be reset
+     * @return true if the job is successfully reset, false if an error occurs during the operation
+     */
     protected boolean resetJob(SchedulerJobInstance schedulerJobInstance) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
             (schedulerJobInstance.getContextInstanceId());
@@ -352,6 +449,15 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
         return result.get();
     }
 
+    /**
+     * Submits downstream jobs for the given job instance by evaluating the current context
+     * and initializing the initiation events for downstream processing.
+     * If no downstream jobs are identified, a user notification is displayed.
+     * Otherwise, a confirmation dialog is shown, and upon confirmation, the relevant events
+     * are raised to process the downstream jobs.
+     *
+     * @param internalEventDrivenJobInstance the instance of the job for which downstream jobs will be submitted
+     */
     protected void submitDownstreamJobs(InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
         ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
@@ -404,6 +510,27 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
         });
     }
 
+    /**
+     * Represents a unique key for identifying a component in a specific context.
+     * The key is defined by a combination of a context name, a child context name,
+     * and a job name.
+     *
+     * This class is primarily used to manage and retrieve components
+     * associated with particular contexts and jobs.
+     *
+     * Fields:
+     * - contextName: Represents the name of the primary context.
+     * - childContextName: Represents the name of the child context under the primary context.
+     * - jobName: Represents the name of the job within the context.
+     *
+     * Methods:
+     * - getContextName(): Returns the primary context name.
+     * - getChildContextName(): Returns the name of the child context.
+     * - getJobName(): Returns the job name.
+     *
+     * This class provides implementations of the `equals`, `hashCode`, and
+     * `toString` methods to enable its usage in collections and for debugging purposes.
+     */
     protected class ComponentKey {
         String contextName;
         String childContextName;

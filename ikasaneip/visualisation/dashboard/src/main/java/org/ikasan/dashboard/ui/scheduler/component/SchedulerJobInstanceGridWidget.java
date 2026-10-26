@@ -27,7 +27,7 @@ import org.ikasan.esb.service.systemevent.SystemEventSearchFilterImpl;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -386,7 +386,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
             if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
                 schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE) ||
                 schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
-                !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
@@ -464,7 +465,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
 
             if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
                 schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
-                (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
@@ -507,6 +509,76 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
             }
 
             layout.add(release);
+
+            Icon disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.disable-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            disable.setVisible((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                    schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+                    ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                        SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            disable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction(true)) {
+                    return;
+                }
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.disable-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.disable-job", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.disableJob(schedulerJobInstanceRecord));
+            });
+
+            layout.add(disable);
+
+            if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+                (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.LOCK_QUEUED))) {
+                disable.setVisible(false);
+            }
+
+            Icon reinstate = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("tooltip.reinstate-disabled-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            reinstate.setVisible((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            reinstate.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction(true)) {
+                    return;
+                }
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.reinstate-disabled-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.reinstate-disabled-job", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.reinstateJob(schedulerJobInstanceRecord));
+            });
+
+            layout.add(reinstate);
+
+            if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+                !schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED)) {
+                reinstate.setVisible(false);
+            }
 
             Icon submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job"), "14pt", "rgba(0, 0, 0, 1.0)");
             submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -998,8 +1070,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name())
                     .filter(instanceStatus -> !instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE.name())
-                        && !instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING.name())
-                        && !instanceStatus.equals(InstanceStatus.DISABLED.name()))
+                        && !instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING.name()))
                     .collect(Collectors.toList()), "status");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly, "targeted");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setParticipatesInLock, "isInLock");

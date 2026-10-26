@@ -50,6 +50,8 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -61,6 +63,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedEventLocalBroadcastListener
     , NewSchedulerJobEventLocalBroadcastListener {
+
+    Logger logger = LoggerFactory.getLogger(SchedulerJobGridWidget.class);
 
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -375,6 +379,16 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                 contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
                                 visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
                                 contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
+                            }
+
+                            if ((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && schedulerJobRecord.isDisabled()
+                                && schedulerJobRecord.getJob().getDisabledContexts().containsKey(context)
+                                && schedulerJobRecord.getJob().getDisabledContexts().get(context)) ||
+                                (schedulerJobRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)
+                                    && this.contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext())) {
+                                contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                contextButton.getElement().getStyle().set("background-color", IkasanColours.DARK_GREY);
                             }
 
                             if (schedulerJobRecord.isHeld()
@@ -707,6 +721,80 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             layout.add(release);
 
+            Icon disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            disable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            disable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()
+                    && schedulerJobRecord.getJob().getChildContextNames().size() > 1) {
+                    ResidingContextSelectDialog residingContextSelectDialog
+                        = new ResidingContextSelectDialog((InternalEventDrivenJob)schedulerJobRecord.getJob()
+                        , ResidingContextSelectDialog.Action.DISABLE);
+                    residingContextSelectDialog.open();
+                    residingContextSelectDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened() && residingContextSelectDialog.getSelectedContexts() != null &&
+                            !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
+                            this.schedulerJobService.disable(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
+                            this.refresh();
+                            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
+
+                            String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was disabled in the following Child Contexts [%s]."
+                                , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DISABLED, action, authentication.getName());
+                        }
+                    });
+                }
+                else {
+                    this.schedulerJobService.disable(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames()
+                        , this.authentication.getName());
+                    this.refresh();
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
+
+                    String action = String.format("Scheduler Job[%s], Job Plan[%s], was disabled in the following Child Contexts [%s] at the plan level."
+                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DISABLED, action, authentication.getName());
+                }
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
+                ComponentSecurityVisibility.applySecurity(this.authentication, disable, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+            }
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)
+                // todo add isDisabled to record
+                && (schedulerJobRecord.isHeld() || schedulerJobRecord.isSkipped() || schedulerJobRecord.isDisabled())) {
+                disable.setVisible(false);
+            }
+
+            layout.add(disable);
+
+            Icon enableDisabled = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            enableDisabled.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            enableDisabled.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                this.schedulerJobService.reinstateDisabled(schedulerJobRecord, this.authentication.getName());
+                refresh();
+                ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
+
+                String action = String.format("Scheduler Job[%s], Job Plan[%s], has been reinstated at the plan level."
+                    , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_DISABLED_SCHEDULED_JOB_REINSTATED, action, authentication.getName());
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
+                ComponentSecurityVisibility.applySecurity(this.authentication, enableDisabled, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+            }
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isDisabled()) {
+                enableDisabled.setVisible(false);
+            }
+
+            layout.add(enableDisabled);
+
+
+
             layout.setWidth("300px");
             return layout;
         }))
@@ -765,6 +853,11 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         schedulerStatusDiv.setStatus(InstanceStatus.ON_HOLD);
                         labelLayout.add(schedulerStatusDiv);
                     }
+
+                    if (schedulerJobRecord.isDisabled()) {
+                        schedulerStatusDiv.setStatus(InstanceStatus.DISABLED);
+                        labelLayout.add(schedulerStatusDiv);
+                    }
                 }
                 else if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB)) {
                     if (schedulerJobRecord.getJob().getSkippedContexts().containsKey(contextTemplate.getName())) {
@@ -782,7 +875,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 return labelLayout;
         }))
         .setResizable(true)
-        .setHeader(getTranslation("table-header.skip-hold", UI.getCurrent().getLocale()))
+        .setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
         .setSortable(true)
         .setKey("status")
         .setFlexGrow(2);
@@ -874,6 +967,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         HashMap<String, String> heldSkippedMap = new HashMap<>();
         heldSkippedMap.put(getTranslation("filter-label.held", UI.getCurrent().getLocale()), InstanceStatus.ON_HOLD.name());
         heldSkippedMap.put(getTranslation("filter-label.skipped", UI.getCurrent().getLocale()), InstanceStatus.SKIPPED.name());
+        heldSkippedMap.put(getTranslation("filter-label.disabled", UI.getCurrent().getLocale()), InstanceStatus.DISABLED.name());
 
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , heldSkippedMap.entrySet(), "status");
@@ -925,7 +1019,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("An error has occurred enabling all skipped jobs for job plan[{}]!", this.contextTemplate.getName(), e);
                     error = true;
                 }
                 finally {
@@ -967,7 +1061,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("An error has occurred holding all jobs for job plan[{}]!", this.contextTemplate.getName(), e);
                     error = true;
                 }
                 finally {
@@ -1009,7 +1103,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("An error has occurred releasing all jobs for job plan[{}]!", this.contextTemplate.getName(), e);
                     error = true;
                 }
                 finally {
@@ -1025,7 +1119,87 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             });
         });
 
-        ComponentSecurityVisibility.applySecurity(releaseAllHeldButton, SecurityConstants.ALL_AUTHORITY,
+        Button disableAllButton = new Button(getTranslation("button.disable-all-command", UI.getCurrent().getLocale()),
+            VaadinIcon.BAN.create());
+        disableAllButton.setIconAfterText(true);
+        disableAllButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.disable-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.disable-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.schedulerJobService.disableAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_DISABLED_FOR_JOB_PLAN,
+                        String.format("Disabling all command execution jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
+                        , this.authentication.getName());
+                    this.refresh();
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
+                }
+                catch (Exception e) {
+                    logger.error("An error has occurred disabling all command execution jobs for job plan[{}]!", this.contextTemplate.getName(), e);
+                    error = true;
+                }
+                finally {
+                    if(error) {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-disable-error"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    else {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-successfully-disabled"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(disableAllButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        Button reinstateAllDisabledButton = new Button(getTranslation("button.reinstate-all-command", UI.getCurrent().getLocale()),
+            VaadinIcon.CHECK.create());
+        reinstateAllDisabledButton.setIconAfterText(true);
+        reinstateAllDisabledButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reinstate-disabled-jobs", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.reinstate-disabled-jobs", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.schedulerJobService.reinstateAllDisabled(this.contextTemplate.getName(), this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_RELEASED_FOR_JOB_PLAN,
+                        String.format("All disabled command execution jobs reinstated. Job Plan Name[%s]", this.contextTemplate.getName())
+                        , this.authentication.getName());
+                    this.refresh();
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
+                }
+                catch (Exception e) {
+                    logger.error("An error has occurred reinstating all disabled command execution jobs for job plan[{}]!", this.contextTemplate.getName(), e);
+                    error = true;
+                }
+                finally {
+                    if(error) {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-reinstate-error"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    else {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-successfully-reinstated"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(reinstateAllDisabledButton, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -1109,7 +1283,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
         Button refreshButton = this.createRefreshButton();
 
-        buttonLayout.add(enableAllSkippedButton, holdAllButton, releaseAllHeldButton
+        buttonLayout.add(disableAllButton, reinstateAllDisabledButton, enableAllSkippedButton, holdAllButton, releaseAllHeldButton
             , enableAllSkippedButton, disableQuartzScheduledJobsButton, enableQuartzScheduledJobsButton, refreshButton);
 
         buttonWrapper.add(buttonLayout);

@@ -32,6 +32,7 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     private String contextSearchFilter = null;
     private boolean held;
     private boolean skipped;
+    private boolean disabled;
     private Boolean targetResidingContextOnly;
     private Boolean participatesInLock = null;
     private List<String> contextNames = null;
@@ -115,6 +116,16 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     @Override
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

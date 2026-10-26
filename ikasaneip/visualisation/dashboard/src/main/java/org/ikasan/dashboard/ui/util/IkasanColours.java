@@ -19,6 +19,7 @@ public class IkasanColours {
     public static final String WHITE = "rgba(255, 255, 255, 1.0)";
     public static final String BLACK = "rgba(0, 0, 0, 1.0)";
     public static final String LIGHT_GREY ="rgba(236, 236, 236, 0.5)";
+    public static final String DARK_GREY = "rgba(54, 55, 55, 0.8)";
 
     public static final String TRANSPARENT ="rgba(255, 255, 255, 0)";
 

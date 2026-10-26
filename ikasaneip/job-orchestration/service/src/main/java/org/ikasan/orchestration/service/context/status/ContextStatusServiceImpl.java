@@ -43,7 +43,7 @@ package org.ikasan.orchestration.service.context.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusWrapperImpl;
 import org.ikasan.job.orchestration.model.status.ContextMachineStatusImpl;

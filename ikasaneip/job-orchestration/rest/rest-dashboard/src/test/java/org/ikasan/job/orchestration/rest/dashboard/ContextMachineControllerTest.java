@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
@@ -187,6 +187,62 @@ public class ContextMachineControllerTest extends AbstractRestMvcTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
         assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
         verify(contextMachine).skipJobs(CHILD_CONTEXT_NAME, true);
+    }
+
+    // -------------------------------------------------------------------------
+    // disableAllJobs
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void test_disableAllJobs_returns_200_and_delegates_to_context_machine() throws Exception {
+        putInCache();
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put(BASE + "/disableAllJobs")
+            .content(mapToJson(new ContextMachineJobActionDto(null, CHILD_CONTEXT_NAME)))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        verify(contextMachine).disableJobs(CHILD_CONTEXT_NAME);
+    }
+
+    // -------------------------------------------------------------------------
+    // disableJob
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void test_disableJob_returns_200_and_delegates_to_context_machine() throws Exception {
+        putInCache();
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put(BASE + "/disable")
+            .content(mapToJson(new ContextMachineJobActionDto(JOB_IDENTIFIER, CHILD_CONTEXT_NAME)))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        verify(contextMachine).disableJob(JOB_IDENTIFIER, CHILD_CONTEXT_NAME);
+    }
+
+    // -------------------------------------------------------------------------
+    // reinstateAllDisabledJobs
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void test_reinstateAllDisabledJobs_returns_200_and_delegates_to_context_machine() throws Exception {
+        putInCache();
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put(BASE + "/reinstateAllDisabledJobs")
+            .content(mapToJson(new ContextMachineJobActionDto(null, CHILD_CONTEXT_NAME)))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        verify(contextMachine).reinstateDisabledJobs(CHILD_CONTEXT_NAME);
+    }
+
+    // -------------------------------------------------------------------------
+    // reinstateDisabledJob
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void test_reinstateDisabledJob_returns_200_and_delegates_to_context_machine() throws Exception {
+        putInCache();
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.put(BASE + "/reinstateDisabled")
+            .content(mapToJson(new ContextMachineJobActionDto(JOB_IDENTIFIER, CHILD_CONTEXT_NAME)))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        verify(contextMachine).reinstateDisabledJob(JOB_IDENTIFIER, CHILD_CONTEXT_NAME);
     }
 
     // -------------------------------------------------------------------------

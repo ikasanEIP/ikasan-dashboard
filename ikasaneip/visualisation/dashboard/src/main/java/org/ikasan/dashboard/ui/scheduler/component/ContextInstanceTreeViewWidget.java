@@ -36,7 +36,7 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcast
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -89,6 +89,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private static final String SKIP_ICON = "SKIP_ICON";
     private static final String ENABLE_ICON = "ENABLE_ICON";
     private static final String HOLD_ICON = "HOLD_ICON";
+    private static final String DISABLE_ICON = "DISABLE_ICON";
+    private static final String REINSTATE_ICON = "REINSTATE_ICON";
     private static final String RELEASE_ICON = "RELEASE_ICON";
     private static final String SUBMIT_ICON = "SUBMIT_ICON";
     private static final String LOG_ICON = "LOG_ICON";
@@ -993,6 +995,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
         }
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+            image.getElement().getStyle().set("background-color", IkasanColours.DARK_GREY);
+        }
         image.getElement().getNode().markAsDirty();
     }
 
@@ -1330,6 +1335,114 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         horizontalLayout.add(enable);
+
+        Icon disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.disable-jobs", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        disable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            if(!this.canPerformAction(true)) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.disable-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.disable-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.open(getTranslation("progress-dialog.disable-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.disable-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                        if (contextMachine != null) {
+                            contextMachine.disableJobs(contextInstance.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DISABLING_ALL_JOBS,
+                                String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]",
+                                    this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()),
+                                this.authentication.getName());
+                        }
+                    } catch (Exception e) {
+                        logger.error(String.format("An error has occurred disabling all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-disable-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-disabled"
+                                    , UI.getCurrent().getLocale()));
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        horizontalLayout.add(disable);
+
+        Icon reinstate = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("tooltip.reinstate-disabled-jobs", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        reinstate.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            if(!this.canPerformAction(true)) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reinstate-disabled-jobs", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.reinstate-disabled-jobs", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.open(getTranslation("progress-dialog.reinstate-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.reinstate-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                        if (contextMachine != null) {
+                            contextMachine.reinstateDisabledJobs(contextInstance.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_REINSTATING_ALL_DISABLED_JOBS,
+                                String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]",
+                                    this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()),
+                                this.authentication.getName());
+                        }
+                    } catch (Exception e) {
+                        logger.error(String.format("An error has occurred disabling all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-reinstate-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-reinstated"
+                                    , UI.getCurrent().getLocale()));
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        horizontalLayout.add(reinstate);
     }
 
     /**
@@ -1505,6 +1618,64 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
 
         layout.add(release);
+
+        Icon disable;
+        if(!iconMap.containsKey(DISABLE_ICON)) {
+            disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.disable-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            disable.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
+            disable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction(true)) {
+                    return;
+                }
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.disable-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.disable-job", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.disableJob(schedulerJobInstanceRecord));
+            });
+
+            iconMap.put(DISABLE_ICON, disable);
+        }
+        else {
+            disable = iconMap.get(DISABLE_ICON);
+        }
+
+        layout.add(disable);
+
+        Icon reinstate;
+        if(!iconMap.containsKey(REINSTATE_ICON)) {
+            reinstate = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("tooltip.reinstate-disabled-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            reinstate.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
+            reinstate.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction(true)) {
+                    return;
+                }
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.reinstate-disabled-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.reinstate-disabled-job", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.reinstateJob(schedulerJobInstanceRecord));
+            });
+
+            iconMap.put(REINSTATE_ICON, reinstate);
+        }
+        else {
+            reinstate = iconMap.get(REINSTATE_ICON);
+        }
+
+        layout.add(reinstate);
 
         Icon submit;
 
@@ -1910,7 +2081,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
                 schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE) ||
                 schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
-                !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
@@ -1950,7 +2122,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon hold = iconMap.get(HOLD_ICON);
         if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
             schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
-            (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+            (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) ||
@@ -1979,6 +2152,41 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             release.setVisible(ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        }
+
+        Icon disable = iconMap.get(DISABLE_ICON);
+        if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+            schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+            (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.LOCK_QUEUED))) {
+            disable.setVisible(false);
+        }
+        else if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+            schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) {
+            disable.setVisible(ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        }
+
+        Icon reinstate = iconMap.get(REINSTATE_ICON);
+
+        if((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+            schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
+            !schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.DISABLED)) {
+            reinstate.setVisible(false);
+        }
+        else if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+            schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) {
+            reinstate.setVisible(ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         }
 
         Icon logFile = iconMap.get(LOG_ICON);

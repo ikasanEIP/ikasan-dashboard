@@ -62,6 +62,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         document.setField(EXPIRY, DO_NOT_EXPIRE);
         document.setField(HELD, event.isHeld());
         document.setField(SKIPPED, event.isSkipped());
+        document.setField(DISABLED, event.isDisabled());
 
         logger.debug(String.format("Converted scheduled process event to SolrDocument[%s]", document));
         return document;
@@ -210,6 +211,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
             internalEventDrivenJob.setSkippedContexts(new HashMap<>());
             jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
             jobRecord.setSkipped(false);
+            jobRecord.setDisabled(false);
             jobRecord.setHeld(true);
             jobRecord.setModifiedBy(actor);
         });

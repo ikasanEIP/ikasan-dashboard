@@ -43,7 +43,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.OverrunJobPlanInstanceDto;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
