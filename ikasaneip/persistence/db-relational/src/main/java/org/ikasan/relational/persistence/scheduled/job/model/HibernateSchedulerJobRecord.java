@@ -71,6 +71,9 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
     @Column(name = "skipped", nullable = false)
     protected boolean skipped = false;
 
+    @Column(name = "disabled", nullable = false)
+    protected boolean disabled = false;
+
     @Column(name = "target_residing_context_only", nullable = false)
     protected boolean targetResidingContextOnly = false;
 
@@ -248,6 +251,15 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
 
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

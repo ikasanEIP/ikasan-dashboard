@@ -74,7 +74,7 @@ public class SchedulerStatusIconDiv extends Div {
         else if(status.equals(InstanceStatus.DISABLED.name())) {
             super.getElement().getStyle().set("background-color", "#000000");
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.CLOCK.create(), tooltip, "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), tooltip, "14pt", "#FFF"));
         }
     }
 }

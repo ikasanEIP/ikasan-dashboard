@@ -3062,4 +3062,172 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(0, events.size());
         Assert.assertFalse(JobLockCacheImpl.instance().hasLock("agentName2-jobName2", "Context1", "Context1", context.getId(), "test-environment"));
     }
+
+    /**
+     * Test that a job with DISABLED status does not get initiated.
+     * This test verifies that the JobLogicMachine correctly skips jobs that are disabled.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_job_disabled() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.DISABLED);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setDisabled(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstanceWithNullContextParameters());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    /**
+     * Test that a job with ON_HOLD status does get initiated (held jobs should still generate events).
+     * This test verifies the difference between DISABLED and ON_HOLD status.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_job_on_hold_initiates() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.ON_HOLD);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setHeld(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstanceWithNullContextParameters());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // ON_HOLD jobs should still generate initiation events (they will be queued)
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+    }
+
+    /**
+     * Test that disabled jobs are not added to the queued scheduler job initiation events.
+     * This verifies the addQueuedSchedulerJobInitiationEvent method correctly filters out DISABLED jobs.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_disabled_job_not_added_to_queued_events() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        // Set up a job in DISABLED status
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.DISABLED);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setDisabled(true);
+
+        InternalEventDrivenJobInstanceImpl internalEventDrivenJobInstance = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJobInstance.setIdentifier("agentName2-jobName2");
+        internalEventDrivenJobInstance.setJobName("jobName2");
+        internalEventDrivenJobInstance.setAgentName("agentName2");
+        internalEventDrivenJobInstance.setChildContextName("Context1");
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJobInstance);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstance);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // No events should be generated for disabled jobs
+        Assert.assertEquals(0, events.size());
+    }
+
+    /**
+     * Test that ON_HOLD jobs are not added to the queued scheduler job initiation events
+     * (they should be held separately).
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_on_hold_job_not_added_to_queued_events() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        // Set up a job in ON_HOLD status
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.ON_HOLD);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setHeld(true);
+
+        InternalEventDrivenJobInstanceImpl internalEventDrivenJobInstance = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJobInstance.setIdentifier("agentName2-jobName2");
+        internalEventDrivenJobInstance.setJobName("jobName2");
+        internalEventDrivenJobInstance.setAgentName("agentName2");
+        internalEventDrivenJobInstance.setChildContextName("Context1");
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJobInstance);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstance);
+
+        // The ON_HOLD job should generate initiation events in getJobInitiationEvents,
+        // but should NOT be added to queued events (verified by addQueuedSchedulerJobInitiationEvent logic)
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+    }
+
+    /**
+     * Test that a job transitions from DISABLED to WAITING can be initiated.
+     * This verifies that reinstating a disabled job allows it to be processed again.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_disabled_job_reinstated_to_waiting_can_be_initiated() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        // First set job to DISABLED
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.DISABLED);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setDisabled(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstanceWithNullContextParameters());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Should not initiate when DISABLED
+        Assert.assertEquals(0, events.size());
+
+        // Now reinstate the job to WAITING
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.WAITING);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setDisabled(false);
+        context.getScheduledJobsMap().get("agentName2-jobName2").setInitiationEventRaised(false);
+
+        eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Should initiate when WAITING
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+    }
 }

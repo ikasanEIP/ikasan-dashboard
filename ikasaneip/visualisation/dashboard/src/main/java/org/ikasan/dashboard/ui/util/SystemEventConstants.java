@@ -67,6 +67,8 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_DELETED = "Scheduled job deleted";
     public static final String SCHEDULED_JOB_EDIT = "Scheduled job edited";
     public static final String SCHEDULED_JOB_SKIPPED = "Scheduled job skipped";
+    public static final String SCHEDULED_JOB_DISABLED = "Scheduled job disabled";
+    public static final String SCHEDULED_DISABLED_SCHEDULED_JOB_REINSTATED = "Disabled scheduled job reinstated";
     public static final String SCHEDULED_JOB_KILLED = "Scheduled job killed";
     public static final String SCHEDULED_JOB_ENABLED = "Scheduled job enabled";
     public static final String SCHEDULED_JOB_HELD = "Scheduled job held";
@@ -74,6 +76,8 @@ public class SystemEventConstants
     public static final String All_SCHEDULED_JOBS_ENABLED_FOR_JOB_PLAN = "All scheduled jobs enabled for job plan";
     public static final String All_SCHEDULED_JOBS_SKIPPED_FOR_JOB_PLAN = "All scheduled jobs skipped for job plan";
     public static final String All_SCHEDULED_JOBS_RELEASED_FOR_JOB_PLAN = "All scheduled jobs released for job plan";
+    public static final String All_SCHEDULED_JOBS_DISABLED_FOR_JOB_PLAN = "All scheduled jobs disabled for job plan";
+    public static final String All_SCHEDULED_JOBS_REINSTATED_FOR_JOB_PLAN = "All disabled scheduled jobs reinstated for job plan";
     public static final String SCHEDULED_JOB_RELEASED = "Scheduled job released";
     public static final String SCHEDULED_JOB_SUBMITTED = "Scheduled job manually submitted";
     public static final String CHILD_JOB_PLAN_ADDED_TO_JOB_PLAN = "Child job plan added to job plan";
@@ -87,6 +91,8 @@ public class SystemEventConstants
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance all scheduled jobs disabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance all scheduled jobs enabled";
     public static final String CONTEXT_INSTANCE_HOLDING_ALL_JOBS = "Job plan instance all scheduled jobs held";
+    public static final String CONTEXT_INSTANCE_DISABLING_ALL_JOBS = "Job plan instance all command execution and local event jobs disabled";
+    public static final String CONTEXT_INSTANCE_REINSTATING_ALL_DISABLED_JOBS = "Job plan instance all disabled command execution and local event jobs reinstated";
     public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START = "Job plan instance all scheduled jobs released - start";
     public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END = "Job plan instance all scheduled jobs released - end";
     public static final String CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START = "Child job plan instance all scheduled jobs released - start";

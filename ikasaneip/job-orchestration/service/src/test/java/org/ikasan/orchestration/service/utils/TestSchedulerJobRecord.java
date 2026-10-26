@@ -32,6 +32,8 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
 
     private boolean skipped;
 
+    private boolean disabled;
+
     private boolean targetResidingContextOnly;
 
     private boolean participatesInLock;
@@ -94,6 +96,15 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override

@@ -1,9 +1,9 @@
 package org.ikasan.job.orchestration.core.component.converter;
 
 import org.ikasan.job.orchestration.core.AbstractTest;
-import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceStatus;
 import org.junit.Test;
 
 import java.io.IOException;

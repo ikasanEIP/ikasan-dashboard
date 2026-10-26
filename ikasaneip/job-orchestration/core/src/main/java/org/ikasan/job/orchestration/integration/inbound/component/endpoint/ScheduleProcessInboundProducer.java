@@ -7,7 +7,7 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.job.orchestration.integration.inbound.exception.InvalidContextInstanceIdException;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;

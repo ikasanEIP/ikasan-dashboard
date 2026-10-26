@@ -56,7 +56,7 @@ public class ScheduledContextServiceImpl implements ScheduledContextService {
                 scheduledContextRecordLite.setId(scheduledContextRecord.getId());
                 scheduledContextRecordLite.setContextName(scheduledContextRecord.getContextName());
                 scheduledContextRecordLite.setDescription(scheduledContextRecord.getContext().getDescription());
-                scheduledContextRecordLite.setTimestamp(scheduledContextRecord.getModifiedTimestamp());
+                scheduledContextRecordLite.setTimestamp(scheduledContextRecord.getTimestamp());
                 scheduledContextRecordLite.setModifiedBy(scheduledContextRecord.getModifiedBy());
                 scheduledContextRecordLite.setModifiedTimestamp(scheduledContextRecord.getModifiedTimestamp());
                 scheduledContextRecordLite.setDisabled(scheduledContextRecord.isDisabled());

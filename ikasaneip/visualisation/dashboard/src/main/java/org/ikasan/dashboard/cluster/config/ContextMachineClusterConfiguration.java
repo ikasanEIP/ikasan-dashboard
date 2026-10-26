@@ -2,8 +2,8 @@ package org.ikasan.dashboard.cluster.config;
 
 import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
-import org.ikasan.job.orchestration.rest.dashboard.ContextMachineRestImpl;
+import org.ikasan.job.orchestration.rest.client.delegate.ContextMachineRestServiceDelegate;
+import org.ikasan.job.orchestration.rest.client.ContextMachineRestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +40,10 @@ public class ContextMachineClusterConfiguration {
     @Autowired
     private LeaderElectionService leaderElectionService;
 
-    // required=false: no ContextMachineRestServiceImpl beans exist in single-node deployments (tests, standalone);
+    // required=false: no ContextMachineRestServiceDelegate beans exist in single-node deployments (tests, standalone);
     // the isEmpty() guard in registerContextMachineFallback() handles that case once Spring can actually call it.
     @Autowired(required=false)
-    private List<ContextMachineRestServiceImpl> contextMachineRestServices = new ArrayList<>();
+    private List<ContextMachineRestServiceDelegate> contextMachineRestServices = new ArrayList<>();
 
     @Value("${ikasan.dashboard.cluster.zookeeper.leader-lookup-retries:3}")
     private int leaderLookupRetries;
@@ -62,8 +62,8 @@ public class ContextMachineClusterConfiguration {
             return;
         }
 
-        Map<String, ContextMachineRestServiceImpl> peersByUrl = new LinkedHashMap<>();
-        for (ContextMachineRestServiceImpl svc : contextMachineRestServices) {
+        Map<String, ContextMachineRestServiceDelegate> peersByUrl = new LinkedHashMap<>();
+        for (ContextMachineRestServiceDelegate svc : contextMachineRestServices) {
             peersByUrl.put(svc.getBaseUrl(), svc);
         }
 

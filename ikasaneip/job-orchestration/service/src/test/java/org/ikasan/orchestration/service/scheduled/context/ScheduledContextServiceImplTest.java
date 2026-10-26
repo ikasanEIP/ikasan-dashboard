@@ -117,6 +117,7 @@ public class ScheduledContextServiceImplTest {
         when(mockRecord.getContextName()).thenReturn("test-context");
         when(mockRecord.getContext()).thenReturn(mockContextTemplate);
         when(mockContextTemplate.getDescription()).thenReturn("Test description");
+        when(mockRecord.getTimestamp()).thenReturn(123456L);
         when(mockRecord.getModifiedTimestamp()).thenReturn(123456L);
         when(mockRecord.getModifiedBy()).thenReturn("user1");
         when(mockRecord.isDisabled()).thenReturn(false);
@@ -338,5 +339,230 @@ public class ScheduledContextServiceImplTest {
         assertEquals(50L, results.getQueryResponseTime());
 
         verify(mockDao).findByFilter(mockFilter, 10, 0, "timestamp", "DESC");
+    }
+
+    /**
+     * Test that findByFilterLite correctly uses getTimestamp() instead of getModifiedTimestamp()
+     * for the timestamp field in ScheduledContextRecordLite.
+     * This is a regression test for IKASAN-2803.
+     */
+    @Test
+    public void testFindByFilterLiteUsesCorrectTimestampField() {
+        // Given - two different timestamp values to verify correct one is used
+        long contextTimestamp = 999999L;
+        long modifiedTimestamp = 123456L;
+
+        when(mockRecord.getId()).thenReturn("ctx-1");
+        when(mockRecord.getContextName()).thenReturn("test-context");
+        when(mockRecord.getContext()).thenReturn(mockContextTemplate);
+        when(mockContextTemplate.getDescription()).thenReturn("Test description");
+        when(mockRecord.getTimestamp()).thenReturn(contextTimestamp);
+        when(mockRecord.getModifiedTimestamp()).thenReturn(modifiedTimestamp);
+        when(mockRecord.getModifiedBy()).thenReturn("user1");
+        when(mockRecord.isDisabled()).thenReturn(false);
+        when(mockRecord.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(false);
+
+        List<ScheduledContextRecord> records = Arrays.asList(mockRecord);
+        SearchResults<ScheduledContextRecord> expectedResults =
+            new SearchResultsImpl<>(records, 1L, 100L);
+        when(mockDao.findByFilter(mockFilter, 10, 0, "timestamp", "DESC"))
+            .thenReturn(expectedResults);
+
+        // When
+        SearchResults<ScheduledContextRecordLite> results =
+            service.findByFilterLite(mockFilter, 10, 0, "timestamp", "DESC");
+
+        // Then
+        assertNotNull(results);
+        assertEquals(1, results.getResultList().size());
+
+        ScheduledContextRecordLite lite = results.getResultList().get(0);
+        // Verify that timestamp uses getTimestamp(), not getModifiedTimestamp()
+        assertEquals("timestamp field should use getTimestamp()", contextTimestamp, lite.getTimestamp());
+        assertEquals("modifiedTimestamp field should use getModifiedTimestamp()", modifiedTimestamp, lite.getModifiedTimestamp());
+
+        verify(mockRecord).getTimestamp();
+        verify(mockRecord).getModifiedTimestamp();
+    }
+
+    /**
+     * Test that findByFilterLite correctly maps all fields when timestamp and modifiedTimestamp
+     * have the same value (edge case).
+     */
+    @Test
+    public void testFindByFilterLiteWhenTimestampsAreEqual() {
+        // Given
+        long sameTimestamp = 555555L;
+
+        when(mockRecord.getId()).thenReturn("ctx-1");
+        when(mockRecord.getContextName()).thenReturn("test-context");
+        when(mockRecord.getContext()).thenReturn(mockContextTemplate);
+        when(mockContextTemplate.getDescription()).thenReturn("Test description");
+        when(mockRecord.getTimestamp()).thenReturn(sameTimestamp);
+        when(mockRecord.getModifiedTimestamp()).thenReturn(sameTimestamp);
+        when(mockRecord.getModifiedBy()).thenReturn("user1");
+        when(mockRecord.isDisabled()).thenReturn(false);
+        when(mockRecord.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(false);
+
+        List<ScheduledContextRecord> records = Arrays.asList(mockRecord);
+        SearchResults<ScheduledContextRecord> expectedResults =
+            new SearchResultsImpl<>(records, 1L, 100L);
+        when(mockDao.findByFilter(mockFilter, 10, 0, "timestamp", "DESC"))
+            .thenReturn(expectedResults);
+
+        // When
+        SearchResults<ScheduledContextRecordLite> results =
+            service.findByFilterLite(mockFilter, 10, 0, "timestamp", "DESC");
+
+        // Then
+        assertNotNull(results);
+        assertEquals(1, results.getResultList().size());
+
+        ScheduledContextRecordLite lite = results.getResultList().get(0);
+        assertEquals(sameTimestamp, lite.getTimestamp());
+        assertEquals(sameTimestamp, lite.getModifiedTimestamp());
+
+        verify(mockRecord).getTimestamp();
+        verify(mockRecord).getModifiedTimestamp();
+    }
+
+    /**
+     * Test that findByFilterLite handles zero timestamp (e.g., uninitialized) gracefully.
+     */
+    @Test
+    public void testFindByFilterLiteWithZeroTimestamp() {
+        // Given
+        when(mockRecord.getId()).thenReturn("ctx-1");
+        when(mockRecord.getContextName()).thenReturn("test-context");
+        when(mockRecord.getContext()).thenReturn(mockContextTemplate);
+        when(mockContextTemplate.getDescription()).thenReturn("Test description");
+        when(mockRecord.getTimestamp()).thenReturn(0L);
+        when(mockRecord.getModifiedTimestamp()).thenReturn(123456L);
+        when(mockRecord.getModifiedBy()).thenReturn("user1");
+        when(mockRecord.isDisabled()).thenReturn(false);
+        when(mockRecord.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(false);
+
+        List<ScheduledContextRecord> records = Arrays.asList(mockRecord);
+        SearchResults<ScheduledContextRecord> expectedResults =
+            new SearchResultsImpl<>(records, 1L, 100L);
+        when(mockDao.findByFilter(mockFilter, 10, 0, "timestamp", "DESC"))
+            .thenReturn(expectedResults);
+
+        // When
+        SearchResults<ScheduledContextRecordLite> results =
+            service.findByFilterLite(mockFilter, 10, 0, "timestamp", "DESC");
+
+        // Then
+        assertNotNull(results);
+        assertEquals(1, results.getResultList().size());
+
+        ScheduledContextRecordLite lite = results.getResultList().get(0);
+        assertEquals("timestamp should be 0 when source is 0", 0L, lite.getTimestamp());
+        assertEquals(123456L, lite.getModifiedTimestamp());
+
+        verify(mockRecord).getTimestamp();
+    }
+
+    /**
+     * Test that findByFilterLite correctly uses timestamp field for multiple records with varying values.
+     */
+    @Test
+    public void testFindByFilterLiteWithMultipleRecordsAndDifferentTimestamps() {
+        // Given
+        ScheduledContextRecord mockRecord2 = mock(ScheduledContextRecord.class);
+        ContextTemplate mockContextTemplate2 = mock(ContextTemplate.class);
+
+        // First record with older timestamp, newer modified timestamp
+        when(mockRecord.getId()).thenReturn("ctx-1");
+        when(mockRecord.getContextName()).thenReturn("context-1");
+        when(mockRecord.getContext()).thenReturn(mockContextTemplate);
+        when(mockContextTemplate.getDescription()).thenReturn("First context");
+        when(mockRecord.getTimestamp()).thenReturn(100000L);
+        when(mockRecord.getModifiedTimestamp()).thenReturn(999999L);
+        when(mockRecord.getModifiedBy()).thenReturn("user1");
+        when(mockRecord.isDisabled()).thenReturn(false);
+        when(mockRecord.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(false);
+
+        // Second record with newer timestamp, older modified timestamp
+        when(mockRecord2.getId()).thenReturn("ctx-2");
+        when(mockRecord2.getContextName()).thenReturn("context-2");
+        when(mockRecord2.getContext()).thenReturn(mockContextTemplate2);
+        when(mockContextTemplate2.getDescription()).thenReturn("Second context");
+        when(mockRecord2.getTimestamp()).thenReturn(999999L);
+        when(mockRecord2.getModifiedTimestamp()).thenReturn(100000L);
+        when(mockRecord2.getModifiedBy()).thenReturn("user2");
+        when(mockRecord2.isDisabled()).thenReturn(true);
+        when(mockRecord2.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(true);
+
+        List<ScheduledContextRecord> records = Arrays.asList(mockRecord, mockRecord2);
+        SearchResults<ScheduledContextRecord> expectedResults =
+            new SearchResultsImpl<>(records, 2L, 150L);
+        when(mockDao.findByFilter(mockFilter, 20, 5, "timestamp", "ASC"))
+            .thenReturn(expectedResults);
+
+        // When
+        SearchResults<ScheduledContextRecordLite> results =
+            service.findByFilterLite(mockFilter, 20, 5, "timestamp", "ASC");
+
+        // Then
+        assertNotNull(results);
+        assertEquals(2, results.getResultList().size());
+
+        ScheduledContextRecordLite lite1 = results.getResultList().get(0);
+        assertEquals("ctx-1", lite1.getId());
+        assertEquals(100000L, lite1.getTimestamp());
+        assertEquals(999999L, lite1.getModifiedTimestamp());
+
+        ScheduledContextRecordLite lite2 = results.getResultList().get(1);
+        assertEquals("ctx-2", lite2.getId());
+        assertEquals(999999L, lite2.getTimestamp());
+        assertEquals(100000L, lite2.getModifiedTimestamp());
+
+        verify(mockRecord).getTimestamp();
+        verify(mockRecord2).getTimestamp();
+    }
+
+    /**
+     * Test that findByFilterLite correctly maps timestamp field for disabled contexts.
+     */
+    @Test
+    public void testFindByFilterLiteUsesCorrectTimestampFieldForDisabledContext() {
+        // Given
+        long contextTimestamp = 777777L;
+        long modifiedTimestamp = 888888L;
+
+        when(mockRecord.getId()).thenReturn("ctx-1");
+        when(mockRecord.getContextName()).thenReturn("disabled-context");
+        when(mockRecord.getContext()).thenReturn(mockContextTemplate);
+        when(mockContextTemplate.getDescription()).thenReturn("Disabled context");
+        when(mockRecord.getTimestamp()).thenReturn(contextTimestamp);
+        when(mockRecord.getModifiedTimestamp()).thenReturn(modifiedTimestamp);
+        when(mockRecord.getModifiedBy()).thenReturn("admin");
+        when(mockRecord.isDisabled()).thenReturn(true);
+        when(mockRecord.isQuartzScheduleDrivenJobsDisabledForContext()).thenReturn(true);
+
+        List<ScheduledContextRecord> records = Arrays.asList(mockRecord);
+        SearchResults<ScheduledContextRecord> expectedResults =
+            new SearchResultsImpl<>(records, 1L, 100L);
+        when(mockDao.findByFilter(mockFilter, 10, 0, "timestamp", "DESC"))
+            .thenReturn(expectedResults);
+
+        // When
+        SearchResults<ScheduledContextRecordLite> results =
+            service.findByFilterLite(mockFilter, 10, 0, "timestamp", "DESC");
+
+        // Then
+        assertNotNull(results);
+        assertEquals(1, results.getResultList().size());
+
+        ScheduledContextRecordLite lite = results.getResultList().get(0);
+        assertTrue("context should be disabled", lite.isDisabled());
+        assertTrue("scheduled jobs should be disabled", lite.isQuartzScheduleDrivenJobsDisabledForContext());
+        // Verify correct timestamp is used even for disabled contexts
+        assertEquals("timestamp field should use getTimestamp()", contextTimestamp, lite.getTimestamp());
+        assertEquals("modifiedTimestamp field should use getModifiedTimestamp()", modifiedTimestamp, lite.getModifiedTimestamp());
+
+        verify(mockRecord).getTimestamp();
+        verify(mockRecord).getModifiedTimestamp();
     }
 }

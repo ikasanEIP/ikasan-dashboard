@@ -59,6 +59,10 @@ public class SchedulerStatusFreeTextDiv extends Div {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");
         }
+        else if(status.equals(InstanceStatus.DISABLED)) {
+            super.getElement().getStyle().set("background-color", IkasanColours.BLACK);
+            super.getElement().getStyle().set("color", "#FFF");
+        }
         else if(status.equals(InstanceStatus.SKIPPED_COMPLETE)) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");

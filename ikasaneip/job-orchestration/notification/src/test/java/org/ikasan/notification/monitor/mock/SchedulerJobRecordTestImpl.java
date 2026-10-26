@@ -73,6 +73,11 @@ public class SchedulerJobRecordTestImpl implements SchedulerJobRecord {
     }
 
     @Override
+    public boolean isDisabled() {
+        return false;
+    }
+
+    @Override
     public boolean isTargetResidingContextOnly() {
         return false;
     }

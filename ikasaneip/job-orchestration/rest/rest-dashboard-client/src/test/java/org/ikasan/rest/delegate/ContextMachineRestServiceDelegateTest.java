@@ -1,10 +1,10 @@
-package org.ikasan.rest;
+package org.ikasan.rest.delegate;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
-import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
+import org.ikasan.job.orchestration.rest.client.delegate.ContextMachineRestServiceDelegate;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,12 +24,12 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextMachineRestServiceImplTest {
+public class ContextMachineRestServiceDelegateTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
-    private ContextMachineRestServiceImpl uut;
+    private ContextMachineRestServiceDelegate uut;
 
     @Mock
     private Environment environment;
@@ -47,44 +47,48 @@ public class ContextMachineRestServiceImplTest {
         String baseUrl = "http://localhost:" + wireMockRule.port();
         when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
         when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
-        uut = new ContextMachineRestServiceImpl(baseUrl, environment, new HttpComponentsClientHttpRequestFactory());
+        uut = new ContextMachineRestServiceDelegate(baseUrl, environment, new HttpComponentsClientHttpRequestFactory());
     }
 
     // ── Path helpers ─────────────────────────────────────────────────────────────────────────────
 
     private String base() {
-        return ContextMachineRestServiceImpl.CONTEXT_MACHINE_BASE_URL + "/" + CONTEXT_INSTANCE_ID;
+        return ContextMachineRestServiceDelegate.CONTEXT_MACHINE_BASE_URL + "/" + CONTEXT_INSTANCE_ID;
     }
 
-    private String holdPath()              { return base() + ContextMachineRestServiceImpl.HOLD_PATH; }
-    private String releasePath()           { return base() + ContextMachineRestServiceImpl.RELEASE_PATH; }
-    private String resetPath()             { return base() + ContextMachineRestServiceImpl.RESET_PATH; }
-    private String skipPath()              { return base() + ContextMachineRestServiceImpl.SKIP_PATH; }
-    private String holdAllJobsPath()       { return base() + ContextMachineRestServiceImpl.HOLD_ALL_JOBS_PATH; }
-    private String releaseAllJobsPath()    { return base() + ContextMachineRestServiceImpl.RELEASE_ALL_JOBS_PATH; }
-    private String skipAllJobsPath()       { return base() + ContextMachineRestServiceImpl.SKIP_ALL_JOBS_PATH; }
-    private String acknowledgeErrorPath()  { return base() + ContextMachineRestServiceImpl.ACKNOWLEDGE_ERROR_PATH; }
-    private String broadcastLocalPath()    { return base() + ContextMachineRestServiceImpl.BROADCAST_LOCAL_EVENT_PATH; }
-    private String disableQuartzPath()     { return base() + ContextMachineRestServiceImpl.DISABLE_QUARTZ_JOBS_PATH; }
-    private String enableQuartzPath()      { return base() + ContextMachineRestServiceImpl.ENABLE_QUARTZ_JOBS_PATH; }
-    private String runUntilEndedPath()     { return base() + ContextMachineRestServiceImpl.RUN_UNTIL_MANUALLY_ENDED_PATH; }
-    private String releaseQueuedPath()     { return base() + ContextMachineRestServiceImpl.RELEASE_QUEUED_JOBS_PATH; }
-    private String killRunningPath()       { return base() + ContextMachineRestServiceImpl.KILL_RUNNING_JOBS_PATH; }
-    private String saveContextPath()       { return base() + ContextMachineRestServiceImpl.SAVE_CONTEXT_PATH; }
-    private String updateParamsPath()      { return base() + ContextMachineRestServiceImpl.UPDATE_CONTEXT_PARAMETERS_PATH; }
-    private String dryRunParamsPath()      { return base() + ContextMachineRestServiceImpl.DRY_RUN_PARAMETERS_PATH; }
-    private String broadcastGlobalPath()   { return base() + ContextMachineRestServiceImpl.BROADCAST_GLOBAL_EVENTS_PATH; }
-    private String publishInitiationPath() { return base() + ContextMachineRestServiceImpl.PUBLISH_JOB_INITIATION_PATH; }
-    private String addQueuedPath()         { return base() + ContextMachineRestServiceImpl.ADD_QUEUED_INITIATION_PATH; }
-    private String resubmitDlqPath()       { return base() + ContextMachineRestServiceImpl.RESUBMIT_DLQ_PATH; }
-    private String getContextPath()        { return base() + ContextMachineRestServiceImpl.GET_CONTEXT_PATH; }
-    private String getChildContextPath()   { return base() + ContextMachineRestServiceImpl.GET_CONTEXT_PATH + "/" + CONTEXT_NAME; }
-    private String contextStatusPath()     { return base() + ContextMachineRestServiceImpl.GET_CONTEXT_STATUS_PATH + "/" + CONTEXT_NAME; }
-    private String jobStatusPath()         { return base() + ContextMachineRestServiceImpl.GET_JOB_STATUS_PATH + "/" + CONTEXT_NAME + "/" + JOB_IDENTIFIER; }
-    private String instanceStatusPath()    { return base() + ContextMachineRestServiceImpl.GET_INSTANCE_STATUS_PATH; }
-    private String isDryRunPath()          { return base() + ContextMachineRestServiceImpl.IS_DRY_RUN_PATH; }
-    private String dlqMessagesPath()       { return base() + ContextMachineRestServiceImpl.GET_DLQ_MESSAGES_PATH; }
-    private String dlqMessagePath()        { return base() + ContextMachineRestServiceImpl.GET_DLQ_MESSAGES_PATH + "/" + MESSAGE_ID; }
+    private String holdPath()              { return base() + ContextMachineRestServiceDelegate.HOLD_PATH; }
+    private String releasePath()           { return base() + ContextMachineRestServiceDelegate.RELEASE_PATH; }
+    private String resetPath()             { return base() + ContextMachineRestServiceDelegate.RESET_PATH; }
+    private String skipPath()              { return base() + ContextMachineRestServiceDelegate.SKIP_PATH; }
+    private String holdAllJobsPath()       { return base() + ContextMachineRestServiceDelegate.HOLD_ALL_JOBS_PATH; }
+    private String releaseAllJobsPath()    { return base() + ContextMachineRestServiceDelegate.RELEASE_ALL_JOBS_PATH; }
+    private String skipAllJobsPath()       { return base() + ContextMachineRestServiceDelegate.SKIP_ALL_JOBS_PATH; }
+    private String disableAllJobsPath()    { return base() + ContextMachineRestServiceDelegate.DISABLE_ALL_JOBS_PATH; }
+    private String reinstateAllDisabledJobsPath() { return base() + ContextMachineRestServiceDelegate.REINSTATE_ALL_DISABLED_JOBS_PATH; }
+    private String disablePath()           { return base() + ContextMachineRestServiceDelegate.DISABLE_PATH; }
+    private String reinstateDisabledPath() { return base() + ContextMachineRestServiceDelegate.REINSTATE_DISABLED_PATH; }
+    private String acknowledgeErrorPath()  { return base() + ContextMachineRestServiceDelegate.ACKNOWLEDGE_ERROR_PATH; }
+    private String broadcastLocalPath()    { return base() + ContextMachineRestServiceDelegate.BROADCAST_LOCAL_EVENT_PATH; }
+    private String disableQuartzPath()     { return base() + ContextMachineRestServiceDelegate.DISABLE_QUARTZ_JOBS_PATH; }
+    private String enableQuartzPath()      { return base() + ContextMachineRestServiceDelegate.ENABLE_QUARTZ_JOBS_PATH; }
+    private String runUntilEndedPath()     { return base() + ContextMachineRestServiceDelegate.RUN_UNTIL_MANUALLY_ENDED_PATH; }
+    private String releaseQueuedPath()     { return base() + ContextMachineRestServiceDelegate.RELEASE_QUEUED_JOBS_PATH; }
+    private String killRunningPath()       { return base() + ContextMachineRestServiceDelegate.KILL_RUNNING_JOBS_PATH; }
+    private String saveContextPath()       { return base() + ContextMachineRestServiceDelegate.SAVE_CONTEXT_PATH; }
+    private String updateParamsPath()      { return base() + ContextMachineRestServiceDelegate.UPDATE_CONTEXT_PARAMETERS_PATH; }
+    private String dryRunParamsPath()      { return base() + ContextMachineRestServiceDelegate.DRY_RUN_PARAMETERS_PATH; }
+    private String broadcastGlobalPath()   { return base() + ContextMachineRestServiceDelegate.BROADCAST_GLOBAL_EVENTS_PATH; }
+    private String publishInitiationPath() { return base() + ContextMachineRestServiceDelegate.PUBLISH_JOB_INITIATION_PATH; }
+    private String addQueuedPath()         { return base() + ContextMachineRestServiceDelegate.ADD_QUEUED_INITIATION_PATH; }
+    private String resubmitDlqPath()       { return base() + ContextMachineRestServiceDelegate.RESUBMIT_DLQ_PATH; }
+    private String getContextPath()        { return base() + ContextMachineRestServiceDelegate.GET_CONTEXT_PATH; }
+    private String getChildContextPath()   { return base() + ContextMachineRestServiceDelegate.GET_CONTEXT_PATH + "/" + CONTEXT_NAME; }
+    private String contextStatusPath()     { return base() + ContextMachineRestServiceDelegate.GET_CONTEXT_STATUS_PATH + "/" + CONTEXT_NAME; }
+    private String jobStatusPath()         { return base() + ContextMachineRestServiceDelegate.GET_JOB_STATUS_PATH + "/" + CONTEXT_NAME + "/" + JOB_IDENTIFIER; }
+    private String instanceStatusPath()    { return base() + ContextMachineRestServiceDelegate.GET_INSTANCE_STATUS_PATH; }
+    private String isDryRunPath()          { return base() + ContextMachineRestServiceDelegate.IS_DRY_RUN_PATH; }
+    private String dlqMessagesPath()       { return base() + ContextMachineRestServiceDelegate.GET_DLQ_MESSAGES_PATH; }
+    private String dlqMessagePath()        { return base() + ContextMachineRestServiceDelegate.GET_DLQ_MESSAGES_PATH + "/" + MESSAGE_ID; }
 
     // ── holdJob ───────────────────────────────────────────────────────────────────────────────────
 
@@ -203,6 +207,74 @@ public class ContextMachineRestServiceImplTest {
         stubFor(put(urlEqualTo(skipAllJobsPath())).willReturn(aResponse().withStatus(404)));
 
         assertFalse(uut.skipAllJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME, false));
+    }
+
+    // ── disableJobs ───────────────────────────────────────────────────────────────────────────────
+
+    @Test
+    public void test_disableJobs_returns_true_on_200() {
+        stubFor(put(urlEqualTo(disableAllJobsPath())).willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.disableJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+        verify(putRequestedFor(urlEqualTo(disableAllJobsPath())));
+    }
+
+    @Test
+    public void test_disableJobs_returns_false_on_404() {
+        stubFor(put(urlEqualTo(disableAllJobsPath())).willReturn(aResponse().withStatus(404)));
+
+        assertFalse(uut.disableJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+    }
+
+    // ── disableJob ────────────────────────────────────────────────────────────────────────────────
+
+    @Test
+    public void test_disableJob_returns_true_on_200() {
+        stubFor(put(urlEqualTo(disablePath())).willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.disableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
+        verify(putRequestedFor(urlEqualTo(disablePath())));
+    }
+
+    @Test
+    public void test_disableJob_returns_false_on_404() {
+        stubFor(put(urlEqualTo(disablePath())).willReturn(aResponse().withStatus(404)));
+
+        assertFalse(uut.disableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
+    }
+
+    // ── reinstateDisabledJobs ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    public void test_reinstateDisabledJobs_returns_true_on_200() {
+        stubFor(put(urlEqualTo(reinstateAllDisabledJobsPath())).willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.reinstateDisabledJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+        verify(putRequestedFor(urlEqualTo(reinstateAllDisabledJobsPath())));
+    }
+
+    @Test
+    public void test_reinstateDisabledJobs_returns_false_on_404() {
+        stubFor(put(urlEqualTo(reinstateAllDisabledJobsPath())).willReturn(aResponse().withStatus(404)));
+
+        assertFalse(uut.reinstateDisabledJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+    }
+
+    // ── enableJob ─────────────────────────────────────────────────────────────────────────────────
+
+    @Test
+    public void test_enableJob_returns_true_on_200() {
+        stubFor(put(urlEqualTo(reinstateDisabledPath())).willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.enableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
+        verify(putRequestedFor(urlEqualTo(reinstateDisabledPath())));
+    }
+
+    @Test
+    public void test_enableJob_returns_false_on_404() {
+        stubFor(put(urlEqualTo(reinstateDisabledPath())).willReturn(aResponse().withStatus(404)));
+
+        assertFalse(uut.enableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
     }
 
     // ── acknowledgeError ─────────────────────────────────────────────────────────────────────────
@@ -511,6 +583,58 @@ public class ContextMachineRestServiceImplTest {
         verify(putRequestedFor(urlEqualTo(skipAllJobsPath()))
             .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME)))
             .withRequestBody(matchingJsonPath("$.skipFlag", equalTo("true"))));
+    }
+
+    @Test
+    public void test_disableJobs_sends_child_context_name_body() {
+        stubFor(put(urlEqualTo(disableAllJobsPath()))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME)))
+            .willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.disableJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+
+        verify(putRequestedFor(urlEqualTo(disableAllJobsPath()))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME))));
+    }
+
+    @Test
+    public void test_disableJob_sends_job_identifier_and_child_context_body() {
+        stubFor(put(urlEqualTo(disablePath()))
+            .withRequestBody(matchingJsonPath("$.jobIdentifier", equalTo(JOB_IDENTIFIER)))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME)))
+            .willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.disableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
+
+        verify(putRequestedFor(urlEqualTo(disablePath()))
+            .withRequestBody(matchingJsonPath("$.jobIdentifier", equalTo(JOB_IDENTIFIER)))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME))));
+    }
+
+    @Test
+    public void test_reinstateDisabledJobs_sends_child_context_name_body() {
+        stubFor(put(urlEqualTo(reinstateAllDisabledJobsPath()))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME)))
+            .willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.reinstateDisabledJobs(CONTEXT_INSTANCE_ID, CHILD_CONTEXT_NAME));
+
+        verify(putRequestedFor(urlEqualTo(reinstateAllDisabledJobsPath()))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME))));
+    }
+
+    @Test
+    public void test_enableJob_sends_job_identifier_and_child_context_body() {
+        stubFor(put(urlEqualTo(reinstateDisabledPath()))
+            .withRequestBody(matchingJsonPath("$.jobIdentifier", equalTo(JOB_IDENTIFIER)))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME)))
+            .willReturn(aResponse().withStatus(200)));
+
+        assertTrue(uut.enableJob(CONTEXT_INSTANCE_ID, JOB_IDENTIFIER, CHILD_CONTEXT_NAME));
+
+        verify(putRequestedFor(urlEqualTo(reinstateDisabledPath()))
+            .withRequestBody(matchingJsonPath("$.jobIdentifier", equalTo(JOB_IDENTIFIER)))
+            .withRequestBody(matchingJsonPath("$.childContextName", equalTo(CHILD_CONTEXT_NAME))));
     }
 
     @Test

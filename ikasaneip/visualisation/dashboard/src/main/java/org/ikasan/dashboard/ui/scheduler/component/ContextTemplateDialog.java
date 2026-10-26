@@ -730,7 +730,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             this.scheduledContextRecord.setContextName(this.contextTemplate.getName());
             this.scheduledContextRecord.setContext(this.contextTemplate);
             this.scheduledContextRecord.setModifiedBy(this.authentication.getName());
-            this.scheduledContextRecord.setTimestamp(System.currentTimeMillis());
+//            this.scheduledContextRecord.setTimestamp(System.currentTimeMillis());
             this.scheduledContextService.save(this.scheduledContextRecord);
 
             if(!this.contextTemplate.isDisabled() &&

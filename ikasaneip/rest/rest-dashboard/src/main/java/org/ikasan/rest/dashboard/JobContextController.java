@@ -41,7 +41,7 @@
 package org.ikasan.rest.dashboard;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.springframework.http.HttpStatus;

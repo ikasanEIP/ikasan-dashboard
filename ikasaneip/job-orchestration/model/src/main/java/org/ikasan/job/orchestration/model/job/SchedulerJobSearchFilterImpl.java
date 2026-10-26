@@ -32,6 +32,7 @@ public class SchedulerJobSearchFilterImpl implements SchedulerJobSearchFilter {
     private String contextSearchFilter = null;
     private boolean held;
     private boolean skipped;
+    private boolean disabled;
     private Boolean targetResidingContextOnly;
     private Boolean participatesInLock = null;
     private List<String> contextNames = null;
@@ -118,6 +119,16 @@ public class SchedulerJobSearchFilterImpl implements SchedulerJobSearchFilter {
     }
 
     @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    @Override
     public Boolean isTargetResidingContextOnly() {
         return targetResidingContextOnly;
     }
@@ -143,14 +154,22 @@ public class SchedulerJobSearchFilterImpl implements SchedulerJobSearchFilter {
         if(status == null || status.isEmpty()) {
             this.held = false;
             this.skipped = false;
+            this.disabled = false;
         }
         else if(status.equals(InstanceStatus.ON_HOLD.name())) {
             this.held = true;
             this.skipped = false;
+            this.disabled = false;
         }
         else if(status.equals(InstanceStatus.SKIPPED.name())) {
             this.held = false;
             this.skipped = true;
+            this.disabled = false;
+        }
+        else if(status.equals(InstanceStatus.DISABLED.name())) {
+            this.held = false;
+            this.skipped = false;
+            this.disabled = true;
         }
     }
 

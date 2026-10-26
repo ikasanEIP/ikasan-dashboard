@@ -605,11 +605,102 @@ public class SchedulerJobServiceImpl implements SchedulerJobService<SchedulerJob
         SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
         filter.setContextSearchFilter(contextName);
 
-        List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
+        List<InternalEventDrivenJobRecord> jobsToHold = this.getFilteredInternalEventDrivenJobRecords(filter);
 
-        if(jobsToRelease.size() > 0) {
-            this.internalEventDrivenJobRecordDao.holdAll(jobsToRelease, actor);
+        if(jobsToHold.size() > 0) {
+            this.internalEventDrivenJobRecordDao.holdAll(jobsToHold, actor);
         }
+    }
+
+    @Override
+    public void disable(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob(), actor);
+            InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobRecord.getInternalEventDrivenJob();
+            internalEventDrivenJob.setHeldContexts(new HashMap<>());
+            if(internalEventDrivenJob.isTargetResidingContextOnly()) {
+                childContextNames.forEach(name ->
+                    internalEventDrivenJob.getDisabledContexts().put(name, true));
+            }
+            else {
+                internalEventDrivenJob.getChildContextNames().forEach(name ->
+                    internalEventDrivenJob.getDisabledContexts().put(name, true));
+            }
+
+            internalEventDrivenJobRecord.setDisabled(true);
+            internalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            internalEventDrivenJobRecord.setModifiedBy(actor);
+            this.internalEventDrivenJobRecordDao.save(internalEventDrivenJobRecord);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be disabled.");
+        }
+    }
+
+    @Override
+    public void reinstateDisabled(SchedulerJobRecord jobRecord, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob(), actor);
+            internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
+            InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobRecord.getInternalEventDrivenJob();
+            internalEventDrivenJob.setDisabledContexts(new HashMap<>());
+            internalEventDrivenJobRecord.setDisabled(false);
+            internalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            internalEventDrivenJobRecord.setModifiedBy(actor);
+            this.internalEventDrivenJobRecordDao.save(internalEventDrivenJobRecord);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be reinstated from disabled.");
+        }
+    }
+
+    @Override
+    public void disableAll(String contextName, String actor) {
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+
+        List<InternalEventDrivenJobRecord> jobsToDisable = this.getFilteredInternalEventDrivenJobRecords(filter);
+
+        jobsToDisable.forEach(jobRecord -> {
+            InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+            if(internalEventDrivenJob.getChildContextNames() != null) {
+                HashMap<String, Boolean> disabledContexts = new HashMap<>();
+
+                internalEventDrivenJob.getChildContextNames()
+                    .forEach(name -> disabledContexts.put(name, Boolean.TRUE));
+
+                internalEventDrivenJob.setDisabledContexts(disabledContexts);
+            }
+            internalEventDrivenJob.setSkippedContexts(new HashMap<>());
+            internalEventDrivenJob.setHeldContexts(new HashMap<>());
+            jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            jobRecord.setDisabled(true);
+            jobRecord.setHeld(false);
+            jobRecord.setSkipped(false);
+            jobRecord.setModifiedBy(actor);
+        });
+
+        this.internalEventDrivenJobRecordDao.save(jobsToDisable);
+    }
+
+    @Override
+    public void reinstateAllDisabled(String contextName, String actor) {
+        SchedulerJobSearchFilter filter = new SchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+
+        List<InternalEventDrivenJobRecord> jobsToReinstate = this.getFilteredInternalEventDrivenJobRecords(filter);
+
+        jobsToReinstate.forEach(jobRecord -> {
+            InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+            internalEventDrivenJob.setDisabledContexts(new HashMap<>());
+            jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            jobRecord.setDisabled(false);
+            jobRecord.setModifiedBy(actor);
+        });
+
+        this.internalEventDrivenJobRecordDao.save(jobsToReinstate);
     }
 
     private List<InternalEventDrivenJobRecord> getFilteredInternalEventDrivenJobRecords(SchedulerJobSearchFilter filter) {

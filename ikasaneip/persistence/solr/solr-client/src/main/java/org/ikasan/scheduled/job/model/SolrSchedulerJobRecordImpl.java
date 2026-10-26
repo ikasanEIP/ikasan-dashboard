@@ -50,6 +50,9 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Field(EntityFields.SKIPPED)
     private boolean skipped;
 
+    @Field(EntityFields.DISABLED)
+    private boolean disabled;
+
     @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
@@ -137,6 +140,11 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
     }
 
     @Override

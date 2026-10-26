@@ -3,8 +3,8 @@ package org.ikasan.dashboard.cluster.config;
 import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.ikasan.dashboard.cluster.service.ZooKeeperLeaderElectionService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.rest.client.delegate.ContextMachineRestServiceDelegate;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +29,7 @@ public class ContextMachineClusterConfigurationTest {
     public void setUp() {
         ContextMachineCache.instance().resetAllCache();
         ReflectionTestUtils.setField(configuration, "leaderElectionService", leaderElectionService);
-        ReflectionTestUtils.setField(configuration, "contextMachineRestServices", new ArrayList<ContextMachineRestServiceImpl>());
+        ReflectionTestUtils.setField(configuration, "contextMachineRestServices", new ArrayList<ContextMachineRestServiceDelegate>());
         ReflectionTestUtils.setField(configuration, "leaderLookupRetries", 3);
         ReflectionTestUtils.setField(configuration, "leaderLookupRetryIntervalMs", 500L);
     }
@@ -91,7 +91,7 @@ public class ContextMachineClusterConfigurationTest {
 
     @Test
     public void testFallbackReturnsNullWhenThisNodeIsLeader() {
-        ContextMachineRestServiceImpl peer = mock(ContextMachineRestServiceImpl.class);
+        ContextMachineRestServiceDelegate peer = mock(ContextMachineRestServiceDelegate.class);
         when(peer.getBaseUrl()).thenReturn("http://peer:9090");
         ReflectionTestUtils.setField(configuration, "contextMachineRestServices", List.of(peer));
         when(leaderElectionService.isLeader()).thenReturn(true);
@@ -105,7 +105,7 @@ public class ContextMachineClusterConfigurationTest {
 
     @Test
     public void testFallbackReturnsRestProxyWhenThisNodeIsFollower() {
-        ContextMachineRestServiceImpl peer = mock(ContextMachineRestServiceImpl.class);
+        ContextMachineRestServiceDelegate peer = mock(ContextMachineRestServiceDelegate.class);
         when(peer.getBaseUrl()).thenReturn("http://peer:9090");
         ReflectionTestUtils.setField(configuration, "contextMachineRestServices", List.of(peer));
         when(leaderElectionService.isLeader()).thenReturn(false);

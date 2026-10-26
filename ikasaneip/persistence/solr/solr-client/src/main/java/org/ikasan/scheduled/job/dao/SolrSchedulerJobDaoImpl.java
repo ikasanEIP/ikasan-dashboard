@@ -283,6 +283,13 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(true);
         }
 
+        if(filter.isDisabled()) {
+            queryBuffer.append(AND)
+                .append(DISABLED)
+                .append(COLON)
+                .append(true);
+        }
+
         if(filter.isTargetResidingContextOnly() != null) {
             queryBuffer.append(AND)
                 .append(TARGET_RESIDING_CONTEXT_ONLY)

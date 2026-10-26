@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
@@ -270,7 +271,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             SchedulerJobInstanceRecord jobInstanceRecord = this.loadJob(event.getFigure().getUserData().getIdentifier(), event.getFigure().getUserData().getJobName(),
                 JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
             CommandExecutionJobPositionedDialog positionedDialog = new CommandExecutionJobPositionedDialog(jobInstanceRecord, this.logStreamingService, this.moduleMetaDataService,
-                this.schedulerJobInstanceService, this.scheduledContextInstanceService, this.parentContextInstance);
+                this.schedulerJobInstanceService, this.scheduledContextInstanceService, this.parentContextInstance, this.configurationRestService,
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.jobInitiationService, this.jobUtilsService);
             PositionedDialog.Position position = new PositionedDialog.Position(event.getFigure().getY(), event.getFigure().getX());
             positionedDialog.setPosition(position);
             positionedDialog.open();

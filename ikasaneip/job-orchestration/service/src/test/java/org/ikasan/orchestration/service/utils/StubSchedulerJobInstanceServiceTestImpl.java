@@ -116,6 +116,16 @@ public class StubSchedulerJobInstanceServiceTestImpl implements SchedulerJobInst
 
     }
 
+    @Override
+    public List<SchedulerJobInstanceRecord> disableJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        return List.of();
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> getJobsToEnableWithinContext(ContextInstance contextInstance, String childContextName) {
+        return List.of();
+    }
+
     public class SearchResultsStubImpl<T> implements SearchResults<T> {
         private List<T> results;
         private long totalNumberOfResults;

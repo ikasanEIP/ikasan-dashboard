@@ -7,7 +7,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.ikasan.mongo.persistence.business.stream.metadata.dao.MongoBusinessStreamMetadataDaoImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
@@ -58,7 +57,7 @@ import org.ikasan.mongo.persistence.scheduled.job.dao.MongoGlobalEventJobDao;
 import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobDao;
 import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobTemplateDao;
 import org.ikasan.mongo.persistence.scheduled.job.dao.MongoQuartzScheduleDrivenJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoSchedulerJobDao;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoSchedulerJobDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoBridgingJobRepository;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextStartJobRepository;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextTerminalJobRepository;
@@ -112,16 +111,7 @@ import org.ikasan.spec.persistence.service.SetupService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.convert.DbRefResolver;
-import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
-import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
@@ -361,7 +351,7 @@ public class MongoPersistenceAutoConfiguration {
     public SchedulerJobDao schedulerJobDao(
             MongoSchedulerJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoSchedulerJobDao(repository, mongoTemplate);
+        return new MongoSchedulerJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("quartzScheduleDrivenJobRecordDao")

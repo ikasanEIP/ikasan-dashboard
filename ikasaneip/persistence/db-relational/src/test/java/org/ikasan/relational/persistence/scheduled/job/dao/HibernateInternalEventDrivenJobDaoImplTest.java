@@ -388,6 +388,7 @@ public class HibernateInternalEventDrivenJobDaoImplTest {
         private String startupControlType;
         private Map<String, Boolean> skippedContexts;
         private Map<String, Boolean> heldContexts;
+        private Map<String, Boolean> disabledContexts;
         private int ordinal;
         private Boolean isTemplateJob;
         private Boolean isTemplateBased;
@@ -515,6 +516,16 @@ public class HibernateInternalEventDrivenJobDaoImplTest {
         @Override
         public Map<String, Boolean> getHeldContexts() {
             return heldContexts;
+        }
+
+        @Override
+        public Map<String, Boolean> getDisabledContexts() {
+            return disabledContexts;
+        }
+
+        @Override
+        public void setDisabledContexts(Map<String, Boolean> disabledContexts) {
+            this.disabledContexts = disabledContexts;
         }
 
         @Override

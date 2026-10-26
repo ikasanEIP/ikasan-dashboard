@@ -5,6 +5,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.aura.Aura;
 
@@ -20,6 +21,7 @@ import java.util.HashMap;
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @PWA(name = "Ikasan Visualisation Dashboard",
     shortName = "Ikasan")
+@LoadDependenciesOnStartup
 public class IkasanAppShellConfigurator implements AppShellConfigurator {
 
     @Override

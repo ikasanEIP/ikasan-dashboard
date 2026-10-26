@@ -141,6 +141,16 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
     }
 
     @Override
+    public List<SchedulerJobInstanceRecord> disableJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        return List.of();
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> getJobsToEnableWithinContext(ContextInstance contextInstance, String childContextName) {
+        return List.of();
+    }
+
+    @Override
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(List<String> contextInstanceIds) {
         return null;
     }

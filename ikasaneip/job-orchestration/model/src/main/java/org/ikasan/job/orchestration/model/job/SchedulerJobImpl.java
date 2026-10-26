@@ -27,6 +27,8 @@ public class SchedulerJobImpl implements SchedulerJob {
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, Boolean> heldContexts = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    protected Map<String, Boolean> disabledContexts = new HashMap<>();
     protected int ordinal = -1;
     protected Boolean templateJob;
     protected Boolean isTemplateBased;
@@ -135,6 +137,14 @@ public class SchedulerJobImpl implements SchedulerJob {
         this.heldContexts = heldContexts;
     }
 
+    public Map<String, Boolean> getDisabledContexts() {
+        return disabledContexts;
+    }
+
+    public void setDisabledContexts(Map<String, Boolean> disabledContexts) {
+        this.disabledContexts = disabledContexts;
+    }
+
     @Override
     public int getOrdinal() {
         return ordinal;
@@ -202,6 +212,11 @@ public class SchedulerJobImpl implements SchedulerJob {
         if(this.heldContexts != null) {
             sb.append(", heldContexts=[ ");
             this.heldContexts.entrySet()
+                .forEach(id -> sb.append("[").append(id.getKey()).append(", ").append(id.getValue()).append("] "));
+        }
+        if(this.disabledContexts != null) {
+            sb.append(", disabledContexts=[ ");
+            this.disabledContexts.entrySet()
                 .forEach(id -> sb.append("[").append(id.getKey()).append(", ").append(id.getValue()).append("] "));
         }
         else {

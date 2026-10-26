@@ -2,7 +2,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
@@ -84,6 +84,95 @@ public class ContextMachineController {
             return new ResponseEntity(new ErrorDto(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PutMapping("/{contextInstanceId}/disableAllJobs")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity disableAllJobs(@PathVariable("contextInstanceId") String contextInstanceId,
+                                      @RequestBody ContextMachineJobActionDto dto) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        if (contextMachine == null) {
+            LOG.debug("disableAllJobs: contextInstanceId [{}] not in local cache", contextInstanceId);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        try {
+            contextMachine.disableJobs(dto.getChildContextName());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
+            LOG.info("disableAllJobs: contextInstanceId [{}], childContext [{}]",
+                contextInstanceId, dto.getChildContextName());
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (Exception e) {
+            LOG.error("disableAllJobs failed for contextInstanceId [{}]", contextInstanceId, e);
+            return new ResponseEntity(new ErrorDto(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{contextInstanceId}/disable")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity disableJob(@PathVariable("contextInstanceId") String contextInstanceId,
+                                         @RequestBody ContextMachineJobActionDto dto) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        if (contextMachine == null) {
+            LOG.debug("disableJob: contextInstanceId [{}] not in local cache", contextInstanceId);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        try {
+            contextMachine.disableJob(dto.getJobIdentifier(), dto.getChildContextName());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
+            LOG.info("disableJob: contextInstanceId [{}], childContext [{}]",
+                contextInstanceId, dto.getChildContextName());
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (Exception e) {
+            LOG.error("disableJob failed for contextInstanceId [{}]", contextInstanceId, e);
+            return new ResponseEntity(new ErrorDto(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{contextInstanceId}/reinstateAllDisabledJobs")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity reinstateAllDisabledJobs(@PathVariable("contextInstanceId") String contextInstanceId,
+                                         @RequestBody ContextMachineJobActionDto dto) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        if (contextMachine == null) {
+            LOG.debug("reinstateAllDisabledJobs: contextInstanceId [{}] not in local cache", contextInstanceId);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        try {
+            contextMachine.reinstateDisabledJobs(dto.getChildContextName());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
+            LOG.info("reinstateAllDisabledJobs: contextInstanceId [{}], childContext [{}]",
+                contextInstanceId, dto.getChildContextName());
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (Exception e) {
+            LOG.error("reinstateAllDisabledJobs failed for contextInstanceId [{}]", contextInstanceId, e);
+            return new ResponseEntity(new ErrorDto(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{contextInstanceId}/reinstateDisabled")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity reinstateDisabledJob(@PathVariable("contextInstanceId") String contextInstanceId,
+                                     @RequestBody ContextMachineJobActionDto dto) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        if (contextMachine == null) {
+            LOG.debug("reinstateDisabledJob: contextInstanceId [{}] not in local cache", contextInstanceId);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        try {
+            contextMachine.reinstateDisabledJob(dto.getJobIdentifier(), dto.getChildContextName());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
+            LOG.info("reinstateDisabledJob: contextInstanceId [{}], childContext [{}]",
+                contextInstanceId, dto.getChildContextName());
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (Exception e) {
+            LOG.error("reinstateDisabledJob failed for contextInstanceId [{}]", contextInstanceId, e);
+            return new ResponseEntity(new ErrorDto(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+//    public static final String DISABLE_ALL_JOBS_PATH      = "/disableAllJobs";
+//    public static final String REINSTATE_ALL_DISABLED_JOBS_PATH      = "/reinstateAllDisabledJobs";
+//    public static final String DISABLE_PATH    = "/disable";
+//    public static final String REINSTATE_DISABLED_PATH    = "/reinstateDisabled";
 
     @GetMapping("/{contextInstanceId}/context")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")

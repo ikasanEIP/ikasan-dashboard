@@ -73,6 +73,26 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void disable(SchedulerJobRecord jobRecord, List childContextNames, String actor) {
+
+    }
+
+    @Override
+    public void reinstateDisabled(SchedulerJobRecord jobRecord, String actor) {
+
+    }
+
+    @Override
+    public void disableAll(String contextName, String actor) {
+
+    }
+
+    @Override
+    public void reinstateAllDisabled(String contextName, String actor) {
+
+    }
+
+    @Override
     public SearchResults findByContext(String contextId, int limit, int offset) {
 
         if (type.equalsIgnoreCase("file")) {

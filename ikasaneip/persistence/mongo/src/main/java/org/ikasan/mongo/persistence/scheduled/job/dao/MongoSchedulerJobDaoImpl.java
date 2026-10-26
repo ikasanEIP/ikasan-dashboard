@@ -29,9 +29,9 @@ import java.util.List;
 
 import static org.ikasan.spec.metadata.dao.ModuleMetadataDao.MODULE_METADATA;
 
-public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord> {
+public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRecord> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MongoSchedulerJobDao.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MongoSchedulerJobDaoImpl.class);
 
     private final MongoSchedulerJobRepository repository;
     private final MongoTemplate mongoTemplate;
@@ -56,7 +56,7 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
         JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE
     );
 
-    public MongoSchedulerJobDao(MongoSchedulerJobRepository repository, MongoTemplate mongoTemplate) {
+    public MongoSchedulerJobDaoImpl(MongoSchedulerJobRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }
@@ -176,6 +176,10 @@ public class MongoSchedulerJobDao implements SchedulerJobDao<SchedulerJobRecord>
 
         if (filter.isSkipped()) {
             criteriaList.add(Criteria.where(EntityFields.SKIPPED).is(true));
+        }
+
+        if (filter.isDisabled()) {
+            criteriaList.add(Criteria.where(EntityFields.DISABLED).is(true));
         }
 
         if (filter.isTargetResidingContextOnly() != null) {

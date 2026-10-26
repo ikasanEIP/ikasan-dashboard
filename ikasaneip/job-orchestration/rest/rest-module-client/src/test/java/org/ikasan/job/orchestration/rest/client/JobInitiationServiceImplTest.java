@@ -471,6 +471,16 @@ public class JobInitiationServiceImplTest {
             }
 
             @Override
+            public void setDisabledContexts(Map<String, Boolean> map) {
+
+            }
+
+            @Override
+            public Map<String, Boolean> getDisabledContexts() {
+                return Map.of();
+            }
+
+            @Override
             public String getAggregateJobName() {
                 return SchedulerJob.super.getAggregateJobName();
             }

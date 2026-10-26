@@ -26,7 +26,6 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAudit
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
-import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
@@ -43,6 +42,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.event.model.*;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -1115,6 +1115,16 @@ public class ContextMachineImpl implements ContextMachine {
         });
     }
 
+    @Override
+    public void holdJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> updatedRecords =
+            this.schedulerJobInstanceService.holdJobsWithinContext(this.contextInstance, childContextName);
+        updatedRecords.forEach(record -> jobLogicMachine.issueSchedulerJobStateChangeEvent(
+            new SchedulerJobInstanceStateChangeEventImpl(record.getSchedulerJobInstance(),
+                this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD)));
+        this.saveContext();
+    }
+
 
     /**
      * Holds a job identified by jobIdentifier in the specified childContextName.
@@ -1131,10 +1141,10 @@ public class ContextMachineImpl implements ContextMachine {
             if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
                 this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
                 // if a job is targeting a specific context, we only hold it for that context!
-                this._holdJob(List.of(schedulerJobInstance));
+                this._holdJobs(List.of(schedulerJobInstance));
             } else {
                 List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
-                this._holdJob(jobInstances);
+                this._holdJobs(jobInstances);
             }
         }
         else {
@@ -1144,29 +1154,18 @@ public class ContextMachineImpl implements ContextMachine {
         }
     }
 
-    @Override
-    public void holdJobs(String childContextName) {
-        List<SchedulerJobInstanceRecord> updatedRecords =
-            this.schedulerJobInstanceService.holdJobsWithinContext(this.contextInstance, childContextName);
-        updatedRecords.forEach(record -> jobLogicMachine.issueSchedulerJobStateChangeEvent(
-            new SchedulerJobInstanceStateChangeEventImpl(record.getSchedulerJobInstance(),
-                this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD)));
-    }
-
-    @Override
-    public void releaseJobs(String childContextName) {
-        List<SchedulerJobInstanceRecord> jobsToRelease =
-            this.schedulerJobInstanceService.getJobsToReleaseWithinContext(this.contextInstance, childContextName);
-        jobsToRelease.forEach(record -> this.releaseJob(
-            record.getSchedulerJobInstance().getIdentifier(), record.getChildContextName()));
-    }
-
     /**
-     * Do the heavy lifting for holding a job!
+     * Places the provided jobs on hold by updating their status and associated records.
+     * This method is intended to update the state of jobs to {@code ON_HOLD} in the context of the
+     * specified {@code contextInstance}. If a job is not in a state that allows being placed on hold,
+     * an exception is thrown.
      *
-     * @param jobs
+     * @param jobs the list of {@code SchedulerJobInstance} objects to be held. Each instance must
+     *             have a status of either {@code WAITING} or {@code RELEASED}; otherwise,
+     *             a {@code ContextMachineException} is thrown. The method updates the status
+     *             of valid instances to {@code ON_HOLD}.
      */
-    private void _holdJob(List<SchedulerJobInstance> jobs) {
+    private void _holdJobs(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
             if(!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
                 !schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED)) {
@@ -1197,6 +1196,254 @@ public class ContextMachineImpl implements ContextMachine {
         });
     }
 
+    @Override
+    public void releaseJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> jobsToRelease =
+            this.schedulerJobInstanceService.getJobsToReleaseWithinContext(this.contextInstance, childContextName);
+        jobsToRelease.forEach(record -> this.releaseJob(
+            record.getSchedulerJobInstance().getIdentifier(), record.getChildContextName()));
+    }
+
+    /**
+     * Releases a job identified by jobIdentifier for a specific child context.
+     * If the job is targeting a specific context, it will only be released for that context.
+     *
+     * @param jobIdentifier The identifier of the job to be released.
+     * @param childContextName The name of the child context for which the job is being released.
+     */
+    @Override
+    public void releaseJob(String jobIdentifier, String childContextName) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
+        if(schedulerJobInstance != null) {
+            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
+                this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
+                // if a job is targeting a specific context, we only release it for that context!
+                this._releaseJob(List.of(schedulerJobInstance));
+            } else {
+                List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
+                this._releaseJob(jobInstances.stream().filter(job -> job.getStatus().equals(InstanceStatus.ON_HOLD)).collect(Collectors.toList()));
+            }
+        }
+        else {
+            throw new ContextMachineException(String.format("Attempting to hold job[%s], however this job does not " +
+                    "appear in context[%s] with instance id[%s], or any of its nested contexts."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+    }
+
+
+    /**
+     * Releases the provided list of SchedulerJobInstance objects.
+     *
+     * @param jobs List of SchedulerJobInstance objects to be released
+     */
+    private void _releaseJob(List<SchedulerJobInstance> jobs) {
+        jobs.forEach(schedulerJobInstance -> {
+            if(schedulerJobInstance.getChildContextName() == null || this.contextInstance.getHeldJobs() == null) return;
+            SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(schedulerJobInstance.getIdentifier() + "_" + schedulerJobInstance.getChildContextName());
+            if(event != null) {
+                InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier());
+                if(instance != null && instance.isTargetResidingContextOnly()) {
+                    event.getChildContextNames().clear();
+                    event.getChildContextNames().add(schedulerJobInstance.getChildContextName());
+                }
+                this.contextInstance.getHeldJobs().remove(schedulerJobInstance.getIdentifier()
+                    + "_" + schedulerJobInstance.getChildContextName());
+
+                BigQueueMessage bigQueueMessage
+                    = new BigQueueMessageBuilder<>()
+                    .withMessage(event)
+                    .withMessageProperties(Map.of("contextName", this.context.getName(),
+                        CONTEXT_INSTANCE_ID, this.contextInstance.getId()))
+                    .build();
+
+                try {
+                    String serialised = objectMapper.writeValueAsString(bigQueueMessage);
+                    logger.debug("Enqueue job initiation event: " + serialised);
+                    outboundQueue.enqueue(serialised.getBytes());
+                    logger.debug("Outbound queue size: " + outboundQueue.size());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new ContextMachineException(String.format("Attempting to release job[%s] currently held in context[%s] " +
+                            "with instance id[%s]. Could not enqueue the outbound job initiation event!", schedulerJobInstance.getChildContextName()
+                        , this.contextInstance.getName(), this.contextInstance.getId()));
+                }
+
+                InstanceStatus previousState = schedulerJobInstance.getStatus();
+                schedulerJobInstance.setHeld(false);
+                schedulerJobInstance.setInitiationEventRaised(false);
+                schedulerJobInstance.setStatus(InstanceStatus.WAITING);
+                schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
+                this.saveContext();
+                logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s] Context Instance[%s]."
+                    , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
+                jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
+                    , previousState, schedulerJobInstance.getStatus()));
+            }
+            else {
+                if(schedulerJobInstance != null) {
+                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)
+                        || (schedulerJobInstance.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE))) return;
+                    if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) && !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+                        throw new ContextMachineException(String.format("Attempting to release job[%s], " +
+                                "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
+                            , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName()
+                            , this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+                    }
+                    InstanceStatus previousState = schedulerJobInstance.getStatus();
+                    schedulerJobInstance.setHeld(false);
+                    schedulerJobInstance.setStatus(InstanceStatus.WAITING);
+                    schedulerJobInstance.setInitiationEventRaised(false);
+                    schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
+                    this.saveContext();
+                    logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s], Context Instance[%s]."
+                        , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
+                    jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
+                        , previousState, schedulerJobInstance.getStatus()));
+                }
+                else {
+                    StringBuffer heldJobs = new StringBuffer();
+                    this.contextInstance.getHeldJobs().entrySet().forEach(entry -> heldJobs.append(entry.getKey()).append(", "));
+                    String heldJobsString = heldJobs.toString().trim();
+                    if (heldJobsString.endsWith(",")) {
+                        heldJobsString = heldJobsString.substring(0, heldJobsString.length() - 1);
+                    }
+
+                    throw new ContextMachineException(String.format("Attempting to release job[%s], however this job is not " +
+                            "currently held in context[%s] with instance id[%s]. Current held jobs[%s]. Nor is the job found " +
+                            "in the context or any of its nested contexts!"
+                        , schedulerJobInstance.getChildContextName(), this.contextInstance.getName(), this.contextInstance.getId(), heldJobsString));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void disableJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> updatedRecords =
+            this.schedulerJobInstanceService.disableJobsWithinContext(this.contextInstance, childContextName);
+        updatedRecords.forEach(record -> jobLogicMachine.issueSchedulerJobStateChangeEvent(
+            new SchedulerJobInstanceStateChangeEventImpl(record.getSchedulerJobInstance(),
+                this.contextInstance, InstanceStatus.WAITING, InstanceStatus.DISABLED)));
+        this.saveContext();
+    }
+
+    @Override
+    public void disableJob(String jobIdentifier, String childContextName) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
+        if(schedulerJobInstance != null) {
+            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
+                this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
+                // if a job is targeting a specific context, we only disable it for that context!
+                this._disableJobs(List.of(schedulerJobInstance));
+            } else {
+                List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
+                this._disableJobs(jobInstances);
+            }
+        }
+        else {
+            throw new ContextMachineException(String.format("Attempting to disable job[%s], however this job does not " +
+                    "appear in context[%s] with instance id[%s], or any of its nested contexts."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+    }
+
+    private void _disableJobs(List<SchedulerJobInstance> jobs) {
+        jobs.forEach(schedulerJobInstance -> {
+            if(!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
+                !schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED)) {
+                throw new ContextMachineException(String.format("Attempting to disable job[%s], " +
+                        "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be disabled."
+                    , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+            }
+            InstanceStatus previousState = schedulerJobInstance.getStatus();
+            schedulerJobInstance.setDisabled(true);
+            schedulerJobInstance.setStatus(InstanceStatus.DISABLED);
+            schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
+
+            SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService
+                .findByContextIdJobNameChildContextName(this.contextInstance.getId(), schedulerJobInstance.getJobName(),
+                    schedulerJobInstance.getChildContextName());
+            SchedulerJobInstance dbInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+            dbInstance.setDisabled(true);
+            dbInstance.setStatus(InstanceStatus.DISABLED);
+            schedulerJobInstanceRecord.setStatus(InstanceStatus.DISABLED.name());
+            schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
+            this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+            this.saveContext();
+            this.recursivelySetContextStatus(this.contextInstance, true);
+            this.contextInstance.setStatus(InstanceStatus.WAITING);
+            this.setContextStatus(this.contextInstance, true);
+            logger.info(String.format("Successfully disabled job[%s]. Context[%s], Context Instance[%s]."
+                , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
+
+            jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
+                , previousState, schedulerJobInstance.getStatus()));
+        });
+    }
+
+    @Override
+    public void reinstateDisabledJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> jobsToEnable =
+            this.schedulerJobInstanceService.getJobsToEnableWithinContext(this.contextInstance, childContextName);
+        jobsToEnable.forEach(record -> this.reinstateDisabledJob(
+            record.getSchedulerJobInstance().getIdentifier(), record.getChildContextName()));
+    }
+
+    @Override
+    public void reinstateDisabledJob(String jobIdentifier, String childContextName) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
+        if(schedulerJobInstance != null) {
+            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
+                this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
+                // if a job is targeting a specific context, we only disable it for that context!
+                this._reinstateDisableJobs(List.of(schedulerJobInstance));
+            } else {
+                List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
+                this._reinstateDisableJobs(jobInstances);
+            }
+        }
+        else {
+            throw new ContextMachineException(String.format("Attempting to disable job[%s], however this job does not " +
+                    "appear in context[%s] with instance id[%s], or any of its nested contexts."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+    }
+
+    private void _reinstateDisableJobs(List<SchedulerJobInstance> jobs) {
+        jobs.forEach(schedulerJobInstance -> {
+            if(!schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+                throw new ContextMachineException(String.format("Attempting to reinstate disable job[%s], " +
+                        "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be reinstated."
+                    , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+            }
+            InstanceStatus previousState = schedulerJobInstance.getStatus();
+            schedulerJobInstance.setDisabled(false);
+            schedulerJobInstance.setStatus(InstanceStatus.WAITING);
+            schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
+
+            SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService
+                .findByContextIdJobNameChildContextName(this.contextInstance.getId(), schedulerJobInstance.getJobName(),
+                    schedulerJobInstance.getChildContextName());
+            SchedulerJobInstance dbInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+            dbInstance.setDisabled(false);
+            dbInstance.setStatus(InstanceStatus.WAITING);
+            schedulerJobInstanceRecord.setStatus(InstanceStatus.WAITING.name());
+            schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
+            this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+            this.saveContext();
+            this.recursivelySetContextStatus(this.contextInstance, true);
+            this.contextInstance.setStatus(InstanceStatus.WAITING);
+            this.setContextStatus(this.contextInstance, true);
+            logger.info(String.format("Successfully reinstated disabled job[%s]. Context[%s], Context Instance[%s]."
+                , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
+
+            jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
+                , previousState, schedulerJobInstance.getStatus()));
+        });
+    }
 
     /**
      * Resets the specified job identified by jobIdentifier within the given child context.
@@ -1204,6 +1451,7 @@ public class ContextMachineImpl implements ContextMachine {
      * @param jobIdentifier The unique identifier of the job to reset.
      * @param childContextName The name of the child context within which the job resides.
      */
+    @Override
     public void resetJob(String jobIdentifier, String childContextName) {
         SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
         if(schedulerJobInstance != null) {
@@ -1366,119 +1614,6 @@ public class ContextMachineImpl implements ContextMachine {
                 this.saveContext();
             }
         }
-    }
-
-    /**
-     * Releases a job identified by jobIdentifier for a specific child context.
-     * If the job is targeting a specific context, it will only be released for that context.
-     *
-     * @param jobIdentifier The identifier of the job to be released.
-     * @param childContextName The name of the child context for which the job is being released.
-     */
-    public void releaseJob(String jobIdentifier, String childContextName) {
-        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
-        if(schedulerJobInstance != null) {
-            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
-                this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
-                // if a job is targeting a specific context, we only release it for that context!
-                this._releaseJob(List.of(schedulerJobInstance));
-            } else {
-                List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
-                this._releaseJob(jobInstances.stream().filter(job -> job.isHeld()).collect(Collectors.toList()));
-            }
-        }
-        else {
-            throw new ContextMachineException(String.format("Attempting to hold job[%s], however this job does not " +
-                    "appear in context[%s] with instance id[%s], or any of its nested contexts."
-                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
-        }
-    }
-
-
-    /**
-     * Releases the provided list of SchedulerJobInstance objects.
-     *
-     * @param jobs List of SchedulerJobInstance objects to be released
-     */
-    private void _releaseJob(List<SchedulerJobInstance> jobs) {
-        jobs.forEach(schedulerJobInstance -> {
-            if(schedulerJobInstance.getChildContextName() == null || this.contextInstance.getHeldJobs() == null) return;
-            SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(schedulerJobInstance.getIdentifier() + "_" + schedulerJobInstance.getChildContextName());
-            if(event != null) {
-                InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier());
-                if(instance != null && instance.isTargetResidingContextOnly()) {
-                    event.getChildContextNames().clear();
-                    event.getChildContextNames().add(schedulerJobInstance.getChildContextName());
-                }
-                this.contextInstance.getHeldJobs().remove(schedulerJobInstance.getIdentifier()
-                    + "_" + schedulerJobInstance.getChildContextName());
-
-                BigQueueMessage bigQueueMessage
-                    = new BigQueueMessageBuilder<>()
-                    .withMessage(event)
-                    .withMessageProperties(Map.of("contextName", this.context.getName(),
-                        CONTEXT_INSTANCE_ID, this.contextInstance.getId()))
-                    .build();
-
-                try {
-                    String serialised = objectMapper.writeValueAsString(bigQueueMessage);
-                    logger.debug("Enqueue job initiation event: " + serialised);
-                    outboundQueue.enqueue(serialised.getBytes());
-                    logger.debug("Outbound queue size: " + outboundQueue.size());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new ContextMachineException(String.format("Attempting to release job[%s] currently held in context[%s] " +
-                            "with instance id[%s]. Could not enqueue the outbound job initiation event!", schedulerJobInstance.getChildContextName()
-                        , this.contextInstance.getName(), this.contextInstance.getId()));
-                }
-
-                InstanceStatus previousState = schedulerJobInstance.getStatus();
-                schedulerJobInstance.setHeld(false);
-                schedulerJobInstance.setInitiationEventRaised(false);
-                schedulerJobInstance.setStatus(InstanceStatus.WAITING);
-                schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
-                this.saveContext();
-                logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s] Context Instance[%s]."
-                    , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
-                jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
-                    , previousState, schedulerJobInstance.getStatus()));
-            }
-            else {
-                if(schedulerJobInstance != null) {
-                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)
-                        || (schedulerJobInstance.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE))) return;
-                    if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) && !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
-                        throw new ContextMachineException(String.format("Attempting to release job[%s], " +
-                                "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
-                            , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName()
-                            , this.contextInstance.getId(), schedulerJobInstance.getStatus()));
-                    }
-                    InstanceStatus previousState = schedulerJobInstance.getStatus();
-                    schedulerJobInstance.setHeld(false);
-                    schedulerJobInstance.setStatus(InstanceStatus.WAITING);
-                    schedulerJobInstance.setInitiationEventRaised(false);
-                    schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
-                    this.saveContext();
-                    logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s], Context Instance[%s]."
-                        , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
-                    jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
-                        , previousState, schedulerJobInstance.getStatus()));
-                }
-                else {
-                    StringBuffer heldJobs = new StringBuffer();
-                    this.contextInstance.getHeldJobs().entrySet().forEach(entry -> heldJobs.append(entry.getKey()).append(", "));
-                    String heldJobsString = heldJobs.toString().trim();
-                    if (heldJobsString.endsWith(",")) {
-                        heldJobsString = heldJobsString.substring(0, heldJobsString.length() - 1);
-                    }
-
-                    throw new ContextMachineException(String.format("Attempting to release job[%s], however this job is not " +
-                            "currently held in context[%s] with instance id[%s]. Current held jobs[%s]. Nor is the job found " +
-                            "in the context or any of its nested contexts!"
-                        , schedulerJobInstance.getChildContextName(), this.contextInstance.getName(), this.contextInstance.getId(), heldJobsString));
-                }
-            }
-        });
     }
 
     /**
@@ -2140,7 +2275,10 @@ public class ContextMachineImpl implements ContextMachine {
             jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
                 if(((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE) ||
                     ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED) ||
-                    ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) return;
+                    ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
+                    ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.DISABLED) ||
+                    entry.getValue().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
+                    entry.getValue().getAgentName().equals(JobConstants.CONTEXT_START_JOB)) return;
 
                 if (!((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)
                     && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED)

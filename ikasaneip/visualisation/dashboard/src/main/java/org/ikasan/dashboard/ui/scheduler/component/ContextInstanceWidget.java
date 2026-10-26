@@ -47,7 +47,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.util.CronUtils;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -185,6 +185,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerStatusFreeTextDiv onHoldStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv disabledStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv errorAckedStatus = new SchedulerStatusFreeTextDiv();
 
     private double jobVisualisationVerticalSpacing;
@@ -546,6 +547,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.queuedStatus.setSizeFull();
         this.onHoldStatus.setSizeFull();
         this.skippedStatus.setSizeFull();
+        this.disabledStatus.setSizeFull();
         this.errorStatus.setSizeFull();
         this.errorAckedStatus.setSizeFull();
         Button refreshButton = new Button();
@@ -555,7 +557,7 @@ public class ContextInstanceWidget extends VerticalLayout
             this.refreshJobStatusWidget();
         });
         jobStatusLayout.add(this.waitingStatus, this.completeStatus, this.runningStatus, this.queuedStatus
-            , this.onHoldStatus, this.skippedStatus, this.errorStatus, this.errorAckedStatus, refreshButton);
+            , this.onHoldStatus, this.skippedStatus, this.disabledStatus, this.errorStatus, this.errorAckedStatus, refreshButton);
 
         this.formLayout.add(jobStatusLayout, 22);
 
@@ -825,6 +827,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, status.get().getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()));
                 onHoldStatus.setStatus(InstanceStatus.ON_HOLD, status.get().getStatusCount(InstanceStatus.ON_HOLD) + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
                 skippedStatus.setStatus(InstanceStatus.SKIPPED, status.get().getStatusCount(InstanceStatus.SKIPPED) + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                disabledStatus.setStatus(InstanceStatus.DISABLED, status.get().getStatusCount(InstanceStatus.DISABLED) + " " + getTranslation(InstanceStatus.DISABLED.getTranslationLabel(), UI.getCurrent().getLocale()));
                 errorStatus.setStatus(InstanceStatus.ERROR, status.get().getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
                 errorAckedStatus.setStatus(InstanceStatus.ERROR_ACKNOWLEDGED, status.get().getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED) + " " + getTranslation(InstanceStatus.ERROR_ACKNOWLEDGED.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
@@ -1235,6 +1238,12 @@ public class ContextInstanceWidget extends VerticalLayout
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE);
 
+        Button helpButton = new Button(getTranslation("button.help"), VaadinIcon.QUESTION.create());
+        helpButton.addClickListener(event -> {
+            JobActionsHelpDialog jobActionsHelpDialog = new JobActionsHelpDialog();
+            jobActionsHelpDialog.open();
+        });
+
         Button synchronisePlanWithAgentButton = new Button(getTranslation("button.synchronise-instance-with-agent"), VaadinIcon.REFRESH.create());
         synchronisePlanWithAgentButton.addClickListener(event -> {
             if (showFollowerNodeNotSupportedDialog()) {
@@ -1286,7 +1295,7 @@ public class ContextInstanceWidget extends VerticalLayout
         actionPopup.add(popupLayout);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(synchronisePlanWithAgentButton, systemEventsButton, actionsButton);
+        buttonLayout.add(helpButton, synchronisePlanWithAgentButton, systemEventsButton, actionsButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 

@@ -1,7 +1,7 @@
 package org.ikasan.orchestration.service.context.reset;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 
 import java.util.List;

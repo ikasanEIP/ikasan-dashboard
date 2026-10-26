@@ -742,4 +742,451 @@ public class SchedulerJobServiceImplTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
+
+    /**
+     * Test that disable method correctly disables an internal event driven job
+     * with target residing context only flag set to true.
+     * This is a test for IKASAN-2803.
+     */
+    @Test
+    public void testDisableWithTargetResidingContextOnly() {
+        // Given
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setAgentName("agent1");
+        internalJob.setJobName("job1");
+        internalJob.setContextName("ctx1");
+        internalJob.setTargetResidingContextOnly(true);
+        internalJob.setHeldContexts(new HashMap<>());
+        internalJob.setSkippedContexts(new HashMap<>());
+        internalJob.setDisabledContexts(new HashMap<>());
+
+        when(mockSchedulerJobRecord.getJob()).thenReturn(internalJob);
+
+        List<String> childContextNames = Arrays.asList("child1", "child2");
+
+        // When
+        service.disable(mockSchedulerJobRecord, childContextNames, "user1");
+
+        // Then
+        ArgumentCaptor<InternalEventDrivenJobRecord> captor =
+            ArgumentCaptor.forClass(InternalEventDrivenJobRecord.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        InternalEventDrivenJobRecord savedRecord = captor.getValue();
+        assertTrue("Job should be disabled", savedRecord.isDisabled());
+        assertEquals("user1", savedRecord.getModifiedBy());
+
+        InternalEventDrivenJob savedJob = savedRecord.getInternalEventDrivenJob();
+        assertTrue("Held contexts should be empty", savedJob.getHeldContexts().isEmpty());
+        assertEquals(2, savedJob.getDisabledContexts().size());
+        assertTrue(savedJob.getDisabledContexts().containsKey("child1"));
+        assertTrue(savedJob.getDisabledContexts().containsKey("child2"));
+    }
+
+    /**
+     * Test that disable method correctly disables an internal event driven job
+     * when target residing context only flag is false (uses all child contexts).
+     */
+    @Test
+    public void testDisableWithAllChildContexts() {
+        // Given
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setAgentName("agent1");
+        internalJob.setJobName("job1");
+        internalJob.setContextName("ctx1");
+        internalJob.setTargetResidingContextOnly(false);
+        internalJob.setChildContextNames(Arrays.asList("child1", "child2", "child3"));
+        internalJob.setHeldContexts(new HashMap<>());
+        internalJob.setSkippedContexts(new HashMap<>());
+        internalJob.setDisabledContexts(new HashMap<>());
+
+        when(mockSchedulerJobRecord.getJob()).thenReturn(internalJob);
+
+        List<String> providedContextNames = Arrays.asList("child1");
+
+        // When
+        service.disable(mockSchedulerJobRecord, providedContextNames, "admin");
+
+        // Then
+        ArgumentCaptor<InternalEventDrivenJobRecord> captor =
+            ArgumentCaptor.forClass(InternalEventDrivenJobRecord.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        InternalEventDrivenJobRecord savedRecord = captor.getValue();
+        assertTrue("Job should be disabled", savedRecord.isDisabled());
+
+        InternalEventDrivenJob savedJob = savedRecord.getInternalEventDrivenJob();
+        // Should use all child contexts, not the provided list
+        assertEquals(3, savedJob.getDisabledContexts().size());
+        assertTrue(savedJob.getDisabledContexts().containsKey("child1"));
+        assertTrue(savedJob.getDisabledContexts().containsKey("child2"));
+        assertTrue(savedJob.getDisabledContexts().containsKey("child3"));
+    }
+
+    /**
+     * Test that disable method throws exception for non-internal event driven jobs.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testDisableWithNonInternalEventDrivenJob() {
+        // Given
+        QuartzScheduleDrivenJob quartzJob = mock(QuartzScheduleDrivenJobImpl.class);
+        when(mockSchedulerJobRecord.getJob()).thenReturn(quartzJob);
+
+        // When
+        service.disable(mockSchedulerJobRecord, Arrays.asList("ctx1"), "user1");
+
+        // Then - expect exception
+    }
+
+    /**
+     * Test that reinstateDisabled method correctly reinstates a disabled job.
+     */
+    @Test
+    public void testReinstateDisabled() {
+        // Given
+        long originalTimestamp = 999999L;
+
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setAgentName("agent1");
+        internalJob.setJobName("job1");
+        internalJob.setContextName("ctx1");
+        internalJob.setDisabledContexts(new HashMap<>());
+        internalJob.getDisabledContexts().put("ctx1", true);
+        internalJob.setSkippedContexts(new HashMap<>());
+
+        when(mockSchedulerJobRecord.getJob()).thenReturn(internalJob);
+        when(mockSchedulerJobRecord.getTimestamp()).thenReturn(originalTimestamp);
+
+        // When
+        service.reinstateDisabled(mockSchedulerJobRecord, "user1");
+
+        // Then
+        ArgumentCaptor<InternalEventDrivenJobRecord> captor =
+            ArgumentCaptor.forClass(InternalEventDrivenJobRecord.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        InternalEventDrivenJobRecord savedRecord = captor.getValue();
+        assertFalse("Job should not be disabled", savedRecord.isDisabled());
+        assertEquals("user1", savedRecord.getModifiedBy());
+        assertEquals(originalTimestamp, savedRecord.getTimestamp());
+
+        InternalEventDrivenJob savedJob = savedRecord.getInternalEventDrivenJob();
+        assertTrue("Disabled contexts should be empty", savedJob.getDisabledContexts().isEmpty());
+    }
+
+    /**
+     * Test that reinstateDisabled method throws exception for non-internal event driven jobs.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testReinstateDisabledWithNonInternalEventDrivenJob() {
+        // Given
+        QuartzScheduleDrivenJob quartzJob = mock(QuartzScheduleDrivenJobImpl.class);
+        when(mockSchedulerJobRecord.getJob()).thenReturn(quartzJob);
+
+        // When
+        service.reinstateDisabled(mockSchedulerJobRecord, "user1");
+
+        // Then - expect exception
+    }
+
+    /**
+     * Test that disableAll method correctly disables all jobs for a context.
+     */
+    @Test
+    public void testDisableAll() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setChildContextNames(Arrays.asList("child1", "child2"));
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        InternalEventDrivenJob job2 = new InternalEventDrivenJobImpl();
+        job2.setAgentName("agent1");
+        job2.setJobName("job2");
+        job2.setContextName("ctx1");
+        job2.setChildContextNames(Arrays.asList("child3"));
+        job2.setHeldContexts(new HashMap<>());
+        job2.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        SchedulerJobRecord schedulerJobRecord2 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord2.getJob()).thenReturn(job2);
+        when(schedulerJobRecord2.getTimestamp()).thenReturn(222222L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1, schedulerJobRecord2);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 2L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.disableAll("ctx1", "admin");
+
+        // Then
+        ArgumentCaptor<List<InternalEventDrivenJobRecord>> captor =
+            ArgumentCaptor.forClass(List.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        List<InternalEventDrivenJobRecord> savedRecords = captor.getValue();
+        assertEquals(2, savedRecords.size());
+
+        for (InternalEventDrivenJobRecord record : savedRecords) {
+            assertTrue("Job should be disabled", record.isDisabled());
+            assertFalse("Job should not be held", record.isHeld());
+            assertFalse("Job should not be skipped", record.isSkipped());
+            assertEquals("admin", record.getModifiedBy());
+
+            InternalEventDrivenJob job = record.getInternalEventDrivenJob();
+            assertTrue("Skipped contexts should be empty", job.getSkippedContexts().isEmpty());
+        }
+    }
+
+    /**
+     * Test that disableAll correctly sets held contexts for jobs with child contexts.
+     */
+    @Test
+    public void testDisableAllSetsDisabledContexts() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setChildContextNames(Arrays.asList("child1", "child2", "child3"));
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 1L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.disableAll("ctx1", "admin");
+
+        // Then
+        ArgumentCaptor<List<InternalEventDrivenJobRecord>> captor =
+            ArgumentCaptor.forClass(List.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        List<InternalEventDrivenJobRecord> savedRecords = captor.getValue();
+        assertEquals(1, savedRecords.size());
+
+        InternalEventDrivenJob savedJob = savedRecords.get(0).getInternalEventDrivenJob();
+        assertEquals(3, savedJob.getDisabledContexts().size());
+        assertTrue(savedJob.getDisabledContexts().containsKey("child1"));
+        assertTrue(savedJob.getDisabledContexts().containsKey("child2"));
+        assertTrue(savedJob.getDisabledContexts().containsKey("child3"));
+        assertTrue(savedJob.getDisabledContexts().get("child1"));
+    }
+
+    /**
+     * Test that reinstateAllDisabled method correctly reinstates all disabled jobs.
+     */
+    @Test
+    public void testReinstateAllDisabled() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setChildContextNames(Arrays.asList("child1", "child2"));
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        InternalEventDrivenJob job2 = new InternalEventDrivenJobImpl();
+        job2.setAgentName("agent1");
+        job2.setJobName("job2");
+        job2.setContextName("ctx1");
+        job2.setChildContextNames(Arrays.asList("child3"));
+        job2.setHeldContexts(new HashMap<>());
+        job2.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        SchedulerJobRecord schedulerJobRecord2 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord2.getJob()).thenReturn(job2);
+        when(schedulerJobRecord2.getTimestamp()).thenReturn(222222L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1, schedulerJobRecord2);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 2L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.reinstateAllDisabled("ctx1", "admin");
+
+        // Then
+        ArgumentCaptor<List<InternalEventDrivenJobRecord>> captor =
+            ArgumentCaptor.forClass(List.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        List<InternalEventDrivenJobRecord> savedRecords = captor.getValue();
+        assertEquals(2, savedRecords.size());
+
+        for (InternalEventDrivenJobRecord record : savedRecords) {
+            assertFalse("Job should not be disabled", record.isDisabled());
+            assertEquals("admin", record.getModifiedBy());
+
+            InternalEventDrivenJob job = record.getInternalEventDrivenJob();
+            assertTrue("Skipped contexts should be empty", job.getSkippedContexts().isEmpty());
+        }
+    }
+
+    /**
+     * Test that reinstateAllDisabled correctly sets held contexts for jobs with child contexts.
+     */
+    @Test
+    public void testReinstateAllDisabledSetsDisabledContexts() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setChildContextNames(Arrays.asList("child1", "child2"));
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 1L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.reinstateAllDisabled("ctx1", "admin");
+
+        // Then
+        ArgumentCaptor<List<InternalEventDrivenJobRecord>> captor =
+            ArgumentCaptor.forClass(List.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        List<InternalEventDrivenJobRecord> savedRecords = captor.getValue();
+        assertEquals(1, savedRecords.size());
+
+        InternalEventDrivenJob savedJob = savedRecords.get(0).getInternalEventDrivenJob();
+        assertEquals(0, savedJob.getDisabledContexts().size());
+    }
+
+    /**
+     * Test that holdAll method correctly uses "jobsToHold" variable name (regression test).
+     * This verifies the fix for the variable naming issue.
+     */
+    @Test
+    public void testHoldAllUsesCorrectVariableName() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 1L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.holdAll("ctx1", "admin");
+
+        // Then - verify holdAll is called (not releaseAll)
+        verify(mockInternalEventDrivenJobDao).holdAll(anyList(), eq("admin"));
+        verify(mockInternalEventDrivenJobDao, never()).releaseAll(anyList(), anyString());
+    }
+
+    /**
+     * Test that disableAll handles jobs with null child contexts gracefully.
+     */
+    @Test
+    public void testDisableAllWithNullChildContexts() {
+        // Given
+        InternalEventDrivenJob job1 = new InternalEventDrivenJobImpl();
+        job1.setAgentName("agent1");
+        job1.setJobName("job1");
+        job1.setContextName("ctx1");
+        job1.setChildContextNames(null); // No child contexts
+        job1.setHeldContexts(new HashMap<>());
+        job1.setSkippedContexts(new HashMap<>());
+
+        SchedulerJobRecord schedulerJobRecord1 = mock(SchedulerJobRecord.class);
+        when(schedulerJobRecord1.getJob()).thenReturn(job1);
+        when(schedulerJobRecord1.getTimestamp()).thenReturn(111111L);
+
+        List<SchedulerJobRecord> schedulerJobRecords = Arrays.asList(schedulerJobRecord1);
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(
+            schedulerJobRecords, 1L, 100L);
+        when(mockSchedulerJobDao.findByFilter(any(SchedulerJobSearchFilter.class),
+            eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(searchResults);
+
+        // When
+        service.disableAll("ctx1", "admin");
+
+        // Then - should not throw exception
+        ArgumentCaptor<List<InternalEventDrivenJobRecord>> captor =
+            ArgumentCaptor.forClass(List.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        List<InternalEventDrivenJobRecord> savedRecords = captor.getValue();
+        assertEquals(1, savedRecords.size());
+        assertTrue("Job should be disabled", savedRecords.get(0).isDisabled());
+    }
+
+    /**
+     * Test that reinstateDisabled correctly sets timestamp from job record.
+     */
+    @Test
+    public void testReinstateDisabledSetsTimestamp() {
+        // Given
+        long expectedTimestamp = 123456789L;
+
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setAgentName("agent1");
+        internalJob.setJobName("job1");
+        internalJob.setContextName("ctx1");
+        internalJob.setHeldContexts(new HashMap<>());
+        internalJob.setSkippedContexts(new HashMap<>());
+
+        when(mockSchedulerJobRecord.getJob()).thenReturn(internalJob);
+        when(mockSchedulerJobRecord.getTimestamp()).thenReturn(expectedTimestamp);
+
+        // When
+        service.reinstateDisabled(mockSchedulerJobRecord, "user1");
+
+        // Then
+        ArgumentCaptor<InternalEventDrivenJobRecord> captor =
+            ArgumentCaptor.forClass(InternalEventDrivenJobRecord.class);
+        verify(mockInternalEventDrivenJobDao).save(captor.capture());
+
+        InternalEventDrivenJobRecord savedRecord = captor.getValue();
+        assertEquals("Timestamp should be set from job record", expectedTimestamp, savedRecord.getTimestamp());
+    }
 }

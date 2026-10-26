@@ -25,7 +25,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
