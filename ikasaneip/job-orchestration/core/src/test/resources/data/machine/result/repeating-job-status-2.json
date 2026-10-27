@@ -1,9 +1,9 @@
 {
   "contextName" : "REPEATING_JOB",
-  "instanceStatus" : "COMPLETE",
+  "instanceStatus" : "RUNNING",
   "contextInstanceStatuses" : [ {
     "contextName" : "SIMPLE_ME",
-    "instanceStatus" : "COMPLETE",
+    "instanceStatus" : "RUNNING",
     "schedulerJobInstanceStatuses" : [ {
       "jobName" : "BE_ACME_EMIR_PFO",
       "agentName" : "scheduler-agent",
@@ -12,6 +12,18 @@
       "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
       "agentName" : "scheduler-agent",
       "instanceStatus" : "COMPLETE"
+    }, {
+      "jobName" : "downstream1",
+      "agentName" : "scheduler-agent",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "downstream2",
+      "agentName" : "scheduler-agent",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "downstream3",
+      "agentName" : "scheduler-agent",
+      "instanceStatus" : "WAITING"
     } ]
   } ]
 }
