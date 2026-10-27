@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-solr</artifactId>
-        <version>4.1.9-SNAPSHOT</version>
+        <version>4.1.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>ikasan-solr-client</artifactId>
@@ -251,7 +251,18 @@
                     <groupId>org.glassfish.hk2</groupId>
                     <artifactId>hk2-utils</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.toolchain</groupId>
+                    <artifactId>jetty-servlet-api</artifactId>
+                </exclusion>
             </exclusions>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.toolchain</groupId>
+            <artifactId>jetty-servlet-api</artifactId>
+            <version>4.0.9</version>
             <scope>test</scope>
         </dependency>
 
@@ -269,6 +280,10 @@
                 <exclusion>
                     <groupId>com.carrotsearch.randomizedtesting</groupId>
                     <artifactId>randomizedtesting-runner</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.toolchain</groupId>
+                    <artifactId>jetty-servlet-api</artifactId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>
