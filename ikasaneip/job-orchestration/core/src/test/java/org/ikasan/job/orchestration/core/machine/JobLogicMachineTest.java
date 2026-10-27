@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
@@ -2957,5 +2958,29 @@ public class JobLogicMachineTest extends AbstractTest {
         InternalEventDrivenJobInstance internalEventDrivenJobInstance = new InternalEventDrivenJobInstanceImpl();
         internalEventDrivenJobInstance.setContextParameters(null);
         return internalEventDrivenJobInstance;
+    }
+
+    /**
+     * Helper method to create a job lock for testing.
+     */
+    private org.ikasan.spec.scheduled.context.model.JobLock makeJobLock(String lockName, int numberOfJobs, int lockCount) {
+        org.ikasan.job.orchestration.builder.context.JobLockBuilder jobLockBuilder
+            = new org.ikasan.job.orchestration.builder.context.JobLockBuilder();
+
+        jobLockBuilder.withLockName(lockName);
+        jobLockBuilder.withLockCount(lockCount);
+
+        for(int i = 0; i < numberOfJobs; i++) {
+            org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl participant
+                = new org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl();
+            participant.setJobName(lockName + "-JobName" + i);
+            participant.setAgentName("AgentName" + i);
+            participant.setIdentifier("AgentName" + i + "-" + lockName + "-JobName" + i);
+            participant.setContextName("Context1");
+            participant.setLockCount(1);
+            jobLockBuilder.withJob("Context1", participant);
+        }
+
+        return jobLockBuilder.build().get(0);
     }
 }

@@ -6973,7 +6973,83 @@ public class ContextMachineTest extends AbstractTest {
             "scheduler-agent", true);
 
         events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        // Now repeat the cron job a few times
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_repeating_job_success_not_target_residing_context_only_confirm_downstream_jobs_not_raised_when_job_starting() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/repeating-job.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/repeating-job.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        internalEventDrivenJobs.values().forEach(job -> {
+            job.setJobRepeatable(true);
+            job.setTargetResidingContextOnly(false);
+        });
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-1.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true);
+
+        // job starting
+        eventInstance.setJobStarting(true);
+
+        // no events received
+        events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
+
+        // job not starting
+        eventInstance.setJobStarting(false);
+
+        // no events received
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
@@ -7035,7 +7111,7 @@ public class ContextMachineTest extends AbstractTest {
             "scheduler-agent", true);
 
         events = contextMachine.eventReceived(eventInstance);
-        Assert.assertEquals(0, events.size());
+        Assert.assertEquals(2, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
@@ -7070,7 +7146,80 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_repeating_jobs_with_bridging_job_connecting_success_not_target_residing_context_only() throws IOException, JSONException, InvalidContextTemplateException {
+    public void test_repeating_job_success_target_residing_context_only_confirm_downstream_jobs_not_raised_when_job_starting() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/repeating-job.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/repeating-job.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        internalEventDrivenJobs.values().forEach(job -> job.setJobRepeatable(true));
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-1.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true);
+
+        // job starting
+        eventInstance.setJobStarting(true);
+
+        // no events raised
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        // job not starting
+        eventInstance.setJobStarting(false);
+
+        // events raised
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        // Now repeat the cron job a few times
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_repeating_jobs_with_bridging_job_connecting_success_not_target_residing_context_only_confirm_downstream_jobs_not_raised_when_job_starting() throws IOException, JSONException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/repeating-job-with-bridging.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/repeating-job-with-bridging.json"));
 
