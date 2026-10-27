@@ -59,7 +59,7 @@
 
     <modules>
         <module>solr-client</module>
-        <!--module>solr-distribution</module-->
+        <module>solr-distribution</module>
     </modules>
 
 </project>
