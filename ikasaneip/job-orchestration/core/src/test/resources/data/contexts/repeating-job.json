@@ -5,6 +5,29 @@
   "contexts" : [ {
     "name" : "SIMPLE_ME",
     "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-downstream1",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+        }]
+      }
+    },{
+      "jobIdentifier" : "scheduler-agent-downstream2",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+        }]
+      }
+    },{
+      "jobIdentifier" : "scheduler-agent-downstream3",
+      "logicalGrouping" : {
+        "and" : [{
+          "identifier" : "scheduler-agent-downstream1"
+        }, {
+          "identifier" : "scheduler-agent-downstream2"
+        }]
+      }
+    },{
       "jobIdentifier" : "scheduler-agent-BE_MHI_EMIR_PFO",
       "logicalGrouping" : {
         "and" : [ {
@@ -22,7 +45,25 @@
       "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
       "startupControlType" : "AUTOMATIC",
       "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
-    }]
+    },
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "downstream1",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-downstream1"
+      },
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "downstream2",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-downstream2"
+      },
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "downstream3",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-downstream3"
+      }]
   } ],
   "timeWindowStart" : "0 0 1 ? * * *",
   "timeWindowEnd" : "0 0 23 ? * * *"
