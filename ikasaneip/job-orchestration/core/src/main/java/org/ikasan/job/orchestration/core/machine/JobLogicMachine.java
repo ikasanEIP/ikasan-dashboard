@@ -176,7 +176,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             } else {
                 if (scheduledProcessEvent.isJobStarting()) {
                     if(!schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
-                        !schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                        !schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)
+                        || (scheduledProcessEvent.getInternalEventDrivenJob() != null
+                        && scheduledProcessEvent.getInternalEventDrivenJob().isJobRepeatable())) {
                         if (schedulerJobInstance.isSkip()) {
                             schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_RUNNING);
                         } else {

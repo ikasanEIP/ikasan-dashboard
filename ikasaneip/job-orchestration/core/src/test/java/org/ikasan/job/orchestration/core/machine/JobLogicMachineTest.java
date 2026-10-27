@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
@@ -3080,5 +3081,339 @@ public class JobLogicMachineTest extends AbstractTest {
         }
 
         return jobLockBuilder.build().get(0);
+    }
+
+    // ========================================================================
+    // Tests for lines 177-195: Job status logic based on event type
+    // These tests cover all possible logic paths in the status update section
+    // ========================================================================
+
+    /**
+     * Test job starting with skip flag sets status to SKIPPED_RUNNING.
+     * Tests line 177-181: isJobStarting() == true && isSkip() == true
+     */
+    @Test
+    public void test_jobStarting_withSkipFlag_setsSkippedRunning() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(true);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.SKIPPED_RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting without skip flag sets status to RUNNING.
+     * Tests line 177-184: isJobStarting() == true && isSkip() == false
+     */
+    @Test
+    public void test_jobStarting_withoutSkipFlag_setsRunning() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting when already COMPLETE doesn't change status.
+     * Tests line 178-179: isJobStarting() == true but status == COMPLETE
+     */
+    @Test
+    public void test_jobStarting_alreadyComplete_noStatusChange() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting when already SKIPPED_COMPLETE doesn't change status.
+     * Tests line 178-179: isJobStarting() == true but status == SKIPPED_COMPLETE
+     */
+    @Test
+    public void test_jobStarting_alreadySkippedComplete_noStatusChange() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED_COMPLETE);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting with repeatable internal event driven job.
+     * Tests line 178-180: isJobStarting() with repeatable job
+     */
+    @Test
+    public void test_jobStarting_repeatableJob_alreadyComplete_changesStatus() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
+
+        InternalEventDrivenJobInstance internalJob = internalEventDrivenJobInstanceWithNullContextParameters();
+        internalJob.setJobRepeatable(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+        eventInstance.setInternalEventDrivenJob(internalJob);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // With repeatable job, status should change to RUNNING even if already COMPLETE
+        Assert.assertEquals(InstanceStatus.RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event with skip flag sets status to SKIPPED_COMPLETE.
+     * Tests line 186-189: isSuccessful() == true && isSkip() == true
+     */
+    @Test
+    public void test_successfulEvent_withSkipFlag_setsSkippedComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(true);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event with EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK outcome sets status to SKIPPED_COMPLETE.
+     * Tests line 187-189: isSuccessful() == true && outcome == EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK
+     */
+    @Test
+    public void test_successfulEvent_withIgnoredDayOfWeekOutcome_setsSkippedComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+        eventInstance.setOutcome("EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK");
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event without skip flag sets status to COMPLETE.
+     * Tests line 186-192: isSuccessful() == true && isSkip() == false && outcome != EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK
+     */
+    @Test
+    public void test_successfulEvent_withoutSkipFlag_setsComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event with null outcome and no skip flag sets status to COMPLETE.
+     * Tests line 186-192: isSuccessful() == true && outcome == null
+     */
+    @Test
+    public void test_successfulEvent_withNullOutcome_setsComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+        eventInstance.setOutcome(null);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test failed event (not starting, not successful) sets status to ERROR.
+     * Tests line 193-194: else branch (neither starting nor successful)
+     */
+    @Test
+    public void test_failedEvent_setsError() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", false);
+        eventInstance.setJobStarting(false);
+        eventInstance.setSuccessful(false);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.ERROR, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test that state change events are issued for all status transitions.
+     * Tests line 197-198: issueSchedulerJobStateChangeEvent is called
+     */
+    @Test
+    public void test_statusTransition_issuesStateChangeEvent() throws IOException, InterruptedException {
+        JobLogicMachine machine = new JobLogicMachine(new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService);
+
+        final boolean[] eventIssued = {false};
+        final InstanceStatus[] fromStatus = {null};
+        final InstanceStatus[] toStatus = {null};
+
+        SchedulerJobInstanceStateChangeEventListener listener = event -> {
+            eventIssued[0] = true;
+            fromStatus[0] = event.getPreviousStatus();
+            toStatus[0] = event.getNewStatus();
+        };
+
+        machine.addSchedulerJobStateChangeEventListener(listener);
+
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+
+        machine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        // Give executor time to process async event
+        Thread.sleep(100);
+
+        Assert.assertTrue("State change event should have been issued", eventIssued[0]);
+        Assert.assertEquals(InstanceStatus.WAITING, fromStatus[0]);
+        Assert.assertEquals(InstanceStatus.COMPLETE, toStatus[0]);
+
+        machine.removeSchedulerJobStateChangeEventListener(listener);
+    }
+
+    /**
+     * Test job starting from ERROR status changes to RUNNING.
+     * Tests line 177-184: starting from ERROR status
+     */
+    @Test
+    public void test_jobStarting_fromErrorStatus_setsRunning() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting from LOCK_QUEUED status changes to RUNNING.
+     * Tests line 177-184: starting from LOCK_QUEUED status
+     */
+    @Test
+    public void test_jobStarting_fromLockQueuedStatus_setsRunning() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.LOCK_QUEUED);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event with different outcome value (not EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK) sets COMPLETE.
+     * Tests line 187-192: outcome exists but is not the special value
+     */
+    @Test
+    public void test_successfulEvent_withDifferentOutcome_setsComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+        eventInstance.setOutcome("SOME_OTHER_OUTCOME");
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test job starting from RUNNING status doesn't change (edge case).
+     * Tests line 178: job already RUNNING, starting event arrives
+     */
+    @Test
+    public void test_jobStarting_fromRunningStatus_setsRunning() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(false);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setJobStarting(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.RUNNING, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    /**
+     * Test successful event from SKIPPED_RUNNING sets SKIPPED_COMPLETE when skip flag is true.
+     * Tests line 186-189: completing a skipped job
+     */
+    @Test
+    public void test_successfulEvent_fromSkippedRunning_setsSkippedComplete() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED_RUNNING);
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSuccessful(true);
+
+        jobLogicMachine.getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>(),
+            new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
     }
 }
