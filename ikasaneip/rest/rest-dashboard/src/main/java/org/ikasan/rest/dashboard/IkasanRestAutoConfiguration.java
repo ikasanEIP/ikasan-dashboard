@@ -49,7 +49,9 @@ import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +113,10 @@ public class IkasanRestAutoConfiguration
     @Qualifier("systemEventSearchService")
     private SystemEventSearchService systemEventSearchService;
 
+    @Autowired
+    @Qualifier("securityService")
+    private SecurityService securityService;
+
 
     @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
@@ -122,6 +128,9 @@ public class IkasanRestAutoConfiguration
     @Autowired
     @Qualifier("metricsEntityService")
     private MetricsService metricsService;
+
+    @Autowired
+    private ScheduledContextService scheduledContextService;
 
     @Autowired
     private BigQueueModuleService bigQueueModuleService;
@@ -234,12 +243,17 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
-    public JwtTokenUtil jwtTokenUtil() {
-        return new JwtTokenUtil();
+    public JobContextController jobContextController() {
+        return new JobContextController(contextParametersInstanceService);
     }
 
     @Bean
-    public JobContextController jobContextController() {
-        return new JobContextController(contextParametersInstanceService);
+    public SecurityController securityController() {
+        return new SecurityController(this.securityService, this.moduleMetadataService, this.scheduledContextService);
+    }
+
+    @Bean
+    public JwtTokenUtil jwtTokenUtil() {
+        return new JwtTokenUtil();
     }
 }

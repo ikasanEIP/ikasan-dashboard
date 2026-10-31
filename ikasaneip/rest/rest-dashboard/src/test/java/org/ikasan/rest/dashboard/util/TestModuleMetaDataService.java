@@ -18,6 +18,10 @@ public class TestModuleMetaDataService implements ModuleMetaDataService {
         moduleMetaDataMap.put(moduleMetaData.getName(), moduleMetaData);
     }
 
+    public void save(String key, ModuleMetaData moduleMetaData) {
+        moduleMetaDataMap.put(key, moduleMetaData);
+    }
+
     @Override
     public ModuleMetadataSearchResults find(List<String> list, Integer integer, Integer integer1) {
         return null;

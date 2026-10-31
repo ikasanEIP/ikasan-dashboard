@@ -58,4 +58,8 @@
 
     <bean id="systemEventSearchService" class="org.ikasan.rest.dashboard.util.TestSystemEventSearchService" />
 
+    <bean id="securityService" class="org.ikasan.rest.dashboard.util.TestSecurityService" />
+
+    <bean id="scheduledContextService" class="org.ikasan.rest.dashboard.util.TestScheduledContextService" />
+
 </beans>
