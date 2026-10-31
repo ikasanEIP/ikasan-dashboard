@@ -54,4 +54,10 @@
 
     <bean id="contextParametersInstanceService" class="org.ikasan.rest.dashboard.util.TestContextParametersInstanceService" />
 
+    <bean id="moduleMetadataEntityService" class="org.ikasan.rest.dashboard.util.TestModuleMetaDataService" />
+
+    <bean id="securityService" class="org.ikasan.rest.dashboard.util.TestSecurityService" />
+
+    <bean id="scheduledContextService" class="org.ikasan.rest.dashboard.util.TestScheduledContextService" />
+
 </beans>
