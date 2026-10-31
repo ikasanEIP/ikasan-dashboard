@@ -43,6 +43,7 @@ package org.ikasan.rest.dashboard;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
+import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
@@ -50,7 +51,9 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,8 +63,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.context.SecurityContextRepository;
-
-import javax.annotation.Resource;
 
 @Configuration
 public class IkasanRestAutoConfiguration
@@ -76,48 +77,66 @@ public class IkasanRestAutoConfiguration
     @Value("${user.service.user.cache.timeout.seconds:300}")
     private int userServiceUserCacheTimeoutSeconds;
 
-    @Resource(name="errorOccurrenceBatchInsert")
+    @Autowired
+    @Qualifier("errorOccurrenceBatchInsert")
     private BatchInsert errorOccurrenceBatchInsert;
 
-    @Resource(name="replayEventBatchInsert")
+    @Autowired
+    @Qualifier("replayEventBatchInsert")
     private BatchInsert replayEventBatchInsert;
 
-    @Resource(name="exclusionEventBatchInsert")
+    @Autowired
+    @Qualifier("exclusionEventBatchInsert")
     private BatchInsert exclusionEventBatchInsert;
 
-    @Resource(name="wiretapEventBatchInsert")
+    @Autowired
+    @Qualifier("wiretapEventBatchInsert")
     private BatchInsert wiretapEventBatchInsert;
 
-    @Resource(name="systemEventBatchInsert")
+    @Autowired
+    @Qualifier("systemEventBatchInsert")
     private BatchInsert systemEventBatchInsert;
 
-    @Resource(name="moduleMetadataBatchInsert")
+    @Autowired
+    @Qualifier("moduleMetadataBatchInsert")
     private BatchInsert moduleMetadataBatchInsert;
 
-    @Resource(name="configurationMetadataBatchInsert")
+    @Autowired
+    @Qualifier("configurationMetadataBatchInsert")
     private BatchInsert configurationMetadataBatchInsert;
 
-    @Resource(name="flowInvocationMetricBatchInsert")
+    @Autowired
+    @Qualifier("flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
 
+    @Autowired
+    @Qualifier("systemEventSearchService")
+    private SystemEventSearchService systemEventSearchService;
 
-    @Resource
+    @Autowired
+    @Qualifier("securityService")
+    private SecurityService securityService;
+
+
+    @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
 
-    @Resource
-    @Qualifier("moduleMetadataService")
+    @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Autowired
     private MetricsService metricsService;
 
-    @Resource
+    @Autowired
+    private ScheduledContextService scheduledContextService;
+
+    @Autowired
     private BigQueueModuleService bigQueueModuleService;
 
     @Autowired(required = false)
     private IBigQueue inboundQueue;
 
-    @Resource
+    @Autowired
     private FlowStateCacheAdapter cacheAdapter;
 
     @Bean
@@ -217,12 +236,17 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
-    public JwtTokenUtil jwtTokenUtil() {
-        return new JwtTokenUtil();
+    public JobContextController jobContextController() {
+        return new JobContextController(contextParametersInstanceService);
     }
 
     @Bean
-    public JobContextController jobContextController() {
-        return new JobContextController(contextParametersInstanceService);
+    public SecurityController securityController() {
+        return new SecurityController(this.securityService, this.moduleMetadataService, this.scheduledContextService);
+    }
+
+    @Bean
+    public JwtTokenUtil jwtTokenUtil() {
+        return new JwtTokenUtil();
     }
 }
