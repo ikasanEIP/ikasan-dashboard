@@ -1543,6 +1543,171 @@ Aggregation service for module meta data produced by the Ikasan Topology service
 </p>
 </details>
 
+## Security Service
+Role-based access control service for managing module and job plan access permissions.
+
+### Assign Module to Roles
+Assigns a module to one or more roles, enabling fine-grained access control over integration modules.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | POST |
+| Service Context | {dashboard-root-context}/rest/security/module/roles?moduleName={moduleName} |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Required Authorities | ALL, WebServiceAdmin |
+| Request Parameter | moduleName (required) - The name of the module to assign |
+| Payload | A JSON array of role names (strings) |
+
+**Description:** This endpoint validates that the specified module exists and that all provided role names correspond to valid roles in the system. If validation passes, it creates role-module associations for each role, granting those roles access to the specified module.
+
+**Validation:**
+- Module name must not be null or empty
+- Module must exist in the module metadata service
+- Role names list must not be null or empty
+- All role names must correspond to existing roles
+
+**Request Example:**
+```
+POST /rest/security/module/roles?moduleName=CustomerIntegrationModule
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
+Content-Type: application/json
+
+["Admin", "IntegrationDeveloper", "SupportTeam"]
+```
+
+**Success Response:**
+- `200 OK`: Module successfully assigned to all specified roles
+- Response body: Empty
+
+**Error Responses:**
+- `400 Bad Request`:
+  - Module name is null, empty, or whitespace only
+  - Module does not exist in the system
+  - Role names list is null or empty
+  - One or more role names are invalid (null, empty, or do not exist)
+  - Response body: `{"errorCode": null, "errorMessage": "Error description"}`
+- `500 Internal Server Error`: Unexpected error during processing
+- `401 Unauthorized`: Authorization token is invalid or missing
+- `403 Forbidden`: User does not have required authority (ALL or WebServiceAdmin)
+
+**Error Response Examples:**
+
+<details>
+    <summary>Module does not exist</summary>
+<p>
+
+```json
+{
+  "errorCode": null,
+  "errorMessage": "Module [NonExistentModule] does not exist"
+}
+```
+
+</p>
+</details>
+
+<details>
+    <summary>Invalid role names</summary>
+<p>
+
+```json
+{
+  "errorCode": null,
+  "errorMessage": "The following roles are not valid: InvalidRole1, InvalidRole2"
+}
+```
+
+</p>
+</details>
+
+### Assign Job Plan to Roles
+Assigns a job plan (scheduled context) to one or more roles, enabling fine-grained access control over scheduled job plans.
+
+| Parameter | Value  |
+|--- | --- |
+| Request Method | POST |
+| Service Context | {dashboard-root-context}/rest/security/jobplan/roles?jobPlanName={jobPlanName} |
+| Requires 'Authorization' HTTP Header | Bearer {JWT TOKEN} |
+| Required Authorities | ALL, WebServiceAdmin |
+| Request Parameter | jobPlanName (required) - The name of the job plan to assign |
+| Payload | A JSON array of role names (strings) |
+
+**Description:** This endpoint validates that the specified job plan exists and that all provided role names correspond to valid roles in the system. If validation passes, it creates role-job plan associations for each role, granting those roles access to the specified job plan.
+
+**Validation:**
+- Job plan name must not be null or empty
+- Job plan must exist in the scheduled context service
+- Role names list must not be null or empty
+- All role names must correspond to existing roles
+
+**Request Example:**
+```
+POST /rest/security/jobplan/roles?jobPlanName=DailyDataSyncPlan
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
+Content-Type: application/json
+
+["Admin", "SchedulerOperator", "SupportTeam"]
+```
+
+**Success Response:**
+- `200 OK`: Job plan successfully assigned to all specified roles
+- Response body: Empty
+
+**Error Responses:**
+- `400 Bad Request`:
+  - Job plan name is null, empty, or whitespace only
+  - Job plan does not exist in the system
+  - Role names list is null or empty
+  - One or more role names are invalid (null, empty, or do not exist)
+  - Response body: `{"errorCode": null, "errorMessage": "Error description"}`
+- `500 Internal Server Error`: Unexpected error during processing
+- `401 Unauthorized`: Authorization token is invalid or missing
+- `403 Forbidden`: User does not have required authority (ALL or WebServiceAdmin)
+
+**Error Response Examples:**
+
+<details>
+    <summary>Job plan does not exist</summary>
+<p>
+
+```json
+{
+  "errorCode": null,
+  "errorMessage": "Job plan [NonExistentPlan] does not exist"
+}
+```
+
+</p>
+</details>
+
+<details>
+    <summary>Multiple validation errors</summary>
+<p>
+
+```json
+{
+  "errorCode": null,
+  "errorMessage": "The following roles are not valid: null, \"\" (empty), NonExistentRole"
+}
+```
+
+</p>
+</details>
+
+**Implementation Details:**
+- Both endpoints use fail-fast validation: all validation checks must pass before any role assignments are made
+- Role validation is centralized in a private `validateRoleNames()` method
+- Module validation uses `ModuleMetaDataService.findById()`
+- Job plan validation uses `ScheduledContextService.findByName()`
+- All operations are logged with appropriate log levels (INFO for success, WARN for validation failures, ERROR for exceptions)
+
+**Use Cases:**
+- **Role-Based Access Control (RBAC)**: Implement fine-grained access control for modules and job plans
+- **Security Auditing**: Track which roles have access to specific integration components
+- **Multi-Tenant Deployments**: Segregate access to different integration modules by organization or team
+- **Operational Segregation**: Control which operational teams can manage specific job plans
+- **Compliance**: Enforce access control policies for sensitive integration processes
+
 ## Configuration Service
 Aggregation service for module meta data produced by the Ikasan Topology service.
 
