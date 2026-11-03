@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionListener implements ComponentEventListener<ClickEvent<Button>> {
@@ -100,6 +101,8 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                         this.success = false;
                         List<ExclusionEventAction> exclusionEventActions = null;
 
+                        AtomicInteger ignoreCount = new AtomicInteger(0);
+
                         if (!selected) {
                             List<IkasanESBDocument> resubmissionEvents = this.selectionItems.values()
                                 .stream()
@@ -107,6 +110,8 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                                 .collect(Collectors.toList());
 
                             resubmissionEvents.sort(Comparator.comparingLong(IkasanESBDocument::getTimestamp));
+
+                            ignoreCount.getAndSet(resubmissionEvents.size());
 
                             exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
                                 "ignore", authentication.getName(), current, authentication);
@@ -128,6 +133,8 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                                     .filter(document -> this.shouldActionEvent(document))
                                     .collect(Collectors.toList());
 
+                                ignoreCount.getAndAdd(resubmissionEvents.size());
+
                                 exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
                                     "ignore", authentication.getName(), current, authentication);
 
@@ -141,7 +148,8 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                             current.access(() ->
                             {
                                 progressIndicatorDialog.close();
-                                NotificationHelper.showUserNotification(getTranslation("message.successfully-ignored-exclusions", UI.getCurrent().getLocale()));
+                                NotificationHelper.showUserNotification(String.format(getTranslation("message.successfully-ignored-exclusions", UI.getCurrent().getLocale())
+                                    , ignoreCount.get()));
                                 selectionBoxes.keySet().forEach(key -> selectionBoxes.get(key).setValue(false));
                                 selectionItems.clear();
                             });
