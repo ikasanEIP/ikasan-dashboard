@@ -50,8 +50,6 @@ public class TableButton extends Button
 
     protected void init()
     {
-        this.getStyle().set("width", "30px");
-        this.getStyle().set("height", "30px");
         this.getStyle().set("font-size", "12pt");
     }
 }

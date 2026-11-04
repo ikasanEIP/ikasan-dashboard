@@ -12,6 +12,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Anchor;
@@ -33,9 +34,7 @@ import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamUploadDialog;
@@ -220,12 +219,23 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         })).setWidth("30px");
         modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData->
         {
-            Icon deleteButton = VaadinIcon.TRASH.create();
+            Icon deleteButton = IconDecorator.decorate(VaadinIcon.TRASH.create()
+                , getTranslation("tooltip.delete-module"), "12pt", IkasanColours.IKASAN_ORANGE);
             deleteButton.setSize("12pt");
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
-                this.moduleMetadataService.deleteById(moduleMetaData.getName());
-                this.populateModulesGrid();
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("header.delete-module"));
+                confirmDialog.setText(getTranslation("body.delete-module"));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    this.moduleMetadataService.deleteById(moduleMetaData.getName());
+                    this.populateModulesGrid();
+                });
             });
 
             ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,
@@ -277,8 +287,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             .setFlexGrow(32);
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
-            Icon editButton = VaadinIcon.EDIT.create();
-            editButton.setSize("12pt");
+            Icon editButton = IconDecorator.decorate(VaadinIcon.EDIT.create(), getTranslation("tooltip.edit-business-stream"), "12pt", IkasanColours.IKASAN_ORANGE);
+
             editButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
                 BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(businessStreamMetaData, this.businessStreamMetaDataService);
@@ -316,12 +326,24 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         })).setWidth("30px");
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
-            Icon deleteButton = VaadinIcon.TRASH.create();
+            Icon deleteButton = IconDecorator.decorate(VaadinIcon.TRASH.create()
+                , getTranslation("tooltip.delete-business-stream"), "12pt", IkasanColours.IKASAN_ORANGE);
+
             deleteButton.setSize("12pt");
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
-                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
-                this.populateBusinessStreamGrid();
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("header.delete-business-stream"));
+                confirmDialog.setText(getTranslation("body.delete-business-stream"));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
+                    this.populateBusinessStreamGrid();
+                });
             });
 
             ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,
