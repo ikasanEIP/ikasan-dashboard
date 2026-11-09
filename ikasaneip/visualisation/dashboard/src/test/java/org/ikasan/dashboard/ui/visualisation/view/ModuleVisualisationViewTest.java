@@ -102,7 +102,7 @@ public class ModuleVisualisationViewTest extends UITest
         Assertions.assertNotNull(graphVisualisation, "GraphVisualisation should not be null!");
 
 
-        graphVisualisation.createModuleVisualisation(moduleMetaData);
+        graphVisualisation.createModuleVisualisation(moduleMetaData, true);
 
         DesignerCanvas designerCanvas = _get(DesignerCanvas.class);
         Assertions.assertNotNull(designerCanvas, "DesignerCanvas should not be null!");
@@ -138,7 +138,7 @@ public class ModuleVisualisationViewTest extends UITest
 
         Assertions.assertNotNull(graphVisualisation, "GraphVisualisation should not be null!");
 
-        graphVisualisation.createModuleVisualisation(moduleMetaData);
+        graphVisualisation.createModuleVisualisation(moduleMetaData, true);
 
         DesignerCanvas designerCanvas = _get(DesignerCanvas.class);
         Assertions.assertNotNull(designerCanvas, "DesignerCanvas should not be null!");

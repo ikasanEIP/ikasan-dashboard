@@ -5,6 +5,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.broadcast.FlowState;
@@ -343,6 +345,13 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
         this.current = attachEvent.getUI();
         FlowStateBroadcaster.instance().register(this);
         CacheStateBroadcaster.instance().register(this);
+
+        try {
+            this.setDigramContents();
+        }
+        catch (Exception e) {
+
+        }
     }
 
     @Override

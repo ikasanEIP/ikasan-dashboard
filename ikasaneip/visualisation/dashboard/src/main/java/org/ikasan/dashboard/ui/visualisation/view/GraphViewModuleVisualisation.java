@@ -241,7 +241,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
      *
      * @param moduleMetaData
      */
-    protected void createModuleVisualisation(ModuleMetaData moduleMetaData) {
+    protected void createModuleVisualisation(ModuleMetaData moduleMetaData, boolean withInitialFlow) {
         List<String> configurationIds = moduleMetaData.getFlows().stream()
             .map(flowMetaData -> flowMetaData.getFlowElements()).flatMap(List::stream)
             .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
@@ -268,9 +268,11 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
             this.configurationRestService, this.triggerRestService, metaDataApplicationRestService,
             moduleMetaDataBatchInsert);
         moduleVisualisation.addModule(module);
-        Flow flow = module.getFlows().get(0);
-        flow.setStatus(FlowStateCache.instance().get(currentModule, flow).getState());
-        moduleVisualisation.setCurrentFlow(flow);
+        if(withInitialFlow) {
+            Flow flow = module.getFlows().get(0);
+            flow.setStatus(FlowStateCache.instance().get(currentModule, flow).getState());
+            moduleVisualisation.setCurrentFlow(flow);
+        }
         this.flowComboBox.setCurrentModule(module);
 
         this.statusPanel.setModuleVisualisation(this.moduleVisualisation);

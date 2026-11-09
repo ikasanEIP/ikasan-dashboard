@@ -251,7 +251,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         modulesGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>)
             doubleClickEvent ->
             {
-                createModuleVisualisation(doubleClickEvent.getItem());
+                createModuleVisualisation(doubleClickEvent.getItem(), true);
 
                 if(this.toolSlider.isExpanded())
                 {
@@ -383,6 +383,11 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        this.beforeEnter(beforeEnterEvent, false);
+    }
+
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent, boolean withInitialFlow)
+    {
         if(!initialised)
         {
             this.init();
@@ -410,7 +415,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                     , StandardCharsets.UTF_8.toString()));
 
                 if(moduleMetaData != null) {
-                    this.createModuleVisualisation(moduleMetaData);
+                    this.createModuleVisualisation(moduleMetaData, withInitialFlow);
                     this.moduleLabel.setText(moduleMetaData.getName());
                     this.businessStreamVisualisation = null;
                 }
@@ -422,7 +427,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(moduleName);
 
                 if(moduleMetaData != null) {
-                    this.createModuleVisualisation(moduleMetaData);
+                    this.createModuleVisualisation(moduleMetaData, withInitialFlow);
                     this.moduleLabel.setText(moduleMetaData.getName());
                     this.businessStreamVisualisation = null;
 
@@ -468,7 +473,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
      *
      * @param moduleMetaData
      */
-    protected void createModuleVisualisation(ModuleMetaData moduleMetaData)
+    protected void createModuleVisualisation(ModuleMetaData moduleMetaData, boolean withInitialFlow)
     {
         if (this.businessStreamVisualisation != null)
         {
@@ -484,7 +489,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             this.configurationRestService, this.triggerRestService, this.configurationMetadataService,
             this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.moduleMetadataService);
 
-        this.moduleVisualisation.createModuleVisualisation(moduleMetaData);
+        this.moduleVisualisation.createModuleVisualisation(moduleMetaData, withInitialFlow);
         this.add(moduleVisualisation);
     }
 

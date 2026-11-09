@@ -14,6 +14,7 @@ import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
+import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
@@ -29,6 +30,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.security.PermitAll;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 
 @Route(value = "visualisationTab")
@@ -112,6 +115,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, String parameter) {
+        parameter = URLDecoder.decode(parameter, StandardCharsets.UTF_8);
         if(parameter.contains(":")) {
             logger.info(String.format("Deep link event life identifier [%s]", parameter));
             this.visualisationType = parameter.substring(0, parameter.indexOf(":"));
@@ -129,7 +133,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
             this.init();
             this.graphVisualisation.setVisualisationName(this.visualisationName);
             this.graphVisualisation.setVisualisationType(this.visualisationType);
-            this.graphVisualisation.beforeEnter(beforeEnterEvent);
+            this.graphVisualisation.beforeEnter(beforeEnterEvent, visualisationType.equals("MODULE"));
             this.initialised = true;
         }
     }
