@@ -88,7 +88,8 @@ public class AgentWidget extends DashboardWidget {
         this.scheduledAgentsFilteringGrid.removeAllColumns();
         this.scheduledAgentsFilteringGrid.setVisible(true);
         this.scheduledAgentsFilteringGrid.setWidthFull();
-        this.scheduledAgentsFilteringGrid.setHeight(100, Unit.PERCENTAGE);
+        this.scheduledAgentsFilteringGrid.setAllRowsVisible(false);
+        this.scheduledAgentsFilteringGrid.setHeight(40, Unit.VH);
 
         scheduledAgentsFilteringGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")

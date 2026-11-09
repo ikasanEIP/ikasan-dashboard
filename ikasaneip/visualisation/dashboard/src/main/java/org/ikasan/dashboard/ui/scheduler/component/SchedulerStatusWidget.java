@@ -244,7 +244,7 @@ public class SchedulerStatusWidget extends DashboardWidget implements FlowStateB
         this.flowsGrid.setVisible(true);
         this.flowsGrid.setWidthFull();
         this.flowsGrid.setAllRowsVisible(false);
-        this.flowsGrid.setHeight(45, Unit.VH);
+        this.flowsGrid.setHeight(40, Unit.VH);
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
             .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
