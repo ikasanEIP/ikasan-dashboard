@@ -2351,6 +2351,27 @@ public class SolrIkasanPrincipalDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdatePrincipal_with_solr_special_chars_unicode() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrIkasanPrincipalImpl principal = new SolrIkasanPrincipalImpl();
+            principal.setName("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)");
+            principal.setType("user");
+            principal.setDescription("Test user with long name");
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+
+            // Should handle very long name
+            dao.saveOrUpdatePrincipal(principal);
+
+            IkasanPrincipal found = dao.getPrincipalByName("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)");
+            Assert.assertNotNull(found);
+            Assert.assertEquals("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)", found.getName());
+        }
+    }
+
+    @Test
     public void test_saveOrUpdatePrincipal_with_kanji_chars() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);

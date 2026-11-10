@@ -380,6 +380,26 @@ public class SolrPolicyDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdatePolicy_with_solr_special_chars_unicode() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrPolicyImpl policy = new SolrPolicyImpl();
+            policy.setName("This:Is:My:Policy:\\u");
+            policy.setDescription("Test policy with solr special characters");
+            policy.setCreatedDateTime(new Date());
+            policy.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdatePolicy(policy);
+
+            Policy found = dao.getPolicyByName("This:Is:My:Policy:\\u");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Policy:\\u", found.getName());
+        }
+    }
+
+    @Test
     public void test_saveOrUpdatePolicy_with_kanji_chars() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
