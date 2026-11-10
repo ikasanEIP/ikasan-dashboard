@@ -360,6 +360,46 @@ public class SolrPolicyDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdatePolicy_with_solr_special_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrPolicyImpl policy = new SolrPolicyImpl();
+            policy.setName("This:Is:My:Policy");
+            policy.setDescription("Test policy with solr special characters");
+            policy.setCreatedDateTime(new Date());
+            policy.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdatePolicy(policy);
+
+            Policy found = dao.getPolicyByName("This:Is:My:Policy");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Policy", found.getName());
+        }
+    }
+
+    @Test
+    public void test_saveOrUpdatePolicy_with_kanji_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrPolicyImpl policy = new SolrPolicyImpl();
+            policy.setName("すべてのネストされたコマンド実行およびローカ");
+            policy.setDescription("Test policy with kanji characters");
+            policy.setCreatedDateTime(new Date());
+            policy.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdatePolicy(policy);
+
+            Policy found = dao.getPolicyByName("すべてのネストされたコマンド実行およびローカ");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("すべてのネストされたコマンド実行およびローカ", found.getName());
+        }
+    }
+
+    @Test
     public void test_multiple_operations_in_sequence() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);

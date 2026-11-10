@@ -2330,6 +2330,48 @@ public class SolrIkasanPrincipalDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdatePrincipal_with_solr_special_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrIkasanPrincipalImpl principal = new SolrIkasanPrincipalImpl();
+            principal.setName("This:Is:My:Name");
+            principal.setType("user");
+            principal.setDescription("Test user with long name");
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+
+            // Should handle very long name
+            dao.saveOrUpdatePrincipal(principal);
+
+            IkasanPrincipal found = dao.getPrincipalByName("This:Is:My:Name");
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Name", found.getName());
+        }
+    }
+
+    @Test
+    public void test_saveOrUpdatePrincipal_with_kanji_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrIkasanPrincipalImpl principal = new SolrIkasanPrincipalImpl();
+            principal.setName("すべてのネストされたコマンド実行およびローカ");
+            principal.setType("user");
+            principal.setDescription("Test user with long name");
+            principal.setCreatedDateTime(new Date());
+            principal.setUpdatedDateTime(new Date());
+
+            // Should handle very long name
+            dao.saveOrUpdatePrincipal(principal);
+
+            IkasanPrincipal found = dao.getPrincipalByName("すべてのネストされたコマンド実行およびローカ");
+            Assert.assertNotNull(found);
+            Assert.assertEquals("すべてのネストされたコマンド実行およびローカ", found.getName());
+        }
+    }
+
+    @Test
     public void test_getAllPrincipalsWithRole_with_role_containing_quotes() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);

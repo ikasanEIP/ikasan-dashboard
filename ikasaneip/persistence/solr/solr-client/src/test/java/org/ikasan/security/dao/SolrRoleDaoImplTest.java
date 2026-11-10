@@ -1780,6 +1780,46 @@ public class SolrRoleDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdateRole_with_solr_special_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrRoleImpl role = new SolrRoleImpl();
+            role.setName("This:Is:My:Role");
+            role.setDescription("Test role with solr special characters");
+            role.setCreatedDateTime(new Date());
+            role.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdateRole(role);
+
+            Role found = dao.getRoleByName("This:Is:My:Role");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Role", found.getName());
+        }
+    }
+
+    @Test
+    public void test_saveOrUpdateRole_with_kanji_chars() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrRoleImpl role = new SolrRoleImpl();
+            role.setName("すべてのネストされたコマンド実行およびローカ");
+            role.setDescription("Test role with kanji characters");
+            role.setCreatedDateTime(new Date());
+            role.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdateRole(role);
+
+            Role found = dao.getRoleByName("すべてのネストされたコマンド実行およびローカ");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("すべてのネストされたコマンド実行およびローカ", found.getName());
+        }
+    }
+
+    @Test
     public void test_multiple_operations_in_sequence() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
