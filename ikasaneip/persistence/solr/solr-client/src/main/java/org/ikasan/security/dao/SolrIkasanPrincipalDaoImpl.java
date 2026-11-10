@@ -1,6 +1,7 @@
 package org.ikasan.security.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrIkasanPrincipalImpl;
 import org.ikasan.security.model.SolrIkasanPrincipalLiteImpl;
@@ -343,7 +344,7 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
     public IkasanPrincipal getPrincipalByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\" AND "
-            + NAME + COLON + "\"" + (name != null ? SolrSpecialCharacterEscapeUtil.escape(name) + "\"" : name + "\""));
+            + NAME + COLON + "\"" + (name != null ? ClientUtils.escapeQueryChars(name) + "\"" : name + "\""));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrIkasanPrincipalRecord> results = this.findByQuery(query, SolrIkasanPrincipalRecord.class);

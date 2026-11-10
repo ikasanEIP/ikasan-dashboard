@@ -1800,6 +1800,26 @@ public class SolrRoleDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_saveOrUpdateRole_with_solr_special_chars_unicode() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            SolrRoleImpl role = new SolrRoleImpl();
+            role.setName("This:Is:My:Role:\\u");
+            role.setDescription("Test role with solr special characters");
+            role.setCreatedDateTime(new Date());
+            role.setUpdatedDateTime(new Date());
+
+            dao.saveOrUpdateRole(role);
+
+            Role found = dao.getRoleByName("This:Is:My:Role:\\u");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Role:\\u", found.getName());
+        }
+    }
+
+    @Test
     public void test_saveOrUpdateRole_with_kanji_chars() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);

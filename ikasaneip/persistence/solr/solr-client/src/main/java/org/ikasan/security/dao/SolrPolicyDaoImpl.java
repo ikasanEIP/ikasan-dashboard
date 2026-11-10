@@ -1,6 +1,7 @@
 package org.ikasan.security.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrPolicyImpl;
 import org.ikasan.security.model.SolrPolicyRecord;
@@ -198,7 +199,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements 
     public Policy getPolicyByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\" AND " + NAME + COLON
-            + "\"" + (name != null ? SolrSpecialCharacterEscapeUtil.escape(name) + "\"" : name + "\""));
+            + "\"" + (name != null ? ClientUtils.escapeQueryChars(name) + "\"" : name + "\""));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrPolicyRecord> results = this.findByQuery(query, SolrPolicyRecord.class);

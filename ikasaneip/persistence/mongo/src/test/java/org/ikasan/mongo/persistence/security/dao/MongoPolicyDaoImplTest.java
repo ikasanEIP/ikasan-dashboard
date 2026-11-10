@@ -348,6 +348,22 @@ public class MongoPolicyDaoImplTest {
     }
 
     @Test
+    public void test_saveOrUpdatePolicy_with_special_chars_unicode() {
+        MongoPolicyImpl policy = new MongoPolicyImpl();
+        policy.setName("This:Is:My:Policy:\\u");
+        policy.setDescription("Test policy with special characters");
+        policy.setCreatedDateTime(new Date());
+        policy.setUpdatedDateTime(new Date());
+
+        dao.saveOrUpdatePolicy(policy);
+
+        Policy found = dao.getPolicyByName("This:Is:My:Policy:\\u");
+
+        Assert.assertNotNull(found);
+        Assert.assertEquals("This:Is:My:Policy:\\u", found.getName());
+    }
+
+    @Test
     public void test_saveOrUpdatePolicy_with_kanji_chars() {
         MongoPolicyImpl policy = new MongoPolicyImpl();
         policy.setName("すべてのネストされたコマンド実行およびローカ");

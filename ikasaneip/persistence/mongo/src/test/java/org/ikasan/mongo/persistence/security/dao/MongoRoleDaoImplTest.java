@@ -1223,6 +1223,22 @@ public class MongoRoleDaoImplTest {
     }
 
     @Test
+    public void test_saveOrUpdateRole_with_special_chars_unicode() {
+        MongoRoleImpl role = new MongoRoleImpl();
+        role.setName("This:Is:My:Role:\\u");
+        role.setDescription("Test role with special characters");
+        role.setCreatedDateTime(new Date());
+        role.setUpdatedDateTime(new Date());
+
+        dao.saveOrUpdateRole(role);
+
+        Role found = dao.getRoleByName("This:Is:My:Role:\\u");
+
+        Assert.assertNotNull(found);
+        Assert.assertEquals("This:Is:My:Role:\\u", found.getName());
+    }
+
+    @Test
     public void test_saveOrUpdateRole_with_kanji_chars() {
         MongoRoleImpl role = new MongoRoleImpl();
         role.setName("すべてのネストされたコマンド実行およびローカ");

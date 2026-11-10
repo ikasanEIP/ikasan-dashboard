@@ -169,6 +169,25 @@ public class MongoIkasanPrincipalDaoImplTest {
     }
 
     @Test
+    public void test_saveOrUpdatePrincipal_with_special_chars_unicode() throws Exception {
+        MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+        principal.setName("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)");
+        principal.setType("user");
+        principal.setDescription("Test user principal");
+        principal.setCreatedDateTime(new Date(1000000L));
+        principal.setUpdatedDateTime(new Date(2000000L));
+
+        dao.saveOrUpdatePrincipal(principal);
+
+        IkasanPrincipal found = dao.getPrincipalByName("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)");
+
+        Assert.assertNotNull(found);
+        Assert.assertEquals("App+Grp:+(\\\\BLAHBLAH\\data\\user\\Cryptbin\\-log)", found.getName());
+        Assert.assertEquals("user", found.getType());
+        Assert.assertEquals("Test user principal", found.getDescription());
+    }
+
+    @Test
     public void test_saveOrUpdatePrincipal_with_kanji_chars() throws Exception {
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
         principal.setName("すべてのネストされたコマンド実行およびローカ");

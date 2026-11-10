@@ -1,6 +1,7 @@
 package org.ikasan.security.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.*;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
@@ -271,7 +272,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements Role
     public Role getRoleByName(String name) {
         SolrQuery query = new SolrQuery();
         query.setQuery(TYPE + COLON + "\"" + ROLE_TYPE + "\" AND " + NAME + COLON
-            + "\"" + (name != null ? SolrSpecialCharacterEscapeUtil.escape(name) + "\"" : name + "\""));
+            + "\"" + (name != null ? ClientUtils.escapeQueryChars(name) + "\"" : name + "\""));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrRoleRecord> results = this.findByQuery(query, SolrRoleRecord.class);
