@@ -1465,7 +1465,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         this.onHoldFilterButton.setText(onHold.get() + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel()));
         this.skippedFilterButton.setText(skipped.get() + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel()));
         this.queuedFilterButton.setText(queued.get() + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel()));
-        this.disabledFilterButton.setText(disabled.get() + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel()));
+        this.disabledFilterButton.setText(disabled.get() + " " + getTranslation(InstanceStatus.DISABLED.getTranslationLabel()));
         this.errorFilterButton.setText(error.get() + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel()));
     }
 
