@@ -345,13 +345,6 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
         this.current = attachEvent.getUI();
         FlowStateBroadcaster.instance().register(this);
         CacheStateBroadcaster.instance().register(this);
-
-        try {
-            this.setDigramContents();
-        }
-        catch (Exception e) {
-
-        }
     }
 
     @Override
