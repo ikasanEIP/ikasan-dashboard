@@ -5,6 +5,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrPolicyImpl;
 import org.ikasan.security.model.SolrPolicyRecord;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
+import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.dao.PolicyDao;
 import org.ikasan.spec.security.model.Policy;
@@ -196,7 +197,8 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements 
     @Override
     public Policy getPolicyByName(String name) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\" AND " + NAME + COLON + name);
+        query.setQuery(TYPE + COLON + "\"" + POLICY_TYPE + "\" AND " + NAME + COLON
+            + "\"" + (name != null ? SolrSpecialCharacterEscapeUtil.escape(name) + "\"" : name + "\""));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrPolicyRecord> results = this.findByQuery(query, SolrPolicyRecord.class);

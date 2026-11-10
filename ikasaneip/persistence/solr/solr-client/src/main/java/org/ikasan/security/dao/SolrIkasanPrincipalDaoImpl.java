@@ -6,6 +6,7 @@ import org.ikasan.security.model.SolrIkasanPrincipalImpl;
 import org.ikasan.security.model.SolrIkasanPrincipalLiteImpl;
 import org.ikasan.security.model.SolrIkasanPrincipalRecord;
 import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
+import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.dao.IkasanPrincipalDao;
 import org.ikasan.spec.security.model.IkasanPrincipal;
@@ -341,7 +342,8 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
     @Override
     public IkasanPrincipal getPrincipalByName(String name) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\" AND " + NAME + COLON + name);
+        query.setQuery(TYPE + COLON + "\"" + PRINCIPAL_TYPE + "\" AND "
+            + NAME + COLON + "\"" + (name != null ? SolrSpecialCharacterEscapeUtil.escape(name) + "\"" : name + "\""));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrIkasanPrincipalRecord> results = this.findByQuery(query, SolrIkasanPrincipalRecord.class);

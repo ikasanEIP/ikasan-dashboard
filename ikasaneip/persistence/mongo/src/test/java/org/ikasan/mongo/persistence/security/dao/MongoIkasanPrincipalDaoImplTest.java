@@ -150,6 +150,44 @@ public class MongoIkasanPrincipalDaoImplTest {
     }
 
     @Test
+    public void test_saveOrUpdatePrincipal_with_special_chars() throws Exception {
+            MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+            principal.setName("This:Is:My:Name");
+            principal.setType("user");
+            principal.setDescription("Test user principal");
+            principal.setCreatedDateTime(new Date(1000000L));
+            principal.setUpdatedDateTime(new Date(2000000L));
+
+            dao.saveOrUpdatePrincipal(principal);
+
+            IkasanPrincipal found = dao.getPrincipalByName("This:Is:My:Name");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("This:Is:My:Name", found.getName());
+            Assert.assertEquals("user", found.getType());
+            Assert.assertEquals("Test user principal", found.getDescription());
+    }
+
+    @Test
+    public void test_saveOrUpdatePrincipal_with_kanji_chars() throws Exception {
+        MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
+        principal.setName("すべてのネストされたコマンド実行およびローカ");
+        principal.setType("user");
+        principal.setDescription("Test user principal");
+        principal.setCreatedDateTime(new Date(1000000L));
+        principal.setUpdatedDateTime(new Date(2000000L));
+
+        dao.saveOrUpdatePrincipal(principal);
+
+        IkasanPrincipal found = dao.getPrincipalByName("すべてのネストされたコマンド実行およびローカ");
+
+        Assert.assertNotNull(found);
+        Assert.assertEquals("すべてのネストされたコマンド実行およびローカ", found.getName());
+        Assert.assertEquals("user", found.getType());
+        Assert.assertEquals("Test user principal", found.getDescription());
+    }
+
+    @Test
     public void test_findById_basic() {
         MongoIkasanPrincipalImpl principal = new MongoIkasanPrincipalImpl();
         principal.setName("testuser");
