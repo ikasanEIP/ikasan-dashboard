@@ -56,7 +56,7 @@ public class MongoRoleDaoImplTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
     @Autowired

@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.hospital.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.hospital.model.MongoExclusionEventAction;
 import org.ikasan.mongo.persistence.hospital.repository.MongoExclusionEventActionRepository;
 import org.ikasan.spec.entity.EntityDao;
@@ -25,8 +26,18 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoHospitalDaoImpl.class);
 
+    /**
+     * Fields to search in for full-text search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        EntityFields.PAYLOAD_CONTENT,
+        EntityFields.ERROR_URI,
+        EntityFields.ACTOR
+    );
+
     private final MongoExclusionEventActionRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
     private final int daysToKeep;
 
     /**
@@ -38,8 +49,22 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
      */
     public MongoHospitalDaoImpl(MongoExclusionEventActionRepository repository
         , MongoTemplate mongoTemplate, int daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, new AtlasSearchQueryHelper(mongoTemplate));
+    }
+
+    /**
+     * Constructs a new instance of {@code MongoHospitalDaoImpl} with a custom AtlasSearchQueryHelper.
+     *
+     * @param repository the {@link MongoExclusionEventActionRepository} used to interact with MongoDB for exclusion event actions
+     * @param mongoTemplate the {@link MongoTemplate} used for custom queries and database operations
+     * @param daysToKeep the number of days to retain records in the database
+     * @param atlasSearchQueryHelper the {@link AtlasSearchQueryHelper} to use for search queries
+     */
+    public MongoHospitalDaoImpl(MongoExclusionEventActionRepository repository
+        , MongoTemplate mongoTemplate, int daysToKeep, AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
         this.daysToKeep = daysToKeep;
     }
 
@@ -94,7 +119,39 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
 
     public List<ExclusionEventAction> find(List<String> moduleNames, List<String> flowNames, String searchString,
                                            long fromTimestamp, long untilTimestamp, int offset, int limit) {
+
+        // Build match criteria for filtering
+        Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, fromTimestamp, untilTimestamp);
+
+        // If searchString is provided, use Atlas Search
+        if (searchString != null && !searchString.trim().isEmpty()) {
+            AtlasSearchQueryHelper.SearchQueryResult<MongoExclusionEventAction> result =
+                atlasSearchQueryHelper.searchWithWildcard(searchString, SEARCH_FIELDS, matchCriteria,
+                    null, offset, limit, MongoExclusionEventAction.class);
+
+            return result.getResults().stream()
+                .map(entity -> (ExclusionEventAction) entity)
+                .collect(Collectors.toList());
+        }
+
+        // Otherwise use standard query
         Query query = new Query();
+        if (matchCriteria != null) {
+            query.addCriteria(matchCriteria);
+        }
+        query.skip(offset).limit(limit);
+
+        List<MongoExclusionEventAction> entities = mongoTemplate.find(query, MongoExclusionEventAction.class);
+        return entities.stream()
+                .map(entity -> (ExclusionEventAction) entity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Build match criteria for filtering.
+     */
+    private Criteria buildMatchCriteria(List<String> moduleNames, List<String> flowNames,
+                                        long fromTimestamp, long untilTimestamp) {
         List<Criteria> criteriaList = new ArrayList<>();
 
         criteriaList.add(Criteria.where(EntityFields.TYPE).is(EXCLUSION_EVENT_ACTION));
@@ -107,16 +164,6 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
             criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
         }
 
-        if (searchString != null && !searchString.trim().isEmpty()) {
-            String searchPattern = ".*" + searchString + ".*";
-            Criteria searchCriteria = new Criteria().orOperator(
-                    Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchPattern, "i"),
-                    Criteria.where(EntityFields.ERROR_URI).regex(searchPattern, "i"),
-                    Criteria.where(EntityFields.ACTOR).regex(searchPattern, "i")
-            );
-            criteriaList.add(searchCriteria);
-        }
-
         if (fromTimestamp > 0 && untilTimestamp > 0) {
             criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp).lte(untilTimestamp));
         } else if (fromTimestamp > 0) {
@@ -125,16 +172,13 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
             criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(untilTimestamp));
         }
 
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        if (criteriaList.isEmpty()) {
+            return null;
+        } else if (criteriaList.size() == 1) {
+            return criteriaList.get(0);
+        } else {
+            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         }
-
-        query.skip(offset).limit(limit);
-
-        List<MongoExclusionEventAction> entities = mongoTemplate.find(query, MongoExclusionEventAction.class);
-        return entities.stream()
-                .map(entity -> (ExclusionEventAction) entity)
-                .collect(Collectors.toList());
     }
 
     public void deleteByErrorUri(String errorUri) {

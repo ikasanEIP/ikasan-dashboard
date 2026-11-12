@@ -2,6 +2,7 @@ package org.ikasan.mongo.persistence.error.reporting.dao;
 
 import org.ikasan.mongo.persistence.error.reporting.model.MongoErrorOccurrence;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.spec.entity.EntityDao;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
@@ -21,15 +22,32 @@ import java.util.stream.Collectors;
 public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurrence> {
     private static final Logger logger = LoggerFactory.getLogger(MongoErrorReportingServiceDaoImpl.class);
 
+    /**
+     * Fields to search in for full-text search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        EntityFields.ERROR_DETAIL,
+        EntityFields.ERROR_MESSAGE,
+        EntityFields.ERROR_URI,
+        EntityFields.EVENT
+    );
+
     private final MongoErrorOccurrenceRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
     private final JsonMapper objectMapper;
     private final int daysToKeep;
 
     public MongoErrorReportingServiceDaoImpl(MongoErrorOccurrenceRepository repository
         , MongoTemplate mongoTemplate, int daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, new AtlasSearchQueryHelper(mongoTemplate));
+    }
+
+    public MongoErrorReportingServiceDaoImpl(MongoErrorOccurrenceRepository repository
+        , MongoTemplate mongoTemplate, int daysToKeep, AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
         this.daysToKeep = daysToKeep;
         this.objectMapper = JsonMapper.builder().build();
     }
@@ -84,7 +102,39 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
 
     public List<ErrorOccurrence> find(List<String> moduleNames, List<String> flowNames, List<String> componentNames,
                                       String searchString, long fromTimestamp, long untilTimestamp, int offset, int limit) {
+
+        // Build match criteria for filtering
+        Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, componentNames, fromTimestamp, untilTimestamp);
+
+        // If searchString is provided, use Atlas Search
+        if (searchString != null && !searchString.trim().isEmpty()) {
+            AtlasSearchQueryHelper.SearchQueryResult<MongoErrorOccurrence> result =
+                atlasSearchQueryHelper.searchWithWildcard(searchString, SEARCH_FIELDS, matchCriteria,
+                    null, offset, limit, MongoErrorOccurrence.class);
+
+            return result.getResults().stream()
+                .map(entity -> (ErrorOccurrence) entity)
+                .collect(Collectors.toList());
+        }
+
+        // Otherwise use standard query
         Query query = new Query();
+        if (matchCriteria != null) {
+            query.addCriteria(matchCriteria);
+        }
+        query.skip(offset).limit(limit);
+
+        List<MongoErrorOccurrence> entities = mongoTemplate.find(query, MongoErrorOccurrence.class);
+        return entities.stream()
+            .map(entity -> (ErrorOccurrence)entity)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Build match criteria for filtering.
+     */
+    private Criteria buildMatchCriteria(List<String> moduleNames, List<String> flowNames, List<String> componentNames,
+                                        long fromTimestamp, long untilTimestamp) {
         List<Criteria> criteriaList = new ArrayList<>();
 
         criteriaList.add(Criteria.where(EntityFields.TYPE).is(ERROR));
@@ -101,17 +151,6 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
             criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
         }
 
-        if (searchString != null && !searchString.trim().isEmpty()) {
-            String searchPattern = ".*" + searchString + ".*";
-            Criteria searchCriteria = new Criteria().orOperator(
-                Criteria.where(EntityFields.ERROR_DETAIL).regex(searchPattern, "i"),
-                Criteria.where(EntityFields.ERROR_MESSAGE).regex(searchPattern, "i"),
-                Criteria.where(EntityFields.ERROR_URI).regex(searchPattern, "i"),
-                Criteria.where(EntityFields.EVENT).regex(searchPattern, "i")
-            );
-            criteriaList.add(searchCriteria);
-        }
-
         if (fromTimestamp > 0 && untilTimestamp > 0) {
             criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp).lte(untilTimestamp));
         } else if (fromTimestamp > 0) {
@@ -120,16 +159,13 @@ public class MongoErrorReportingServiceDaoImpl implements EntityDao<ErrorOccurre
             criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(untilTimestamp));
         }
 
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        if (criteriaList.isEmpty()) {
+            return null;
+        } else if (criteriaList.size() == 1) {
+            return criteriaList.get(0);
+        } else {
+            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         }
-
-        query.skip(offset).limit(limit);
-
-        List<MongoErrorOccurrence> entities = mongoTemplate.find(query, MongoErrorOccurrence.class);
-        return entities.stream()
-            .map(entity -> (ErrorOccurrence)entity)
-            .collect(Collectors.toList());
     }
 
     public void deleteByUri(String uri) {
