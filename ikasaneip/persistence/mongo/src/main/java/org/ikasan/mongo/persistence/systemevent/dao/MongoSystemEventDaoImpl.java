@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.systemevent.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.spec.entity.EntityDao;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import static org.ikasan.spec.entity.EntityFields.EXPIRY;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
@@ -33,25 +33,50 @@ import static org.ikasan.spec.entity.EntityFields.TYPE;
  *
  * @author Ikasan Development Team
  */
-public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<SystemEvent> {
+public class MongoSystemEventDaoImpl implements SystemEventSearchDao, EntityDao<SystemEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSystemEventDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoSystemEventDaoImpl.class);
+
+    /**
+     * Fields to search in for full-text search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        EntityFields.ACTOR,
+        EntityFields.SYSTEM_EVENT_SUBJECT,
+        EntityFields.SYSTEM_EVENT_ACTION,
+        EntityFields.PAYLOAD_CONTENT
+    );
 
     private final MongoSystemEventRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
     private final JsonMapper objectMapper;
     private final int daysToKeep;
 
     /**
-     * Constructor for MongoSystemEventDao.
+     * Constructor for MongoSystemEventDaoImpl.
      *
      * @param repository the MongoDB repository for system events, used for database operations.
      * @param mongoTemplate the MongoTemplate for executing MongoDB queries and updates.
      * @param daysToKeep the number of days for which system events should be retained in the database.
      */
-    public MongoSystemEventDao(MongoSystemEventRepository repository, MongoTemplate mongoTemplate, int daysToKeep) {
+    public MongoSystemEventDaoImpl(MongoSystemEventRepository repository, MongoTemplate mongoTemplate, int daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, new AtlasSearchQueryHelper(mongoTemplate));
+    }
+
+    /**
+     * Constructor for MongoSystemEventDaoImpl with custom AtlasSearchQueryHelper.
+     *
+     * @param repository the MongoDB repository for system events, used for database operations.
+     * @param mongoTemplate the MongoTemplate for executing MongoDB queries and updates.
+     * @param daysToKeep the number of days for which system events should be retained in the database.
+     * @param atlasSearchQueryHelper the AtlasSearchQueryHelper for search queries.
+     */
+    public MongoSystemEventDaoImpl(MongoSystemEventRepository repository, MongoTemplate mongoTemplate, int daysToKeep,
+                                   AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
         this.daysToKeep = daysToKeep;
         this.objectMapper = JsonMapper.builder().build();
     }
@@ -81,64 +106,61 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
         logger.debug("Finding system events by filter: {}, limit: {}, offset: {}, sortColumn: {}, sortOrder: {}",
                 filter, limit, offset, sortColumn, sortOrder);
 
-        Query query = new Query();
-        List<Criteria> criteriaList = new ArrayList<>();
+        // Determine if we have a search term that requires Atlas Search
+        String searchTerm = filter.getSearchTerm();
+        boolean hasSearchTerm = searchTerm != null && !searchTerm.trim().isEmpty();
 
-        // Always add type filter
-        criteriaList.add(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
+        // Build match criteria for filtering (exact matching for filter fields)
+        Criteria matchCriteria = buildMatchCriteria(filter);
 
-        // Filter by actor (wildcard search)
-        if (filter.getActor() != null && !filter.getActor().isEmpty()) {
-            String regex = ".*" + Pattern.quote(filter.getActor()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.ACTOR).regex(regex, "i"));
+        // Build sort
+        Sort sort;
+        if (sortColumn != null && !sortColumn.isEmpty()) {
+            Sort.Direction direction = "ASCENDING".equals(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
+            sort = Sort.by(direction, sortColumn);
+        } else {
+            // Default sort by timestamp descending
+            sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
         }
 
-        // Filter by subject (wildcard search)
-        if (filter.getSubject() != null && !filter.getSubject().isEmpty()) {
-            String regex = ".*" + Pattern.quote(filter.getSubject()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_SUBJECT).regex(regex, "i"));
-        }
+        // If searchTerm is provided, use Atlas Search
+        if (hasSearchTerm) {
+            AtlasSearchQueryHelper.SearchQueryResult<MongoSystemEventRecordImpl> result =
+                atlasSearchQueryHelper.searchWithWildcard(searchTerm, SEARCH_FIELDS, matchCriteria,
+                    sort, offset, limit, MongoSystemEventRecordImpl.class);
 
-        // Filter by action (wildcard search)
-        if (filter.getAction() != null && !filter.getAction().isEmpty()) {
-            String regex = ".*" + Pattern.quote(filter.getAction()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_ACTION).regex(regex, "i"));
-        }
+            List<SystemEvent> systemEvents = new ArrayList<>(result.getResults());
+            long totalCount = result.getTotalCount();
 
-        // Filter by search term in payload
-        if (filter.getSearchTerm() != null && !filter.getSearchTerm().isEmpty()) {
-            String[] terms = filter.getSearchTerm().split(" ");
-            for (String term : terms) {
-                if (!term.isEmpty()) {
-                    String regex = ".*" + Pattern.quote(term) + ".*";
-                    criteriaList.add(Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(regex, "i"));
+            logger.debug("Found {} system events (total: {})", systemEvents.size(), totalCount);
+
+            return new SearchResults<SystemEvent>() {
+                @Override
+                public List<SystemEvent> getResultList() {
+                    return systemEvents;
                 }
-            }
+
+                @Override
+                public long getTotalNumberOfResults() {
+                    return totalCount;
+                }
+
+                @Override
+                public long getQueryResponseTime() {
+                    return 0; // Query response time not tracked for MongoDB
+                }
+            };
         }
 
-        // Filter by date range
-        if (filter.getEndTime() > 0) {
-            Date startDate = new Date(filter.getStartTime());
-            Date endDate = new Date(filter.getEndTime());
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startDate).lte(endDate));
+        // Otherwise use standard query
+        Query query = new Query();
+        if (matchCriteria != null) {
+            query.addCriteria(matchCriteria);
         }
-
-        // Apply all criteria
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
-        }
+        query.with(sort);
 
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoSystemEventRecordImpl.class);
-
-        // Apply sorting
-        if (sortColumn != null && !sortColumn.isEmpty()) {
-            Sort.Direction direction = "ASCENDING".equals(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            query.with(Sort.by(direction, sortColumn));
-        } else {
-            // Default sort by timestamp descending
-            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
-        }
 
         // Apply pagination
         if(limit > 0 && offset > -1) {
@@ -170,6 +192,56 @@ public class MongoSystemEventDao implements SystemEventSearchDao, EntityDao<Syst
                 return 0; // Query response time not tracked for MongoDB
             }
         };
+    }
+
+    /**
+     * Build match criteria for filtering.
+     */
+    private Criteria buildMatchCriteria(SystemEventSearchFilter filter) {
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        // Always add type filter
+        criteriaList.add(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
+
+        // Filter by actor (wildcard search using regex)
+        if (filter.getActor() != null && !filter.getActor().isEmpty()) {
+            String regex = ".*" + escapeRegex(filter.getActor()) + ".*";
+            criteriaList.add(Criteria.where(EntityFields.ACTOR).regex(regex, "i"));
+        }
+
+        // Filter by subject (wildcard search using regex)
+        if (filter.getSubject() != null && !filter.getSubject().isEmpty()) {
+            String regex = ".*" + escapeRegex(filter.getSubject()) + ".*";
+            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_SUBJECT).regex(regex, "i"));
+        }
+
+        // Filter by action (wildcard search using regex)
+        if (filter.getAction() != null && !filter.getAction().isEmpty()) {
+            String regex = ".*" + escapeRegex(filter.getAction()) + ".*";
+            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_ACTION).regex(regex, "i"));
+        }
+
+        // Filter by date range
+        if (filter.getEndTime() > 0) {
+            Date startDate = new Date(filter.getStartTime());
+            Date endDate = new Date(filter.getEndTime());
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startDate).lte(endDate));
+        }
+
+        if (criteriaList.isEmpty()) {
+            return null;
+        } else if (criteriaList.size() == 1) {
+            return criteriaList.get(0);
+        } else {
+            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        }
+    }
+
+    /**
+     * Escape special regex characters in a string.
+     */
+    private String escapeRegex(String input) {
+        return input.replaceAll("([\\\\\\[\\](){}.*+?^$|])", "\\\\$1");
     }
 
     @Override

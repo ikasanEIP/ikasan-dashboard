@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * MongoDB DAO Test for SystemEvent operations.
- * This test class contains comprehensive tests for MongoSystemEventDao.
+ * This test class contains comprehensive tests for MongoSystemEventDaoImpl.
  *
  * Test coverage includes:
  * - Basic CRUD operations (create, save, update, findById)
@@ -38,7 +38,7 @@ import java.util.List;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoPersistenceAutoConfiguration.class})
-public class MongoSystemEventDaoTest {
+public class MongoSystemEventDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
@@ -55,11 +55,11 @@ public class MongoSystemEventDaoTest {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private MongoSystemEventDao dao;
+    private MongoSystemEventDaoImpl dao;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
     @After

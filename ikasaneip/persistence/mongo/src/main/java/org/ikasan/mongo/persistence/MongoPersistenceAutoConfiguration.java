@@ -68,12 +68,13 @@ import org.ikasan.mongo.persistence.scheduled.job.repository.MongoQuartzSchedule
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoSchedulerJobRepository;
 import org.ikasan.mongo.persistence.security.dao.*;
 import org.ikasan.mongo.persistence.security.repository.*;
-import org.ikasan.mongo.persistence.systemevent.dao.MongoSystemEventDao;
+import org.ikasan.mongo.persistence.systemevent.dao.MongoSystemEventDaoImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
 import org.ikasan.mongo.persistence.wiretap.dao.MongoWiretapDao;
 import org.ikasan.mongo.persistence.wiretap.repository.MongoWiretapEventRepository;
 import org.ikasan.mongo.persistence.scheduled.event.dao.MongoScheduledProcessEventDao;
 import org.ikasan.mongo.persistence.scheduled.event.repository.MongoScheduledProcessEventRepository;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.general.dao.MongoGeneralDaoImpl;
 import org.ikasan.mongo.persistence.general.repository.MongoIkasanDocumentRepository;
 import org.ikasan.mongo.persistence.general.service.MongoGeneralServiceImpl;
@@ -145,34 +146,60 @@ public class MongoPersistenceAutoConfiguration {
     @Value("${scheduler.instance.entity.retention.days:90}")
     private int schedulerInstanceEntityRetentionDays;
 
+    /**
+     * Configuration flag to toggle between Atlas Search and regex-based search.
+     * <p>
+     * When set to {@code true} (default), the system will attempt to use MongoDB Atlas
+     * Lucene-based $search for full-text queries. If Atlas Search is not available
+     * (e.g., non-Atlas MongoDB deployment), it will automatically fall back to regex.
+     * <p>
+     * When set to {@code false}, the system will always use regex-based search,
+     * which is useful for:
+     * <ul>
+     *   <li>Non-Atlas MongoDB deployments (standalone, replica set, or on-premises)</li>
+     *   <li>Development environments without Atlas Search indexes configured</li>
+     *   <li>Scenarios where regex performance is acceptable and Atlas is not required</li>
+     * </ul>
+     */
+    @Value("${mongodb.atlas.search.enabled:true}")
+    private boolean atlasSearchEnabled;
+
+    /**
+     * The name of the Atlas Search index to use for full-text queries.
+     * This index must be configured in MongoDB Atlas for Atlas Search to work.
+     * Default value is "default".
+     */
+    @Value("${mongodb.atlas.search.index-name:default}")
+    private String atlasSearchIndexName;
+
     @Bean
     public MongoClient mongoClient(
-            @Value("${spring.data.mongodb.uri}") String connectionString,
-            @Value("${spring.data.mongodb.username:#{null}}") String username,
-            @Value("${spring.data.mongodb.password:#{null}}") String password,
-            @Value("${spring.data.mongodb.authentication-database:admin}") String authenticationDatabase,
-            @Value("${spring.data.mongodb.auth-mechanism:#{null}}") String authMechanism,
-            @Value("${spring.data.mongodb.ssl.enabled:false}") boolean sslEnabled,
-            @Value("${spring.data.mongodb.ssl.invalid-hostname-allowed:false}") boolean invalidHostnameAllowed,
-            @Value("${spring.data.mongodb.connection.pool.min-size:10}") int minConnectionPoolSize,
-            @Value("${spring.data.mongodb.connection.pool.max-size:100}") int maxConnectionPoolSize,
-            @Value("${spring.data.mongodb.connection.pool.max-wait-time-ms:120000}") long maxWaitTimeMs,
-            @Value("${spring.data.mongodb.connection.pool.max-connection-life-time-ms:0}") long maxConnectionLifeTimeMs,
-            @Value("${spring.data.mongodb.connection.pool.max-connection-idle-time-ms:0}") long maxConnectionIdleTimeMs,
-            @Value("${spring.data.mongodb.connection.pool.maintenance-initial-delay-ms:0}") long maintenanceInitialDelayMs,
-            @Value("${spring.data.mongodb.connection.pool.maintenance-frequency-ms:60000}") long maintenanceFrequencyMs,
-            @Value("${spring.data.mongodb.socket.connect-timeout-ms:10000}") int connectTimeoutMs,
-            @Value("${spring.data.mongodb.socket.read-timeout-ms:0}") int readTimeoutMs,
-            @Value("${spring.data.mongodb.socket.receive-buffer-size:0}") int receiveBufferSize,
-            @Value("${spring.data.mongodb.socket.send-buffer-size:0}") int sendBufferSize,
-            @Value("${spring.data.mongodb.server.heartbeat-frequency-ms:10000}") long serverHeartbeatFrequencyMs,
-            @Value("${spring.data.mongodb.server.min-heartbeat-frequency-ms:500}") long minHeartbeatFrequencyMs,
-            @Value("${spring.data.mongodb.server.selection-timeout-ms:30000}") long serverSelectionTimeoutMs,
-            @Value("${spring.data.mongodb.cluster.local-threshold-ms:15}") long localThresholdMs,
-            @Value("${spring.data.mongodb.retry.writes:true}") boolean retryWrites,
-            @Value("${spring.data.mongodb.retry.reads:true}") boolean retryReads,
-            @Value("${spring.data.mongodb.compression.enabled:false}") boolean compressionEnabled,
-            @Value("${spring.data.mongodb.compression.compressors:snappy,zlib,zstd}") String compressors) {
+            @Value("${mongodb.uri}") String connectionString,
+            @Value("${mongodb.username:#{null}}") String username,
+            @Value("${mongodb.password:#{null}}") String password,
+            @Value("${mongodb.authentication-database:admin}") String authenticationDatabase,
+            @Value("${mongodb.auth-mechanism:#{null}}") String authMechanism,
+            @Value("${mongodb.ssl.enabled:false}") boolean sslEnabled,
+            @Value("${mongodb.ssl.invalid-hostname-allowed:false}") boolean invalidHostnameAllowed,
+            @Value("${mongodb.connection.pool.min-size:10}") int minConnectionPoolSize,
+            @Value("${mongodb.connection.pool.max-size:100}") int maxConnectionPoolSize,
+            @Value("${mongodb.connection.pool.max-wait-time-ms:120000}") long maxWaitTimeMs,
+            @Value("${mongodb.connection.pool.max-connection-life-time-ms:0}") long maxConnectionLifeTimeMs,
+            @Value("${mongodb.connection.pool.max-connection-idle-time-ms:0}") long maxConnectionIdleTimeMs,
+            @Value("${mongodb.connection.pool.maintenance-initial-delay-ms:0}") long maintenanceInitialDelayMs,
+            @Value("${mongodb.connection.pool.maintenance-frequency-ms:60000}") long maintenanceFrequencyMs,
+            @Value("${mongodb.socket.connect-timeout-ms:10000}") int connectTimeoutMs,
+            @Value("${mongodb.socket.read-timeout-ms:0}") int readTimeoutMs,
+            @Value("${mongodb.socket.receive-buffer-size:0}") int receiveBufferSize,
+            @Value("${mongodb.socket.send-buffer-size:0}") int sendBufferSize,
+            @Value("${mongodb.server.heartbeat-frequency-ms:10000}") long serverHeartbeatFrequencyMs,
+            @Value("${mongodb.server.min-heartbeat-frequency-ms:500}") long minHeartbeatFrequencyMs,
+            @Value("${mongodb.server.selection-timeout-ms:30000}") long serverSelectionTimeoutMs,
+            @Value("${mongodb.cluster.local-threshold-ms:15}") long localThresholdMs,
+            @Value("${mongodb.retry.writes:true}") boolean retryWrites,
+            @Value("${mongodb.retry.reads:true}") boolean retryReads,
+            @Value("${mongodb.compression.enabled:false}") boolean compressionEnabled,
+            @Value("${mongodb.compression.compressors:snappy,zlib,zstd}") String compressors) {
 
         MongoClientSettings.Builder settingsBuilder = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(connectionString));
@@ -268,8 +295,25 @@ public class MongoPersistenceAutoConfiguration {
 
     @Bean("mongoTemplate")
     public MongoTemplate mongoTemplate(MongoClient mongoClient,
-                                        @Value("${spring.data.mongodb.database:test}") String databaseName) {
+                                        @Value("${mongodb.database:test}") String databaseName) {
         return new MongoTemplate(mongoClient, databaseName);
+    }
+
+    /**
+     * Creates an AtlasSearchQueryHelper bean for executing full-text search queries.
+     * <p>
+     * The behavior is controlled by the following configuration properties:
+     * <ul>
+     *   <li>{@code mongodb.atlas.search.enabled} - Enable/disable Atlas Search (default: true)</li>
+     *   <li>{@code mongodb.atlas.search.index-name} - Atlas Search index name (default: "default")</li>
+     * </ul>
+     *
+     * @param mongoTemplate the MongoTemplate to use for queries
+     * @return the configured AtlasSearchQueryHelper
+     */
+    @Bean("atlasSearchQueryHelper")
+    public AtlasSearchQueryHelper atlasSearchQueryHelper(MongoTemplate mongoTemplate) {
+        return new AtlasSearchQueryHelper(mongoTemplate, atlasSearchIndexName, atlasSearchEnabled);
     }
 
     @Bean("scheduledContextDao")
@@ -432,22 +476,27 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("errorReportingServiceEntityDao")
     public MongoErrorReportingServiceDaoImpl errorReportingServiceDao(
             MongoErrorOccurrenceRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate, this.entityRetentionDays,
+            atlasSearchQueryHelper);
     }
 
     @Bean("exclusionEventEntityDao")
     public MongoExclusionEventDaoImpl exclusionEventDao(
             MongoExclusionEventRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoExclusionEventDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoExclusionEventDaoImpl(repository, mongoTemplate, this.entityRetentionDays,
+            atlasSearchQueryHelper);
     }
 
     @Bean("hospitalEntityDao")
     public MongoHospitalDaoImpl hospitalDao(
             MongoExclusionEventActionRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoHospitalDaoImpl(repository, mongoTemplate, this.entityRetentionDays);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoHospitalDaoImpl(repository, mongoTemplate, this.entityRetentionDays, atlasSearchQueryHelper);
     }
 
     @Bean("metricsDao")
@@ -461,8 +510,9 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("replayEntityDao")
     public MongoReplayDaoImpl replayDao(
             MongoReplayEventRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoReplayDaoImpl(repository, mongoTemplate);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoReplayDaoImpl(repository, mongoTemplate, atlasSearchQueryHelper);
     }
 
     @Bean("replayAuditEntityDao")
@@ -474,10 +524,11 @@ public class MongoPersistenceAutoConfiguration {
     }
 
     @Bean("systemEventEntityDao")
-    public MongoSystemEventDao systemEventDao(
+    public MongoSystemEventDaoImpl systemEventDao(
             MongoSystemEventRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoSystemEventDao(repository, mongoTemplate, this.entityRetentionDays);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoSystemEventDaoImpl(repository, mongoTemplate, this.entityRetentionDays, atlasSearchQueryHelper);
     }
 
     @Bean("wiretapEntityDao")
