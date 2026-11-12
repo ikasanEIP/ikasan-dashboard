@@ -27,13 +27,13 @@ public class MongoPolicyRecord {
     private List<String> relatedRoleIdentifiers;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     /**
      * Retrieves the unique identifier.

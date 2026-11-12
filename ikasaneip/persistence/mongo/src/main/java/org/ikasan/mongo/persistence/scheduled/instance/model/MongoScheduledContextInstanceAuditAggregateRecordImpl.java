@@ -46,20 +46,20 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
     private String raisedEvents;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.STATUS)
     private String status;
 
     @Field(EntityFields.IS_REPEATING_JOB)
-    private boolean isRepeatingJob;
+    private Boolean isRepeatingJob = false;
 
     @Field(EntityFields.JOB_TYPE)
     private String jobType;
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     @Override
     public String getId() {

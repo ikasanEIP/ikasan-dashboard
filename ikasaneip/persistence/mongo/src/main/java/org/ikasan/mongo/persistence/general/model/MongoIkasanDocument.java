@@ -34,10 +34,10 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     private String componentName;
 
     @Field(name = EntityFields.CREATED_DATE_TIME, targetType = FieldType.INT64)
-    private long timeStamp;
+    private Long timeStamp = 0L;
 
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     @Field(EntityFields.EVENT)
     private String event;
@@ -62,7 +62,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Indexed
     @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
-    private long harvestReceivedTimestamp;
+    private Long harvestReceivedTimestamp = 0L;
 
     @Override
     public String getId() {

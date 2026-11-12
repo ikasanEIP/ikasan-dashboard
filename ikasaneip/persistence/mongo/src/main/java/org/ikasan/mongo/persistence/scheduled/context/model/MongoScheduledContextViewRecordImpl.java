@@ -33,17 +33,17 @@ public class MongoScheduledContextViewRecordImpl implements ScheduledContextView
     private String contextView;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     @Override
     public String getId() {

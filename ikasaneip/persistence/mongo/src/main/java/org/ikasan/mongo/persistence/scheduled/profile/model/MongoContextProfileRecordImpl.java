@@ -44,10 +44,10 @@ public class MongoContextProfileRecordImpl implements ContextProfileRecord {
     private String accessUsers;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long createdDateTime;
+    private Long createdDateTime = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedDateTime;
+    private Long modifiedDateTime = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
@@ -58,7 +58,7 @@ public class MongoContextProfileRecordImpl implements ContextProfileRecord {
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     public String getId() {
         return id;

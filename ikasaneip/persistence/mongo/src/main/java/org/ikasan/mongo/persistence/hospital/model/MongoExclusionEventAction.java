@@ -49,12 +49,12 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String> {
 
     @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     private String comment;
 
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     /**
      * Default constructor

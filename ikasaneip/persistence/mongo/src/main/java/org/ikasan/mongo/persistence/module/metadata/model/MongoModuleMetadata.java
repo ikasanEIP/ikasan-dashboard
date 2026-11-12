@@ -25,7 +25,7 @@ public class MongoModuleMetadata {
     private String moduleMetadataJson;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long createdTimestamp;
+    private Long createdTimestamp = 0L;
 
     /**
      * Default constructor for MongoDB
