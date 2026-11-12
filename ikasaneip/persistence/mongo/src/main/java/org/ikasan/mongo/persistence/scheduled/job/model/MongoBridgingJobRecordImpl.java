@@ -42,10 +42,10 @@ public class MongoBridgingJobRecordImpl implements BridgingJobRecord {
     private String bridgingJob;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp = -1;
+    private Long timestamp = -1L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
@@ -56,7 +56,7 @@ public class MongoBridgingJobRecordImpl implements BridgingJobRecord {
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
 
     @Override

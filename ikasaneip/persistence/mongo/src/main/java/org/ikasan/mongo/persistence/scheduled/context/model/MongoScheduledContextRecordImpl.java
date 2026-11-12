@@ -42,24 +42,24 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     private String context;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Indexed
     @Field(EntityFields.DISABLED)
-    private boolean disabled = false;
+    private Boolean disabled = false;
 
     @Field(EntityFields.QUARTZ_SCHEDULED_JOBS_DISABLED)
-    private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
+    private Boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     private transient ContextTemplate contextTemplate;
 

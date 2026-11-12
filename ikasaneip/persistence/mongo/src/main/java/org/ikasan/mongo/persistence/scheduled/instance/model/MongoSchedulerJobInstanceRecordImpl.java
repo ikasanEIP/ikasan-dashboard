@@ -60,22 +60,22 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
     private String status;
 
     @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
-    private boolean targetResidingContextOnly;
+    private Boolean targetResidingContextOnly = false;
 
     @Field(EntityFields.PARTICIPATES_IN_LOCK)
-    boolean participatesInLock;
+    Boolean participatesInLock = false;
 
     @Field(EntityFields.START_TIME)
-    private long startTime;
+    private Long startTime = 0L;
 
     @Field(EntityFields.END_TIME)
-    private long endTime;
+    private Long endTime = 0L;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
@@ -85,7 +85,7 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     /**
      * Default constructor for MongoDB

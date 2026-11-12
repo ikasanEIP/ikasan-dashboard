@@ -38,10 +38,10 @@ public class MongoFlowInvocationMetric {
 
     @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     public String getId() {
         return id;

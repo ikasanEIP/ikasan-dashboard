@@ -42,32 +42,32 @@ public class MongoSchedulerJobRecordImpl implements SchedulerJobRecord {
     private String job;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Field(EntityFields.HELD)
-    private boolean held;
+    private Boolean held = false;
 
     @Field(EntityFields.SKIPPED)
-    private boolean skipped;
+    private Boolean skipped = false;
 
     @Field(EntityFields.DISABLED)
-    private boolean disabled;
+    private Boolean disabled = false;
 
     @Field(EntityFields.TARGET_RESIDING_CONTEXT_ONLY)
-    private boolean targetResidingContextOnly;
+    private Boolean targetResidingContextOnly = false;
 
     @Field(EntityFields.PARTICIPATES_IN_LOCK)
-    private boolean participatesInLock;
+    private Boolean participatesInLock = false;
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     @Override
     public String getId() {

@@ -43,26 +43,26 @@ public class MongoScheduledContextInstanceRecordImpl implements ScheduledContext
     private String status;
 
     @Field(EntityFields.CREATED_DATE_TIME)
-    private long timestamp;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.UPDATED_DATE_TIME)
-    private long modifiedTimestamp;
+    private Long modifiedTimestamp = 0L;
 
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
     @Field(EntityFields.START_TIME)
-    private long startTime;
+    private Long startTime = 0L;
 
     @Field(EntityFields.END_TIME)
-    private long endTime;
+    private Long endTime = 0L;
 
     @Field(EntityFields.CONTAINS_REPEATING_JOBS)
-    private boolean containsRepeatingJobs = false;
+    private Boolean containsRepeatingJobs = false;
 
     @Indexed
     @Field(EntityFields.EXPIRY)
-    private long expiry;
+    private Long expiry = 0L;
 
     @Override
     public String getId() {
