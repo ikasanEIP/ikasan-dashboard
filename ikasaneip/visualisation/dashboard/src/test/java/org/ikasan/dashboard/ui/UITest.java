@@ -113,7 +113,7 @@ public abstract class UITest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("solr.url", () -> "http://" + solr.getHost() + ":" + solr.getSolrPort() + "/solr");
     }
 
