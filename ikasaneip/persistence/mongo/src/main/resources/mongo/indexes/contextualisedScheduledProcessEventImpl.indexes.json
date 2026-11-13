@@ -1,0 +1,17 @@
+{
+  "createIndexes": "contextualisedScheduledProcessEventImpl",
+  "indexes": [
+    {
+      "name": "fireTime_-1",
+      "key": { "fireTime": -1 }
+    },
+    {
+      "name": "agentName_1_fireTime_-1",
+      "key": { "agentName": 1, "fireTime": -1 }
+    },
+    {
+      "name": "agentName_1_jobGroup_1_jobName_1_fireTime_-1",
+      "key": { "agentName": 1, "jobGroup": 1, "jobName": 1, "fireTime": -1 }
+    }
+  ]
+}
