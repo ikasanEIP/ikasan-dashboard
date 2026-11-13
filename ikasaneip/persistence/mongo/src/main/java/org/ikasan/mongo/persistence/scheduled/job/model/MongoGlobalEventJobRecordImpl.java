@@ -8,7 +8,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -53,11 +52,9 @@ public class MongoGlobalEventJobRecordImpl implements GlobalEventJobRecord {
     @Field(EntityFields.SKIPPED)
     private Boolean skipped = false;
 
-    @Indexed
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

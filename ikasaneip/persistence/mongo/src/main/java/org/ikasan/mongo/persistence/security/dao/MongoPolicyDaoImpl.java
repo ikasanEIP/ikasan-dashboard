@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.security.model.MongoPolicyImpl;
 import org.ikasan.mongo.persistence.security.model.MongoPolicyRecord;
 import org.ikasan.mongo.persistence.security.repository.MongoPolicyRepository;
@@ -219,7 +220,7 @@ public class MongoPolicyDaoImpl implements PolicyDao {
     @Override
     public List<Policy> getPolicyByNameLike(String name) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(NAME).regex(name, "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(NAME, name));
         query.addCriteria(Criteria.where(TYPE).is(POLICY_TYPE));
 
         return mongoTemplate.find(query, MongoPolicyRecord.class).stream()

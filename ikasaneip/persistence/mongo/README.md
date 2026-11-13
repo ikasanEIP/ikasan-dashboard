@@ -98,218 +98,160 @@ All documents are stored in a single collection named `ikasan` with a `type` fie
 |----------|---------|-------------|
 | `mongo.metrics.query.limit` | `1000` | Maximum number of metrics records to return per query |
 
-## Required Indexes
+## Indexes
 
-All documents are stored in the `ikasan` collection. The following indexes should be created for optimal performance.
+All index definitions are shipped as JSON in
+[`src/main/resources/mongo/indexes`](src/main/resources/mongo/indexes) and applied with one script.
 
-### Standard Indexes
+| File | Collection | Kind |
+|------|------------|------|
+| `ikasan.indexes.json` | `ikasan` (every dashboard entity) | standard (B-tree) indexes, as a `createIndexes` command |
+| `contextualisedScheduledProcessEventImpl.indexes.json` | `contextualisedScheduledProcessEventImpl` (scheduled process events) | standard (B-tree) indexes, as a `createIndexes` command |
+| `ikasan.search.json` | `ikasan` | Atlas Search index definition |
+| `contextualisedScheduledProcessEventImpl.search.json` | `contextualisedScheduledProcessEventImpl` | Atlas Search index definition |
+| `apply-indexes.js` | | mongosh script that applies all of the above |
 
-These indexes are automatically created by Spring Data MongoDB based on `@Indexed` annotations:
+The files are also packaged in the module jar under `mongo/indexes/`.
 
-```javascript
-// Error Occurrences
-db.ikasan.createIndex({ "errorUri": 1 })
-db.ikasan.createIndex({ "moduleName": 1 })
-db.ikasan.createIndex({ "flowName": 1 })
-db.ikasan.createIndex({ "componentName": 1 })
-db.ikasan.createIndex({ "event": 1 })
-db.ikasan.createIndex({ "expiry": 1 })
-db.ikasan.createIndex({ "createdDateTime": 1 })
-db.ikasan.createIndex({ "harvestReceivedTimestamp": 1 })
+> **Indexes are not created automatically.** The entity classes carry no `@Indexed` annotations: all entities share
+> the `ikasan` collection and reuse the same stored field names, so per-entity annotations cannot describe the right
+> indexes (an earlier `@Indexed(unique = true)` on the scheduled context name would have become a unique index on
+> `moduleName` across every document type). Create the indexes from the shipped files, and leave Spring Data's
+> `auto-index-creation` off.
 
-// Wiretap Events
-db.ikasan.createIndex({ "eventId": 1 })
-db.ikasan.createIndex({ "payloadId": 1 })
+### Applying the indexes
 
-// System Events
-db.ikasan.createIndex({ "actor": 1 })
-db.ikasan.createIndex({ "subject": 1 })
-db.ikasan.createIndex({ "action": 1 })
+```bash
+cd src/main/resources/mongo/indexes      # or extract mongo/indexes/ from the jar
 
-// Exclusion Events
-db.ikasan.createIndex({ "errorUri": 1 })
+# MongoDB Atlas (standard + Atlas Search indexes)
+mongosh "mongodb+srv://<user>@<cluster>/<database>" --file apply-indexes.js
 
-// Hospital (Exclusion Event Actions)
-db.ikasan.createIndex({ "actionedBy": 1 })
-
-// Replay Events
-db.ikasan.createIndex({ "eventId": 1 })
-db.ikasan.createIndex({ "eventAsString": 1 })
-
-// Security - Users
-db.ikasan.createIndex({ "username": 1 })
-db.ikasan.createIndex({ "email": 1 })
-
-// Scheduled Context
-db.ikasan.createIndex({ "contextName": 1 }, { unique: true })
-db.ikasan.createIndex({ "contextDescription": 1 })
-db.ikasan.createIndex({ "disabled": 1 })
-
-// Scheduler Jobs (all types)
-db.ikasan.createIndex({ "contextName": 1 })
-db.ikasan.createIndex({ "jobName": 1 })
-
-// Scheduler Job Instances
-db.ikasan.createIndex({ "contextInstanceId": 1 })
-
-// Job Lock Cache
-db.ikasan.createIndex({ "lockName": 1 })
-db.ikasan.createIndex({ "contextName": 1 })
-
-// Notifications
-db.ikasan.createIndex({ "notificationName": 1 })
-
-// Business Streams
-db.ikasan.createIndex({ "name": 1 })
-db.ikasan.createIndex({ "moduleName": 1 })
-
-// Module Metadata
-db.ikasan.createIndex({ "name": 1 })
-
-// Metrics
-db.ikasan.createIndex({ "harvestTime": 1 })
-
-// Context Profiles
-db.ikasan.createIndex({ "contextName": 1 })
-db.ikasan.createIndex({ "profileName": 1 })
+# Self-managed MongoDB (standard indexes only)
+ATLAS_SEARCH=false mongosh "mongodb://<host>:27017/<database>" --file apply-indexes.js
 ```
 
-### Compound Indexes (Recommended)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `INDEX_DIR` | the script's directory | Directory holding the index JSON files |
+| `ATLAS_SEARCH` | `true` | Set to `false` to skip the Atlas Search indexes |
+| `SEARCH_INDEX` | `default` | Atlas Search index name; must match `mongodb.atlas.search.index-name` |
 
-For better query performance, create these compound indexes:
+The script is idempotent and safe to re-run after an upgrade:
+- **New standard indexes** are created, and existing identical ones are left alone. Index builds on a populated
+  collection don't block reads or writes, but plan large builds outside peak hours.
+- **Atlas Search indexes** are updated in place if they already exist; Atlas rebuilds them in the background and keeps
+  serving the old version until the new one is ready.
+- If a standard index with the same name but different keys or options already exists, the script reports the
+  conflict and exits non-zero. Drop the old index (`db.ikasan.dropIndex("<name>")`) and re-run.
 
-```javascript
-// Common query pattern: filter by type and timestamp range
-db.ikasan.createIndex({ "type": 1, "createdDateTime": -1 })
+**Upgrading from the indexes previously listed in this README:** those used field names that do not exist in the
+stored documents (`createdDateTime`, `subject`, `username`, `contextName`, `jobName`, ...), so they were never used by
+any query. List the existing indexes with `db.ikasan.getIndexes()` and drop any index not in `ikasan.indexes.json`;
+unused indexes only slow down writes.
 
-// Error queries: module + flow + time
-db.ikasan.createIndex({ "type": 1, "moduleName": 1, "flowName": 1, "createdDateTime": -1 })
+### Standard indexes on `ikasan`
 
-// Wiretap queries
-db.ikasan.createIndex({ "type": 1, "moduleName": 1, "flowName": 1, "componentName": 1, "createdDateTime": -1 })
+Every DAO query filters on `type` first (all entities share the collection), so the compound indexes lead with
+`type`, followed by equality fields, then the sort field, then range fields (the MongoDB ESR rule). Field names are
+the *stored* names (see `org.ikasan.spec.entity.EntityFields`): `timestamp` is the created time, `moduleName` /
+`flowName` / `componentName` are reused by the scheduler entities for context, job and instance names.
 
-// System event queries
-db.ikasan.createIndex({ "type": 1, "actor": 1, "createdDateTime": -1 })
-db.ikasan.createIndex({ "type": 1, "subject": 1, "createdDateTime": -1 })
+| Index | Key | Queries served |
+|-------|-----|----------------|
+| `type_1_timestamp_-1` | `{type: 1, timestamp: -1}` | Lists by type within a time window, newest first: wiretaps, errors, exclusions, replays, system events, metrics, scheduled contexts |
+| `type_1_moduleName_1_timestamp_-1` | `{type: 1, moduleName: 1, timestamp: -1}` | One module or context, newest first: metrics by module, context instances / scheduled contexts / profiles by context name, scheduler jobs by agent |
+| `type_1_moduleName_1_flowName_1_timestamp_-1` | `{type: 1, moduleName: 1, flowName: 1, timestamp: -1}` | Module and flow filters with a time window: errors, exclusions, hospital, replays, wiretaps, metrics by module and flow; context views (parent + context) |
+| `type_1_componentName_1_flowName_1` | `{type: 1, componentName: 1, flowName: 1}` | Scheduler jobs, notifications and profiles by context; job instances by context-instance id (including the status aggregations); job by context and job name; job lists sorted by job name |
+| `type_1_flowName_1` | `{type: 1, flowName: 1}` | Context-instance audit aggregates by context-instance id; job-instance lookups by context name |
+| `type_1_status_1` | `{type: 1, status: 1}` | Context instances by status |
+| `type_1_name_1` | `{type: 1, name: 1}` | Users, principals, roles, policies and authentication methods by name, and their name-sorted lists |
+| `type_1_expiry_1` | `{type: 1, expiry: 1}` | Per-type housekeeping (`type = X and expiry < now`) |
+| `expiry_1` | `{expiry: 1}` | General housekeeping across all types (`MongoGeneralDaoImpl.removeExpired`) |
+| `type_1_harvestReceivedTimestamp_1` | `{type: 1, harvestReceivedTimestamp: 1}` | Searches by harvest-received time (`searchByHarvestReceivedTime`) |
+| `errorUri_1` (sparse) | `{errorUri: 1}` | Error / exclusion / hospital lookups and deletes by error URI; the event-id search (`$or` over `event` / `errorUri`) |
+| `event_1` | `{event: 1}` | Wiretap / exclusion lookups by event id; the event-id search |
 
-// Scheduler job queries
-db.ikasan.createIndex({ "type": 1, "contextName": 1, "jobName": 1 })
+Notes:
+- Case-insensitive substring filters (`contains`, e.g. actor or job-name filters) cannot use a B-tree index.
+  On Atlas they are answered by the search index; on self-managed MongoDB they are evaluated on the documents
+  already narrowed by the indexes above.
+- **No TTL index.** `expiry` is stored as epoch milliseconds (a number), and MongoDB TTL indexes only act on BSON
+  dates, so a TTL index on `expiry` would never delete anything. Expired documents are removed by the dashboard
+  housekeeping jobs, using `type_1_expiry_1` / `expiry_1`.
+- Security collections (users, roles, ...) are small; their array membership queries (`rolesRelatedEntity`,
+  `principalRelatedEntity`, ...) are served by the `type` prefix of the indexes above and need no dedicated index.
 
-// Scheduler instance queries
-db.ikasan.createIndex({ "type": 1, "contextInstanceId": 1, "createdDateTime": -1 })
+### Standard indexes on `contextualisedScheduledProcessEventImpl`
 
-// Housekeeping: expiry-based TTL queries
-db.ikasan.createIndex({ "type": 1, "expiry": 1 })
-```
+Scheduled process events are stored in their own collection (Spring's default name for
+`ContextualisedScheduledProcessEventImpl`).
 
-### TTL Index (Optional)
+| Index | Key | Queries served |
+|-------|-----|----------------|
+| `fireTime_-1` | `{fireTime: -1}` | Time-window lists sorted by fire time; housekeeping (`fireTime < threshold`) |
+| `agentName_1_fireTime_-1` | `{agentName: 1, fireTime: -1}` | Events for the accessible agents in a time window, sorted by fire time |
+| `agentName_1_jobGroup_1_jobName_1_fireTime_-1` | `{agentName: 1, jobGroup: 1, jobName: 1, fireTime: -1}` | Events for one agent / job group / job in a time window |
 
-If you want MongoDB to automatically delete expired documents:
+### Verifying the indexes
 
-```javascript
-// Automatically delete documents after expiry timestamp
-db.ikasan.createIndex(
-  { "expiry": 1 },
-  { expireAfterSeconds: 0 }
-)
-```
+`MongoIndexDefinitionsTest` applies the files with `apply-indexes.js` (twice, to check it is idempotent) to a MongoDB
+7.0 container, then `explain`s the query shape of every DAO query above. It asserts that each one uses the intended
+index, never scans the collection and, where the DAO sorts, never sorts in memory. When you add a query or change
+a filter, add its shape to that test.
 
-**Note:** Only use this if all document types use the `expiry` field consistently. The Ikasan housekeeping service handles deletion programmatically, so this index is optional.
+`AtlasSearchDaoAtlasTest` builds its indexes (including both Atlas Search indexes) with the same script on Atlas Local.
+
+To check a live deployment, run `db.ikasan.aggregate([{ $indexStats: {} }])` to see how often each index is used, and
+`db.ikasan.find(<filter>).sort(<sort>).explain()` for individual queries (look for `IXSCAN` and no `COLLSCAN` /
+`SORT` stage).
 
 ## Atlas Search Index
 
-If using MongoDB Atlas with Atlas Search enabled (`mongodb.atlas.search.enabled=true`), create the following search index:
+If using MongoDB Atlas with Atlas Search enabled (`mongodb.atlas.search.enabled=true`), each searched collection needs a
+search index named `default` (or the name in `mongodb.atlas.search.index-name`). `apply-indexes.js` creates them
+(see [Applying the indexes](#applying-the-indexes)) from:
 
-### Search Index Definition
+- [`ikasan.search.json`](src/main/resources/mongo/indexes/ikasan.search.json): the `ikasan` collection
+- [`contextualisedScheduledProcessEventImpl.search.json`](src/main/resources/mongo/indexes/contextualisedScheduledProcessEventImpl.search.json):
+  scheduled process events (`agentName`, `jobName`, `jobGroup`, `commandLine`, `outcome`, `resultOutput`,
+  `resultError`, `fireTime`, `successful`)
 
-Create a search index named `default` (or the name specified in `mongodb.atlas.search.index-name`):
+The DAOs push **all** filtering, sorting and counting into the `$search` stage (see
+[Atlas Search Query Helper](#atlas-search-query-helper)), so every field a DAO filters or sorts on must be in the index
+with the right type. The definition provides:
 
-```json
-{
-  "name": "default",
-  "definition": {
-    "mappings": {
-      "dynamic": false,
-      "fields": {
-        "errorDetail": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "errorMessage": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "errorUri": {
-          "type": "string",
-          "analyzer": "lucene.keyword"
-        },
-        "event": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "payloadContent": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "actor": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "subject": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "action": {
-          "type": "string",
-          "analyzer": "lucene.standard"
-        },
-        "moduleName": {
-          "type": "string",
-          "analyzer": "lucene.keyword"
-        },
-        "flowName": {
-          "type": "string",
-          "analyzer": "lucene.keyword"
-        },
-        "componentName": {
-          "type": "string",
-          "analyzer": "lucene.keyword"
-        },
-        "type": {
-          "type": "string",
-          "analyzer": "lucene.keyword"
-        },
-        "createdDateTime": {
-          "type": "number"
-        },
-        "expiry": {
-          "type": "number"
-        }
-      }
-    }
-  }
-}
-```
+| Field kind | Index type | Used for |
+|------------|------------|----------|
+| Discriminators and names (`type`, `moduleName`, `flowName`, `componentName`, `status`, `actor`, `errorUri`, ...) | `token` | `equals` / `in` filters and in-index `sort` |
+| The same name fields | `string` with the `lowercaseKeyword` analyzer | case-insensitive substring (`*term*`) matching |
+| Free text (`payload`, `errorDetail`, `errorMessage`, `event`, ...) | `string` with `lucene.standard` | full-text / per-token wildcard search |
+| Timestamps (`timestamp`, `startTime`, `endTime`, `expiry`, ...) | `number` (and `date` for `timestamp`, which system events store as a BSON date) | `range` filters and `sort` |
+| Flags (`disabled`, `participatesInLock`, ...) | `boolean` | `equals` filters |
 
-### Creating the Search Index via Atlas UI
+**Upgrading from the previous index definition:** the earlier README definition used field names that do not exist in
+the stored documents (`createdDateTime`, `payloadContent`, `subject`, `action`) and indexed name fields only as
+`string`. `equals`/`in` filters and sorting require `token` fields, so the index **must be replaced** with the shipped
+definition; with the old one, searches that use them fail.
 
-1. Navigate to your MongoDB Atlas cluster
-2. Go to **Search** tab
-3. Click **Create Search Index**
-4. Select **JSON Editor**
-5. Select the `ikasan` collection
-6. Paste the index definition above
-7. Click **Create Search Index**
+If you add a new filter or sort field to a DAO, add it to the index definition and, for sort fields, to
+`AtlasSearchQueryHelper.DEFAULT_SORTABLE_FIELDS`. Sorting on a field that is not listed there is executed with a
+standard query instead of `$search`.
 
-### Creating the Search Index via Atlas CLI
+### Creating the Search Indexes manually
 
-```bash
-atlas clusters search indexes create \
-  --clusterName <cluster-name> \
-  --db <database-name> \
-  --collection ikasan \
-  --file search-index-definition.json
-```
+`apply-indexes.js` is the recommended way. Alternatively, for each `<collection>.search.json` file:
+
+- **Atlas UI:** *Search* tab → *Create Search Index* → *JSON Editor* → select the collection → paste the file
+  contents → *Create Search Index*.
+- **mongosh:** `db.<collection>.createSearchIndex("default", <file contents>)`, or `updateSearchIndex(...)` to replace
+  an existing one.
+- **Atlas CLI:** wrap the definition with `"name": "default"`, `"database": "<database>"` and
+  `"collectionName": "<collection>"`, then run
+  `atlas clusters search indexes create --clusterName <cluster> --file <wrapped-file>.json`.
+
+Search indexes build asynchronously. Until a new index is queryable, searches against it fail, so create the index
+before deploying a dashboard version that needs it.
 
 ## Document Types
 
@@ -420,7 +362,7 @@ For non-Atlas MongoDB deployments (standalone, replica set, or on-premises):
 
 1. Set `mongodb.atlas.search.enabled=false` to disable Atlas Search
 2. The module will automatically use regex-based search for full-text queries
-3. Ensure standard indexes are created for acceptable query performance
+3. Create the standard indexes with `ATLAS_SEARCH=false mongosh ... --file apply-indexes.js` (see [Applying the indexes](#applying-the-indexes))
 
 ```properties
 # Disable Atlas Search for on-premises MongoDB
@@ -431,68 +373,62 @@ Even with Atlas Search enabled, the module will automatically fall back to regex
 
 ## Atlas Search Query Helper
 
-The `AtlasSearchQueryHelper` class provides methods for executing Atlas Search queries with automatic fallback to regex-based search when Atlas Search is unavailable.
+`AtlasSearchQueryHelper` executes searches described by an `AtlasSearchFilter`. A single filter definition renders
+either as Atlas Search operators or as standard `Criteria` (for the regex fallback), so both paths share the same
+semantics.
 
-### Search Methods
-
-| Method | Description |
-|--------|-------------|
-| `searchWithWildcard()` | Searches across multiple fields using compound OR wildcard. Best for full-text search across multiple fields. |
-| `searchWithText()` | Searches using Atlas text search across multiple fields. |
-| `searchWithFieldSpecificWildcards()` | Searches with field-specific AND (must) wildcard clauses. Each field-value pair must match (AND logic). |
-
-### Field-Specific Search with AND Logic
-
-For scenarios requiring each filter to match its specific field (AND semantics), use `searchWithFieldSpecificWildcards()`:
+### Building a filter
 
 ```java
-// Build field-value pairs (all must match)
-List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = new ArrayList<>();
-fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("moduleName", "myModule"));
-fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("flowName", "myFlow"));
-fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("status", "COMPLETE"));
-
-// Execute search with AND logic
-AtlasSearchQueryHelper.SearchQueryResult<MyEntity> result =
-    atlasSearchQueryHelper.searchWithFieldSpecificWildcards(
-        fieldValuePairs,           // Field-specific filters (AND logic)
-        additionalCriteria,        // Optional additional match criteria
-        Sort.by(Sort.Direction.DESC, "createdDateTime"),
-        offset,
-        limit,
-        MyEntity.class
-    );
-
-List<MyEntity> results = result.getResults();
-long totalCount = result.getTotalCount();
+AtlasSearchFilter filter = AtlasSearchFilter.builder()
+    .equals(EntityFields.TYPE, "EXCLUSION")                          // exact match       -> equals
+    .in(EntityFields.MODULE_NAME, moduleNames)                       // any of            -> in
+    .rangeMillis(EntityFields.CREATED_DATE_TIME, from, until)        // inclusive range   -> range
+    .anyOf(AtlasSearchFilter.eq(EntityFields.EVENT, id),             // OR of clauses     -> compound.should
+           AtlasSearchFilter.eq(EntityFields.ERROR_URI, id))
+    .contains(EntityFields.STATUS, statusTerm)                       // LIKE '%term%' on one field
+    .containsAny(List.of("payload", "errorUri"), searchString)       // LIKE '%term%' on any field
+    .text(List.of("payload", "errorMessage"), searchString)          // analysed full-text match
+    .negateText(false)                                               // true -> exclude text matches
+    .build();
 ```
 
-### Multi-Field Text Search with OR Logic
+`null`/empty values are ignored, so optional filter fields need no guards. User input is escaped (wildcard
+metacharacters for Atlas, `Pattern.quote` for regex) and substring matches are case-insensitive.
 
-For full-text search across multiple fields (OR semantics), use `searchWithWildcard()`:
+### Executing a search
 
 ```java
-// Define fields to search
-List<String> searchFields = List.of("errorMessage", "errorDetail", "event");
-
-// Execute search - matches if search term found in ANY of the fields
-AtlasSearchQueryHelper.SearchQueryResult<MyEntity> result =
-    atlasSearchQueryHelper.searchWithWildcard(
-        "search term",             // Search string
-        searchFields,              // Fields to search (OR across all)
-        additionalCriteria,        // Optional additional match criteria
-        Sort.by(Sort.Direction.DESC, "createdDateTime"),
-        offset,
-        limit,
-        MyEntity.class
-    );
+AtlasSearchQueryHelper.SearchQueryResult<MyEntity> result = atlasSearchQueryHelper.search(
+    filter,
+    Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME),
+    offset, limit,
+    true,              // include total count (-1 is returned when false)
+    MyEntity.class);
 ```
+
+When the filter contains search terms and Atlas Search is available, this runs **one** aggregation:
+
+```
+{ $search: { index: "default",
+             compound: { must:   [ <search terms> ],
+                         filter: [ <type/module/flow/time/... restrictions> ] },
+             sort:  { timestamp: -1 },
+             count: { type: "total" } } }
+{ $skip: offset } { $limit: limit }
+{ $set: { _searchMeta: "$$SEARCH_META" } }
+```
+
+There is no `$match`, `$sort` or separate `$count` after `$search`. Filters are resolved in the Lucene index, so mongod
+only fetches the documents of the requested page, and the total comes from the index. If the page is empty because the
+offset is past the end, the total is read with `$searchMeta`, which only touches the index.
+
+Filters without search terms run as a standard indexed query, because a plain B-tree lookup is cheaper than
+`$search`.
 
 ### Automatic Fallback
 
-Both methods automatically fall back to regex-based search when:
+The helper uses a standard query (regexes for the text clauses) when:
 - Atlas Search is disabled via configuration (`mongodb.atlas.search.enabled=false`)
-- Atlas Search is unavailable (e.g., connecting to non-Atlas MongoDB)
-- Atlas Search index does not exist
-
-The fallback uses equivalent regex patterns to maintain the same search semantics.
+- Atlas Search is unavailable (e.g. connecting to non-Atlas MongoDB); this is detected once and remembered
+- the requested sort field is not sortable in the search index (see `DEFAULT_SORTABLE_FIELDS`)

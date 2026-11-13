@@ -4,7 +4,6 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.systemevent.SystemEventRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -26,30 +25,24 @@ public class MongoSystemEventRecordImpl implements SystemEventRecord {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Indexed
     @Field(EntityFields.ACTOR)
     private String actor;
 
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String payload;
 
-    @Indexed
     @Field(EntityFields.SYSTEM_EVENT_ACTION)
     private String action;
 
-    @Indexed
     @Field(EntityFields.SYSTEM_EVENT_SUBJECT)
     private String subject;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Date timestamp;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Date expiry;
 

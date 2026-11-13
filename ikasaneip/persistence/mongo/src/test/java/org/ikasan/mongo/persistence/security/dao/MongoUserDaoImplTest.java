@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
 import org.ikasan.mongo.persistence.security.repository.MongoIkasanPrincipalRepository;
@@ -280,6 +281,50 @@ public class MongoUserDaoImplTest {
         Assert.assertEquals(2, users.size());
         Assert.assertTrue(users.stream().anyMatch(u -> "john.doe".equals(u.getUsername())));
         Assert.assertTrue(users.stream().anyMatch(u -> "john.smith".equals(u.getUsername())));
+    }
+
+    @Test
+    public void test_getUserByUsernameLike_treats_regex_metacharacters_literally() {
+        for (String username : List.of("john.smith", "johnXsmith", "admin")) {
+            MongoUserImpl user = new MongoUserImpl();
+            user.setUsername(username);
+            user.setEmail(username + "@example.com");
+            user.setEnabled(true);
+            dao.save(user);
+        }
+
+        // "." must not act as a wildcard
+        List<User> users = dao.getUserByUsernameLike("john.smith");
+        Assert.assertEquals(1, users.size());
+        Assert.assertEquals("john.smith", users.get(0).getUsername());
+
+        // regex syntax must not match everything / be anchored
+        Assert.assertTrue(dao.getUserByUsernameLike(".*").isEmpty());
+        Assert.assertTrue(dao.getUserByUsernameLike("^admin$").isEmpty());
+
+        // invalid / catastrophic-backtracking patterns are matched literally rather than executed
+        Assert.assertTrue(dao.getUserByUsernameLike("(a+)+$").isEmpty());
+        Assert.assertTrue(dao.getUserByUsernameLike("[").isEmpty());
+    }
+
+    @Test
+    public void test_getUsers_filter_treats_regex_metacharacters_literally() {
+        for (String username : List.of("a.b", "aXb")) {
+            MongoUserImpl user = new MongoUserImpl();
+            user.setUsername(username);
+            user.setEmail(username + "@example.com");
+            user.setEnabled(true);
+            dao.save(user);
+        }
+
+        UserFilter filter = new TestUserFilter();
+        filter.setUsernameFilter("a.b");
+        List<User> users = dao.getUsers(filter, 100, 0);
+        Assert.assertEquals(1, users.size());
+        Assert.assertEquals("a.b", users.get(0).getUsername());
+
+        filter.setUsernameFilter(".*");
+        Assert.assertTrue(dao.getUsers(filter, 100, 0).isEmpty());
     }
 
     @Test
@@ -2410,5 +2455,36 @@ public class MongoUserDaoImplTest {
 
         Assert.assertNotNull(users);
         Assert.assertTrue(users.isEmpty());
+    }
+
+    @Test
+    public void test_save_ignores_other_entity_types_with_the_same_name() {
+        // e.g. a principal named after the user, stored in the same collection
+        mongoTemplate.getCollection(IKASAN_COLLECTION_NAME).insertOne(
+            new org.bson.Document("_id", "principal-bob").append("type", "OTHER_TYPE").append("name", "bob"));
+
+        MongoUserImpl user = new MongoUserImpl();
+        user.setUsername("bob");
+        user.setEmail("bob@example.com");
+        user.setEnabled(true);
+        dao.save(user);
+        dao.save(user); // second save looks the user up by name: must not see the principal
+
+        Assert.assertNotNull(dao.getUser("bob"));
+        Assert.assertEquals(1, mongoTemplate.getCollection(IKASAN_COLLECTION_NAME)
+            .countDocuments(new org.bson.Document("_id", "principal-bob")));
+    }
+
+    @Test
+    public void test_deleteExpired_keeps_users_that_never_expire() {
+        MongoUserImpl user = new MongoUserImpl();
+        user.setUsername("permanent");
+        user.setEmail("permanent@example.com");
+        user.setEnabled(true);
+        dao.save(user); // saved with DO_NOT_EXPIRE (-1)
+
+        dao.deleteExpired();
+
+        Assert.assertNotNull(dao.getUser("permanent"));
     }
 }

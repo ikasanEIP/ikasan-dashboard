@@ -36,6 +36,38 @@ public class AtlasSearchAggregationOperation implements AggregationOperation {
     }
 
     /**
+     * Creates a {@code $search} stage with a {@code compound} operator and optional in-index sort and count.
+     * This is the preferred builder: all filtering, sorting and counting happen inside the search index, so no
+     * {@code $match}/{@code $sort}/{@code $count} stages are needed after {@code $search}.
+     *
+     * @param indexName the name of the Atlas Search index
+     * @param compound the compound operator body ({@code must}/{@code mustNot}/{@code should}/{@code filter})
+     * @param sort the search sort document, e.g. {@code {timestamp: -1}} (null for relevance order)
+     * @param countType {@code "total"} or {@code "lowerBound"} to populate {@code $$SEARCH_META.count}, or null
+     * @return the AtlasSearchAggregationOperation
+     */
+    public static AtlasSearchAggregationOperation compound(String indexName, Document compound, Document sort,
+                                                           String countType) {
+        Document searchStage = new Document()
+            .append("index", indexName != null ? indexName : DEFAULT_INDEX_NAME)
+            .append("compound", compound);
+        if (sort != null && !sort.isEmpty()) {
+            searchStage.append("sort", sort);
+        }
+        if (countType != null) {
+            searchStage.append("count", new Document("type", countType));
+        }
+        return new AtlasSearchAggregationOperation(new Document("$search", searchStage));
+    }
+
+    /**
+     * @return the {@code $search} stage document
+     */
+    public Document getSearchDocument() {
+        return searchDocument;
+    }
+
+    /**
      * Creates a text search operation for the specified query and fields.
      *
      * @param indexName the name of the Atlas Search index

@@ -6,7 +6,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.databind.json.JsonMapper;
@@ -52,11 +51,9 @@ public class MongoContextProfileRecordImpl implements ContextProfileRecord {
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Indexed
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

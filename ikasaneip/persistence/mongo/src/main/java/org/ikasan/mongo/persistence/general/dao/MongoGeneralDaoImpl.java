@@ -1,6 +1,5 @@
 package org.ikasan.mongo.persistence.general.dao;
 
-import org.bson.Document;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocument;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocumentSearchResults;
 import org.ikasan.mongo.persistence.general.repository.MongoIkasanDocumentRepository;
@@ -13,13 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -58,17 +53,16 @@ public class MongoGeneralDaoImpl implements
 
     private final MongoIkasanDocumentRepository repository;
     private final MongoTemplate mongoTemplate;
-    private String searchIndexName = DEFAULT_SEARCH_INDEX;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
 
     /**
-     * Constructor
+     * Constructor using Atlas Search (with regex fallback) on the default search index.
      *
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoTemplate for complex queries
      */
     public MongoGeneralDaoImpl(MongoIkasanDocumentRepository repository, MongoTemplate mongoTemplate) {
-        this.repository = repository;
-        this.mongoTemplate = mongoTemplate;
+        this(repository, mongoTemplate, new AtlasSearchQueryHelper(mongoTemplate));
     }
 
     /**
@@ -79,9 +73,21 @@ public class MongoGeneralDaoImpl implements
      * @param searchIndexName the name of the Atlas Search index
      */
     public MongoGeneralDaoImpl(MongoIkasanDocumentRepository repository, MongoTemplate mongoTemplate, String searchIndexName) {
+        this(repository, mongoTemplate, new AtlasSearchQueryHelper(mongoTemplate, searchIndexName));
+    }
+
+    /**
+     * Constructor with a configured search helper.
+     *
+     * @param repository the MongoDB repository
+     * @param mongoTemplate the MongoTemplate for complex queries
+     * @param atlasSearchQueryHelper the search helper
+     */
+    public MongoGeneralDaoImpl(MongoIkasanDocumentRepository repository, MongoTemplate mongoTemplate,
+                               AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
-        this.searchIndexName = searchIndexName != null ? searchIndexName : DEFAULT_SEARCH_INDEX;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
     }
 
     /**
@@ -90,7 +96,7 @@ public class MongoGeneralDaoImpl implements
      * @param searchIndexName the name of the Atlas Search index
      */
     public void setSearchIndexName(String searchIndexName) {
-        this.searchIndexName = searchIndexName != null ? searchIndexName : DEFAULT_SEARCH_INDEX;
+        this.atlasSearchQueryHelper.setSearchIndexName(searchIndexName);
     }
 
     /**
@@ -99,7 +105,7 @@ public class MongoGeneralDaoImpl implements
      * @return the name of the Atlas Search index
      */
     public String getSearchIndexName() {
-        return this.searchIndexName;
+        return this.atlasSearchQueryHelper.getSearchIndexName();
     }
 
     @Override
@@ -219,118 +225,19 @@ public class MongoGeneralDaoImpl implements
                                                           String sortField, String sortOrder, boolean harvestReceivedTimestamp) {
         long queryStartTime = System.currentTimeMillis();
 
-        // If searchString is provided, use Atlas Search aggregation
-        if (searchString != null && !searchString.isEmpty()) {
-            return searchWithAtlasSearch(moduleNames, flowNames, componentNames, eventId, searchString,
-                startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder,
-                harvestReceivedTimestamp, queryStartTime);
-        }
+        AtlasSearchFilter filter = buildSearchFilter(moduleNames, flowNames, componentNames, eventId, searchString,
+            startTime, endTime, entityTypes, negateQuery, harvestReceivedTimestamp);
 
-        // Otherwise use standard query
-        return searchWithStandardQuery(moduleNames, flowNames, componentNames, eventId,
-            startTime, endTime, offset, resultSize, entityTypes, negateQuery, sortField, sortOrder,
-            harvestReceivedTimestamp, queryStartTime);
-    }
-
-    /**
-     * Execute search using Atlas Lucene $search aggregation pipeline.
-     */
-    private IkasanDocumentSearchResults searchWithAtlasSearch(Set<String> moduleNames, Set<String> flowNames,
-                                                                     Set<String> componentNames, String eventId, String searchString,
-                                                                     long startTime, long endTime, int offset, int resultSize,
-                                                                     List<String> entityTypes, boolean negateQuery, String sortField,
-                                                                     String sortOrder, boolean harvestReceivedTimestamp, long queryStartTime) {
         try {
-            List<AggregationOperation> operations = new ArrayList<>();
+            AtlasSearchQueryHelper.SearchQueryResult<MongoIkasanDocument> result = atlasSearchQueryHelper.search(
+                filter, buildSort(sortField, sortOrder), offset, resultSize, MongoIkasanDocument.class);
 
-            // Add Atlas $search stage as the first stage
-            AggregationOperation searchStage = AtlasSearchAggregationOperation.textSearch(
-                searchIndexName, searchString, SEARCH_FIELDS);
-            operations.add(searchStage);
-
-            // Build match criteria for filtering
-            Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, componentNames, eventId,
-                startTime, endTime, entityTypes, harvestReceivedTimestamp);
-
-            if (matchCriteria != null) {
-                operations.add(Aggregation.match(matchCriteria));
-            }
-
-            // Add sorting
-            Sort sort = buildSort(sortField, sortOrder);
-            operations.add(Aggregation.sort(sort));
-
-            // First, get the total count (without skip/limit)
-            List<AggregationOperation> countOperations = new ArrayList<>(operations);
-            countOperations.add(Aggregation.count().as("total"));
-
-            Aggregation countAggregation = Aggregation.newAggregation(countOperations);
-            AggregationResults<Document> countResults = mongoTemplate.aggregate(
-                countAggregation, MongoIkasanDocument.class, Document.class);
-
-            long totalCount = 0;
-            if (countResults.getMappedResults() != null && !countResults.getMappedResults().isEmpty()) {
-                Document countDoc = countResults.getMappedResults().get(0);
-                totalCount = countDoc.getInteger("total", 0);
-            }
-
-            // Add pagination
-            operations.add(Aggregation.skip((long) offset));
-            operations.add(Aggregation.limit(resultSize));
-
-            // Execute aggregation
-            Aggregation aggregation = Aggregation.newAggregation(operations);
-            logger.debug("Executing Atlas Search aggregation: {}", aggregation);
-
-            AggregationResults<MongoIkasanDocument> results = mongoTemplate.aggregate(
-                aggregation, MongoIkasanDocument.class, MongoIkasanDocument.class);
-
-            List<IkasanESBDocument> resultList = results.getMappedResults().stream()
+            List<IkasanESBDocument> resultList = result.getResults().stream()
                 .map(doc -> (IkasanESBDocument) doc)
                 .toList();
 
             long queryTime = System.currentTimeMillis() - queryStartTime;
-            return new MongoIkasanDocumentSearchResults(resultList, totalCount, queryTime);
-
-        } catch (Exception e) {
-            logger.error("Error executing Atlas Search query", e);
-            throw new RuntimeException("Caught exception performing Atlas Search!", e);
-        }
-    }
-
-    /**
-     * Execute search using standard MongoDB query (no full-text search).
-     */
-    private IkasanDocumentSearchResults searchWithStandardQuery(Set<String> moduleNames, Set<String> flowNames,
-                                                                       Set<String> componentNames, String eventId,
-                                                                       long startTime, long endTime, int offset, int resultSize,
-                                                                       List<String> entityTypes, boolean negateQuery, String sortField,
-                                                                       String sortOrder, boolean harvestReceivedTimestamp, long queryStartTime) {
-        Query query = buildQuery(moduleNames, flowNames, componentNames, eventId,
-            startTime, endTime, entityTypes, harvestReceivedTimestamp);
-
-        // Add sorting
-        query.with(buildSort(sortField, sortOrder));
-
-        try {
-            logger.debug("Executing MongoDB query: {}", query);
-
-            // Get total count for pagination
-            long totalCount = mongoTemplate.count(query, MongoIkasanDocument.class);
-
-            // Add pagination
-            query.skip(offset);
-            query.limit(resultSize);
-
-            // Execute query
-            List<IkasanESBDocument> results = mongoTemplate
-                .find(query, MongoIkasanDocument.class).stream()
-                .map(doc -> (IkasanESBDocument) doc)
-                .toList();
-
-            long queryTime = System.currentTimeMillis() - queryStartTime;
-
-            return new MongoIkasanDocumentSearchResults(results, totalCount, queryTime);
+            return new MongoIkasanDocumentSearchResults(resultList, result.getTotalCount(), queryTime);
         } catch (Exception e) {
             throw new RuntimeException("Caught exception performing general ikasan search!", e);
         }
@@ -352,98 +259,41 @@ public class MongoGeneralDaoImpl implements
     }
 
     /**
-     * Build match criteria for aggregation pipeline filtering.
-     * Uses exact match or $in for multiple values instead of regex for better performance.
+     * Build the search filter. The search string is a full-text match over {@link #SEARCH_FIELDS} (negated when
+     * {@code negateQuery} is set); all other parameters are exact restrictions evaluated inside the Atlas
+     * {@code $search} stage when available.
      */
-    private Criteria buildMatchCriteria(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
-                                        String eventId, long startTime, long endTime, List<String> entityTypes,
-                                        boolean harvestReceivedTimestamp) {
-        List<Criteria> criteriaList = new ArrayList<>();
+    protected AtlasSearchFilter buildSearchFilter(Set<String> moduleNames, Set<String> flowNames,
+                                                  Set<String> componentNames, String eventId, String searchString,
+                                                  long startTime, long endTime, List<String> entityTypes,
+                                                  boolean negateQuery, boolean harvestReceivedTimestamp) {
+        AtlasSearchFilter.Builder builder = AtlasSearchFilter.builder()
+            .in(EntityFields.MODULE_NAME, moduleNames)
+            .in(EntityFields.FLOW_NAME, flowNames)
+            .in(EntityFields.COMPONENT_NAME, componentNames)
+            .in(EntityFields.TYPE, entityTypes)
+            .rangeMillis(harvestReceivedTimestamp ? EntityFields.HARVEST_RECEIVED_TIMESTAMP : EntityFields.CREATED_DATE_TIME,
+                startTime, endTime)
+            .text(SEARCH_FIELDS, searchString)
+            .negateText(negateQuery);
 
-        // Module names filter - use exact match or $in
-        if (moduleNames != null && !moduleNames.isEmpty()) {
-            if (moduleNames.size() == 1) {
-                criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).is(moduleNames.stream().findFirst().get()));
-            } else {
-                criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
-            }
-        }
-
-        // Flow names filter - use exact match or $in
-        if (flowNames != null && !flowNames.isEmpty()) {
-            if (flowNames.size() == 1) {
-                criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).is(flowNames.stream().findFirst().get()));
-            } else {
-                criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
-            }
-        }
-
-        // Component names filter - use exact match or $in
-        if (componentNames != null && !componentNames.isEmpty()) {
-            if (componentNames.size() == 1) {
-                criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).is(componentNames.stream().findFirst().get()));
-            } else {
-                criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).in(componentNames));
-            }
-        }
-
-        // Event ID filter - use exact match on either field
         if (eventId != null && !eventId.isEmpty()) {
-            criteriaList.add(new Criteria().orOperator(
-                Criteria.where(EntityFields.EVENT).is(eventId),
-                Criteria.where(EntityFields.ERROR_URI).is(eventId)));
+            builder.anyOf(
+                AtlasSearchFilter.eq(EntityFields.EVENT, eventId),
+                AtlasSearchFilter.eq(EntityFields.ERROR_URI, eventId));
         }
-
-        // Timestamp range filter
-        String timeField = harvestReceivedTimestamp ? EntityFields.HARVEST_RECEIVED_TIMESTAMP : EntityFields.CREATED_DATE_TIME;
-        if (startTime > 0 && endTime > 0) {
-            criteriaList.add(Criteria.where(timeField).gte(startTime).lte(endTime));
-        } else if (startTime > 0) {
-            criteriaList.add(Criteria.where(timeField).gte(startTime));
-        } else if (endTime > 0) {
-            criteriaList.add(Criteria.where(timeField).lte(endTime));
-        }
-
-        // Entity types filter
-        if (entityTypes != null && !entityTypes.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.TYPE).in(entityTypes));
-        }
-
-        if (criteriaList.isEmpty()) {
-            return null;
-        } else if (criteriaList.size() == 1) {
-            return criteriaList.get(0);
-        } else {
-            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-        }
+        return builder.build();
     }
 
     /**
      * Build MongoDB query from search parameters (without full-text search).
-     *
-     * @param moduleNames the module names to filter by
-     * @param flowNames the flow names to filter by
-     * @param componentNames the component names to filter by
-     * @param eventId the event ID to filter by
-     * @param startTime the start timestamp
-     * @param endTime the end timestamp
-     * @param entityTypes the entity types to filter by
-     * @param harvestReceivedTimestamp whether to use harvest received timestamp for time filtering
-     * @return the constructed query
      */
     protected Query buildQuery(Set<String> moduleNames, Set<String> flowNames, Set<String> componentNames,
                                String eventId, long startTime, long endTime, List<String> entityTypes,
                                boolean harvestReceivedTimestamp) {
-        Query query = new Query();
-
-        Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, componentNames, eventId,
-            startTime, endTime, entityTypes, harvestReceivedTimestamp);
-
-        if (matchCriteria != null) {
-            query.addCriteria(matchCriteria);
-        }
-
-        return query;
+        Criteria criteria = buildSearchFilter(moduleNames, flowNames, componentNames, eventId, null,
+            startTime, endTime, entityTypes, false, harvestReceivedTimestamp).toCriteria();
+        return criteria != null ? new Query(criteria) : new Query();
     }
 
     @Override

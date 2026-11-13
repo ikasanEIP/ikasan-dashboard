@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.event.dao;
 
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.mongo.persistence.scheduled.event.repository.MongoScheduledProcessEventRepository;
@@ -194,76 +195,36 @@ public class MongoScheduledProcessEventDao {
 
         long queryStartTime = System.currentTimeMillis();
 
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        // Filter by date range
-        criteriaList.add(Criteria.where("fireTime").gte(startTime).lte(endTime));
+        AtlasSearchFilter.Builder searchFilter = AtlasSearchFilter.builder()
+                .range("fireTime", startTime, endTime)
+                .containsAny(SEARCH_FIELDS, filter);
 
         // Filter by accessible modules
-        if (accessibleModules != null && accessibleModules.size() > 0) {
-            criteriaList.add(Criteria.where("agentName").in(accessibleModules));
-        } else if (accessibleModules != null && accessibleModules.size() == 0) {
+        if (accessibleModules != null && accessibleModules.isEmpty()) {
             // No accessible modules - return empty results
-            criteriaList.add(Criteria.where("agentName").is("NOTAVALIDMODULENAME"));
+            searchFilter.equals("agentName", "NOTAVALIDMODULENAME");
+        } else {
+            searchFilter.in("agentName", accessibleModules);
         }
 
         // Filter by failures only
         if (failuresOnly) {
-            criteriaList.add(Criteria.where("successful").is(false));
+            searchFilter.equals("successful", false);
         }
 
-        // Build match criteria from other filters
-        Criteria matchCriteria = null;
-        if (!criteriaList.isEmpty()) {
-            matchCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-        }
-
-        // Apply sorting
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "fireTime");
 
-        // If filter is provided, use Atlas Search (with automatic fallback to regex)
-        if (filter != null && !filter.isEmpty()) {
-            AtlasSearchQueryHelper.SearchQueryResult<ContextualisedScheduledProcessEventImpl> searchResult =
-                atlasSearchQueryHelper.searchWithWildcard(filter, SEARCH_FIELDS, matchCriteria,
-                    sort, start, limit, ContextualisedScheduledProcessEventImpl.class);
-
-            long queryTime = System.currentTimeMillis() - queryStartTime;
-
-            logger.debug("Found {} scheduled process events (total: {}, queryTime: {}ms)",
-                    searchResult.getResults().size(), searchResult.getTotalCount(), queryTime);
-
-            return new ScheduledProcessEventSearchResults<>(searchResult.getResults(), searchResult.getTotalCount(), queryTime);
-        }
-
-        // No filter - use standard query
-        Query query = new Query();
-        if (matchCriteria != null) {
-            query.addCriteria(matchCriteria);
-        }
-        query.with(sort);
-
-        // Get total count before pagination
-        long totalCount = mongoTemplate.count(query, ContextualisedScheduledProcessEventImpl.class);
-
-        // Apply pagination
-        if (limit > 0) {
-            int page = start / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else {
-            query.skip(start);
-        }
-
-        // Execute query
-        List<ContextualisedScheduledProcessEventImpl> results = mongoTemplate.find(query, ContextualisedScheduledProcessEventImpl.class);
+        AtlasSearchQueryHelper.SearchQueryResult<ContextualisedScheduledProcessEventImpl> searchResult =
+                atlasSearchQueryHelper.search(searchFilter.build(), sort, Math.max(start, 0), limit,
+                        ContextualisedScheduledProcessEventImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 
         logger.debug("Found {} scheduled process events (total: {}, queryTime: {}ms)",
-                results.size(), totalCount, queryTime);
+                searchResult.getResults().size(), searchResult.getTotalCount(), queryTime);
 
-        return new ScheduledProcessEventSearchResults<>(results, totalCount, queryTime);
+        return new ScheduledProcessEventSearchResults<>(searchResult.getResults(), searchResult.getTotalCount(), queryTime);
     }
 
     /**

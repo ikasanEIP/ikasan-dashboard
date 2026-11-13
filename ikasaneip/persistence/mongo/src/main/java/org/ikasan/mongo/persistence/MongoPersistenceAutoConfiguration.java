@@ -616,8 +616,9 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("mongoGeneralDao")
     public MongoGeneralDaoImpl mongoGeneralDao(
             MongoIkasanDocumentRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoGeneralDaoImpl(repository, mongoTemplate);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoGeneralDaoImpl(repository, mongoTemplate, atlasSearchQueryHelper);
     }
 
     // General Service

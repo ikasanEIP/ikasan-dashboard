@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.replay.model.MongoReplayEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayEventRepository;
@@ -12,7 +13,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -69,68 +69,18 @@ public class MongoReplayDaoImpl implements EntityDao<ReplayEvent> {
     public List<ReplayEvent> find(List<String> moduleNames, List<String> flowNames, String searchString,
                                   long fromTimestamp, long untilTimestamp, int offset, int limit) {
 
-        // Build match criteria for filtering
-        Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, fromTimestamp, untilTimestamp);
+        AtlasSearchFilter searchFilter = AtlasSearchFilter.builder()
+            .equals(EntityFields.TYPE, REPLAY)
+            .in(EntityFields.MODULE_NAME, moduleNames)
+            .in(EntityFields.FLOW_NAME, flowNames)
+            .rangeMillis(EntityFields.CREATED_DATE_TIME, fromTimestamp, untilTimestamp)
+            .containsAny(SEARCH_FIELDS, searchString)
+            .build();
 
-        // If searchString is provided, use Atlas Search
-        if (searchString != null && !searchString.trim().isEmpty()) {
-            AtlasSearchQueryHelper.SearchQueryResult<MongoReplayEventImpl> result =
-                atlasSearchQueryHelper.searchWithWildcard(searchString, SEARCH_FIELDS, matchCriteria,
-                    null, offset, limit, MongoReplayEventImpl.class);
-
-            return result.getResults().stream()
-                .map(entity -> (ReplayEvent) entity)
-                .collect(Collectors.toList());
-        }
-
-        // Otherwise use standard query
-        Query query = new Query();
-        if (matchCriteria != null) {
-            query.addCriteria(matchCriteria);
-        }
-        query.skip(offset).limit(limit);
-
-        List<MongoReplayEventImpl> entities = mongoTemplate.find(query, MongoReplayEventImpl.class);
-        return entities.stream()
-                .map(entity -> (ReplayEvent) entity)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Build match criteria for filtering.
-     */
-    private Criteria buildMatchCriteria(List<String> moduleNames, List<String> flowNames,
-                                        long fromTimestamp, long untilTimestamp) {
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        criteriaList.add(Criteria.where(EntityFields.TYPE).is(REPLAY));
-
-        if (moduleNames != null && !moduleNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
-        }
-
-        if (flowNames != null && !flowNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
-        }
-
-        if (fromTimestamp > 0 || untilTimestamp > 0) {
-            Criteria timestampCriteria = Criteria.where(EntityFields.CREATED_DATE_TIME);
-            if (fromTimestamp > 0) {
-                timestampCriteria.gte(fromTimestamp);
-            }
-            if (untilTimestamp > 0) {
-                timestampCriteria.lte(untilTimestamp);
-            }
-            criteriaList.add(timestampCriteria);
-        }
-
-        if (criteriaList.isEmpty()) {
-            return null;
-        } else if (criteriaList.size() == 1) {
-            return criteriaList.get(0);
-        } else {
-            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-        }
+        return atlasSearchQueryHelper.search(searchFilter, null, offset, limit, false, MongoReplayEventImpl.class)
+            .getResults().stream()
+            .map(entity -> (ReplayEvent) entity)
+            .collect(Collectors.toList());
     }
 
     public void delete(String id) {

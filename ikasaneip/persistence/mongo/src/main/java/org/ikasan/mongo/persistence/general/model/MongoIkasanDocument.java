@@ -3,7 +3,6 @@ package org.ikasan.mongo.persistence.general.model;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -34,7 +33,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     private String componentName;
 
     @Field(name = EntityFields.CREATED_DATE_TIME, targetType = FieldType.INT64)
-    private Long timeStamp = 0L;
+    private Long timestamp = 0L;
 
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
@@ -60,7 +59,6 @@ public class MongoIkasanDocument implements IkasanESBDocument {
     @Field(EntityFields.PAYLOAD_CONTENT_RAW)
     private byte[] payloadRaw;
 
-    @Indexed
     @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
     private Long harvestReceivedTimestamp = 0L;
 
@@ -91,7 +89,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public long getTimestamp() {
-        return this.timeStamp;
+        return this.timestamp;
     }
 
     @Override
@@ -121,7 +119,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public long getTimeStamp() {
-        return timeStamp;
+        return timestamp;
     }
 
     @Override
@@ -151,7 +149,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
 
     @Override
     public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
+        this.timestamp = timeStamp;
     }
 
     @Override
@@ -241,7 +239,7 @@ public class MongoIkasanDocument implements IkasanESBDocument {
             ", moduleName='" + moduleName + '\'' +
             ", flowName='" + flowName + '\'' +
             ", componentName='" + componentName + '\'' +
-            ", timeStamp=" + timeStamp +
+            ", timeStamp=" + timestamp +
             ", expiry=" + expiry +
             ", eventId='" + event + '\'' +
             ", errorAction='" + errorAction + '\'' +

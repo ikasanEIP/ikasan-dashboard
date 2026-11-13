@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Spring Data MongoDB repository for User persistence.
@@ -16,14 +15,6 @@ import java.util.Optional;
 @Repository
 @DependsOn("mongoTemplate")
 public interface MongoUserRepository extends MongoRepository<MongoUserRecord, String> {
-
-    /**
-     * Find a user by username.
-     *
-     * @param username the username to search for
-     * @return Optional containing the user if found
-     */
-    Optional<MongoUserRecord> findByUsername(String username);
 
     /**
      * Find users whose username contains the search term (case-insensitive).

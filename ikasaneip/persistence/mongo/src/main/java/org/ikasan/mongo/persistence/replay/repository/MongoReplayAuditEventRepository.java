@@ -14,5 +14,4 @@ import org.springframework.stereotype.Repository;
 @DependsOn("mongoTemplate")
 public interface MongoReplayAuditEventRepository extends MongoRepository<MongoReplayAuditEventImpl, String> {
 
-    void deleteByExpiryLessThan(long currentTime);
 }

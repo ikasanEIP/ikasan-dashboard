@@ -1,5 +1,8 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.mongo.persistence.replay.model.MongoReplayAuditEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayAuditEventRepository;
 import org.ikasan.spec.entity.EntityDao;
@@ -76,9 +79,14 @@ public class MongoReplayAuditDaoImpl implements BatchInsert<ReplayAuditEvent>, E
         logger.debug("Saved {} replay audit events", replayAuditEvents.size());
     }
 
+    /**
+     * Delete expired replay audit events. Restricted to replay audit documents: all entity types share the collection,
+     * and documents that never expire are stored with expiry -1.
+     */
     public void deleteExpired() {
         long currentTime = System.currentTimeMillis();
-        repository.deleteByExpiryLessThan(currentTime);
+        mongoTemplate.remove(new Query(Criteria.where(EntityFields.TYPE).is(REPLAY_AUDIT)
+            .and(EntityFields.EXPIRY).gt(0).lt(currentTime)), MongoReplayAuditEventImpl.class);
         logger.debug("Deleted expired replay audit events before timestamp: {}", currentTime);
     }
 

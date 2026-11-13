@@ -1,17 +1,7 @@
 package org.ikasan.mongo.persistence.security.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.ikasan.spec.entity.EntityFields;
-import org.ikasan.spec.security.model.IkasanPrincipal;
-import org.ikasan.spec.security.model.Policy;
-import org.ikasan.spec.security.model.Role;
-import org.ikasan.spec.security.model.User;
-import org.ikasan.spec.security.model.UserLite;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.ikasan.spec.security.model.*;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.*;
@@ -44,10 +34,8 @@ public class MongoUserImpl implements User, UserLite {
     @JsonIgnore
     private transient Set<IkasanPrincipal> principals = new HashSet<>();
 
-    @Indexed
     private long createdTimestamp;
 
-    @Indexed
     private long modifiedTimestamp;
     private long expiry;
 

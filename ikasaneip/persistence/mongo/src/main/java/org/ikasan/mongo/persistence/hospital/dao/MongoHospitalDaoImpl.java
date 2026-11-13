@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.hospital.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.hospital.model.MongoExclusionEventAction;
 import org.ikasan.mongo.persistence.hospital.repository.MongoExclusionEventActionRepository;
@@ -12,7 +13,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -120,65 +120,18 @@ public class MongoHospitalDaoImpl implements EntityDao<ExclusionEventAction> {
     public List<ExclusionEventAction> find(List<String> moduleNames, List<String> flowNames, String searchString,
                                            long fromTimestamp, long untilTimestamp, int offset, int limit) {
 
-        // Build match criteria for filtering
-        Criteria matchCriteria = buildMatchCriteria(moduleNames, flowNames, fromTimestamp, untilTimestamp);
+        AtlasSearchFilter searchFilter = AtlasSearchFilter.builder()
+            .equals(EntityFields.TYPE, EXCLUSION_EVENT_ACTION)
+            .in(EntityFields.MODULE_NAME, moduleNames)
+            .in(EntityFields.FLOW_NAME, flowNames)
+            .rangeMillis(EntityFields.CREATED_DATE_TIME, fromTimestamp, untilTimestamp)
+            .containsAny(SEARCH_FIELDS, searchString)
+            .build();
 
-        // If searchString is provided, use Atlas Search
-        if (searchString != null && !searchString.trim().isEmpty()) {
-            AtlasSearchQueryHelper.SearchQueryResult<MongoExclusionEventAction> result =
-                atlasSearchQueryHelper.searchWithWildcard(searchString, SEARCH_FIELDS, matchCriteria,
-                    null, offset, limit, MongoExclusionEventAction.class);
-
-            return result.getResults().stream()
-                .map(entity -> (ExclusionEventAction) entity)
-                .collect(Collectors.toList());
-        }
-
-        // Otherwise use standard query
-        Query query = new Query();
-        if (matchCriteria != null) {
-            query.addCriteria(matchCriteria);
-        }
-        query.skip(offset).limit(limit);
-
-        List<MongoExclusionEventAction> entities = mongoTemplate.find(query, MongoExclusionEventAction.class);
-        return entities.stream()
-                .map(entity -> (ExclusionEventAction) entity)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Build match criteria for filtering.
-     */
-    private Criteria buildMatchCriteria(List<String> moduleNames, List<String> flowNames,
-                                        long fromTimestamp, long untilTimestamp) {
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        criteriaList.add(Criteria.where(EntityFields.TYPE).is(EXCLUSION_EVENT_ACTION));
-
-        if (moduleNames != null && !moduleNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(moduleNames));
-        }
-
-        if (flowNames != null && !flowNames.isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).in(flowNames));
-        }
-
-        if (fromTimestamp > 0 && untilTimestamp > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp).lte(untilTimestamp));
-        } else if (fromTimestamp > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(fromTimestamp));
-        } else if (untilTimestamp > 0) {
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).lte(untilTimestamp));
-        }
-
-        if (criteriaList.isEmpty()) {
-            return null;
-        } else if (criteriaList.size() == 1) {
-            return criteriaList.get(0);
-        } else {
-            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-        }
+        return atlasSearchQueryHelper.search(searchFilter, null, offset, limit, false, MongoExclusionEventAction.class)
+            .getResults().stream()
+            .map(entity -> (ExclusionEventAction) entity)
+            .collect(Collectors.toList());
     }
 
     public void deleteByErrorUri(String errorUri) {

@@ -5,7 +5,6 @@ import org.ikasan.harvest.HarvestEvent;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -23,33 +22,27 @@ public class MongoExclusionEvent implements ExclusionEvent<String>, HarvestEvent
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Indexed
     @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Indexed
     @Field(EntityFields.EVENT)
     private String identifier;
 
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Long timestamp = 0L;
 
-    @Indexed
     @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 
-    @Indexed
     @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
     private Long harvestReceivedTimestamp = 0L;
 

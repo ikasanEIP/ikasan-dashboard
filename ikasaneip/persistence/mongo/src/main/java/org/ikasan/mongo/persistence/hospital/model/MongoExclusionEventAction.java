@@ -1,11 +1,9 @@
 package org.ikasan.mongo.persistence.hospital.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
-import org.ikasan.harvest.HarvestEvent;
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -26,15 +24,12 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String> {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Indexed
     @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Indexed
     @Field(EntityFields.ERROR_URI)
     private String errorUri;
 
@@ -47,7 +42,6 @@ public class MongoExclusionEventAction implements ExclusionEventAction<String> {
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String event;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Long timestamp = 0L;
 

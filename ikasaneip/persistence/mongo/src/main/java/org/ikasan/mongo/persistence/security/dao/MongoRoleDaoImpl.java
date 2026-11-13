@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.security.model.*;
 import org.ikasan.mongo.persistence.security.repository.MongoRoleRepository;
 import org.ikasan.mongo.persistence.security.util.MongoSecurityObjectMapperFactory;
@@ -308,7 +309,7 @@ public class MongoRoleDaoImpl implements RoleDao {
     @Override
     public List<Role> getRoleByNameLike(String name) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.NAME).regex(name, "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.NAME, name));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(ROLE_TYPE));
 
         return mongoTemplate.find(query, MongoRoleRecord.class).stream()

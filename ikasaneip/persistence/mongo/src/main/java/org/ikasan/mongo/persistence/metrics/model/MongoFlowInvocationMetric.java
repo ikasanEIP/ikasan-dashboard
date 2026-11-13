@@ -1,15 +1,10 @@
 package org.ikasan.mongo.persistence.metrics.model;
-import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
+import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.entity.EntityFields;
-import org.ikasan.spec.history.FlowInvocationMetric;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * MongoDB document for storing FlowInvocationMetric.
@@ -36,7 +31,6 @@ public class MongoFlowInvocationMetric {
     @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Long timestamp = 0L;
 

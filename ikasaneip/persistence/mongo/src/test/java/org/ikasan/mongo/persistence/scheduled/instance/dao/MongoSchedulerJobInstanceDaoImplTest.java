@@ -1,5 +1,8 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
@@ -25,6 +28,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
 import static org.junit.Assert.*;
 
 /**
@@ -47,6 +51,9 @@ public class MongoSchedulerJobInstanceDaoImplTest {
 
     @Autowired
     private MongoSchedulerJobInstanceRecordRepository repository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -823,5 +830,20 @@ public class MongoSchedulerJobInstanceDaoImplTest {
         assertNotNull(retrieved);
         assertEquals(InstanceStatus.COMPLETE, retrieved.getStatus());
         assertFalse(retrieved.isSkip());
+    }
+
+    @Test
+    public void testDeleteSchedulerJobInstancesOnlyDeletesJobInstanceDocuments() {
+        dao.save(createJobInstanceRecord("job-1", "context-1", "ctx-inst-1", InstanceStatus.RUNNING));
+        // another entity type sharing the collection, with the same component name
+        MongoCollection<Document> collection = mongoTemplate.getCollection(IKASAN_COLLECTION_NAME);
+        collection.insertOne(new Document("_id", "other-1").append("type", "WIRETAP")
+            .append("componentName", "ctx-inst-1"));
+
+        dao.deleteSchedulerJobInstances("ctx-inst-1");
+
+        assertEquals(0L, dao.getSchedulerJobInstancesByContextInstanceId(
+            "ctx-inst-1", -1, -1, "jobName", "ASC").getTotalNumberOfResults());
+        assertEquals(1, collection.countDocuments(new Document("_id", "other-1")));
     }
 }

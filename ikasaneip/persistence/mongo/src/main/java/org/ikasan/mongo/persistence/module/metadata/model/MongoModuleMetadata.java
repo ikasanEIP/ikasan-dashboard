@@ -3,7 +3,6 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.spec.entity.EntityFields;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -20,7 +19,6 @@ public class MongoModuleMetadata {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String moduleMetadataJson;
 

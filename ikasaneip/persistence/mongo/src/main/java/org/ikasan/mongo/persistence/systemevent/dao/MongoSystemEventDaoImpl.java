@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.systemevent.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.ikasan.mongo.persistence.systemevent.repository.MongoSystemEventRepository;
@@ -11,8 +12,6 @@ import org.ikasan.spec.systemevent.SystemEventSearchDao;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -106,75 +105,22 @@ public class MongoSystemEventDaoImpl implements SystemEventSearchDao, EntityDao<
         logger.debug("Finding system events by filter: {}, limit: {}, offset: {}, sortColumn: {}, sortOrder: {}",
                 filter, limit, offset, sortColumn, sortOrder);
 
-        // Determine if we have a search term that requires Atlas Search
-        String searchTerm = filter.getSearchTerm();
-        boolean hasSearchTerm = searchTerm != null && !searchTerm.trim().isEmpty();
-
-        // Build match criteria for filtering (exact matching for filter fields)
-        Criteria matchCriteria = buildMatchCriteria(filter);
-
-        // Build sort
+        // Sort: default by timestamp descending
         Sort sort;
         if (sortColumn != null && !sortColumn.isEmpty()) {
             Sort.Direction direction = "ASCENDING".equals(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
             sort = Sort.by(direction, sortColumn);
         } else {
-            // Default sort by timestamp descending
             sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
         }
 
-        // If searchTerm is provided, use Atlas Search
-        if (hasSearchTerm) {
-            AtlasSearchQueryHelper.SearchQueryResult<MongoSystemEventRecordImpl> result =
-                atlasSearchQueryHelper.searchWithWildcard(searchTerm, SEARCH_FIELDS, matchCriteria,
-                    sort, offset, limit, MongoSystemEventRecordImpl.class);
+        AtlasSearchQueryHelper.SearchQueryResult<MongoSystemEventRecordImpl> result = atlasSearchQueryHelper.search(
+            buildSearchFilter(filter), sort, Math.max(offset, 0), limit, MongoSystemEventRecordImpl.class);
 
-            List<SystemEvent> systemEvents = new ArrayList<>(result.getResults());
-            long totalCount = result.getTotalCount();
+        List<SystemEvent> systemEvents = new ArrayList<>(result.getResults());
+        long totalCount = result.getTotalCount();
 
-            logger.debug("Found {} system events (total: {})", systemEvents.size(), totalCount);
-
-            return new SearchResults<SystemEvent>() {
-                @Override
-                public List<SystemEvent> getResultList() {
-                    return systemEvents;
-                }
-
-                @Override
-                public long getTotalNumberOfResults() {
-                    return totalCount;
-                }
-
-                @Override
-                public long getQueryResponseTime() {
-                    return 0; // Query response time not tracked for MongoDB
-                }
-            };
-        }
-
-        // Otherwise use standard query
-        Query query = new Query();
-        if (matchCriteria != null) {
-            query.addCriteria(matchCriteria);
-        }
-        query.with(sort);
-
-        // Get total count
-        long totalCount = mongoTemplate.count(query, MongoSystemEventRecordImpl.class);
-
-        // Apply pagination
-        if(limit > 0 && offset > -1) {
-            Pageable pageable = PageRequest.of(offset / limit, limit);
-            query.with(pageable);
-        }
-
-        // Execute query
-        List<MongoSystemEventRecordImpl> results = mongoTemplate.find(query, MongoSystemEventRecordImpl.class);
-
-        logger.debug("Found {} system events (total: {})", results.size(), totalCount);
-
-        // Convert to SearchResults
-        List<SystemEvent> systemEvents = new ArrayList<>(results);
+        logger.debug("Found {} system events (total: {})", systemEvents.size(), totalCount);
 
         return new SearchResults<SystemEvent>() {
             @Override
@@ -195,53 +141,22 @@ public class MongoSystemEventDaoImpl implements SystemEventSearchDao, EntityDao<
     }
 
     /**
-     * Build match criteria for filtering.
+     * Build the search filter. The actor/subject/action filters and the free text search term are case-insensitive
+     * substring matches; everything is evaluated inside the Atlas {@code $search} stage when available.
      */
-    private Criteria buildMatchCriteria(SystemEventSearchFilter filter) {
-        List<Criteria> criteriaList = new ArrayList<>();
+    private AtlasSearchFilter buildSearchFilter(SystemEventSearchFilter filter) {
+        AtlasSearchFilter.Builder builder = AtlasSearchFilter.builder()
+            .equals(TYPE, SYSTEM_EVENT_TYPE)
+            .contains(EntityFields.ACTOR, filter.getActor())
+            .contains(EntityFields.SYSTEM_EVENT_SUBJECT, filter.getSubject())
+            .contains(EntityFields.SYSTEM_EVENT_ACTION, filter.getAction())
+            .containsAny(SEARCH_FIELDS, filter.getSearchTerm());
 
-        // Always add type filter
-        criteriaList.add(Criteria.where(TYPE).is(SYSTEM_EVENT_TYPE));
-
-        // Filter by actor (wildcard search using regex)
-        if (filter.getActor() != null && !filter.getActor().isEmpty()) {
-            String regex = ".*" + escapeRegex(filter.getActor()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.ACTOR).regex(regex, "i"));
-        }
-
-        // Filter by subject (wildcard search using regex)
-        if (filter.getSubject() != null && !filter.getSubject().isEmpty()) {
-            String regex = ".*" + escapeRegex(filter.getSubject()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_SUBJECT).regex(regex, "i"));
-        }
-
-        // Filter by action (wildcard search using regex)
-        if (filter.getAction() != null && !filter.getAction().isEmpty()) {
-            String regex = ".*" + escapeRegex(filter.getAction()) + ".*";
-            criteriaList.add(Criteria.where(EntityFields.SYSTEM_EVENT_ACTION).regex(regex, "i"));
-        }
-
-        // Filter by date range
+        // System events store the timestamp as a BSON date
         if (filter.getEndTime() > 0) {
-            Date startDate = new Date(filter.getStartTime());
-            Date endDate = new Date(filter.getEndTime());
-            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startDate).lte(endDate));
+            builder.range(EntityFields.CREATED_DATE_TIME, new Date(filter.getStartTime()), new Date(filter.getEndTime()));
         }
-
-        if (criteriaList.isEmpty()) {
-            return null;
-        } else if (criteriaList.size() == 1) {
-            return criteriaList.get(0);
-        } else {
-            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-        }
-    }
-
-    /**
-     * Escape special regex characters in a string.
-     */
-    private String escapeRegex(String input) {
-        return input.replaceAll("([\\\\\\[\\](){}.*+?^$|])", "\\\\$1");
+        return builder.build();
     }
 
     @Override

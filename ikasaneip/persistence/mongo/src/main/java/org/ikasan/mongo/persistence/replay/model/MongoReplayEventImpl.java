@@ -4,7 +4,6 @@ import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -22,15 +21,12 @@ public class MongoReplayEventImpl implements ReplayEvent {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.MODULE_NAME)
     private String moduleName;
 
-    @Indexed
     @Field(EntityFields.FLOW_NAME)
     private String flowName;
 
-    @Indexed
     @Field(EntityFields.EVENT)
     private String eventId;
 
@@ -40,14 +36,12 @@ public class MongoReplayEventImpl implements ReplayEvent {
     @Field(EntityFields.PAYLOAD_CONTENT)
     private String eventAsString;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Long timestamp = 0L;
 
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 
-    @Indexed
     @Field(EntityFields.HARVEST_RECEIVED_TIMESTAMP)
     private Long harvestReceivedTimestamp = 0L;
 
