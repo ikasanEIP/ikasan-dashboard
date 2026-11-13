@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -34,21 +35,46 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
 
     private static final Logger logger = LoggerFactory.getLogger(MongoScheduledContextInstanceDao.class);
 
+    /**
+     * Fields to search when using Atlas Search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        EntityFields.MODULE_NAME,     // contextSearchFilter
+        EntityFields.COMPONENT_NAME   // contextInstanceId
+    );
+
     private final MongoScheduledContextInstanceRepository repository;
     private final MongoTemplate mongoTemplate;
     private final long daysToKeep;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
 
     /**
      * Constructor
      *
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoDB template
+     * @param daysToKeep the number of days to keep records
      */
     public MongoScheduledContextInstanceDao(MongoScheduledContextInstanceRepository repository,
                                             MongoTemplate mongoTemplate, long daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, null);
+    }
+
+    /**
+     * Constructor with AtlasSearchQueryHelper
+     *
+     * @param repository the MongoDB repository
+     * @param mongoTemplate the MongoDB template
+     * @param daysToKeep the number of days to keep records
+     * @param atlasSearchQueryHelper the Atlas Search query helper
+     */
+    public MongoScheduledContextInstanceDao(MongoScheduledContextInstanceRepository repository,
+                                            MongoTemplate mongoTemplate, long daysToKeep,
+                                            AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.daysToKeep = daysToKeep;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
     }
 
     @Override
@@ -233,6 +259,50 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
 
         long queryStartTime = System.currentTimeMillis();
 
+        // Check if we have text search terms that could benefit from Atlas Search
+        boolean hasTextSearch = (filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) ||
+                (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty());
+
+        // Build sort
+        Sort sort;
+        if (sortField != null && !sortField.isEmpty()) {
+            Sort.Direction direction = "ASCENDING".equalsIgnoreCase(sortDirection)
+                    ? Sort.Direction.ASC
+                    : Sort.Direction.DESC;
+            sort = Sort.by(direction, sortField);
+        } else {
+            // Default sort by created date time descending
+            sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
+        }
+
+        // If Atlas Search is available and we have text search terms, use it
+        if (atlasSearchQueryHelper != null && hasTextSearch) {
+            // Build combined search term from text filter fields
+            StringBuilder searchTermBuilder = new StringBuilder();
+            if (filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
+                searchTermBuilder.append(filter.getContextSearchFilter()).append(" ");
+            }
+            if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
+                searchTermBuilder.append(filter.getContextInstanceId()).append(" ");
+            }
+            String searchTerm = searchTermBuilder.toString().trim();
+
+            // Build base criteria from non-text filters
+            Criteria matchCriteria = buildNonTextFilterCriteria(filter);
+
+            AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextInstanceRecordImpl> result =
+                    atlasSearchQueryHelper.searchWithWildcard(searchTerm, SEARCH_FIELDS, matchCriteria,
+                            sort, offset, limit, MongoScheduledContextInstanceRecordImpl.class);
+
+            long queryTime = System.currentTimeMillis() - queryStartTime;
+
+            logger.debug("Found {} scheduled context instances (total: {}) using Atlas Search",
+                    result.getResults().size(), result.getTotalCount());
+
+            return createSearchResults(new ArrayList<>(result.getResults()), result.getTotalCount(), queryTime);
+        }
+
+        // Fall back to regex-based query
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
@@ -287,16 +357,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        // Apply sorting
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction direction = "ASCENDING".equalsIgnoreCase(sortDirection)
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-            query.with(Sort.by(direction, sortField));
-        } else {
-            // Default sort by created date time descending
-            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
-        }
+        query.with(sort);
 
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
@@ -319,6 +380,55 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         logger.debug("Found {} scheduled context instances (total: {})", results.size(), totalCount);
 
         return createSearchResults(new ArrayList<>(results), totalCount, queryTime);
+    }
+
+    /**
+     * Build criteria for non-text filter fields (used with Atlas Search).
+     */
+    private Criteria buildNonTextFilterCriteria(ContextInstanceSearchFilter filter) {
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        // Always add type filter
+        criteriaList.add(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_TYPE));
+
+        // Filter by context instance names
+        if (filter.getContextInstanceNames() != null && !filter.getContextInstanceNames().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(filter.getContextInstanceNames()));
+        }
+
+        // Filter by created timestamp (day range)
+        if (filter.getCreatedTimestamp() > 0) {
+            long startOfDay = atStartOfDay(new Date(filter.getCreatedTimestamp()));
+            long endOfDay = atEndOfDay(new Date(filter.getCreatedTimestamp()));
+            criteriaList.add(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startOfDay).lte(endOfDay));
+        }
+
+        // Filter by start time range
+        if (filter.getStartTimeStart() > 0 && filter.getStartTimeEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.START_TIME)
+                    .gte(filter.getStartTimeStart())
+                    .lte(filter.getStartTimeEnd()));
+        }
+
+        // Filter by end time range
+        if (filter.getEndTimeStart() > 0 && filter.getEndTimeEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.END_TIME)
+                    .gte(filter.getEndTimeStart())
+                    .lte(filter.getEndTimeEnd()));
+        }
+
+        // Filter by status
+        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.STATUS).is(filter.getStatus()));
+        }
+
+        if (criteriaList.isEmpty()) {
+            return null;
+        } else if (criteriaList.size() == 1) {
+            return criteriaList.get(0);
+        } else {
+            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        }
     }
 
     /**

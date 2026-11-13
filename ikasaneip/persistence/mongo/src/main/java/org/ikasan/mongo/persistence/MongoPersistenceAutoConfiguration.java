@@ -318,8 +318,9 @@ public class MongoPersistenceAutoConfiguration {
 
     @Bean("scheduledContextDao")
     public ScheduledContextDao scheduledContextDao(MongoScheduledContextRecordRepository repository,
-                                                    MongoTemplate mongoTemplate) {
-        return new MongoScheduledContextDaoImpl(repository, mongoTemplate);
+                                                    MongoTemplate mongoTemplate,
+                                                    AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoScheduledContextDaoImpl(repository, mongoTemplate, atlasSearchQueryHelper);
     }
 
     @Bean("scheduledContextViewDao")
@@ -366,15 +367,17 @@ public class MongoPersistenceAutoConfiguration {
 
     @Bean("schedulerJobInstanceDao")
     public SchedulerJobInstanceDao schedulerJobInstanceDao(MongoSchedulerJobInstanceRecordRepository repository,
-                                                           MongoTemplate mongoTemplate) {
-        return new MongoSchedulerJobInstanceDaoImpl(repository, mongoTemplate);
+                                                           MongoTemplate mongoTemplate,
+                                                           AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoSchedulerJobInstanceDaoImpl(repository, mongoTemplate, atlasSearchQueryHelper);
     }
 
     @Bean("scheduledContextInstanceDao")
     public ScheduledContextInstanceDao scheduledContextInstanceDao(
             MongoScheduledContextInstanceRepository repository,
-            MongoTemplate mongoTemplate) {
-        return new MongoScheduledContextInstanceDao(repository, mongoTemplate, schedulerInstanceEntityRetentionDays);
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
+        return new MongoScheduledContextInstanceDao(repository, mongoTemplate, schedulerInstanceEntityRetentionDays, atlasSearchQueryHelper);
     }
 
     @Bean("scheduledContextInstanceAuditDao")
@@ -386,9 +389,10 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("scheduledContextInstanceAuditAggregateDao")
     public ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao(
             MongoScheduledContextInstanceAuditAggregateRepository repository,
-            MongoTemplate mongoTemplate) {
+            MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
         return new MongoScheduledContextInstanceAuditAggregateDao(repository, mongoTemplate
-            , this.schedulerInstanceEntityRetentionDays);
+            , this.schedulerInstanceEntityRetentionDays, atlasSearchQueryHelper);
     }
 
     @Bean("schedulerJobRecordDao")
@@ -543,8 +547,9 @@ public class MongoPersistenceAutoConfiguration {
     public MongoScheduledProcessEventDao scheduledProcessEventDao(
             MongoScheduledProcessEventRepository repository,
             MongoTemplate mongoTemplate,
+            AtlasSearchQueryHelper atlasSearchQueryHelper,
             @Value("${scheduled.process.event.housekeep.daysToKeep:90}") int daysToKeep) {
-        return new MongoScheduledProcessEventDao(repository, mongoTemplate, daysToKeep);
+        return new MongoScheduledProcessEventDao(repository, mongoTemplate, daysToKeep, atlasSearchQueryHelper);
     }
 
     // Security DAOs

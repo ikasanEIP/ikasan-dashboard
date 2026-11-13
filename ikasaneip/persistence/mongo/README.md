@@ -428,3 +428,71 @@ mongodb.atlas.search.enabled=false
 ```
 
 Even with Atlas Search enabled, the module will automatically fall back to regex-based search if it detects that Atlas Search is not available (e.g., when connecting to a non-Atlas MongoDB instance).
+
+## Atlas Search Query Helper
+
+The `AtlasSearchQueryHelper` class provides methods for executing Atlas Search queries with automatic fallback to regex-based search when Atlas Search is unavailable.
+
+### Search Methods
+
+| Method | Description |
+|--------|-------------|
+| `searchWithWildcard()` | Searches across multiple fields using compound OR wildcard. Best for full-text search across multiple fields. |
+| `searchWithText()` | Searches using Atlas text search across multiple fields. |
+| `searchWithFieldSpecificWildcards()` | Searches with field-specific AND (must) wildcard clauses. Each field-value pair must match (AND logic). |
+
+### Field-Specific Search with AND Logic
+
+For scenarios requiring each filter to match its specific field (AND semantics), use `searchWithFieldSpecificWildcards()`:
+
+```java
+// Build field-value pairs (all must match)
+List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = new ArrayList<>();
+fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("moduleName", "myModule"));
+fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("flowName", "myFlow"));
+fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair("status", "COMPLETE"));
+
+// Execute search with AND logic
+AtlasSearchQueryHelper.SearchQueryResult<MyEntity> result =
+    atlasSearchQueryHelper.searchWithFieldSpecificWildcards(
+        fieldValuePairs,           // Field-specific filters (AND logic)
+        additionalCriteria,        // Optional additional match criteria
+        Sort.by(Sort.Direction.DESC, "createdDateTime"),
+        offset,
+        limit,
+        MyEntity.class
+    );
+
+List<MyEntity> results = result.getResults();
+long totalCount = result.getTotalCount();
+```
+
+### Multi-Field Text Search with OR Logic
+
+For full-text search across multiple fields (OR semantics), use `searchWithWildcard()`:
+
+```java
+// Define fields to search
+List<String> searchFields = List.of("errorMessage", "errorDetail", "event");
+
+// Execute search - matches if search term found in ANY of the fields
+AtlasSearchQueryHelper.SearchQueryResult<MyEntity> result =
+    atlasSearchQueryHelper.searchWithWildcard(
+        "search term",             // Search string
+        searchFields,              // Fields to search (OR across all)
+        additionalCriteria,        // Optional additional match criteria
+        Sort.by(Sort.Direction.DESC, "createdDateTime"),
+        offset,
+        limit,
+        MyEntity.class
+    );
+```
+
+### Automatic Fallback
+
+Both methods automatically fall back to regex-based search when:
+- Atlas Search is disabled via configuration (`mongodb.atlas.search.enabled=false`)
+- Atlas Search is unavailable (e.g., connecting to non-Atlas MongoDB)
+- Atlas Search index does not exist
+
+The fallback uses equivalent regex patterns to maintain the same search semantics.

@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoContextInstanceAggregateJobStatusImpl;
@@ -41,11 +42,26 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSchedulerJobInstanceDaoImpl.class);
 
+    /**
+     * Fields to search when using Atlas Search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        EntityFields.MODULE_NAME,    // jobName
+        EntityFields.DISPLAY_NAME    // displayName
+    );
+
     private final MongoSchedulerJobInstanceRecordRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
 
     public MongoSchedulerJobInstanceDaoImpl(MongoSchedulerJobInstanceRecordRepository repository,
                                             MongoTemplate mongoTemplate) {
+        this(repository, mongoTemplate, null);
+    }
+
+    public MongoSchedulerJobInstanceDaoImpl(MongoSchedulerJobInstanceRecordRepository repository,
+                                            MongoTemplate mongoTemplate,
+                                            AtlasSearchQueryHelper atlasSearchQueryHelper) {
         if (repository == null) {
             throw new IllegalArgumentException("repository cannot be null");
         }
@@ -54,6 +70,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         }
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
     }
 
     @Override
@@ -243,9 +260,136 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         logger.debug("Finding job instances by filter: {}, limit={}, offset={}, sortField={}, sortDirection={}",
             filter, limit, offset, sortField, sortDirection);
 
+        // Check if we have text search terms that could benefit from Atlas Search
+        boolean hasTextSearch = filter != null &&
+            ((filter.getJobName() != null && !filter.getJobName().isEmpty()) ||
+             (filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()));
+
+        // Build sort
+        Sort sort = buildSort(sortField, sortDirection);
+
+        // If Atlas Search is available and we have text search terms, use it
+        if (atlasSearchQueryHelper != null && hasTextSearch) {
+            long startTime = System.currentTimeMillis();
+
+            // Build combined search term from text filter fields
+            StringBuilder searchTermBuilder = new StringBuilder();
+            if (filter.getJobName() != null && !filter.getJobName().isEmpty()) {
+                searchTermBuilder.append(filter.getJobName()).append(" ");
+            }
+            if (filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
+                searchTermBuilder.append(filter.getDisplayNameFilter()).append(" ");
+            }
+            String searchTerm = searchTermBuilder.toString().trim();
+
+            // Build base criteria from non-text filters
+            Criteria matchCriteria = buildNonTextCriteria(filter);
+
+            AtlasSearchQueryHelper.SearchQueryResult<MongoSchedulerJobInstanceRecordImpl> result =
+                atlasSearchQueryHelper.searchWithWildcard(searchTerm, SEARCH_FIELDS, matchCriteria,
+                    sort, offset, limit, MongoSchedulerJobInstanceRecordImpl.class);
+
+            long queryTime = System.currentTimeMillis() - startTime;
+
+            logger.debug("Found {} job instances out of {} total in {}ms using Atlas Search",
+                result.getResults().size(), result.getTotalCount(), queryTime);
+
+            return new SearchResultsImpl<>(new ArrayList<>(result.getResults()), result.getTotalCount(), queryTime);
+        }
+
+        // Fall back to regex-based query
         Query query = buildQueryFromFilter(filter);
 
         return executeQueryWithPagination(query, limit, offset, sortField, sortDirection);
+    }
+
+    /**
+     * Build criteria for non-text filter fields (used with Atlas Search).
+     */
+    private Criteria buildNonTextCriteria(SchedulerJobInstanceSearchFilter filter) {
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        if (filter == null) {
+            return null;
+        }
+
+        // Job type filter
+        if (filter.getJobType() != null && !filter.getJobType().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.TYPE).is(filter.getJobType()));
+        } else {
+            List<Criteria> typeOrCriteria = new ArrayList<>(List.of(
+                Criteria.where(EntityFields.TYPE).is(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.GLOBAL_EVENT_JOB_INSTANCE),
+                Criteria.where(EntityFields.TYPE).is(JobConstants.LOCAL_EVENT_JOB_INSTANCE)));
+
+            if (filter.includeStartAndTerminalJobsInSearchResults()) {
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_START_JOB_INSTANCE));
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE));
+                typeOrCriteria.add(Criteria.where(EntityFields.TYPE).is(JobConstants.BRIDGING_JOB_INSTANCE));
+            }
+
+            criteriaList.add(new Criteria().orOperator(typeOrCriteria));
+        }
+
+        // Context name filter (exact match)
+        if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).is(filter.getContextName()));
+        }
+
+        // Context instance ID filter (exact match)
+        if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME).is(filter.getContextInstanceId()));
+        }
+
+        // Child context name filter
+        if (filter.getChildContextName() != null && !filter.getChildContextName().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.CHILD_CONTEXT_NAME).is(filter.getChildContextName()));
+        }
+
+        // Status filter
+        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
+            criteriaList.add(Criteria.where(EntityFields.STATUS).is(filter.getStatus()));
+        }
+
+        // Boolean filters
+        if (filter.isTargetResidingContextOnly() != null) {
+            criteriaList.add(Criteria.where(EntityFields.TARGET_RESIDING_CONTEXT_ONLY).is(filter.isTargetResidingContextOnly()));
+        }
+
+        if (filter.isParticipatesInLock() != null) {
+            criteriaList.add(Criteria.where(EntityFields.PARTICIPATES_IN_LOCK).is(filter.isParticipatesInLock()));
+        }
+
+        // Time window filters
+        if (filter.getStartTimeWindowStart() > 0 && filter.getStartTimeWindowEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.START_TIME)
+                .gte(filter.getStartTimeWindowStart())
+                .lte(filter.getStartTimeWindowEnd()));
+        } else if (filter.getStartTimeWindowStart() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.START_TIME).gte(filter.getStartTimeWindowStart()));
+        } else if (filter.getStartTimeWindowEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.START_TIME).lte(filter.getStartTimeWindowEnd()));
+        }
+
+        if (filter.getEndTimeWindowStart() > 0 && filter.getEndTimeWindowEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.END_TIME)
+                .gte(filter.getEndTimeWindowStart())
+                .lte(filter.getEndTimeWindowEnd()));
+        } else if (filter.getEndTimeWindowStart() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.END_TIME).gte(filter.getEndTimeWindowStart()));
+        } else if (filter.getEndTimeWindowEnd() > 0) {
+            criteriaList.add(Criteria.where(EntityFields.END_TIME).lte(filter.getEndTimeWindowEnd()));
+        }
+
+        if (criteriaList.isEmpty()) {
+            return null;
+        } else if (criteriaList.size() == 1) {
+            return criteriaList.get(0);
+        } else {
+            return new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        }
     }
 
     @Override
