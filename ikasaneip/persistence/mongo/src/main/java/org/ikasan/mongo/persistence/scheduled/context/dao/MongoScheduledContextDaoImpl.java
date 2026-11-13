@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.context.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.context.model.MongoScheduledContextRecordImpl;
@@ -38,13 +39,6 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoScheduledContextDaoImpl.class);
 
-    /**
-     * Fields to search when using Atlas Search.
-     */
-    private static final List<String> SEARCH_FIELDS = List.of(
-        EntityFields.MODULE_NAME   // contextName
-    );
-
     private static JsonMapper objectMapper = JsonMapper.builder().build();
 
     private final MongoScheduledContextRecordRepository repository;
@@ -61,7 +55,8 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
                                         AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
-        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper != null
+            ? atlasSearchQueryHelper : new AtlasSearchQueryHelper(mongoTemplate, null, false);
     }
 
     @Override
@@ -116,9 +111,6 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
                                                                String sortOrder) {
         logger.debug("Finding ScheduledContextRecords by filter: {}", filter);
 
-        // Check if we have text search term that could benefit from Atlas Search
-        boolean hasTextSearch = filter != null && filter.getContextName() != null && !filter.getContextName().isEmpty();
-
         // Build sort
         Sort sort;
         if (sortColumn != null && !sortColumn.isEmpty()) {
@@ -127,67 +119,26 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
                 : Sort.Direction.DESC;
             sort = Sort.by(direction, sortColumn);
         } else {
-            // Default sort by modified timestamp descending
+            // Default sort by created timestamp descending
             sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
         }
 
-        // If Atlas Search is available and we have text search term, use it
-        if (atlasSearchQueryHelper != null && hasTextSearch) {
-            // Build base criteria from non-text filters
-            List<Criteria> criteriaList = new ArrayList<>();
-            criteriaList.add(Criteria.where(TYPE).is(SCHEDULED_CONTEXT_TYPE));
-
-            if (filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
-                criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).in(filter.getContextNames()));
-            }
-
-            Criteria matchCriteria = criteriaList.size() == 1
-                ? criteriaList.get(0)
-                : new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
-
-            AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextRecordImpl> result =
-                atlasSearchQueryHelper.searchWithWildcard(filter.getContextName(), SEARCH_FIELDS, matchCriteria,
-                    sort, offset, limit, MongoScheduledContextRecordImpl.class);
-
-            logger.debug("Found {} ScheduledContextRecords out of {} total matching filter using Atlas Search",
-                result.getResults().size(), result.getTotalCount());
-
-            return new SearchResultsImpl<>(new ArrayList<>(result.getResults()), result.getTotalCount(), 0L);
-        }
-
-        // Fall back to regex-based query
-        Query query = new Query();
-        query.addCriteria(Criteria.where(TYPE).is(SCHEDULED_CONTEXT_TYPE));
-
-        // Build criteria from filter
+        AtlasSearchFilter.Builder searchFilter = AtlasSearchFilter.builder()
+            .equals(TYPE, SCHEDULED_CONTEXT_TYPE);
         if (filter != null) {
-            if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-                Criteria criteria = Criteria.where(EntityFields.MODULE_NAME)
-                    .regex(filter.getContextName(), "i"); // Case-insensitive regex
-                query.addCriteria(criteria);
-            }
-            if (filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
-                Criteria criteria = Criteria.where(EntityFields.MODULE_NAME).in(filter.getContextNames());
-                query.addCriteria(criteria);
-            }
+            searchFilter
+                .in(EntityFields.MODULE_NAME, filter.getContextNames())
+                .contains(EntityFields.MODULE_NAME, filter.getContextName());
         }
 
-        // Count total matching records
-        long totalCount = mongoTemplate.count(query, MongoScheduledContextRecordImpl.class);
+        AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextRecordImpl> result =
+            atlasSearchQueryHelper.search(searchFilter.build(), sort, Math.max(offset, 0), limit,
+                MongoScheduledContextRecordImpl.class);
 
-        query.with(sort);
+        logger.debug("Found {} ScheduledContextRecords out of {} total matching filter",
+            result.getResults().size(), result.getTotalCount());
 
-        // Apply pagination
-        if (limit > 0) {
-            int page = offset > 0 ? offset / limit : 0;
-            query.with(PageRequest.of(page, limit));
-        }
-
-        List<MongoScheduledContextRecordImpl> results = mongoTemplate.find(query, MongoScheduledContextRecordImpl.class);
-
-        logger.debug("Found {} ScheduledContextRecords out of {} total matching filter", results.size(), totalCount);
-
-        return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, 0L);
+        return new SearchResultsImpl<>(new ArrayList<>(result.getResults()), result.getTotalCount(), 0L);
     }
 
     @Override

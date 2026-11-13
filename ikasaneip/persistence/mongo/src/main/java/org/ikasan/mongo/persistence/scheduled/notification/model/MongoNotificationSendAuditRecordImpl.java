@@ -7,7 +7,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -33,11 +32,9 @@ public class MongoNotificationSendAuditRecordImpl implements NotificationSendAud
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Indexed
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

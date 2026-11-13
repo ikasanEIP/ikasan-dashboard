@@ -10,7 +10,6 @@ import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -83,7 +82,6 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
     @Field(EntityFields.MANUALLY_SUBMITTED_BY)
     private String manuallySubmittedBy;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

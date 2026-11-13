@@ -6,7 +6,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -41,7 +40,6 @@ public class MongoScheduledContextViewRecordImpl implements ScheduledContextView
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

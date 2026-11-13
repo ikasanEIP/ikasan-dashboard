@@ -8,7 +8,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -61,11 +60,9 @@ public class MongoInternalEventDrivenJobRecordImpl implements InternalEventDrive
     @Field(EntityFields.PARTICIPATES_IN_LOCK)
     private Boolean participatesInLock = false;
 
-    @Indexed
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

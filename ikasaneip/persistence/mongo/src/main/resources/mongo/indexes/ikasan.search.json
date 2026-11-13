@@ -1,0 +1,44 @@
+{
+  "analyzer": "lucene.standard",
+  "searchAnalyzer": "lucene.standard",
+  "analyzers": [
+    {
+      "name": "lowercaseKeyword",
+      "tokenizer": { "type": "keyword" },
+      "tokenFilters": [ { "type": "lowercase" } ]
+    }
+  ],
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "type":                       [ { "type": "token" } ],
+
+      "moduleName":                 [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "flowName":                   [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "componentName":              [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "displayName":                [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "childContextName":           [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "status":                     [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "errorUri":                   [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "actor":                      [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "systemEventSubject":         [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "systemEventAction":          [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "event":                      [ { "type": "token" }, { "type": "string", "analyzer": "lucene.standard" } ],
+
+      "payload":                    { "type": "string", "analyzer": "lucene.standard" },
+      "errorDetail":                { "type": "string", "analyzer": "lucene.standard" },
+      "errorMessage":               { "type": "string", "analyzer": "lucene.standard" },
+
+      "timestamp":                  [ { "type": "number" }, { "type": "date" } ],
+      "modifiedTimestamp":          { "type": "number" },
+      "expiry":                     { "type": "number" },
+      "harvestReceivedTimestamp":   { "type": "number" },
+      "startTime":                  { "type": "number" },
+      "endTime":                    { "type": "number" },
+
+      "disabled":                   { "type": "boolean" },
+      "targetResidingContextOnly":  { "type": "boolean" },
+      "participatesInLock":         { "type": "boolean" }
+    }
+  }
+}

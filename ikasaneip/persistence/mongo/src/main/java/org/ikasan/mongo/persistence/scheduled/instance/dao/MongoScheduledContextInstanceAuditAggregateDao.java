@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
-import org.ikasan.mongo.persistence.general.dao.AtlasSearchAggregationOperation;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceAuditAggregateRepository;
@@ -11,8 +11,6 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAgg
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -63,7 +61,8 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.daysToKeep = daysToKeep;
-        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper != null
+            ? atlasSearchQueryHelper : new AtlasSearchQueryHelper(mongoTemplate, null, false);
     }
 
     @Override
@@ -125,114 +124,26 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
             sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
         }
 
-        // Build field-value pairs for text search filters
-        List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = new ArrayList<>();
+        // All fields are case-insensitive substring matches (AND'ed) evaluated inside the Atlas $search stage
+        AtlasSearchFilter searchFilter = AtlasSearchFilter.builder()
+                .equals(EntityFields.TYPE, SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE)
+                .contains(EntityFields.MODULE_NAME, filter.getContextName())
+                .contains(EntityFields.FLOW_NAME, filter.getContextInstanceId())
+                .contains(EntityFields.COMPONENT_NAME, filter.getScheduledProcessEventName())
+                .contains(EntityFields.STATUS, filter.getStatus())
+                .contains(EntityFields.EVENT, filter.getRaisedInitiationEventName())
+                .build();
 
-        if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
-                EntityFields.MODULE_NAME, filter.getContextName()));
-        }
-
-        if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
-            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
-                EntityFields.FLOW_NAME, filter.getContextInstanceId()));
-        }
-
-        if (filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()) {
-            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
-                EntityFields.COMPONENT_NAME, filter.getScheduledProcessEventName().toLowerCase()));
-        }
-
-        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
-                EntityFields.STATUS, filter.getStatus()));
-        }
-
-        if (filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
-            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
-                EntityFields.EVENT, filter.getRaisedInitiationEventName().toLowerCase()));
-        }
-
-        // Type filter is always applied as match criteria
-        Criteria typeCriteria = Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE);
-
-        // If Atlas Search is available and we have search terms, use it
-        if (atlasSearchQueryHelper != null && !fieldValuePairs.isEmpty()) {
-            AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextInstanceAuditAggregateRecordImpl> result =
-                atlasSearchQueryHelper.searchWithFieldSpecificWildcards(fieldValuePairs, typeCriteria,
-                    sort, offset, limit, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
-
-            long queryTime = System.currentTimeMillis() - queryStartTime;
-
-            logger.debug("Found {} scheduled context instance audit aggregate records (total: {}) using Atlas Search",
-                result.getResults().size(), result.getTotalCount());
-
-            return createSearchResults(new ArrayList<>(result.getResults()), result.getTotalCount(), queryTime);
-        }
-
-        // Fall back to standard query (no search filters or no Atlas Search helper)
-        Query query = new Query();
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        // Always add type filter
-        criteriaList.add(typeCriteria);
-
-        // Filter by context name (wildcard)
-        if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.MODULE_NAME).regex(".*" + filter.getContextName() + ".*", "i"));
-        }
-
-        // Filter by context instance ID (wildcard)
-        if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).regex(".*" + filter.getContextInstanceId() + ".*", "i"));
-        }
-
-        // Filter by scheduled process event name (wildcard, case insensitive)
-        if (filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.COMPONENT_NAME)
-                    .regex(".*" + filter.getScheduledProcessEventName().toLowerCase() + ".*", "i"));
-        }
-
-        // Filter by status (wildcard)
-        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.STATUS).regex(".*" + filter.getStatus() + ".*", "i"));
-        }
-
-        // Filter by raised initiation event name (search in raisedEvents field)
-        if (filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.EVENT)
-                    .regex(".*" + filter.getRaisedInitiationEventName().toLowerCase() + ".*", "i"));
-        }
-
-        // Apply all criteria
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
-        }
-
-        query.with(sort);
-
-        // Get total count
-        long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
-
-        // Apply pagination
-        if (limit > 0 && offset >= 0) {
-            int page = offset / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else if (offset > 0) {
-            query.skip(offset);
-        }
-
-        // Execute query
-        List<MongoScheduledContextInstanceAuditAggregateRecordImpl> results =
-                mongoTemplate.find(query, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
+        AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextInstanceAuditAggregateRecordImpl> result =
+                atlasSearchQueryHelper.search(searchFilter, sort, Math.max(offset, 0), limit,
+                        MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 
         logger.debug("Found {} scheduled context instance audit aggregate records (total: {})",
-                results.size(), totalCount);
+                result.getResults().size(), result.getTotalCount());
 
-        return createSearchResults(new ArrayList<>(results), totalCount, queryTime);
+        return createSearchResults(new ArrayList<>(result.getResults()), result.getTotalCount(), queryTime);
     }
 
     @Override

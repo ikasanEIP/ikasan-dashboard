@@ -8,7 +8,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -33,11 +32,9 @@ public class MongoJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Field(EntityFields.UPDATED_DATE_TIME)
     private Long modifiedTimestamp = 0L;
 
-    @Indexed
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

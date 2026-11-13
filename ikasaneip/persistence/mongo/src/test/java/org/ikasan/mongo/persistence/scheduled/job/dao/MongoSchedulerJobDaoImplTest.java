@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoSchedulerJobRecordImpl;
@@ -519,5 +521,20 @@ public class MongoSchedulerJobDaoImplTest {
         document.put("_class", "org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata");
 
         mongoTemplate.getCollection(IKASAN_COLLECTION_NAME).insertOne(document);
+    }
+
+    @Test
+    public void test_delete_by_agent_and_context_name_only_deletes_job_documents() {
+        insertFileEventDrivenJobsWithAgent("id1", 2, "context1", "agent1");
+        // another entity type sharing the collection, with the same module and component names
+        MongoCollection<Document> collection = mongoTemplate.getCollection(IKASAN_COLLECTION_NAME);
+        collection.insertOne(new Document("_id", "wiretap-1").append("type", "WIRETAP")
+            .append("moduleName", "agent1").append("componentName", "context1"));
+
+        dao.deleteByAgentName("agent1");
+        dao.deleteByContextName("context1");
+
+        Assert.assertEquals(0, dao.findAll(100, 0).getTotalNumberOfResults());
+        Assert.assertEquals(1, collection.countDocuments(new Document("_id", "wiretap-1")));
     }
 }

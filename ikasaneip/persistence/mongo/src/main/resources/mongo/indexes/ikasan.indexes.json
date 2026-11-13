@@ -1,0 +1,54 @@
+{
+  "createIndexes": "ikasan",
+  "indexes": [
+    {
+      "name": "type_1_timestamp_-1",
+      "key": { "type": 1, "timestamp": -1 }
+    },
+    {
+      "name": "type_1_moduleName_1_timestamp_-1",
+      "key": { "type": 1, "moduleName": 1, "timestamp": -1 }
+    },
+    {
+      "name": "type_1_moduleName_1_flowName_1_timestamp_-1",
+      "key": { "type": 1, "moduleName": 1, "flowName": 1, "timestamp": -1 }
+    },
+    {
+      "name": "type_1_componentName_1_flowName_1",
+      "key": { "type": 1, "componentName": 1, "flowName": 1 }
+    },
+    {
+      "name": "type_1_flowName_1",
+      "key": { "type": 1, "flowName": 1 }
+    },
+    {
+      "name": "type_1_status_1",
+      "key": { "type": 1, "status": 1 }
+    },
+    {
+      "name": "type_1_name_1",
+      "key": { "type": 1, "name": 1 }
+    },
+    {
+      "name": "type_1_expiry_1",
+      "key": { "type": 1, "expiry": 1 }
+    },
+    {
+      "name": "expiry_1",
+      "key": { "expiry": 1 }
+    },
+    {
+      "name": "type_1_harvestReceivedTimestamp_1",
+      "key": { "type": 1, "harvestReceivedTimestamp": 1 }
+    },
+    {
+      "name": "errorUri_1",
+      "key": { "errorUri": 1 },
+      "sparse": true
+    },
+    {
+      "name": "event_1",
+      "key": { "event": 1 }
+    }
+  ]
+}

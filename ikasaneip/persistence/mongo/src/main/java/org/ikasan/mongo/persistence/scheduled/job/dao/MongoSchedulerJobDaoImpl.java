@@ -1,6 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
-import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
@@ -55,6 +55,22 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         JobConstants.CONTEXT_START_JOB,
         JobConstants.CONTEXT_TERMINAL_JOB,
         JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE
+    );
+
+    /**
+     * Every job document type (including templates and bridging jobs). All entity types share the collection, so
+     * deletes must be scoped to these.
+     */
+    private static final List<String> ALL_JOB_DOCUMENT_TYPES = Arrays.asList(
+        JobConstants.FILE_EVENT_DRIVEN_JOB,
+        JobConstants.INTERNAL_EVENT_DRIVEN_JOB,
+        JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE,
+        JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB,
+        JobConstants.GLOBAL_EVENT_JOB,
+        JobConstants.CONTEXT_START_JOB,
+        JobConstants.CONTEXT_TERMINAL_JOB,
+        JobConstants.LOCAL_EVENT_JOB,
+        JobConstants.BRIDGING_JOB
     );
 
     public MongoSchedulerJobDaoImpl(MongoSchedulerJobRepository repository, MongoTemplate mongoTemplate) {
@@ -145,12 +161,12 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
 
         // Job name filter
         if (filter.getJobNameFilter() != null && !filter.getJobNameFilter().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.FLOW_NAME).regex(".*" + filter.getJobNameFilter() + ".*", "i"));
+            criteriaList.add(RegexCriteria.containsIgnoreCase(EntityFields.FLOW_NAME, filter.getJobNameFilter()));
         }
 
         // Display name filter
         if (filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
-            criteriaList.add(Criteria.where(EntityFields.DISPLAY_NAME).regex(".*" + filter.getDisplayNameFilter() + ".*", "i"));
+            criteriaList.add(RegexCriteria.containsIgnoreCase(EntityFields.DISPLAY_NAME, filter.getDisplayNameFilter()));
         }
 
         // NOT job name filter
@@ -250,12 +266,14 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
 
     @Override
     public void deleteByAgentName(String agentName) {
-        repository.deleteByAgentName(agentName);
+        mongoTemplate.remove(new Query(Criteria.where(EntityFields.TYPE).in(ALL_JOB_DOCUMENT_TYPES)
+            .and(EntityFields.MODULE_NAME).is(agentName)), MongoSchedulerJobRecordImpl.class);
     }
 
     @Override
     public void deleteByContextName(String contextName) {
-        repository.deleteByContextName(contextName);
+        mongoTemplate.remove(new Query(Criteria.where(EntityFields.TYPE).in(ALL_JOB_DOCUMENT_TYPES)
+            .and(EntityFields.COMPONENT_NAME).is(contextName)), MongoSchedulerJobRecordImpl.class);
     }
 
     @Override

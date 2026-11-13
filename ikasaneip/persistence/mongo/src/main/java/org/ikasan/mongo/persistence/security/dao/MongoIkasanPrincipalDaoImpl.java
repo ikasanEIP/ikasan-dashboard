@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalLiteImpl;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalRecord;
@@ -269,7 +270,7 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
     @Override
     public List<IkasanPrincipal> getPrincipalByNameLike(String name) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.NAME).regex(".*" + name + ".*", "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.NAME, name));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(PRINCIPAL_TYPE));
 
         return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
@@ -671,15 +672,15 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         }
 
         if (filter.getTypeFilter() != null && !filter.getTypeFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.IKASAN_PRINCIPAL_TYPE).regex(filter.getTypeFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.IKASAN_PRINCIPAL_TYPE, filter.getTypeFilter()));
         }
 
         if (filter.getNameFilter() != null && !filter.getNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.NAME).regex(filter.getNameFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.NAME, filter.getNameFilter()));
         }
 
         if (filter.getDescriptionFilter() != null && !filter.getDescriptionFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.DESCRIPTION).regex(filter.getDescriptionFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.DESCRIPTION, filter.getDescriptionFilter()));
         }
     }
 

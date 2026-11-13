@@ -8,7 +8,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -57,7 +56,6 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
     @Field(EntityFields.JOB_TYPE)
     private String jobType;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

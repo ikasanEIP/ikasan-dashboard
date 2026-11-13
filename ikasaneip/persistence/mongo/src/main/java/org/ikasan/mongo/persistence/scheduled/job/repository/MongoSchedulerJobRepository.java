@@ -34,18 +34,6 @@ public interface MongoSchedulerJobRepository extends MongoRepository<MongoSchedu
     MongoSchedulerJobRecordImpl findByContextNameAndJobName(String contextName, String jobName);
 
     /**
-     * Delete all jobs by agent name
-     * @param agentName the agent name
-     */
-    void deleteByAgentName(String agentName);
-
-    /**
-     * Delete all jobs by context name
-     * @param contextName the context name
-     */
-    void deleteByContextName(String contextName);
-
-    /**
      * Get all distinct agent names
      * @return list of agent names
      */

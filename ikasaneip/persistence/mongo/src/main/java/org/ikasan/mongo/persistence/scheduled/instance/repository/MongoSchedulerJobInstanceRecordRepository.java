@@ -30,10 +30,4 @@ public interface MongoSchedulerJobInstanceRecordRepository extends MongoReposito
      */
     List<MongoSchedulerJobInstanceRecordImpl> findByContextName(String contextName);
 
-    /**
-     * Delete all job instances by context instance id.
-     *
-     * @param contextInstanceId
-     */
-    void deleteByContextInstanceId(String contextInstanceId);
 }

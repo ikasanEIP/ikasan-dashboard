@@ -5,7 +5,6 @@ import org.ikasan.spec.entity.EntityFields;
 import org.ikasan.spec.replay.ReplayAudit;
 import org.ikasan.spec.replay.ReplayAuditEvent;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -30,7 +29,6 @@ public class MongoReplayAuditEventImpl implements ReplayAuditEvent<String> {
 
     private String resultMessage;
 
-    @Indexed
     @Field(EntityFields.CREATED_DATE_TIME)
     private Long timestamp = 0L;
 

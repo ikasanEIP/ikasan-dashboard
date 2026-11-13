@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalFilterImpl;
 import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
 import org.ikasan.mongo.persistence.security.model.MongoUserRecord;
@@ -230,7 +231,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserByUsernameLike(String username) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.NAME).regex(".*" + username + ".*", "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.NAME, username));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -241,7 +242,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserByFirstnameLike(String firstname) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.FIRST_NAME).regex(".*" + firstname + ".*", "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.FIRST_NAME, firstname));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -252,7 +253,7 @@ public class MongoUserDaoImpl implements UserDao {
     @Override
     public List<User> getUserBySurnameLike(String surname) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.SURNAME).regex(".*" + surname + ".*", "i"));
+        query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.SURNAME, surname));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
@@ -269,10 +270,10 @@ public class MongoUserDaoImpl implements UserDao {
 
         // Set created timestamp only if this is a new user
         if (mongoUser.getTimestamp() == 0) {
-            repository.findByUsername(user.getUsername()).ifPresentOrElse(
-                existing -> mongoUser.setTimestamp(existing.getTimestamp()),
-                () -> mongoUser.setTimestamp(currentTime)
-            );
+            MongoUserRecord existing = mongoTemplate.findOne(
+                new Query(Criteria.where(EntityFields.NAME).is(user.getUsername()).and(EntityFields.TYPE).is(USER_TYPE)),
+                MongoUserRecord.class);
+            mongoUser.setTimestamp(existing != null ? existing.getTimestamp() : currentTime);
         }
 
         mongoUser.setExpiry(DO_NOT_EXPIRE);
@@ -300,12 +301,12 @@ public class MongoUserDaoImpl implements UserDao {
     }
 
     /**
-     * Delete users with expiry less than the current timestamp.
+     * Delete users with expiry less than the current timestamp. Users saved with {@code DO_NOT_EXPIRE} (-1) are kept.
      */
     public void deleteExpired() {
         long currentTime = System.currentTimeMillis();
         Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.EXPIRY).lt(currentTime));
+        query.addCriteria(Criteria.where(EntityFields.EXPIRY).gt(0).lt(currentTime));
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
         mongoTemplate.remove(query, MongoUserRecord.class);
@@ -424,23 +425,23 @@ public class MongoUserDaoImpl implements UserDao {
         }
 
         if (filter.getUsernameFilter() != null && !filter.getUsernameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.NAME).regex(filter.getUsernameFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.NAME, filter.getUsernameFilter()));
         }
 
         if (filter.getEmailFilter() != null && !filter.getEmailFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.EMAIL).regex(filter.getEmailFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.EMAIL, filter.getEmailFilter()));
         }
 
         if (filter.getNameFilter() != null && !filter.getNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.FIRST_NAME).regex(filter.getNameFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.FIRST_NAME, filter.getNameFilter()));
         }
 
         if (filter.getLastNameFilter() != null && !filter.getLastNameFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.SURNAME).regex(filter.getLastNameFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.SURNAME, filter.getLastNameFilter()));
         }
 
         if (filter.getDepartmentFilter() != null && !filter.getDepartmentFilter().isEmpty()) {
-            query.addCriteria(Criteria.where(EntityFields.DEPARTMENT).regex(filter.getDepartmentFilter(), "i"));
+            query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.DEPARTMENT, filter.getDepartmentFilter()));
         }
     }
 }

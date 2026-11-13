@@ -8,7 +8,6 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import tools.jackson.core.JacksonException;
@@ -34,7 +33,6 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     @Field(EntityFields.TYPE)
     private String type;
 
-    @Indexed(unique = true)
     @Field(EntityFields.MODULE_NAME)
     private String contextName;
 
@@ -50,14 +48,12 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
     @Field(EntityFields.MODIFIED_BY)
     private String modifiedBy;
 
-    @Indexed
     @Field(EntityFields.DISABLED)
     private Boolean disabled = false;
 
     @Field(EntityFields.QUARTZ_SCHEDULED_JOBS_DISABLED)
     private Boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
 
-    @Indexed
     @Field(EntityFields.EXPIRY)
     private Long expiry = 0L;
 

@@ -1,5 +1,8 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
+import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 import org.ikasan.mongo.persistence.replay.model.MongoReplayAuditEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayAuditEventRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -195,5 +198,23 @@ public class MongoReplayAuditDaoImplTest {
         auditEvent.setResultMessage(resultMessage);
         auditEvent.setTimestamp(System.currentTimeMillis());
         return auditEvent;
+    }
+
+    @Test
+    public void testDeleteExpiredOnlyDeletesExpiredReplayAuditEvents() {
+        MongoCollection<Document> collection = mongoTemplate.getCollection(IKASAN_COLLECTION_NAME);
+        collection.insertMany(List.of(
+            new Document("_id", "expired-audit").append("type", MongoReplayAuditDaoImpl.REPLAY_AUDIT).append("expiry", 1L),
+            // other entity types sharing the collection
+            new Document("_id", "never-expires").append("type", "USER").append("expiry", -1L),
+            new Document("_id", "expired-other-type").append("type", "WIRETAP").append("expiry", 1L)));
+        dao.save(createAuditEvent("current-audit", true, "not expired"));
+
+        dao.deleteExpired();
+
+        assertEquals(0, collection.countDocuments(new Document("_id", "expired-audit")));
+        assertEquals(1, collection.countDocuments(new Document("_id", "never-expires")));
+        assertEquals(1, collection.countDocuments(new Document("_id", "expired-other-type")));
+        assertEquals(1, collection.countDocuments(new Document("type", MongoReplayAuditDaoImpl.REPLAY_AUDIT)));
     }
 }
