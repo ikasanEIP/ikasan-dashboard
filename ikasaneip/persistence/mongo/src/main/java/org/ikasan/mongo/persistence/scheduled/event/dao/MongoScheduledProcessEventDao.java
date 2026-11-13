@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.event.dao;
 
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.mongo.persistence.scheduled.event.repository.MongoScheduledProcessEventRepository;
 import org.slf4j.Logger;
@@ -31,8 +32,22 @@ public class MongoScheduledProcessEventDao {
 
     private static final String SCHEDULED_PROCESS_EVENT = "scheduledProcessEvent";
 
+    /**
+     * Fields to search in for full-text search.
+     */
+    private static final List<String> SEARCH_FIELDS = List.of(
+        "commandLine",
+        "outcome",
+        "resultOutput",
+        "resultError",
+        "jobName",
+        "jobGroup",
+        "agentName"
+    );
+
     private final MongoScheduledProcessEventRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
     private final int daysToKeep;
     private final JsonMapper objectMapper;
 
@@ -46,8 +61,24 @@ public class MongoScheduledProcessEventDao {
     public MongoScheduledProcessEventDao(MongoScheduledProcessEventRepository repository,
                                          MongoTemplate mongoTemplate,
                                          int daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, new AtlasSearchQueryHelper(mongoTemplate));
+    }
+
+    /**
+     * Constructor with AtlasSearchQueryHelper
+     *
+     * @param repository the MongoDB repository
+     * @param mongoTemplate the MongoDB template
+     * @param daysToKeep the number of days to keep events
+     * @param atlasSearchQueryHelper the Atlas Search query helper
+     */
+    public MongoScheduledProcessEventDao(MongoScheduledProcessEventRepository repository,
+                                         MongoTemplate mongoTemplate,
+                                         int daysToKeep,
+                                         AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
         this.daysToKeep = daysToKeep;
         this.objectMapper = JsonMapper.builder().build();
     }
@@ -163,7 +194,6 @@ public class MongoScheduledProcessEventDao {
 
         long queryStartTime = System.currentTimeMillis();
 
-        Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
         // Filter by date range
@@ -182,40 +212,39 @@ public class MongoScheduledProcessEventDao {
             criteriaList.add(Criteria.where("successful").is(false));
         }
 
-        // Filter by search term in JSON payload
-        if (filter != null && !filter.isEmpty()) {
-            try {
-                // Convert event to JSON and search within it
-                // We'll use a regex pattern to search across multiple fields
-                List<Criteria> filterCriteria = new ArrayList<>();
-                String regex = ".*" + Pattern.quote(filter) + ".*";
-
-                // Search in key text fields
-                filterCriteria.add(Criteria.where("commandLine").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("outcome").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("resultOutput").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("resultError").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("jobName").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("jobGroup").regex(regex, "i"));
-                filterCriteria.add(Criteria.where("agentName").regex(regex, "i"));
-
-                criteriaList.add(new Criteria().orOperator(filterCriteria.toArray(new Criteria[0])));
-            } catch (Exception e) {
-                logger.warn("Error applying filter: {}", filter, e);
-            }
-        }
-
-        // Apply all criteria
+        // Build match criteria from other filters
+        Criteria matchCriteria = null;
         if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+            matchCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         }
-
-        // Get total count before pagination
-        long totalCount = mongoTemplate.count(query, ContextualisedScheduledProcessEventImpl.class);
 
         // Apply sorting
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        query.with(Sort.by(direction, "fireTime"));
+        Sort sort = Sort.by(direction, "fireTime");
+
+        // If filter is provided, use Atlas Search (with automatic fallback to regex)
+        if (filter != null && !filter.isEmpty()) {
+            AtlasSearchQueryHelper.SearchQueryResult<ContextualisedScheduledProcessEventImpl> searchResult =
+                atlasSearchQueryHelper.searchWithWildcard(filter, SEARCH_FIELDS, matchCriteria,
+                    sort, start, limit, ContextualisedScheduledProcessEventImpl.class);
+
+            long queryTime = System.currentTimeMillis() - queryStartTime;
+
+            logger.debug("Found {} scheduled process events (total: {}, queryTime: {}ms)",
+                    searchResult.getResults().size(), searchResult.getTotalCount(), queryTime);
+
+            return new ScheduledProcessEventSearchResults<>(searchResult.getResults(), searchResult.getTotalCount(), queryTime);
+        }
+
+        // No filter - use standard query
+        Query query = new Query();
+        if (matchCriteria != null) {
+            query.addCriteria(matchCriteria);
+        }
+        query.with(sort);
+
+        // Get total count before pagination
+        long totalCount = mongoTemplate.count(query, ContextualisedScheduledProcessEventImpl.class);
 
         // Apply pagination
         if (limit > 0) {

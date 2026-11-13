@@ -233,6 +233,35 @@ public class AtlasSearchAggregationOperation implements AggregationOperation {
     }
 
     /**
+     * Creates a compound AND (must) search with field-specific wildcard clauses.
+     * Each entry in fieldValuePairs maps a field name to the value to search for in that field.
+     * All conditions must match (AND logic).
+     *
+     * @param indexName the name of the Atlas Search index
+     * @param fieldValuePairs list of field-value pairs to search
+     * @return the AtlasSearchAggregationOperation
+     */
+    public static AtlasSearchAggregationOperation compoundMustWildcardSearch(String indexName,
+                                                                               List<FieldValuePair> fieldValuePairs) {
+        // Build must clauses for each field-value pair (AND logic)
+        List<Document> mustClauses = fieldValuePairs.stream()
+            .map(pair -> new Document("wildcard", new Document()
+                .append("query", wrapWithWildcards(pair.value()))
+                .append("path", pair.field())
+                .append("allowAnalyzedField", true)))
+            .toList();
+
+        Document compound = new Document()
+            .append("must", mustClauses);
+
+        Document searchStage = new Document()
+            .append("index", indexName != null ? indexName : DEFAULT_INDEX_NAME)
+            .append("compound", compound);
+
+        return new AtlasSearchAggregationOperation(new Document("$search", searchStage));
+    }
+
+    /**
      * Helper method to wrap a search query with wildcards for substring matching.
      *
      * @param searchQuery the search query
@@ -248,6 +277,11 @@ public class AtlasSearchAggregationOperation implements AggregationOperation {
         }
         return result;
     }
+
+    /**
+     * Record for field-value pairs used in compound searches.
+     */
+    public record FieldValuePair(String field, String value) {}
 
     @Override
     public Document toDocument(AggregationOperationContext context) {

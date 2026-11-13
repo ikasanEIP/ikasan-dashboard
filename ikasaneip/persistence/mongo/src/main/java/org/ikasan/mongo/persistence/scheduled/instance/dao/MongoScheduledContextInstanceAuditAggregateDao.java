@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchAggregationOperation;
+import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceAuditAggregateRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -31,19 +33,37 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
     private final MongoScheduledContextInstanceAuditAggregateRepository repository;
     private final MongoTemplate mongoTemplate;
     private final long daysToKeep;
+    private final AtlasSearchQueryHelper atlasSearchQueryHelper;
 
     /**
      * Constructor
      *
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoDB template
+     * @param daysToKeep the number of days to keep records
      */
     public MongoScheduledContextInstanceAuditAggregateDao(
             MongoScheduledContextInstanceAuditAggregateRepository repository,
             MongoTemplate mongoTemplate, long daysToKeep) {
+        this(repository, mongoTemplate, daysToKeep, null);
+    }
+
+    /**
+     * Constructor with AtlasSearchQueryHelper
+     *
+     * @param repository the MongoDB repository
+     * @param mongoTemplate the MongoDB template
+     * @param daysToKeep the number of days to keep records
+     * @param atlasSearchQueryHelper the Atlas Search query helper
+     */
+    public MongoScheduledContextInstanceAuditAggregateDao(
+            MongoScheduledContextInstanceAuditAggregateRepository repository,
+            MongoTemplate mongoTemplate, long daysToKeep,
+            AtlasSearchQueryHelper atlasSearchQueryHelper) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.daysToKeep = daysToKeep;
+        this.atlasSearchQueryHelper = atlasSearchQueryHelper;
     }
 
     @Override
@@ -93,11 +113,69 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
 
         long queryStartTime = System.currentTimeMillis();
 
+        // Build sort
+        Sort sort;
+        if (sortField != null && !sortField.isEmpty()) {
+            Sort.Direction direction = "ASCENDING".equalsIgnoreCase(sortDirection)
+                    ? Sort.Direction.ASC
+                    : Sort.Direction.DESC;
+            sort = Sort.by(direction, sortField);
+        } else {
+            // Default sort by created date time descending
+            sort = Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME);
+        }
+
+        // Build field-value pairs for text search filters
+        List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = new ArrayList<>();
+
+        if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
+            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
+                EntityFields.MODULE_NAME, filter.getContextName()));
+        }
+
+        if (filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
+            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
+                EntityFields.FLOW_NAME, filter.getContextInstanceId()));
+        }
+
+        if (filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()) {
+            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
+                EntityFields.COMPONENT_NAME, filter.getScheduledProcessEventName().toLowerCase()));
+        }
+
+        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
+            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
+                EntityFields.STATUS, filter.getStatus()));
+        }
+
+        if (filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
+            fieldValuePairs.add(new AtlasSearchAggregationOperation.FieldValuePair(
+                EntityFields.EVENT, filter.getRaisedInitiationEventName().toLowerCase()));
+        }
+
+        // Type filter is always applied as match criteria
+        Criteria typeCriteria = Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE);
+
+        // If Atlas Search is available and we have search terms, use it
+        if (atlasSearchQueryHelper != null && !fieldValuePairs.isEmpty()) {
+            AtlasSearchQueryHelper.SearchQueryResult<MongoScheduledContextInstanceAuditAggregateRecordImpl> result =
+                atlasSearchQueryHelper.searchWithFieldSpecificWildcards(fieldValuePairs, typeCriteria,
+                    sort, offset, limit, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);
+
+            long queryTime = System.currentTimeMillis() - queryStartTime;
+
+            logger.debug("Found {} scheduled context instance audit aggregate records (total: {}) using Atlas Search",
+                result.getResults().size(), result.getTotalCount());
+
+            return createSearchResults(new ArrayList<>(result.getResults()), result.getTotalCount(), queryTime);
+        }
+
+        // Fall back to standard query (no search filters or no Atlas Search helper)
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
         // Always add type filter
-        criteriaList.add(Criteria.where(EntityFields.TYPE).is(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE));
+        criteriaList.add(typeCriteria);
 
         // Filter by context name (wildcard)
         if (filter.getContextName() != null && !filter.getContextName().isEmpty()) {
@@ -131,16 +209,7 @@ public class MongoScheduledContextInstanceAuditAggregateDao implements Scheduled
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        // Apply sorting
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction direction = "ASCENDING".equalsIgnoreCase(sortDirection)
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-            query.with(Sort.by(direction, sortField));
-        } else {
-            // Default sort by created date time descending
-            query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
-        }
+        query.with(sort);
 
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceAuditAggregateRecordImpl.class);

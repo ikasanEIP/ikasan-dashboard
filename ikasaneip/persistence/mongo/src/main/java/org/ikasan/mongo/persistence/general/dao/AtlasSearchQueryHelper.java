@@ -324,6 +324,140 @@ public class AtlasSearchQueryHelper {
     }
 
     /**
+     * Execute an Atlas Search query with field-specific AND (must) wildcard clauses.
+     * Each field-value pair is matched independently with AND semantics.
+     * Falls back to regex-based search if Atlas Search is not available.
+     *
+     * @param fieldValuePairs list of field-value pairs to search (AND logic)
+     * @param matchCriteria additional match criteria (can be null)
+     * @param sort the sort specification
+     * @param offset the offset for pagination
+     * @param limit the maximum number of results
+     * @param resultClass the class of results to return
+     * @param <T> the result type
+     * @return the search results
+     */
+    public <T> SearchQueryResult<T> searchWithFieldSpecificWildcards(
+            List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs,
+            Criteria matchCriteria, Sort sort, int offset, int limit,
+            Class<T> resultClass) {
+        // If we know Atlas Search is not available, use regex fallback directly
+        if (!atlasSearchAvailable) {
+            return searchWithFieldSpecificRegexFallback(fieldValuePairs, matchCriteria, sort, offset, limit, resultClass);
+        }
+
+        try {
+            return executeAtlasFieldSpecificSearch(fieldValuePairs, matchCriteria, sort, offset, limit, resultClass);
+        } catch (UncategorizedMongoDbException e) {
+            if (isAtlasSearchNotAvailableError(e)) {
+                logger.info("Atlas Search not available, falling back to regex-based search");
+                atlasSearchAvailable = false;
+                return searchWithFieldSpecificRegexFallback(fieldValuePairs, matchCriteria, sort, offset, limit, resultClass);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Execute Atlas Search with field-specific AND clauses.
+     */
+    private <T> SearchQueryResult<T> executeAtlasFieldSpecificSearch(
+            List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs,
+            Criteria matchCriteria, Sort sort, int offset, int limit,
+            Class<T> resultClass) {
+        List<AggregationOperation> operations = new ArrayList<>();
+
+        // Add Atlas $search stage with compound must clauses
+        AggregationOperation searchStage = AtlasSearchAggregationOperation.compoundMustWildcardSearch(
+            searchIndexName, fieldValuePairs);
+        operations.add(searchStage);
+
+        // Add match criteria if provided
+        if (matchCriteria != null) {
+            operations.add(Aggregation.match(matchCriteria));
+        }
+
+        // Add sorting
+        if (sort != null) {
+            operations.add(Aggregation.sort(sort));
+        }
+
+        // Get total count first
+        List<AggregationOperation> countOperations = new ArrayList<>(operations);
+        countOperations.add(Aggregation.count().as("total"));
+
+        Aggregation countAggregation = Aggregation.newAggregation(countOperations);
+        AggregationResults<Document> countResults = mongoTemplate.aggregate(
+            countAggregation, resultClass, Document.class);
+
+        long totalCount = 0;
+        if (countResults.getMappedResults() != null && !countResults.getMappedResults().isEmpty()) {
+            Document countDoc = countResults.getMappedResults().get(0);
+            totalCount = countDoc.getInteger("total", 0);
+        }
+
+        // Add pagination
+        if (offset > 0) {
+            operations.add(Aggregation.skip((long) offset));
+        }
+        if (limit > 0) {
+            operations.add(Aggregation.limit(limit));
+        }
+
+        // Execute aggregation
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        AggregationResults<T> results = mongoTemplate.aggregate(aggregation, resultClass, resultClass);
+
+        return new SearchQueryResult<>(results.getMappedResults(), totalCount);
+    }
+
+    /**
+     * Fallback search using regex for field-specific AND search.
+     */
+    private <T> SearchQueryResult<T> searchWithFieldSpecificRegexFallback(
+            List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs,
+            Criteria matchCriteria, Sort sort, int offset, int limit,
+            Class<T> resultClass) {
+        Query query = new Query();
+
+        // Build regex criteria for each field-value pair (AND logic)
+        List<Criteria> fieldCriteria = fieldValuePairs.stream()
+            .map(pair -> Criteria.where(pair.field()).regex(".*" + Pattern.quote(pair.value()) + ".*", "i"))
+            .toList();
+
+        // Combine field criteria with AND
+        Criteria searchCriteria = new Criteria().andOperator(fieldCriteria.toArray(new Criteria[0]));
+
+        // Combine with match criteria if provided
+        if (matchCriteria != null) {
+            query.addCriteria(new Criteria().andOperator(searchCriteria, matchCriteria));
+        } else {
+            query.addCriteria(searchCriteria);
+        }
+
+        // Add sorting
+        if (sort != null) {
+            query.with(sort);
+        }
+
+        // Get total count
+        long totalCount = mongoTemplate.count(query, resultClass);
+
+        // Apply pagination
+        if (offset > 0) {
+            query.skip(offset);
+        }
+        if (limit > 0) {
+            query.limit(limit);
+        }
+
+        // Execute query
+        List<T> results = mongoTemplate.find(query, resultClass);
+
+        return new SearchQueryResult<>(results, totalCount);
+    }
+
+    /**
      * Check if the exception indicates Atlas Search is not available.
      */
     private boolean isAtlasSearchNotAvailableError(UncategorizedMongoDbException e) {
