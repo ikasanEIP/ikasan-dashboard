@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.context.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
@@ -13,7 +14,6 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -91,10 +91,7 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
         query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
 
         // Apply pagination
-        if (limit > 0) {
-            int page = offset > 0 ? offset / limit : 0;
-            query.with(PageRequest.of(page, limit));
-        }
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoScheduledContextRecordImpl> results = mongoTemplate.find(query, MongoScheduledContextRecordImpl.class);
 

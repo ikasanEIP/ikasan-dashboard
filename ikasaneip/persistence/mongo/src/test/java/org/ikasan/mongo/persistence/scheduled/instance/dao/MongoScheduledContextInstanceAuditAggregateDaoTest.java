@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceAuditAggregateRecordImpl;
@@ -396,5 +397,22 @@ public class MongoScheduledContextInstanceAuditAggregateDaoTest {
         }
 
         return records;
+    }
+
+
+    @Test
+    public void test_findAll_and_findByFilter_follow_paging_convention() {
+        createScheduledContextInstanceAuditAggregateRecords("id1", "myContext", 25, InstanceStatus.COMPLETE)
+                .forEach(record -> dao.save(record));
+        createScheduledContextInstanceAuditAggregateRecords("id2", "otherContext", 4, InstanceStatus.COMPLETE)
+                .forEach(record -> dao.save(record));
+
+        PagingConvention.assertFollowed(29,
+                (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset, null, null)));
+
+        ScheduledContextInstanceAuditAggregateSearchFilter filter = new ScheduledContextInstanceAuditAggregateSearchFilter();
+        filter.setContextName("myContext");
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+                dao.findScheduledContextInstanceAuditAggregateRecordsByFilter(filter, limit, offset, null, null)));
     }
 }

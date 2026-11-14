@@ -7,6 +7,7 @@ import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextTermina
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJobRecord;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -155,6 +156,20 @@ public class MongoContextTerminalJobDaoTest {
         SearchResults<ContextTerminalJobRecord> results = dao.findByContext("context1", 2, 0);
         Assert.assertEquals(5, results.getTotalNumberOfResults());
         Assert.assertEquals(2, results.getResultList().size());
+    }
+
+    @Test
+    public void test_find_all_and_find_by_context_follow_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createContextTerminalJobRecord("agent" + i, "job" + i, "context1"));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createContextTerminalJobRecord("other" + i, "job" + i, "context2"));
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByContext("context1", limit, offset)));
     }
 
     @Test

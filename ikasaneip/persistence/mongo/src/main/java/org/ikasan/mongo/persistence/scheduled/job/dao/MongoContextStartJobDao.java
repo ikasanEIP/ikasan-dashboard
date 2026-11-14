@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoContextStartJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextStartJobRepository;
@@ -9,8 +10,6 @@ import org.ikasan.spec.scheduled.job.model.ContextStartJob;
 import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -83,8 +82,7 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
         long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoContextStartJobRecordImpl> results = mongoTemplate.find(query, MongoContextStartJobRecordImpl.class);
 
@@ -104,8 +102,7 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
         long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoContextStartJobRecordImpl> results = mongoTemplate.find(query, MongoContextStartJobRecordImpl.class);
 

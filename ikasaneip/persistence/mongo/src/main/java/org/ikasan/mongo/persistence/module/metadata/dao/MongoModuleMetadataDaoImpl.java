@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.module.metadata.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.module.metadata.model.*;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -9,7 +10,6 @@ import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -116,13 +116,9 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
 
         List<MongoModuleMetadata> results;
 
-        if (resultSize != null && resultSize > 0) {
-            int offset = startOffset != null ? startOffset : 0;
-            int page = offset > 0 ? offset / resultSize : 0;
-            query.with(PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, "module_name")));
-        } else {
-            query.with(Sort.by(Sort.Direction.ASC, EntityFields.ID));
-        }
+        // the module name is the document id; sort the same way whether paged or not
+        query.with(Sort.by(Sort.Direction.ASC, EntityFields.ID));
+        MongoPaging.apply(query, startOffset, resultSize);
 
         results = mongoTemplate.find(query, MongoModuleMetadata.class);
 
@@ -150,11 +146,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         long totalCount = mongoTemplate.count(query, MongoModuleMetadata.class);
 
         // Apply pagination
-        if (resultSize != null && resultSize > 0) {
-            int offset = startOffset != null ? startOffset : 0;
-            int page = offset > 0 ? offset / resultSize : 0;
-            query.with(PageRequest.of(page, resultSize));
-        }
+        MongoPaging.apply(query, startOffset, resultSize);
 
         List<MongoModuleMetadata> results = mongoTemplate.find(query, MongoModuleMetadata.class);
 
@@ -191,12 +183,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         long totalCount = mongoTemplate.count(query, MongoModuleMetadata.class);
 
         // Apply pagination
-        if (startOffset != null && startOffset > -1) {
-            if (resultSize != null && resultSize > -1) {
-                int page = startOffset > 0 ? startOffset / resultSize : 0;
-                query.with(PageRequest.of(page, resultSize));
-            }
-        }
+        MongoPaging.apply(query, startOffset, resultSize);
 
         List<MongoModuleMetadata> results = mongoTemplate.find(query, MongoModuleMetadata.class);
 

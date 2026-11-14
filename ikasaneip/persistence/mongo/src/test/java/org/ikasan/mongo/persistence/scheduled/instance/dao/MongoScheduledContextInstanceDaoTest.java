@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceRecordImpl;
@@ -678,5 +679,28 @@ public class MongoScheduledContextInstanceDaoTest {
         public void setStatus(String status) {
             this.status = status;
         }
+    }
+
+
+    @Test
+    public void test_paged_queries_follow_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createContextInstanceRecord("id" + i, "context1", InstanceStatus.COMPLETE));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createContextInstanceRecord("other" + i, "context2", InstanceStatus.RUNNING));
+        }
+
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.COMPLETE), limit, offset)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduledContextInstancesByContextName("context1", limit, offset, null, null)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduledContextInstancesByContextName("context1", 0, Long.MAX_VALUE, limit, offset, null, null)));
+
+        ContextInstanceSearchFilter filter = new TestContextInstanceSearchFilter();
+        filter.setContextInstanceNames(List.of("context1"));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduledContextInstancesByFilter(filter, limit, offset, null, null)));
     }
 }

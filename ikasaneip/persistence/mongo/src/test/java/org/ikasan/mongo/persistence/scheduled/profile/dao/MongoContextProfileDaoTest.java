@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.profile.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileRecordImpl;
@@ -314,5 +315,15 @@ public class MongoContextProfileDaoTest {
 
             dao.save(record);
         });
+    }
+
+
+    @Test
+    public void test_find_by_filter_follows_paging_convention() {
+        addRecords(25);
+
+        ContextProfileSearchFilterImpl filter = new ContextProfileSearchFilterImpl();
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByFilter(filter, limit, offset, null, null)));
     }
 }

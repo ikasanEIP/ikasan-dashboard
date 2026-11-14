@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoScheduledContextInstanceRecordImpl;
@@ -12,8 +13,6 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -127,13 +126,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
         // Apply pagination if specified
-        if (limit > 0 && offset >= 0) {
-            int page = offset / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else if (offset > 0) {
-            query.skip(offset);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =
@@ -171,13 +164,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
         // Apply pagination if specified
-        if (limit > 0 && offset >= 0) {
-            int page = offset / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else if (offset > 0) {
-            query.skip(offset);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =
@@ -224,13 +211,7 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
         // Apply pagination if specified
-        if (limit > 0 && offset >= 0) {
-            int page = offset / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else if (offset > 0) {
-            query.skip(offset);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =

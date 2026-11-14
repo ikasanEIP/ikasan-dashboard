@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.joblock.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.joblock.model.MongoJobLockCacheAuditRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.joblock.repository.MongoJobLockCacheAuditRepository;
@@ -8,8 +9,6 @@ import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -42,8 +41,7 @@ public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
         Query query = new Query();
         long totalCount = mongoTemplate.count(query, MongoJobLockCacheAuditRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoJobLockCacheAuditRecordImpl> results = mongoTemplate.find(query, MongoJobLockCacheAuditRecordImpl.class);
 

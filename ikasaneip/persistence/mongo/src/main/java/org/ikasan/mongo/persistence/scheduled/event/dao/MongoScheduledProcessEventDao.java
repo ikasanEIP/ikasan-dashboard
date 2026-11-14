@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.event.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchFilter;
 import org.ikasan.mongo.persistence.general.dao.AtlasSearchQueryHelper;
@@ -7,8 +8,6 @@ import org.ikasan.mongo.persistence.scheduled.event.model.ScheduledProcessEventS
 import org.ikasan.mongo.persistence.scheduled.event.repository.MongoScheduledProcessEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -283,13 +282,7 @@ public class MongoScheduledProcessEventDao {
         query.with(Sort.by(direction, "fireTime"));
 
         // Apply pagination
-        if (limit > 0) {
-            int page = start / limit;
-            Pageable pageable = PageRequest.of(page, limit);
-            query.with(pageable);
-        } else {
-            query.skip(start);
-        }
+        MongoPaging.apply(query, start, limit);
 
         // Execute query
         List<ContextualisedScheduledProcessEventImpl> results = mongoTemplate.find(query, ContextualisedScheduledProcessEventImpl.class);

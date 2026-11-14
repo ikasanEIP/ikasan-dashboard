@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.event.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.scheduled.event.model.ScheduledProcessEventSearchResults;
@@ -546,5 +547,24 @@ public class MongoScheduledProcessEventDaoTest {
         event.setResultError(resultError);
         event.setCommandLine("test-command");
         return event;
+    }
+
+
+    @Test
+    public void test_paged_queries_follow_paging_convention() {
+        long currentTime = System.currentTimeMillis();
+        for (int i = 0; i < 25; i++) {
+            dao.save(createTestEvent("agent1", "group1", "job1", currentTime + i, true, "SUCCESS", "Output " + i, null));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createTestEvent("agent2", "group2", "job2", currentTime + i, true, "SUCCESS", "Output " + i, null));
+        }
+
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduleProcessEvents(List.of("agent1"), currentTime - 5000, currentTime + 5000, null, false,
+                offset, limit, "desc")));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getScheduleProcessEvents("agent1", "group1", "job1", currentTime - 5000, currentTime + 5000,
+                offset, limit, "desc")));
     }
 }

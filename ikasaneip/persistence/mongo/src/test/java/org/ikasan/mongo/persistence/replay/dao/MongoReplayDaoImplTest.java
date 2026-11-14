@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.replay.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.replay.model.MongoReplayEventImpl;
 import org.ikasan.mongo.persistence.replay.repository.MongoReplayEventRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -307,5 +308,21 @@ public class MongoReplayDaoImplTest {
         replayEvent.setTimestamp(System.currentTimeMillis());
         replayEvent.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days
         return replayEvent;
+    }
+
+
+    @Test
+    public void testFindFollowsPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createReplayEvent("module1", "flow" + i, "event-id-" + i, ("payload-" + i).getBytes(), "payload-" + i));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createReplayEvent("module2", "flow" + i, "other-id-" + i, ("payload-" + i).getBytes(), "payload-" + i));
+        }
+
+        PagingConvention.assertFollowed(29,
+            (offset, limit) -> PagingConvention.page(dao.find(null, null, null, 0, 0, offset, limit)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.find(List.of("module1"), null, null, 0, 0, offset, limit)));
     }
 }
