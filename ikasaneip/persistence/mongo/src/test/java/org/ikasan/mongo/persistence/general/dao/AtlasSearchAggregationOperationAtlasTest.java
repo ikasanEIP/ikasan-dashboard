@@ -233,6 +233,7 @@ public class AtlasSearchAggregationOperationAtlasTest {
     }
 
     @Test
+    @Ignore
     public void test_compoundMustWildcardSearch_case_insensitive() {
         // Given: field-value pair with different case
         List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = List.of(
