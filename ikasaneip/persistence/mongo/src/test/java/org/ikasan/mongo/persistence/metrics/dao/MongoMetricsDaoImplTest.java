@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.metrics.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.mongo.persistence.metrics.model.MongoFlowInvocationMetric;
 import org.ikasan.mongo.persistence.metrics.repository.MongoFlowInvocationMetricRepository;
@@ -327,5 +328,46 @@ public class MongoMetricsDaoImplTest {
         metric.setHarvested(false);
         metric.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
         return metric;
+    }
+
+
+    @Test
+    public void testGetMetricsFollowsPagingConvention() {
+        long baseTime = System.currentTimeMillis();
+        for (int i = 0; i < 25; i++) {
+            dao.save(createMetric("module1", "flow1", baseTime + i, baseTime + i + 500, "success"));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createMetric("module2", "flow2", baseTime + i, baseTime + i + 500, "success"));
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(
+            dao.getMetrics(baseTime - 1000, baseTime + 20000, offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getMetrics("module1", baseTime - 1000, baseTime + 20000, offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getMetrics("module1", "flow1", baseTime - 1000, baseTime + 20000, offset, limit)));
+    }
+
+    @Test
+    public void testUnpagedGetMetricsStillHonoursTheConfiguredMaximum() {
+        MongoMetricsDaoImpl cappedDao = new MongoMetricsDaoImpl(repository, mongoTemplate, 10);
+        long baseTime = System.currentTimeMillis();
+        for (int i = 0; i < 10; i++) {
+            cappedDao.save(createMetric("module1", "flow1", baseTime + i, baseTime + i + 500, "success"));
+        }
+
+        // exactly the maximum: returned in full
+        assertEquals(10, cappedDao.getMetrics(baseTime - 1000, baseTime + 20000, -1, -1).size());
+
+        cappedDao.save(createMetric("module1", "flow1", baseTime + 10, baseTime + 510, "success"));
+        try {
+            cappedDao.getMetrics(baseTime - 1000, baseTime + 20000, -1, -1);
+            fail("an unpaged query matching more than the configured maximum must fail");
+        } catch (RuntimeException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("mongo.metrics.query.limit"));
+        }
+        // a page within the maximum still works
+        assertEquals(5, cappedDao.getMetrics(baseTime - 1000, baseTime + 20000, 0, 5).size());
     }
 }

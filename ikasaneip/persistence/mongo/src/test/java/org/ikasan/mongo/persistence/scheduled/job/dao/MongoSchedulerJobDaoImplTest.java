@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoClients;
@@ -536,5 +537,37 @@ public class MongoSchedulerJobDaoImplTest {
 
         Assert.assertEquals(0, dao.findAll(100, 0).getTotalNumberOfResults());
         Assert.assertEquals(1, collection.countDocuments(new Document("_id", "wiretap-1")));
+    }
+
+
+    @Test
+    public void test_paged_queries_follow_paging_convention() {
+        insertFileEventDrivenJobsWithAgent("id", 25, "context1", "agent1");
+        insertQuartzScheduleDrivenJobs("idq", 4, "context2");
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByContext("context1", limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByAgent("agent1", limit, offset)));
+
+        TestSchedulerJobSearchFilter filter = new TestSchedulerJobSearchFilter();
+        filter.setJobTypeFilter(JobConstants.FILE_EVENT_DRIVEN_JOB);
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByFilter(filter, limit, offset, null, null)));
+    }
+
+    @Test
+    public void test_find_by_filter_sorts_unpaged_results() {
+        insertFileEventDrivenJobsWithAgent("id", 12, "context1", "agent1");
+
+        TestSchedulerJobSearchFilter filter = new TestSchedulerJobSearchFilter();
+        filter.setJobTypeFilter(JobConstants.FILE_EVENT_DRIVEN_JOB);
+
+        List<String> jobNames = dao.findByFilter(filter, -1, -1, EntityFields.FLOW_NAME, "ASCENDING")
+            .getResultList().stream().map(SchedulerJobRecord::getJobName).toList();
+
+        Assert.assertEquals(12, jobNames.size());
+        Assert.assertEquals(jobNames.stream().sorted().toList(), jobNames);
     }
 }

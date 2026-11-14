@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.business.stream.metadata.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.MongoBusinessStream;
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
@@ -10,8 +11,6 @@ import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -95,11 +94,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         long totalCount = mongoTemplate.count(query, MongoBusinessStream.class);
 
         // Apply pagination
-        if (resultSize != null && resultSize > 0) {
-            int offset = startOffset != null ? startOffset : 0;
-            int page = offset > 0 ? offset / resultSize : 0;
-            query.with(PageRequest.of(page, resultSize));
-        }
+        MongoPaging.apply(query, startOffset, resultSize);
 
         List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
 
@@ -125,10 +120,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         query.addCriteria(criteria);
 
         // Apply pagination
-        if (limit > 0) {
-            int page = offset > 0 ? offset / limit : 0;
-            query.with(PageRequest.of(page, limit));
-        }
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
 
@@ -178,10 +170,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         long totalCount = mongoTemplate.count(query, MongoBusinessStream.class);
 
         // Apply pagination
-        if (limit > 0) {
-            int page = offset > 0 ? offset / limit : 0;
-            query.with(PageRequest.of(page, limit));
-        }
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
 
@@ -203,13 +192,8 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
 
         List<MongoBusinessStream> results;
 
-        if (resultSize != null && resultSize > 0) {
-            int offset = startOffset != null ? startOffset : 0;
-            int page = offset > 0 ? offset / resultSize : 0;
-            query.with(PageRequest.of(page, resultSize, Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME)));
-        } else {
-            query.with(Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME));
-        }
+        query.with(Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME));
+        MongoPaging.apply(query, startOffset, resultSize);
 
         results = mongoTemplate.find(query, MongoBusinessStream.class);
 

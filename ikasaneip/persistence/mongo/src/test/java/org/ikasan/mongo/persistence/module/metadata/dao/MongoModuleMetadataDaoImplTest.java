@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.module.metadata.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.mongo.persistence.module.metadata.model.*;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
@@ -446,5 +447,31 @@ public class MongoModuleMetadataDaoImplTest {
                 assertNotNull(decorator.getName());
             }
         }
+    }
+
+
+    @Test
+    public void testPagedQueriesFollowPagingConvention() throws IOException {
+        List<String> moduleNames = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            ModuleMetaData module = loadModuleMetaDataFromFile(MODULE_JSON);
+            module.setName("module-" + i);
+            module.setType(ModuleType.INTEGRATION_MODULE);
+            dao.save(List.of(module));
+            moduleNames.add(module.getName());
+        }
+        for (int i = 0; i < 4; i++) {
+            ModuleMetaData module = loadModuleMetaDataFromFile(MODULE_SCHEDULER_AGENT_JSON);
+            module.setName("agent-" + i);
+            module.setType(ModuleType.SCHEDULER_AGENT);
+            dao.save(List.of(module));
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(offset, limit)));
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.find(null, offset, limit)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.find(moduleNames, offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) ->
+            PagingConvention.page(dao.find(null, ModuleType.INTEGRATION_MODULE, offset, limit)));
     }
 }

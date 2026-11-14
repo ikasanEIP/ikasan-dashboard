@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.profile.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileImpl;
 import org.ikasan.mongo.persistence.scheduled.profile.model.MongoContextProfileRecordImpl;
@@ -10,8 +11,6 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -206,12 +205,7 @@ public class MongoContextProfileDao implements ContextProfileDao {
         }
 
         // Apply pagination
-        if (limit > 0 && offset >= 0) {
-            Pageable pageable = PageRequest.of(offset / limit, limit);
-            query.with(pageable);
-        } else if (limit > 0) {
-            query.limit(limit);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoContextProfileRecordImpl> results = mongoTemplate.find(query, MongoContextProfileRecordImpl.class);
 

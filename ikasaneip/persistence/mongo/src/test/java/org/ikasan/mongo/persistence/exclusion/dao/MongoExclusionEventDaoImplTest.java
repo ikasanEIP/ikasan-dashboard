@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.exclusion.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.exclusion.model.MongoExclusionEvent;
 import org.ikasan.mongo.persistence.exclusion.repository.MongoExclusionEventRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -304,5 +305,21 @@ public class MongoExclusionEventDaoImplTest {
         exclusionEvent.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
         exclusionEvent.setHarvested(false);
         return exclusionEvent;
+    }
+
+
+    @Test
+    public void testFindFollowsPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createExclusionEvent("module1", "flow" + i, "id" + i, "event" + i, "uri" + i));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createExclusionEvent("module2", "flow" + i, "other-id" + i, "event" + i, "other-uri" + i));
+        }
+
+        PagingConvention.assertFollowed(29,
+            (offset, limit) -> PagingConvention.page(dao.find(null, null, null, 0, 0, offset, limit)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.find(List.of("module1"), null, null, 0, 0, offset, limit)));
     }
 }

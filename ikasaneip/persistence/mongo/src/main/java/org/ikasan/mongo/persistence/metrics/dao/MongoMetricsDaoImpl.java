@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.metrics.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.mongo.persistence.metrics.model.MongoFlowInvocationMetric;
 import org.ikasan.mongo.persistence.metrics.repository.MongoFlowInvocationMetricRepository;
@@ -70,19 +71,39 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public List<FlowInvocationMetric> getMetrics(long startTime, long endTime, int offset, int limit) {
+        checkLimit(limit);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
+        query.addCriteria(Criteria.where(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
+        return find(query, offset, limit);
+    }
+
+    private void checkLimit(long limit) {
         if (limit > metricsQueryLimit) {
             throw new RuntimeException(String.format(
                     "Error resolving MongoDB flow invocation metrics! The limit on the query[%s] exceeds the maximum limit configured [%s]. " +
                     "The limit can be increased by setting configuration property 'mongo.metrics.query.limit'.",
                     limit, metricsQueryLimit));
         }
+    }
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime));
-        query.addCriteria(Criteria.where(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
-        query.skip(offset).limit(limit);
+    /**
+     * Runs a metrics query with the given paging. An offset / limit of -1 means not paged; an unpaged query
+     * returns every match, but still fails if that is more than the configured maximum.
+     */
+    private List<FlowInvocationMetric> find(Query query, int offset, int limit) {
+        MongoPaging.apply(query, offset, limit);
+        boolean unlimited = !MongoPaging.hasLimit(limit);
+        if (unlimited) {
+            // read one more than the maximum, to detect an unpaged result set that is too large
+            query.limit((int) Math.min((long) metricsQueryLimit + 1, Integer.MAX_VALUE));
+        }
 
         List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
+        if (unlimited) {
+            checkLimit(entities.size());
+        }
         return entities.stream()
                 .map(this::convertFromEntity)
                 .collect(Collectors.toList());
@@ -104,23 +125,13 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime, int offset, int limit) {
-        if (limit > metricsQueryLimit) {
-            throw new RuntimeException(String.format(
-                    "Error resolving MongoDB flow invocation metrics! The limit on the query[%s] exceeds the maximum limit configured [%s]. " +
-                    "The limit can be increased by setting configuration property 'mongo.metrics.query.limit'.",
-                    limit, metricsQueryLimit));
-        }
+        checkLimit(limit);
 
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
                 .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
                 .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
-        query.skip(offset).limit(limit);
-
-        List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
-        return entities.stream()
-                .map(this::convertFromEntity)
-                .collect(Collectors.toList());
+        return find(query, offset, limit);
     }
 
     @Override
@@ -140,24 +151,14 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     @Override
     public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime, int offset, int limit) {
-        if (limit > metricsQueryLimit) {
-            throw new RuntimeException(String.format(
-                    "Error resolving MongoDB flow invocation metrics! The limit on the query[%s] exceeds the maximum limit configured [%s]. " +
-                    "The limit can be increased by setting configuration property 'mongo.metrics.query.limit'.",
-                    limit, metricsQueryLimit));
-        }
+        checkLimit(limit);
 
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.MODULE_NAME).is(moduleName)
                 .and(EntityFields.FLOW_NAME).is(flowName)
                 .and(EntityFields.CREATED_DATE_TIME).gte(startTime).lte(endTime)
                 .and(EntityFields.TYPE).is(METRIC_ENTITY_TYPE));
-        query.skip(offset).limit(limit);
-
-        List<MongoFlowInvocationMetric> entities = mongoTemplate.find(query, MongoFlowInvocationMetric.class);
-        return entities.stream()
-                .map(this::convertFromEntity)
-                .collect(Collectors.toList());
+        return find(query, offset, limit);
     }
 
     @Override
