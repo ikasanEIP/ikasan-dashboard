@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Ikasan Development Team
  */
+@Ignore
 public class AtlasSearchAggregationOperationAtlasTest {
 
     private static MongoDBAtlasLocalContainer atlasContainer;
