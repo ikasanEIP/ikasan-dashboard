@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetadata;
@@ -14,8 +15,6 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -87,8 +86,7 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
 
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
 
@@ -112,10 +110,7 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        if (limit > 0 && offset > -1) {
-            Pageable pageable = PageRequest.of(offset / limit, limit);
-            query.with(pageable);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
 
@@ -133,8 +128,7 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
 
@@ -225,11 +219,8 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
             sort = Sort.by(Sort.Direction.DESC, EntityFields.FLOW_NAME);
         }
 
-        if(limit > 0 && offset > -1) {
-            // Apply pagination
-            Pageable pageable = PageRequest.of(offset / limit, limit, sort);
-            query.with(pageable);
-        }
+        query.with(sort);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
 

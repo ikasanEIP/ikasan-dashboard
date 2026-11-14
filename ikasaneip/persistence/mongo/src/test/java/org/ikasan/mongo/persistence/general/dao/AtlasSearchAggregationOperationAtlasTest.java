@@ -5,16 +5,19 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
+import org.testcontainers.shaded.org.awaitility.core.ConditionTimeoutException;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Integration tests for AtlasSearchAggregationOperation using MongoDB Atlas Local.
@@ -22,23 +25,38 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Ikasan Development Team
  */
-@Ignore
 public class AtlasSearchAggregationOperationAtlasTest {
+
+    private static final String COLLECTION_NAME = "testDocuments";
+    private static final String INDEX_NAME = "default";
+    private static final int DOCUMENT_COUNT = 4;
+
+    /**
+     * mongot builds the search index asynchronously after {@code createSearchIndexes} returns. On a slow CI host (Travis)
+     * this takes far longer than on a developer machine, so wait for the index rather than sleeping a fixed time.
+     */
+    private static final Duration INDEX_READY_TIMEOUT = Duration.ofMinutes(3);
 
     private static MongoDBAtlasLocalContainer atlasContainer;
     private static MongoClient mongoClient;
     private static MongoTemplate mongoTemplate;
     private static MongoDatabase database;
-    private static final String COLLECTION_NAME = "testDocuments";
 
     @BeforeClass
     public static void startContainer() {
-        atlasContainer = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.14");
+        atlasContainer = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.14")
+            .withStartupTimeout(Duration.ofMinutes(5));
         atlasContainer.start();
 
         mongoClient = MongoClients.create(atlasContainer.getConnectionString());
         database = mongoClient.getDatabase("testdb");
         mongoTemplate = new MongoTemplate(mongoClient, "testdb");
+
+        // The tests only read, so the data and the index are created once. Dropping and recreating them per test made
+        // every test race the asynchronous index build (and the asynchronous drop of the previous index).
+        insertTestDocuments();
+        createSearchIndex();
+        waitForSearchIndex();
     }
 
     @AfterClass
@@ -51,71 +69,84 @@ public class AtlasSearchAggregationOperationAtlasTest {
         }
     }
 
-    @Before
-    public void setup() {
-        // Create collection and insert test documents
+    private static void insertTestDocuments() {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        collection.drop();
-
-        // Insert test documents (this also creates the collection)
-        collection.insertOne(new Document()
-            .append("moduleName", "myModule")
-            .append("flowName", "myFlow")
-            .append("componentName", "myComponent")
-            .append("status", "COMPLETE")
-            .append("description", "This is a test document"));
-
-        collection.insertOne(new Document()
-            .append("moduleName", "anotherModule")
-            .append("flowName", "anotherFlow")
-            .append("componentName", "anotherComponent")
-            .append("status", "ERROR")
-            .append("description", "Another test document"));
-
-        collection.insertOne(new Document()
-            .append("moduleName", "myModule")
-            .append("flowName", "differentFlow")
-            .append("componentName", "differentComponent")
-            .append("status", "COMPLETE")
-            .append("description", "Different module instance"));
-
-        collection.insertOne(new Document()
-            .append("moduleName", "testModule")
-            .append("flowName", "testFlow")
-            .append("componentName", "testComponent")
-            .append("status", "SKIPPED")
-            .append("description", "Test status document"));
-
-        // Create Atlas Search index for wildcard searches (collection now exists)
-        createSearchIndex();
+        collection.insertMany(List.of(
+            new Document()
+                .append("moduleName", "myModule")
+                .append("flowName", "myFlow")
+                .append("componentName", "myComponent")
+                .append("status", "COMPLETE")
+                .append("description", "This is a test document"),
+            new Document()
+                .append("moduleName", "anotherModule")
+                .append("flowName", "anotherFlow")
+                .append("componentName", "anotherComponent")
+                .append("status", "ERROR")
+                .append("description", "Another test document"),
+            new Document()
+                .append("moduleName", "myModule")
+                .append("flowName", "differentFlow")
+                .append("componentName", "differentComponent")
+                .append("status", "COMPLETE")
+                .append("description", "Different module instance"),
+            new Document()
+                .append("moduleName", "testModule")
+                .append("flowName", "testFlow")
+                .append("componentName", "testComponent")
+                .append("status", "SKIPPED")
+                .append("description", "Test status document")));
     }
 
-    @After
-    public void teardown() {
-        database.getCollection(COLLECTION_NAME).drop();
-    }
-
-    private void createSearchIndex() {
-        // Create a search index that supports wildcard queries
-        Document indexDefinition = new Document()
-            .append("mappings", new Document()
-                .append("dynamic", true));
-
+    private static void createSearchIndex() {
         database.runCommand(new Document()
             .append("createSearchIndexes", COLLECTION_NAME)
-            .append("indexes", List.of(
-                new Document()
-                    .append("name", "default")
-                    .append("definition", indexDefinition)
-            ))
-        );
+            .append("indexes", List.of(new Document()
+                .append("name", INDEX_NAME)
+                .append("definition", new Document("mappings", new Document("dynamic", true))))));
+    }
 
-        // Wait for index to be ready
+    /**
+     * Waits until the index reports itself queryable <em>and</em> a {@code $search} sees every document. An index can be
+     * queryable before its initial sync has caught up with the collection, and {@code $search} fails outright while the
+     * index is still being created, so both are checked and exceptions are retried.
+     */
+    private static void waitForSearchIndex() {
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            Awaitility.await("Atlas Search index '" + INDEX_NAME + "' to be ready")
+                .atMost(INDEX_READY_TIMEOUT)
+                .pollInterval(Duration.ofMillis(500))
+                .ignoreExceptions()
+                .until(() -> isSearchIndexQueryable() && countSearchableDocuments() == DOCUMENT_COUNT);
+        } catch (ConditionTimeoutException e) {
+            throw new IllegalStateException("Atlas Search index not ready after " + INDEX_READY_TIMEOUT
+                + "; index status: " + searchIndexStatus(), e);
         }
+    }
+
+    private static boolean isSearchIndexQueryable() {
+        Document index = database.getCollection(COLLECTION_NAME).listSearchIndexes().name(INDEX_NAME).first();
+        return index != null && Boolean.TRUE.equals(index.getBoolean("queryable"));
+    }
+
+    private static int countSearchableDocuments() {
+        Document searchAll = new Document("$search", new Document()
+            .append("index", INDEX_NAME)
+            .append("exists", new Document("path", "moduleName")));
+        return database.getCollection(COLLECTION_NAME).aggregate(List.of(searchAll)).into(new ArrayList<>()).size();
+    }
+
+    private static String searchIndexStatus() {
+        try {
+            return database.getCollection(COLLECTION_NAME).listSearchIndexes().into(new ArrayList<>()).toString();
+        } catch (RuntimeException e) {
+            return "unavailable (" + e + ")";
+        }
+    }
+
+    private static List<Document> search(AtlasSearchAggregationOperation searchOp) {
+        return mongoTemplate.aggregate(Aggregation.newAggregation(searchOp), COLLECTION_NAME, Document.class)
+            .getMappedResults();
     }
 
     @Test
@@ -129,11 +160,8 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
         // Then: should return 2 documents with moduleName="myModule"
-        List<Document> resultList = results.getMappedResults();
+        List<Document> resultList = search(searchOp);
         Assert.assertEquals(2, resultList.size());
         Assert.assertTrue(resultList.stream().allMatch(doc -> doc.getString("moduleName").equals("myModule")));
     }
@@ -150,11 +178,8 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
         // Then: should return 2 documents matching both conditions
-        List<Document> resultList = results.getMappedResults();
+        List<Document> resultList = search(searchOp);
         Assert.assertEquals(2, resultList.size());
         Assert.assertTrue(resultList.stream().allMatch(doc ->
             doc.getString("moduleName").equals("myModule") &&
@@ -174,18 +199,11 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        AtomicReference<List<Document>> resultList = new AtomicReference<>();
+        // Then: should return 1 document matching all three conditions
+        List<Document> resultList = search(searchOp);
+        Assert.assertEquals(1, resultList.size());
 
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return 1 document matching all three conditions
-            resultList.set(results.getMappedResults());
-            Assert.assertEquals(1, resultList.get().size());
-        });
-
-        Document doc = resultList.get().get(0);
+        Document doc = resultList.get(0);
         Assert.assertEquals("myModule", doc.getString("moduleName"));
         Assert.assertEquals("myFlow", doc.getString("flowName"));
         Assert.assertEquals("COMPLETE", doc.getString("status"));
@@ -202,14 +220,9 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return all documents containing "Module" substring
-            List<Document> resultList = results.getMappedResults();
-            Assert.assertEquals(4, resultList.size()); // all documents contain "Module"
-        });
+        // Then: should return all documents containing "Module" substring
+        List<Document> resultList = search(searchOp);
+        Assert.assertEquals(4, resultList.size()); // all documents contain "Module"
     }
 
     @Test
@@ -223,18 +236,12 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return no documents
-            List<Document> resultList = results.getMappedResults();
-            Assert.assertEquals(0, resultList.size());
-        });
+        // Then: should return no documents
+        List<Document> resultList = search(searchOp);
+        Assert.assertEquals(0, resultList.size());
     }
 
     @Test
-    @Ignore
     public void test_compoundMustWildcardSearch_case_insensitive() {
         // Given: field-value pair with different case
         List<AtlasSearchAggregationOperation.FieldValuePair> fieldValuePairs = List.of(
@@ -245,14 +252,9 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return documents matching case-insensitively
-            List<Document> resultList = results.getMappedResults();
-            Assert.assertTrue(resultList.size() >= 2); // Should match "myModule" case-insensitively
-        });
+        // Then: should return documents matching case-insensitively
+        List<Document> resultList = search(searchOp);
+        Assert.assertTrue(resultList.size() >= 2); // Should match "myModule" case-insensitively
     }
 
     @Test
@@ -264,16 +266,10 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundOrWildcardSearch("default", "myFlow", searchFields);
 
-
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return document where flowName matches "myFlow"
-            List<Document> resultList = results.getMappedResults();
-            Assert.assertTrue(resultList.size() >= 1);
-            Assert.assertTrue(resultList.stream().anyMatch(doc -> "myFlow".equals(doc.getString("flowName"))));
-        });
+        // Then: should return document where flowName matches "myFlow"
+        List<Document> resultList = search(searchOp);
+        Assert.assertTrue(resultList.size() >= 1);
+        Assert.assertTrue(resultList.stream().anyMatch(doc -> "myFlow".equals(doc.getString("flowName"))));
     }
 
     @Test
@@ -282,16 +278,10 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.singleFieldWildcardSearch("default", "myModule", "moduleName");
 
-        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            Aggregation aggregation = Aggregation.newAggregation(searchOp);
-            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
-
-            // Then: should return documents matching moduleName
-            List<Document> resultList = results.getMappedResults();
-            Assert.assertEquals(2, resultList.size());
-            Assert.assertTrue(resultList.stream().allMatch(doc -> doc.getString("moduleName").equals("myModule")));
-        });
-
+        // Then: should return documents matching moduleName
+        List<Document> resultList = search(searchOp);
+        Assert.assertEquals(2, resultList.size());
+        Assert.assertTrue(resultList.stream().allMatch(doc -> doc.getString("moduleName").equals("myModule")));
     }
 
     @Test

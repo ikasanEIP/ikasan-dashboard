@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoContextTerminalJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextTerminalJobRepository;
@@ -8,8 +9,6 @@ import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -86,8 +85,7 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
         long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoContextTerminalJobRecordImpl> results = mongoTemplate.find(query, MongoContextTerminalJobRecordImpl.class);
 
@@ -107,8 +105,7 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
         long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoContextTerminalJobRecordImpl> results = mongoTemplate.find(query, MongoContextTerminalJobRecordImpl.class);
 

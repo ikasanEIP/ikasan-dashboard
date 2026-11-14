@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoQuartzScheduleDrivenJobRecordImpl;
@@ -278,5 +279,16 @@ public class MongoQuartzScheduleDrivenJobDaoTest {
 
             dao.save(record);
         }
+    }
+
+
+    @Test
+    public void test_find_all_and_find_by_context_follow_paging_convention() {
+        insertQuartzScheduleDrivenJobs("id1", 25, "context1");
+        insertQuartzScheduleDrivenJobs("id2", 4, "context2");
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByContext("context1", limit, offset)));
     }
 }

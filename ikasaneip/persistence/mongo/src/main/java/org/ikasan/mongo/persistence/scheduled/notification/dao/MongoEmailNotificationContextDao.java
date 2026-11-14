@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.notification.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.notification.model.MongoEmailNotificationContextRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.notification.repository.MongoEmailNotificationContextRepository;
@@ -7,7 +8,6 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.notification.dao.EmailNotificationContextDao;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -36,7 +36,7 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
-        query.with(PageRequest.of(offset / limit, limit));
+        MongoPaging.apply(query, offset, limit);
 
         List<EmailNotificationContextRecord> results = mongoTemplate.find(query, MongoEmailNotificationContextRecordImpl.class)
             .stream()
@@ -56,7 +56,7 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
-        query.with(PageRequest.of(offset / limit, limit));
+        MongoPaging.apply(query, offset, limit);
 
         List<EmailNotificationContextRecord> results = mongoTemplate.find(query, MongoEmailNotificationContextRecordImpl.class)
             .stream()

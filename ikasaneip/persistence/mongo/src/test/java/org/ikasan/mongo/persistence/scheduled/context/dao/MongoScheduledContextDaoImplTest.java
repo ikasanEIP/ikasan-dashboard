@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.context.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
@@ -448,5 +449,17 @@ public class MongoScheduledContextDaoImplTest {
         ScheduledContextRecord updated = dao.findById(record.getContextName());
         assertTrue(updated.isDisabled());
         assertTrue(updated.isQuartzScheduleDrivenJobsDisabledForContext());
+    }
+
+
+    @Test
+    public void testFindAllAndFindByFilterFollowPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createScheduledContextRecord("context-" + i, false));
+        }
+
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByFilter(null, limit, offset, null, null)));
     }
 }

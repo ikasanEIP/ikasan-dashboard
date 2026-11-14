@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.business.stream.metadata.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamImpl;
 import org.ikasan.mongo.persistence.business.stream.metadata.model.BusinessStreamMetaDataImpl;
@@ -604,5 +605,33 @@ public class MongoBusinessStreamMetadataDaoImplTest {
         assertNotNull(firstFlow.getId());
         assertNotNull(firstFlow.getModuleName());
         assertNotNull(firstFlow.getFlowName());
+    }
+
+
+    @Test
+    public void testPagedQueriesFollowPagingConvention() throws IOException {
+        String businessStreamJson = loadDataFile(BUSINESS_STREAM_JSON);
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            dao.save(createBusinessStreamMetaData("stream" + i, "stream" + i, "Description " + i, businessStreamJson));
+            names.add("stream" + i);
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createBusinessStreamMetaData("other" + i, "other" + i, "Other " + i, "{\"flows\": []}"));
+        }
+
+        MongoModuleMetaDataImpl module = new MongoModuleMetaDataImpl();
+        module.setName("tradeSystem1-trade");
+        MongoFlowMetaDataImpl flow = new MongoFlowMetaDataImpl();
+        flow.setName("tradeSystem1 FIX Messages Consumer Flow");
+        module.setFlows(List.of(flow));
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(dao.find(names, offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.findBusinessStreamsContainingFlow("tradeSystem1-trade", "tradeSystem1 FIX Messages Consumer Flow",
+                offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.findBusinessStreamsForModules(null, List.of(module), offset, limit)));
     }
 }

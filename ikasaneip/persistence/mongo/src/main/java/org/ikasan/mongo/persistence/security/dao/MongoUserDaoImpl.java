@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalFilterImpl;
 import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
@@ -11,8 +12,6 @@ import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.security.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -178,12 +177,7 @@ public class MongoUserDaoImpl implements UserDao {
         Query query = new Query();
         addUserFilterCriteria(query, userFilter);
 
-        if (limit > 0) {
-            query.limit(limit);
-        }
-        if (offset > 0) {
-            query.skip(offset);
-        }
+        MongoPaging.apply(query, offset, limit);
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
@@ -206,8 +200,7 @@ public class MongoUserDaoImpl implements UserDao {
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         return mongoTemplate.find(query, MongoUserRecord.class).stream()
             .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
@@ -392,8 +385,9 @@ public class MongoUserDaoImpl implements UserDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
         query.fields().include(EntityFields.NAME);
 
-        return mongoTemplate.find(query, MongoUserImpl.class).stream()
-            .map(MongoUserImpl::getUsername)
+        // MongoUserRecord maps the ikasan collection; MongoUserImpl is the payload type and has no collection of its own
+        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+            .map(MongoUserRecord::getUsername)
             .collect(Collectors.toList());
     }
 

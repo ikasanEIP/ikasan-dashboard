@@ -138,8 +138,7 @@ public class MongoGeneralDaoImpl implements
             long totalCount = mongoTemplate.count(query, MongoIkasanDocument.class);
 
             // Add pagination
-            query.skip(offset);
-            query.limit(resultSize);
+            MongoPaging.apply(query, offset, resultSize);
 
             // Execute query
             List<IkasanESBDocument> results = mongoTemplate

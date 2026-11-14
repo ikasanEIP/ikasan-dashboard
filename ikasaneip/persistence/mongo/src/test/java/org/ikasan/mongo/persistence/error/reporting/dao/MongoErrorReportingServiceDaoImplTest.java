@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.error.reporting.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.error.reporting.model.MongoErrorOccurrence;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -341,5 +342,23 @@ public class MongoErrorReportingServiceDaoImplTest {
         );
 
         return errorOccurrence;
+    }
+
+
+    @Test
+    public void testFindFollowsPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createErrorOccurrence("error-" + i, "module1", "flow" + i, "component" + i, "Retry", "Detail " + i,
+                "Message " + i, "Exception" + i, "event-" + i, "rel-" + i, "payload-" + i, System.currentTimeMillis()));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createErrorOccurrence("other-" + i, "module2", "flow" + i, "component" + i, "Retry", "Detail " + i,
+                "Message " + i, "Exception" + i, "event-" + i, "rel-" + i, "payload-" + i, System.currentTimeMillis()));
+        }
+
+        PagingConvention.assertFollowed(29,
+            (offset, limit) -> PagingConvention.page(dao.find(null, null, null, null, 0, 0, offset, limit)));
+        PagingConvention.assertFollowed(25, (offset, limit) ->
+            PagingConvention.page(dao.find(List.of("module1"), null, null, null, 0, 0, offset, limit)));
     }
 }

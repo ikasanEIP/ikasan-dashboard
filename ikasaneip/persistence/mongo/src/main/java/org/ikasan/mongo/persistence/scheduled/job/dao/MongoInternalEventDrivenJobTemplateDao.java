@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.MongoPaging;
 import org.ikasan.mongo.persistence.scheduled.SearchResultsImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoInternalEventDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoInternalEventDrivenJobRepository;
@@ -10,8 +11,6 @@ import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -83,8 +82,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
 
@@ -104,8 +102,7 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        Pageable pageable = PageRequest.of(offset / limit, limit);
-        query.with(pageable);
+        MongoPaging.apply(query, offset, limit);
 
         List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
 

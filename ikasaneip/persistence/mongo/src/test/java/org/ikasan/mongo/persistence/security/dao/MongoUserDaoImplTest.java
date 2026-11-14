@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.security.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import static org.ikasan.mongo.persistence.general.model.MongoConstants.IKASAN_COLLECTION_NAME;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.security.model.MongoUserImpl;
@@ -2486,5 +2487,59 @@ public class MongoUserDaoImplTest {
         dao.deleteExpired();
 
         Assert.assertNotNull(dao.getUser("permanent"));
+    }
+
+
+    @Test
+    public void test_user_and_principal_queries_follow_paging_convention() {
+        org.ikasan.mongo.persistence.security.model.MongoRoleImpl pagingRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
+        pagingRole.setName("PagingRole");
+        mongoRoleDaoImpl.saveOrUpdateRole(pagingRole);
+        org.ikasan.mongo.persistence.security.model.MongoRoleImpl otherRole = new org.ikasan.mongo.persistence.security.model.MongoRoleImpl();
+        otherRole.setName("OtherRole");
+        mongoRoleDaoImpl.saveOrUpdateRole(otherRole);
+
+        // 25 users with PagingRole, 8 with OtherRole
+        for (int i = 0; i < 33; i++) {
+            String name = (i < 25 ? "pa" : "pb") + i;
+            MongoUserImpl user = new MongoUserImpl();
+            user.setUsername(name);
+            user.setEmail(name + "@example.com");
+            user.setEnabled(true);
+
+            org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl principal = new org.ikasan.mongo.persistence.security.model.MongoIkasanPrincipalImpl();
+            principal.setName(name);
+            principal.setType("user");
+            principal.setId(name + "-securityPrincipal");
+            principal.setRoles(new HashSet<>(Set.of(i < 25 ? pagingRole : otherRole)));
+            user.setPrincipals(new HashSet<>(Set.of(principal)));
+
+            dao.save(user);
+            mongoIkasanPrincipalDaoImpl.saveOrUpdatePrincipal(principal);
+        }
+
+        // users
+        PagingConvention.assertFollowed(33, (offset, limit) -> PagingConvention.page(dao.getUsers(null, limit, offset)));
+        PagingConvention.assertFollowed(33, (offset, limit) -> PagingConvention.page(dao.getUserLites(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.getUsersWithRole("PagingRole", null, limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.getUserNamesWithRole("PagingRole", null, limit, offset)));
+        PagingConvention.assertFollowed(8,
+            (offset, limit) -> PagingConvention.page(dao.getUsersWithoutRole("PagingRole", null, limit, offset)));
+
+        // principals
+        PagingConvention.assertFollowed(33,
+            (offset, limit) -> PagingConvention.page(mongoIkasanPrincipalDaoImpl.getPrincipals(null, limit, offset)));
+        PagingConvention.assertFollowed(33,
+            (offset, limit) -> PagingConvention.page(mongoIkasanPrincipalDaoImpl.getPrincipalLites(null, limit, offset)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            mongoIkasanPrincipalDaoImpl.getAllPrincipalsWithRole("PagingRole", null, limit, offset)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            mongoIkasanPrincipalDaoImpl.getAllPrincipalNamesWithRole("PagingRole", null, limit, offset)));
+        PagingConvention.assertFollowed(8, (offset, limit) -> PagingConvention.page(
+            mongoIkasanPrincipalDaoImpl.getAllPrincipalsWithoutRole("PagingRole", null, limit, offset)));
+        PagingConvention.assertFollowed(8, (offset, limit) -> PagingConvention.page(
+            mongoIkasanPrincipalDaoImpl.getAllPrincipalNamesWithoutRole("PagingRole", null, limit, offset)));
     }
 }

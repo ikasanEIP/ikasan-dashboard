@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.notification.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsRecordImpl;
@@ -318,5 +319,20 @@ public class MongoEmailNotificationDetailsDaoTest {
         emailDetails.setHtml(true);
 
         return emailDetails;
+    }
+
+
+    @Test
+    public void test_findAll_and_findByContextName_follow_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createTestRecord("job" + i, "context1", "child" + i, "RUNNING"));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createTestRecord("other" + i, "context2", "child" + i, "RUNNING"));
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByContextName("context1", limit, offset)));
     }
 }

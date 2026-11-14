@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
@@ -845,5 +846,21 @@ public class MongoSchedulerJobInstanceDaoImplTest {
         assertEquals(0L, dao.getSchedulerJobInstancesByContextInstanceId(
             "ctx-inst-1", -1, -1, "jobName", "ASC").getTotalNumberOfResults());
         assertEquals(1, collection.countDocuments(new Document("_id", "other-1")));
+    }
+
+
+    @Test
+    public void testPagedQueriesFollowPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createJobInstanceRecord("job-" + i, "context-1", "ctx-inst-1", InstanceStatus.WAITING));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createJobInstanceRecord("job-" + i, "context-2", "ctx-inst-2", InstanceStatus.WAITING));
+        }
+
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getSchedulerJobInstancesByContextInstanceId("ctx-inst-1", limit, offset, "jobName", "ASC")));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.getSchedulerJobInstancesByContextName("context-1", limit, offset, "jobName", "ASC")));
     }
 }

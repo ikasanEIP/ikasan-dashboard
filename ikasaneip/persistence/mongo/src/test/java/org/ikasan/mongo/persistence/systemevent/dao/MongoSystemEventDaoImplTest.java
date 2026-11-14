@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.systemevent.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventRecordImpl;
 import org.ikasan.mongo.persistence.systemevent.model.MongoSystemEventSearchFilter;
@@ -502,5 +503,23 @@ public class MongoSystemEventDaoImplTest {
         dao.save(event);
         return event;
     }
-    
+
+
+    @Test
+    public void test_findByFilter_follows_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            createSystemEvent((long) i, "Module1", "john.doe", "CREATE", "User", new Date());
+        }
+        for (int i = 0; i < 4; i++) {
+            createSystemEvent(100L + i, "Module1", "jane.smith", "CREATE", "User", new Date());
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) ->
+            PagingConvention.page(dao.findByFilter(new MongoSystemEventSearchFilter(), limit, offset, null, null)));
+
+        MongoSystemEventSearchFilter filter = new MongoSystemEventSearchFilter();
+        filter.setActor("john.doe");
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByFilter(filter, limit, offset, null, null)));
+    }
 }

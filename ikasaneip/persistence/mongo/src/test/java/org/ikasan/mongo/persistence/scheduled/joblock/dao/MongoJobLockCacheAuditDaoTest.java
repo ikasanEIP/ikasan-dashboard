@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.joblock.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.mongo.persistence.scheduled.joblock.model.MongoJobLockCacheAuditRecordImpl;
@@ -181,5 +182,15 @@ public class MongoJobLockCacheAuditDaoTest {
         record.setJobLockCache(data);
 
         return record;
+    }
+
+
+    @Test
+    public void test_find_all_follows_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createJobLockCacheAuditRecord("env" + i));
+        }
+
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
     }
 }

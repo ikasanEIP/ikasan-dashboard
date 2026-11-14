@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.general.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import com.mongodb.client.MongoClients;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocument;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocumentSearchResults;
@@ -986,5 +987,30 @@ public class MongoGeneralDaoImplTest {
         doc.setEventId("event-" + id);
         doc.setEvent("Test event payload");
         return doc;
+    }
+
+
+    @Test
+    public void test_search_follows_paging_convention() {
+        Set<String> identifiers = new HashSet<>();
+        for (int i = 0; i < 25; i++) {
+            MongoIkasanDocument doc = createTestDocument("id-" + i, "wiretap", "module1", "flow1");
+            doc.setTimeStamp(System.currentTimeMillis() + i);
+            dao.saveOrUpdate(doc);
+            identifiers.add(doc.getId());
+        }
+        for (int i = 0; i < 4; i++) {
+            MongoIkasanDocument doc = createTestDocument("other-" + i, "wiretap", "module2", "flow2");
+            doc.setTimeStamp(System.currentTimeMillis() + i);
+            dao.saveOrUpdate(doc);
+        }
+        long until = System.currentTimeMillis() + 100000;
+
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.search(identifiers, offset, limit, null, null)));
+        PagingConvention.assertFollowed(29, (offset, limit) ->
+            PagingConvention.page(dao.search(null, 0, until, offset, limit, null, false, null, null)));
+        PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
+            dao.search(Set.of("module1"), null, null, null, null, 0, until, offset, limit, null, false, null, null)));
     }
 }

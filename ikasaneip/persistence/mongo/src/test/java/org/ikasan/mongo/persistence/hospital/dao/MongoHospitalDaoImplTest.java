@@ -1,5 +1,6 @@
 package org.ikasan.mongo.persistence.hospital.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.ikasan.mongo.persistence.hospital.model.MongoExclusionEventAction;
 import org.ikasan.mongo.persistence.hospital.repository.MongoExclusionEventActionRepository;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
@@ -306,5 +307,23 @@ public class MongoHospitalDaoImplTest {
         );
         exclusionEventAction.setExpiry(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
         return exclusionEventAction;
+    }
+
+
+    @Test
+    public void testFindFollowsPagingConvention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createExclusionEventAction("module1", "flow" + i, "uri" + i, "user" + i,
+                    MongoExclusionEventAction.RESUBMIT, "payload" + i, "comment" + i));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createExclusionEventAction("module2", "flow" + i, "other-uri" + i, "user" + i,
+                    MongoExclusionEventAction.RESUBMIT, "payload" + i, "comment" + i));
+        }
+
+        PagingConvention.assertFollowed(29,
+            (offset, limit) -> PagingConvention.page(dao.find(null, null, null, 0, 0, offset, limit)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.find(List.of("module1"), null, null, 0, 0, offset, limit)));
     }
 }

@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.job.dao;
 
+import org.ikasan.mongo.persistence.general.dao.PagingConvention;
+
 import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoInternalEventDrivenJobRecordImpl;
@@ -152,6 +154,20 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         SearchResults<InternalEventDrivenJobRecord> results = dao.findByContext("context1", 2, 0);
         Assert.assertEquals(5, results.getTotalNumberOfResults());
         Assert.assertEquals(2, results.getResultList().size());
+    }
+
+    @Test
+    public void test_find_all_and_find_by_context_follow_paging_convention() {
+        for (int i = 0; i < 25; i++) {
+            dao.save(createInternalEventDrivenJobRecord("agent" + i, "job" + i, "context1"));
+        }
+        for (int i = 0; i < 4; i++) {
+            dao.save(createInternalEventDrivenJobRecord("other" + i, "job" + i, "context2"));
+        }
+
+        PagingConvention.assertFollowed(29, (offset, limit) -> PagingConvention.page(dao.findAll(limit, offset)));
+        PagingConvention.assertFollowed(25,
+            (offset, limit) -> PagingConvention.page(dao.findByContext("context1", limit, offset)));
     }
 
     @Test

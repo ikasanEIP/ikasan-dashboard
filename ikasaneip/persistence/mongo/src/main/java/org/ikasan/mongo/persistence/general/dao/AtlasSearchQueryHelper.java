@@ -203,7 +203,7 @@ public class AtlasSearchQueryHelper {
         List<AggregationOperation> operations = new ArrayList<>();
         operations.add(buildSearchStage(filter, sort, includeCount));
         if (offset > 0) {
-            operations.add(Aggregation.skip((long) offset));
+            operations.add(Aggregation.skip(offset));
         }
         if (limit > 0) {
             operations.add(Aggregation.limit(limit));
