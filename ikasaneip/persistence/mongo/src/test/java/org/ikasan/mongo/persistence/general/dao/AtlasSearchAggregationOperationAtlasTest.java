@@ -10,8 +10,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Integration tests for AtlasSearchAggregationOperation using MongoDB Atlas Local.
@@ -170,13 +173,18 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+        AtomicReference<List<Document>> resultList = new AtomicReference<>();
 
-        // Then: should return 1 document matching all three conditions
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertEquals(1, resultList.size());
-        Document doc = resultList.get(0);
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+
+            // Then: should return 1 document matching all three conditions
+            resultList.set(results.getMappedResults());
+            Assert.assertEquals(1, resultList.get().size());
+        });
+
+        Document doc = resultList.get().get(0);
         Assert.assertEquals("myModule", doc.getString("moduleName"));
         Assert.assertEquals("myFlow", doc.getString("flowName"));
         Assert.assertEquals("COMPLETE", doc.getString("status"));
@@ -193,12 +201,14 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
 
-        // Then: should return all documents containing "Module" substring
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertEquals(4, resultList.size()); // all documents contain "Module"
+            // Then: should return all documents containing "Module" substring
+            List<Document> resultList = results.getMappedResults();
+            Assert.assertEquals(4, resultList.size()); // all documents contain "Module"
+        });
     }
 
     @Test
@@ -212,12 +222,14 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
 
-        // Then: should return no documents
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertEquals(0, resultList.size());
+            // Then: should return no documents
+            List<Document> resultList = results.getMappedResults();
+            Assert.assertEquals(0, resultList.size());
+        });
     }
 
     @Test
@@ -231,12 +243,14 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundMustWildcardSearch("default", fieldValuePairs);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
 
-        // Then: should return documents matching case-insensitively
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertTrue(resultList.size() >= 2); // Should match "myModule" case-insensitively
+            // Then: should return documents matching case-insensitively
+            List<Document> resultList = results.getMappedResults();
+            Assert.assertTrue(resultList.size() >= 2); // Should match "myModule" case-insensitively
+        });
     }
 
     @Test
@@ -248,13 +262,16 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.compoundOrWildcardSearch("default", "myFlow", searchFields);
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
 
-        // Then: should return document where flowName matches "myFlow"
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertTrue(resultList.size() >= 1);
-        Assert.assertTrue(resultList.stream().anyMatch(doc -> "myFlow".equals(doc.getString("flowName"))));
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+
+            // Then: should return document where flowName matches "myFlow"
+            List<Document> resultList = results.getMappedResults();
+            Assert.assertTrue(resultList.size() >= 1);
+            Assert.assertTrue(resultList.stream().anyMatch(doc -> "myFlow".equals(doc.getString("flowName"))));
+        });
     }
 
     @Test
@@ -263,13 +280,16 @@ public class AtlasSearchAggregationOperationAtlasTest {
         AtlasSearchAggregationOperation searchOp =
             AtlasSearchAggregationOperation.singleFieldWildcardSearch("default", "myModule", "moduleName");
 
-        Aggregation aggregation = Aggregation.newAggregation(searchOp);
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            Aggregation aggregation = Aggregation.newAggregation(searchOp);
+            AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, COLLECTION_NAME, Document.class);
 
-        // Then: should return documents matching moduleName
-        List<Document> resultList = results.getMappedResults();
-        Assert.assertEquals(2, resultList.size());
-        Assert.assertTrue(resultList.stream().allMatch(doc -> doc.getString("moduleName").equals("myModule")));
+            // Then: should return documents matching moduleName
+            List<Document> resultList = results.getMappedResults();
+            Assert.assertEquals(2, resultList.size());
+            Assert.assertTrue(resultList.stream().allMatch(doc -> doc.getString("moduleName").equals("myModule")));
+        });
+
     }
 
     @Test
