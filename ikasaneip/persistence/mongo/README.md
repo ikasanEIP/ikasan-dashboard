@@ -75,6 +75,29 @@ All documents are stored in a single collection named `ikasan` with a `type` fie
 | `mongodb.compression.enabled` | `false` | Enable network compression |
 | `mongodb.compression.compressors` | `snappy,zlib,zstd` | Comma-separated list of compressors to use |
 
+### Command (Query) Logging
+
+Every command sent to MongoDB (find, aggregate, count, insert, update, delete, ...) can be logged with the command and
+its execution time, as measured by the driver. It is off unless the logger is at DEBUG:
+
+```properties
+logging.level.org.ikasan.mongo.persistence.MongoCommandLoggingListener=DEBUG
+```
+
+Example output:
+
+```
+find on SCHEDULER.ikasan took 3.21 ms, returned 2: {"find": "ikasan", "filter": {"type": "internalEventDrivenJobInstance", "componentName": "692b6b9f-..."}}
+aggregate on SCHEDULER.ikasan took 41.07 ms, returned 20: {"aggregate": "ikasan", "pipeline": [{"$search": {...}}, ...]}
+```
+
+Driver housekeeping (handshakes, heartbeats, authentication) is not logged. Commands are logged as sent, so inserts and
+updates include document content: payloads (for example wiretaps) can appear in the log.
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `mongodb.command-logging.max-length` | `2000` | Maximum characters of each command to log (longer commands are truncated); `0` or less logs commands in full |
+
 ### Atlas Search Settings
 
 | Property | Default | Description |
@@ -215,7 +238,9 @@ search index named `default` (or the name in `mongodb.atlas.search.index-name`).
 - [`ikasan.search.json`](src/main/resources/mongo/indexes/ikasan.search.json): the `ikasan` collection
 - [`contextualisedScheduledProcessEventImpl.search.json`](src/main/resources/mongo/indexes/contextualisedScheduledProcessEventImpl.search.json):
   scheduled process events (`agentName`, `jobName`, `jobGroup`, `commandLine`, `outcome`, `resultOutput`,
-  `resultError`, `fireTime`, `successful`)
+  `resultError`, `fireTime`, `successful`). `commandLine` is matched as a whole value, so a substring such as
+  `opt/scripts` matches; `resultOutput` and `resultError` can be large and are indexed per word instead. Without this
+  index the scheduled process event search returns no results on Atlas.
 
 The DAOs push **all** filtering, sorting and counting into the `$search` stage (see
 [Atlas Search Query Helper](#atlas-search-query-helper)), so every field a DAO filters or sorts on must be in the index
@@ -223,9 +248,9 @@ with the right type. The definition provides:
 
 | Field kind | Index type | Used for |
 |------------|------------|----------|
-| Discriminators and names (`type`, `moduleName`, `flowName`, `componentName`, `status`, `actor`, `errorUri`, ...) | `token` | `equals` / `in` filters and in-index `sort` |
-| The same name fields | `string` with the `lowercaseKeyword` analyzer | case-insensitive substring (`*term*`) matching |
-| Free text (`payload`, `errorDetail`, `errorMessage`, `event`, ...) | `string` with `lucene.standard` | full-text / per-token wildcard search |
+| Discriminators, names and identifiers (`type`, `moduleName`, `flowName`, `componentName`, `status`, `actor`, `errorUri`, `event`, ...) | `token` | `equals` / `in` filters and in-index `sort` |
+| The same fields | `string` with the `lowercaseKeyword` analyzer (the whole value as one lower-cased term) | case-insensitive substring (`*term*`) matching, including across `-`, `.` and spaces, so a full event id such as `evt-7f3a-0002` matches |
+| Free text (`payload`, `errorDetail`, `errorMessage`, ...) | `string` with `lucene.standard` | full-text / per-word wildcard search (a wildcard term matches within one word, not across words) |
 | Timestamps (`timestamp`, `startTime`, `endTime`, `expiry`, ...) | `number` (and `date` for `timestamp`, which system events store as a BSON date) | `range` filters and `sort` |
 | Flags (`disabled`, `participatesInLock`, ...) | `boolean` | `equals` filters |
 

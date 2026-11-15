@@ -238,7 +238,11 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
     public boolean doesJobPlanInstanceContainRepeatingJobs(String contextInstanceId) {
         logger.debug("Checking if job plan instance contains repeating jobs: {}", contextInstanceId);
 
-        Query query = new Query(Criteria.where(EntityFields.COMPONENT_NAME).is(contextInstanceId));
+        // Only internal event driven job instances can repeat (records of any other type never deserialise to an
+        // InternalEventDrivenJobInstance). Filtering on type also lets the query use the type_1_componentName_1_flowName_1
+        // index; componentName on its own has no index and scans the whole shared collection.
+        Query query = new Query(Criteria.where(EntityFields.TYPE).is(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)
+            .and(EntityFields.COMPONENT_NAME).is(contextInstanceId));
 
         List<MongoSchedulerJobInstanceRecordImpl> jobInstances = mongoTemplate.find(query, MongoSchedulerJobInstanceRecordImpl.class);
 

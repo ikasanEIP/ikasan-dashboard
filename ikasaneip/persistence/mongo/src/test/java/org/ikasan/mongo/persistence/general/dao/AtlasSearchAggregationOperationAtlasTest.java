@@ -1,17 +1,13 @@
 package org.ikasan.mongo.persistence.general.dao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.shaded.org.awaitility.core.ConditionTimeoutException;
 
@@ -37,36 +33,20 @@ public class AtlasSearchAggregationOperationAtlasTest {
      */
     private static final Duration INDEX_READY_TIMEOUT = Duration.ofMinutes(3);
 
-    private static MongoDBAtlasLocalContainer atlasContainer;
-    private static MongoClient mongoClient;
     private static MongoTemplate mongoTemplate;
     private static MongoDatabase database;
 
     @BeforeClass
-    public static void startContainer() {
-        atlasContainer = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.14")
-            .withStartupTimeout(Duration.ofMinutes(5));
-        atlasContainer.start();
-
-        mongoClient = MongoClients.create(atlasContainer.getConnectionString());
-        database = mongoClient.getDatabase("testdb");
-        mongoTemplate = new MongoTemplate(mongoClient, "testdb");
+    public static void setUpDatabase() {
+        // shared Atlas Local container (see AtlasLocalSupport); this class uses its own database and search index
+        mongoTemplate = AtlasLocalSupport.freshDatabase("testdb");
+        database = AtlasLocalSupport.client().getDatabase("testdb");
 
         // The tests only read, so the data and the index are created once. Dropping and recreating them per test made
         // every test race the asynchronous index build (and the asynchronous drop of the previous index).
         insertTestDocuments();
         createSearchIndex();
         waitForSearchIndex();
-    }
-
-    @AfterClass
-    public static void stopContainer() {
-        if (mongoClient != null) {
-            mongoClient.close();
-        }
-        if (atlasContainer != null) {
-            atlasContainer.stop();
-        }
     }
 
     private static void insertTestDocuments() {

@@ -199,7 +199,9 @@ public class MongoPersistenceAutoConfiguration {
             @Value("${mongodb.retry.writes:true}") boolean retryWrites,
             @Value("${mongodb.retry.reads:true}") boolean retryReads,
             @Value("${mongodb.compression.enabled:false}") boolean compressionEnabled,
-            @Value("${mongodb.compression.compressors:snappy,zlib,zstd}") String compressors) {
+            @Value("${mongodb.compression.compressors:snappy,zlib,zstd}") String compressors,
+            @Value("${mongodb.command-logging.max-length:" + MongoCommandLoggingListener.DEFAULT_MAX_LENGTH + "}")
+                int commandLoggingMaxLength) {
 
         MongoClientSettings.Builder settingsBuilder = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(connectionString));
@@ -289,6 +291,9 @@ public class MongoPersistenceAutoConfiguration {
                 settingsBuilder.compressorList(compressorList);
             }
         }
+
+        // Logs every command with its execution time when this listener's logger is at DEBUG; a no-op otherwise.
+        settingsBuilder.addCommandListener(new MongoCommandLoggingListener(commandLoggingMaxLength));
 
         return MongoClients.create(settingsBuilder.build());
     }

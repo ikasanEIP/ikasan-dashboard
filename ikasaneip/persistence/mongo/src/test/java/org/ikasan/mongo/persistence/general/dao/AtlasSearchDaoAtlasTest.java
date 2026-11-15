@@ -1,9 +1,5 @@
 package org.ikasan.mongo.persistence.general.dao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.general.model.MongoIkasanDocument;
 import org.ikasan.mongo.persistence.general.repository.MongoIkasanDocumentRepository;
@@ -15,15 +11,11 @@ import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
-import org.testcontainers.containers.Container;
-import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
-import org.testcontainers.utility.MountableFile;
 
 import java.util.Date;
 import java.util.List;
@@ -43,21 +35,15 @@ public class AtlasSearchDaoAtlasTest {
     private static final long NOW = System.currentTimeMillis();
     private static final long HOUR = 3_600_000L;
 
-    private static MongoDBAtlasLocalContainer atlasContainer;
-    private static MongoClient mongoClient;
     private static MongoTemplate mongoTemplate;
     private static AtlasSearchQueryHelper helper;
     private static MongoGeneralDaoImpl generalDao;
     private static MongoSystemEventDaoImpl systemEventDao;
 
     @BeforeClass
-    public static void startContainer() throws Exception {
-        atlasContainer = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.14");
-        atlasContainer.start();
-
-        mongoClient = MongoClients.create(atlasContainer.getConnectionString());
-        mongoTemplate = new MongoTemplate(mongoClient, DB);
-        helper = new AtlasSearchQueryHelper(mongoTemplate);
+    public static void setUpDatabase() {
+        mongoTemplate = AtlasLocalSupport.freshDatabase(DB);
+        helper = AtlasLocalSupport.searchHelper(mongoTemplate);
 
         MongoRepositoryFactory factory = new MongoRepositoryFactory(mongoTemplate);
         generalDao = new MongoGeneralDaoImpl(factory.getRepository(MongoIkasanDocumentRepository.class),
@@ -65,21 +51,9 @@ public class AtlasSearchDaoAtlasTest {
         systemEventDao = new MongoSystemEventDaoImpl(factory.getRepository(MongoSystemEventRepository.class),
             mongoTemplate, 30, helper);
 
-        MongoDatabase database = mongoClient.getDatabase(DB);
-        applyShippedIndexes();
-
         insertTestData();
-        awaitSearchable(database, 8);
-    }
-
-    @AfterClass
-    public static void stopContainer() {
-        if (mongoClient != null) {
-            mongoClient.close();
-        }
-        if (atlasContainer != null) {
-            atlasContainer.stop();
-        }
+        AtlasLocalSupport.applyShippedIndexes(DB);
+        AtlasLocalSupport.awaitSearchable(DB, MongoConstants.IKASAN_COLLECTION_NAME, "type", 8);
     }
 
     @Before
@@ -240,42 +214,5 @@ public class AtlasSearchDaoAtlasTest {
 
     private static List<String> actors(SearchResults<SystemEvent> results) {
         return results.getResultList().stream().map(SystemEvent::getActor).toList();
-    }
-
-    /**
-     * Create all indexes (standard and Atlas Search) with the shipped {@code apply-indexes.js} script, exactly as an
-     * operator would.
-     */
-    private static void applyShippedIndexes() throws Exception {
-        atlasContainer.copyFileToContainer(MountableFile.forClasspathResource("mongo/indexes"), "/indexes");
-        Container.ExecResult result = atlasContainer.execInContainer("sh", "-c",
-            "mongosh --quiet 'mongodb://localhost:27017/" + DB + "?directConnection=true' --file /indexes/apply-indexes.js");
-        assertEquals("apply-indexes.js failed:\n" + result.getStdout() + result.getStderr(), 0, result.getExitCode());
-    }
-
-    /**
-     * Search indexes are eventually consistent: wait until the index is built and has caught up with the inserts.
-     */
-    private static void awaitSearchable(MongoDatabase database, long expectedDocuments) throws InterruptedException {
-        Document searchMeta = new Document("$searchMeta", new Document("index", "default")
-            .append("exists", new Document("path", "type"))
-            .append("count", new Document("type", "total")));
-
-        long deadline = System.currentTimeMillis() + 120_000;
-        long count = -1;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                Document meta = database.getCollection(MongoConstants.IKASAN_COLLECTION_NAME)
-                    .aggregate(List.of(searchMeta)).first();
-                count = meta == null ? 0 : ((Document) meta.get("count")).get("total", Number.class).longValue();
-                if (count == expectedDocuments) {
-                    return;
-                }
-            } catch (RuntimeException e) {
-                // index not ready yet
-            }
-            Thread.sleep(500);
-        }
-        fail("Search index not ready, indexed " + count + " of " + expectedDocuments + " documents");
     }
 }

@@ -177,6 +177,9 @@ public class MongoIndexDefinitionsTest {
         assertIndexed(IKASAN, doc("type", doc("$in", List.of("A", "B")))
                 .append("componentName", doc("$in", List.of("i1", "i2"))), null,
             "type_1_componentName_1_flowName_1");
+        // doesJobPlanInstanceContainRepeatingJobs: internal event driven job instances of a context instance
+        assertIndexed(IKASAN, doc("type", "internalEventDrivenJobInstance").append("componentName", "i1"), null,
+            "type_1_componentName_1_flowName_1");
         // scheduler job list for a context sorted by job name
         assertIndexed(IKASAN, doc("type", "QUARTZ_SCHEDULE_DRIVEN_JOB").append("componentName", "ctx"),
             doc("flowName", -1), "type_1_componentName_1_flowName_1");

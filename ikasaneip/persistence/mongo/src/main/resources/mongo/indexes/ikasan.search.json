@@ -23,7 +23,7 @@
       "actor":                      [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
       "systemEventSubject":         [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
       "systemEventAction":          [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
-      "event":                      [ { "type": "token" }, { "type": "string", "analyzer": "lucene.standard" } ],
+      "event":                      [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
 
       "payload":                    { "type": "string", "analyzer": "lucene.standard" },
       "errorDetail":                { "type": "string", "analyzer": "lucene.standard" },
