@@ -1,0 +1,27 @@
+{
+  "analyzer": "lucene.standard",
+  "searchAnalyzer": "lucene.standard",
+  "analyzers": [
+    {
+      "name": "lowercaseKeyword",
+      "tokenizer": { "type": "keyword" },
+      "tokenFilters": [ { "type": "lowercase" } ]
+    }
+  ],
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "agentName":     [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "jobName":       [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "jobGroup":      [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "outcome":       [ { "type": "token" }, { "type": "string", "analyzer": "lowercaseKeyword" } ],
+      "commandLine":   { "type": "string", "analyzer": "lowercaseKeyword" },
+
+      "resultOutput":  { "type": "string", "analyzer": "lucene.standard" },
+      "resultError":   { "type": "string", "analyzer": "lucene.standard" },
+
+      "fireTime":      { "type": "number" },
+      "successful":    { "type": "boolean" }
+    }
+  }
+}
