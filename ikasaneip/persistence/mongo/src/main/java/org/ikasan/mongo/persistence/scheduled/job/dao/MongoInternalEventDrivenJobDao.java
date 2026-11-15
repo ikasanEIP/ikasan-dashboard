@@ -57,6 +57,9 @@ public class MongoInternalEventDrivenJobDao implements InternalEventDrivenJobDao
         mongoRecord.setJobName(job.getJobName());
         mongoRecord.setTimestamp(event.getTimestamp());
         mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        mongoRecord.setDisabled(event.isDisabled());
+        mongoRecord.setSkipped(event.isSkipped());
+        mongoRecord.setHeld(event.isHeld());
 
         // only update modified by field if populated.
         if(event.getModifiedBy() != null &&
@@ -64,8 +67,6 @@ public class MongoInternalEventDrivenJobDao implements InternalEventDrivenJobDao
             mongoRecord.setModifiedBy(event.getModifiedBy());
         }
         mongoRecord.setExpiry(-1);
-        mongoRecord.setHeld(event.isHeld());
-        mongoRecord.setSkipped(event.isSkipped());
 
         repository.save(mongoRecord);
     }
@@ -84,9 +85,8 @@ public class MongoInternalEventDrivenJobDao implements InternalEventDrivenJobDao
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
+        List<MongoInternalEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoInternalEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -104,9 +104,8 @@ public class MongoInternalEventDrivenJobDao implements InternalEventDrivenJobDao
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
+        List<MongoInternalEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoInternalEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

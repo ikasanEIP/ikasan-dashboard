@@ -87,6 +87,7 @@ public class ResidingContextSelectDialog extends AbstractCloseableResizableDialo
         grid.setWidthFull();
 
         grid.setItems(this.initialiseGridData(internalEventDrivenJob));
+        grid.getStyle().set("margin-top", "10px");
 
         layout.add(grid);
 

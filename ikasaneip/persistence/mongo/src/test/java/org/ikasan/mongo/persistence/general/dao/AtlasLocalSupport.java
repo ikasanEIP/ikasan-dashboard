@@ -141,6 +141,22 @@ public final class AtlasLocalSupport {
     }
 
     /**
+     * {@link #usingSearch} for a paged call to a DAO method that returns a plain list (no total). With
+     * {@code limit = 0} such a call asks for nothing, so it must not query the database at all; that is asserted
+     * instead.
+     */
+    public static <T> T pagedListUsingSearch(String database, int limit, Supplier<T> call) {
+        if (!MongoPaging.isCountOnly(limit)) {
+            return usingSearch(database, call);
+        }
+        SEARCHES.clear();
+        T result = call.get();
+        assertTrue("a count-only call without a total must not search, searches sent: " + SEARCHES,
+            SEARCHES.isEmpty());
+        return result;
+    }
+
+    /**
      * Wait until the search index on {@code collection} can be queried and has indexed {@code expectedDocuments}
      * documents that have {@code indexedPath} (a field mapped in the search index and present on every seeded
      * document).

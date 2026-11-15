@@ -112,7 +112,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
         textField.addValueChangeListener(ev -> {
 
-            setFilter.accept("*"+ev.getValue()+"*");
+            setFilter.accept(ev.getValue());
 
             filteredDataProvider.refreshAll();
         });

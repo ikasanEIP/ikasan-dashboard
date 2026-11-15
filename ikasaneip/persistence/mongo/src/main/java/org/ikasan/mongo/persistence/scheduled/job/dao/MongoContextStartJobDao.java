@@ -82,9 +82,8 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
         long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoContextStartJobRecordImpl> results = mongoTemplate.find(query, MongoContextStartJobRecordImpl.class);
+        List<MongoContextStartJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoContextStartJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -102,9 +101,8 @@ public class MongoContextStartJobDao implements ContextStartJobDao<ContextStartJ
 
         long totalCount = mongoTemplate.count(query, MongoContextStartJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoContextStartJobRecordImpl> results = mongoTemplate.find(query, MongoContextStartJobRecordImpl.class);
+        List<MongoContextStartJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoContextStartJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

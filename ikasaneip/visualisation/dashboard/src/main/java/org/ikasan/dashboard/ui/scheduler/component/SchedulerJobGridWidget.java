@@ -721,7 +721,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             layout.add(release);
 
-            Icon disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            Icon disable = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.disable-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             disable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
             disable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()

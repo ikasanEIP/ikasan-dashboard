@@ -21,6 +21,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class MongoInternalEventDrivenJobDaoTest {
 
@@ -175,6 +176,167 @@ public class MongoInternalEventDrivenJobDaoTest {
     }
 
     @Test
+    public void test_find_all_limit_zero_returns_only_the_total() {
+        for (int i = 0; i < 3; i++) {
+            dao.save(createInternalEventDrivenJobRecord("agent" + i, "job" + i, "context" + i));
+        }
+
+        SearchResults<InternalEventDrivenJobRecord> results = dao.findAll(0, 0);
+
+        Assert.assertEquals(3, results.getTotalNumberOfResults());
+        Assert.assertTrue(results.getResultList().isEmpty());
+    }
+
+    @Test
+    public void test_find_by_context_limit_zero_returns_only_the_total() {
+        dao.save(createInternalEventDrivenJobRecord("agent1", "job1", "context1"));
+        dao.save(createInternalEventDrivenJobRecord("agent2", "job2", "context1"));
+        dao.save(createInternalEventDrivenJobRecord("agent3", "job3", "context2"));
+
+        SearchResults<InternalEventDrivenJobRecord> results = dao.findByContext("context1", 0, 0);
+
+        Assert.assertEquals(2, results.getTotalNumberOfResults());
+        Assert.assertTrue(results.getResultList().isEmpty());
+    }
+
+    @Test
+    public void test_find_all_limit_minus_one_returns_every_record() {
+        for (int i = 0; i < 3; i++) {
+            dao.save(createInternalEventDrivenJobRecord("agent" + i, "job" + i, "context" + i));
+        }
+
+        SearchResults<InternalEventDrivenJobRecord> results = dao.findAll(-1, -1);
+
+        Assert.assertEquals(3, results.getTotalNumberOfResults());
+        Assert.assertEquals(3, results.getResultList().size());
+    }
+
+    @Test
+    public void test_save_persists_disabled() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        record.setDisabled(true);
+
+        dao.save(record);
+
+        Assert.assertTrue(dao.findById(record.getId()).isDisabled());
+    }
+
+    @Test
+    public void test_save_clears_disabled() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        record.setDisabled(true);
+        dao.save(record);
+
+        record.setDisabled(false);
+        dao.save(record);
+
+        Assert.assertFalse(dao.findById(record.getId()).isDisabled());
+    }
+
+    @Test
+    public void test_save_defaults_flags_to_false() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+
+        dao.save(record);
+
+        InternalEventDrivenJobRecord found = dao.findById(record.getId());
+        Assert.assertFalse(found.isDisabled());
+        Assert.assertFalse(found.isHeld());
+        Assert.assertFalse(found.isSkipped());
+    }
+
+    @Test
+    public void test_save_persists_disabled_held_and_skipped_independently() {
+        MongoInternalEventDrivenJobRecordImpl disabledOnly = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        disabledOnly.setDisabled(true);
+        MongoInternalEventDrivenJobRecordImpl heldOnly = createInternalEventDrivenJobRecord("agent2", "job2", "context1");
+        heldOnly.setHeld(true);
+        MongoInternalEventDrivenJobRecordImpl skippedOnly = createInternalEventDrivenJobRecord("agent3", "job3", "context1");
+        skippedOnly.setSkipped(true);
+        MongoInternalEventDrivenJobRecordImpl all = createInternalEventDrivenJobRecord("agent4", "job4", "context1");
+        all.setDisabled(true);
+        all.setHeld(true);
+        all.setSkipped(true);
+
+        dao.save(List.of(disabledOnly, heldOnly, skippedOnly, all));
+
+        assertFlags(disabledOnly.getId(), true, false, false);
+        assertFlags(heldOnly.getId(), false, true, false);
+        assertFlags(skippedOnly.getId(), false, false, true);
+        assertFlags(all.getId(), true, true, true);
+    }
+
+    @Test
+    public void test_save_without_id_persists_flags() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        record.setId(null);
+        record.setDisabled(true);
+        record.setHeld(true);
+        record.setSkipped(true);
+
+        dao.save(record);
+
+        // the DAO generates the id from the agent, job and context names
+        assertFlags(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_agent1_job1_context1", true, true, true);
+    }
+
+    @Test
+    public void test_skip_hold_enable_and_release_keep_disabled() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        withChildContexts(record, "child1");
+        record.setDisabled(true);
+        dao.save(record);
+
+        dao.skip(dao.findById(record.getId()), List.of("child1"), "testUser");
+        assertFlags(record.getId(), true, false, true);
+
+        dao.hold(dao.findById(record.getId()), List.of("child1"), "testUser");
+        assertFlags(record.getId(), true, true, true);
+
+        dao.enable(dao.findById(record.getId()), "testUser");
+        assertFlags(record.getId(), true, true, false);
+
+        dao.release(dao.findById(record.getId()), "testUser");
+        assertFlags(record.getId(), true, false, false);
+    }
+
+    @Test
+    public void test_hold_all_release_all_and_enable_all_keep_disabled() {
+        MongoInternalEventDrivenJobRecordImpl disabled = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        withChildContexts(disabled, "child1");
+        disabled.setDisabled(true);
+        MongoInternalEventDrivenJobRecordImpl enabled = createInternalEventDrivenJobRecord("agent2", "job2", "context1");
+        withChildContexts(enabled, "child2");
+        dao.save(List.of(disabled, enabled));
+
+        dao.holdAll(List.of(dao.findById(disabled.getId()), dao.findById(enabled.getId())), "testUser");
+        assertFlags(disabled.getId(), true, true, false);
+        assertFlags(enabled.getId(), false, true, false);
+
+        dao.releaseAll(List.of(dao.findById(disabled.getId()), dao.findById(enabled.getId())), "testUser");
+        assertFlags(disabled.getId(), true, false, false);
+        assertFlags(enabled.getId(), false, false, false);
+
+        dao.enableAll(List.of(dao.findById(disabled.getId()), dao.findById(enabled.getId())), "testUser");
+        assertFlags(disabled.getId(), true, false, false);
+        assertFlags(enabled.getId(), false, false, false);
+    }
+
+    @Test
+    public void test_hold_all_clears_skipped() {
+        MongoInternalEventDrivenJobRecordImpl record = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
+        withChildContexts(record, "child1");
+        record.setSkipped(true);
+        dao.save(record);
+
+        dao.holdAll(List.of(dao.findById(record.getId())), "testUser");
+
+        assertFlags(record.getId(), false, true, false);
+        Assert.assertEquals(Boolean.TRUE,
+            dao.findById(record.getId()).getInternalEventDrivenJob().getHeldContexts().get("child1"));
+    }
+
+    @Test
     public void test_find_by_context_no_results() {
         dao.save(createInternalEventDrivenJobRecord("agent1", "job1", "context1"));
 
@@ -288,8 +450,8 @@ public class MongoInternalEventDrivenJobDaoTest {
     public void test_hold_all() {
         MongoInternalEventDrivenJobRecordImpl record1 = createInternalEventDrivenJobRecord("agent1", "job1", "context1");
         MongoInternalEventDrivenJobRecordImpl record2 = createInternalEventDrivenJobRecord("agent2", "job2", "context2");
-        record1.getInternalEventDrivenJob().setChildContextNames(Arrays.asList("child1", "child2"));
-        record2.getInternalEventDrivenJob().setChildContextNames(Arrays.asList("child3", "child4"));
+        withChildContexts(record1, "child1", "child2");
+        withChildContexts(record2, "child3", "child4");
         dao.save(record1);
         dao.save(record2);
 
@@ -300,6 +462,8 @@ public class MongoInternalEventDrivenJobDaoTest {
         InternalEventDrivenJobRecord found2 = dao.findById(record2.getId());
         Assert.assertTrue(found1.isHeld());
         Assert.assertTrue(found2.isHeld());
+        Assert.assertEquals(Set.of("child1", "child2"), found1.getInternalEventDrivenJob().getHeldContexts().keySet());
+        Assert.assertEquals(Set.of("child3", "child4"), found2.getInternalEventDrivenJob().getHeldContexts().keySet());
         Assert.assertEquals("testUser", found1.getModifiedBy());
         Assert.assertEquals("testUser", found2.getModifiedBy());
     }
@@ -325,6 +489,21 @@ public class MongoInternalEventDrivenJobDaoTest {
     }
 
     // Helper methods
+
+    /** The job is stored as JSON, so {@code getInternalEventDrivenJob()} returns a copy: set it back. */
+    private static void withChildContexts(MongoInternalEventDrivenJobRecordImpl record, String... names) {
+        InternalEventDrivenJob job = record.getInternalEventDrivenJob();
+        job.setChildContextNames(List.of(names));
+        record.setInternalEventDrivenJob(job);
+    }
+
+    private void assertFlags(String id, boolean disabled, boolean held, boolean skipped) {
+        InternalEventDrivenJobRecord found = dao.findById(id);
+        Assert.assertNotNull("no record with id " + id, found);
+        Assert.assertEquals(id + ": disabled", disabled, found.isDisabled());
+        Assert.assertEquals(id + ": held", held, found.isHeld());
+        Assert.assertEquals(id + ": skipped", skipped, found.isSkipped());
+    }
 
     private MongoInternalEventDrivenJobRecordImpl createInternalEventDrivenJobRecord(String agentName, String jobName, String contextName) {
         InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();

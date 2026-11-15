@@ -314,7 +314,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
             .contains(EntityFields.DISPLAY_NAME, filter.getDisplayNameFilter())
             .equals(EntityFields.FLOW_NAME, filter.getContextName())
             .equals(EntityFields.COMPONENT_NAME, filter.getContextInstanceId())
-            .equals(EntityFields.CHILD_CONTEXT_NAME, filter.getChildContextName())
+            .contains(EntityFields.CHILD_CONTEXT_NAME, filter.getChildContextName())
             .equals(EntityFields.STATUS, filter.getStatus())
             .equals(EntityFields.TARGET_RESIDING_CONTEXT_ONLY, filter.isTargetResidingContextOnly())
             .equals(EntityFields.PARTICIPATES_IN_LOCK, filter.isParticipatesInLock())

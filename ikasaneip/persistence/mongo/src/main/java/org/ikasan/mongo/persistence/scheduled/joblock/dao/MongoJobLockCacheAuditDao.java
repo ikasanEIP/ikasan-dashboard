@@ -41,9 +41,8 @@ public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
         Query query = new Query();
         long totalCount = mongoTemplate.count(query, MongoJobLockCacheAuditRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoJobLockCacheAuditRecordImpl> results = mongoTemplate.find(query, MongoJobLockCacheAuditRecordImpl.class);
+        List<MongoJobLockCacheAuditRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoJobLockCacheAuditRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         logger.debug("findAll query took {}ms, found {} results", queryTime, totalCount);

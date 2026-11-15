@@ -84,9 +84,8 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
 
         long totalCount = mongoTemplate.count(query, MongoFileEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoFileEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoFileEventDrivenJobRecordImpl.class);
+        List<MongoFileEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoFileEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -104,9 +103,8 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
 
         long totalCount = mongoTemplate.count(query, MongoFileEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoFileEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoFileEventDrivenJobRecordImpl.class);
+        List<MongoFileEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoFileEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

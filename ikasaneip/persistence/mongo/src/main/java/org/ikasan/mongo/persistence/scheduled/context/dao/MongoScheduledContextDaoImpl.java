@@ -90,10 +90,7 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
         // Apply sorting
         query.with(Sort.by(Sort.Direction.DESC, EntityFields.CREATED_DATE_TIME));
 
-        // Apply pagination
-        MongoPaging.apply(query, offset, limit);
-
-        List<MongoScheduledContextRecordImpl> results = mongoTemplate.find(query, MongoScheduledContextRecordImpl.class);
+        List<MongoScheduledContextRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoScheduledContextRecordImpl.class);
 
         logger.debug("Found {} ScheduledContextRecords out of {} total", results.size(), totalCount);
 

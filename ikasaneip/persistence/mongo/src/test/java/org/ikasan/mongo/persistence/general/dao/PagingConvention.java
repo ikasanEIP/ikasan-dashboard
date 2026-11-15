@@ -12,8 +12,8 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test assertion for the DAO paging convention: an offset or limit of {@code -1} means "not paged", so
- * {@code offset = -1, limit = -1} returns every match, and the offset is an absolute number of documents to skip
- * (it does not have to be a multiple of the limit).
+ * {@code offset = -1, limit = -1} returns every match, a limit of {@code 0} returns no documents but still reports the
+ * total, and the offset is an absolute number of documents to skip (it does not have to be a multiple of the limit).
  *
  * <p>Usage, for a DAO method taking {@code (limit, offset)}:</p>
  * <pre>
@@ -80,6 +80,11 @@ public final class PagingConvention {
         }
         check(query, offset, 3, Math.min(3, total - offset), total, "offset that is not a multiple of the limit");
         check(query, total, 3, 0, total, "offset past the end");
+
+        // limit 0: count only
+        check(query, 0, 0, 0, total, "limit 0 must return no records but the total");
+        check(query, 3, 0, 0, total, "limit 0 with an offset must still return no records");
+        check(query, -1, 0, 0, total, "limit 0 with offset -1 must return no records");
     }
 
     private static void check(PagedQuery query, int offset, int limit, int expectedSize, int expectedTotal,

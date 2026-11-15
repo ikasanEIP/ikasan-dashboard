@@ -204,10 +204,7 @@ public class MongoContextProfileDao implements ContextProfileDao {
             query.with(Sort.by(Sort.Direction.DESC, "createdDateTime"));
         }
 
-        // Apply pagination
-        MongoPaging.apply(query, offset, limit);
-
-        List<MongoContextProfileRecordImpl> results = mongoTemplate.find(query, MongoContextProfileRecordImpl.class);
+        List<MongoContextProfileRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoContextProfileRecordImpl.class);
 
         long queryResponseTime = System.currentTimeMillis() - startTime;
 

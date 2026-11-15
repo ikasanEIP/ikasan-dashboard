@@ -451,6 +451,23 @@ offset is past the end, the total is read with `$searchMeta`, which only touches
 Filters without search terms run as a standard indexed query, because a plain B-tree lookup is cheaper than
 `$search`.
 
+### Paging convention
+
+Every DAO in this module (whether or not it uses Atlas Search) takes an `offset` and a `limit` with the same meaning
+(see `MongoPaging`):
+
+| `limit` | Records returned | Total count |
+|---|---|---|
+| `> 0` | at most `limit`, after skipping `offset` | every match |
+| `0` | none; the offset is ignored | every match |
+| `-1` (any negative) | every match after skipping `offset` | every match |
+
+An `offset` of `0` or `-1` skips nothing. The offset is an absolute number of documents, not a page number.
+
+`limit = 0` is the count-only call used by the UI grids (`offset = 0, limit = 0`, then `getTotalNumberOfResults()`).
+It never reads documents: an Atlas search runs only `$searchMeta` against the index, and every other query runs only a
+`count`. Methods that return a plain `List` (no total) return an empty list.
+
 ### Automatic Fallback
 
 The helper uses a standard query (regexes for the text clauses) when:

@@ -249,7 +249,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
         queryString.append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getJobName()) : "*");
+            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape("*"+filter.getJobName()+"*") : "*");
 
         queryString.append(AND)
             .append(FLOW_NAME)
@@ -264,7 +264,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         queryString.append(AND)
             .append(CHILD_CONTEXT_NAME)
             .append(COLON)
-            .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName()) : "*");
+            .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape("*"+filter.getChildContextName()+"*") : "*");
 
         if(filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
             queryString.append(AND)
