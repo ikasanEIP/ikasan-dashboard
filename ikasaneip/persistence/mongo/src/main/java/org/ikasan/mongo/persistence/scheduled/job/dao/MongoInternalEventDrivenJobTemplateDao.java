@@ -82,9 +82,8 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
+        List<MongoInternalEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoInternalEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         logger.debug("findAll query took {}ms, found {} results", queryTime, totalCount);
@@ -102,9 +101,8 @@ public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDr
 
         long totalCount = mongoTemplate.count(query, MongoInternalEventDrivenJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoInternalEventDrivenJobRecordImpl> results = mongoTemplate.find(query, MongoInternalEventDrivenJobRecordImpl.class);
+        List<MongoInternalEventDrivenJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoInternalEventDrivenJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         logger.debug("findByContext query took {}ms, found {} results", queryTime, totalCount);

@@ -177,9 +177,8 @@ public class MongoUserDaoImpl implements UserDao {
         Query query = new Query();
         addUserFilterCriteria(query, userFilter);
 
-        MongoPaging.apply(query, offset, limit);
 
-        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoUserRecord.class).stream()
             .map(this::loadPrincipals)
             .collect(Collectors.toList());
     }
@@ -200,9 +199,8 @@ public class MongoUserDaoImpl implements UserDao {
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
 
-        MongoPaging.apply(query, offset, limit);
 
-        return mongoTemplate.find(query, MongoUserRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoUserRecord.class).stream()
             .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
             .map(user -> (UserLite) user)
             .collect(Collectors.toList());

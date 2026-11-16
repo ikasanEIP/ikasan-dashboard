@@ -87,9 +87,8 @@ public class MongoBridgingJobDao implements BridgingJobDao<BridgingJobRecord> {
 
         long totalCount = mongoTemplate.count(query, MongoBridgingJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoBridgingJobRecordImpl> results = mongoTemplate.find(query, MongoBridgingJobRecordImpl.class);
+        List<MongoBridgingJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoBridgingJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -108,9 +107,8 @@ public class MongoBridgingJobDao implements BridgingJobDao<BridgingJobRecord> {
 
         long totalCount = mongoTemplate.count(query, MongoBridgingJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoBridgingJobRecordImpl> results = mongoTemplate.find(query, MongoBridgingJobRecordImpl.class);
+        List<MongoBridgingJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoBridgingJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

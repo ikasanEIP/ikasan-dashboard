@@ -86,9 +86,8 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
 
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
+        List<MongoSchedulerJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoSchedulerJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -110,9 +109,8 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
+        List<MongoSchedulerJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoSchedulerJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -128,9 +126,8 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         Query query = new Query(criteria);
         long totalCount = mongoTemplate.count(query, MongoSchedulerJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
+        List<MongoSchedulerJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoSchedulerJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -220,9 +217,8 @@ public class MongoSchedulerJobDaoImpl implements SchedulerJobDao<SchedulerJobRec
         }
 
         query.with(sort);
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoSchedulerJobRecordImpl> results = mongoTemplate.find(query, MongoSchedulerJobRecordImpl.class);
+        List<MongoSchedulerJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoSchedulerJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

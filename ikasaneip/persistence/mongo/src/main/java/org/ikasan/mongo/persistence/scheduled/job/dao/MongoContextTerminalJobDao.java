@@ -85,9 +85,8 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
         long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoContextTerminalJobRecordImpl> results = mongoTemplate.find(query, MongoContextTerminalJobRecordImpl.class);
+        List<MongoContextTerminalJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoContextTerminalJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -105,9 +104,8 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
 
         long totalCount = mongoTemplate.count(query, MongoContextTerminalJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoContextTerminalJobRecordImpl> results = mongoTemplate.find(query, MongoContextTerminalJobRecordImpl.class);
+        List<MongoContextTerminalJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoContextTerminalJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

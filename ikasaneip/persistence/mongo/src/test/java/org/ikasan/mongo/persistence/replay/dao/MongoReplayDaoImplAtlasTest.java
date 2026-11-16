@@ -99,7 +99,7 @@ public class MongoReplayDaoImplAtlasTest {
 
     @Test
     public void paging_convention() {
-        PagingConvention.assertFollowed(8, (offset, limit) -> PagingConvention.page(AtlasLocalSupport.usingSearch(DB,
+        PagingConvention.assertFollowed(8, (offset, limit) -> PagingConvention.page(AtlasLocalSupport.pagedListUsingSearch(DB, limit,
             () -> dao.find(List.of("paging"), null, "order", 0, 0, offset, limit))));
     }
 

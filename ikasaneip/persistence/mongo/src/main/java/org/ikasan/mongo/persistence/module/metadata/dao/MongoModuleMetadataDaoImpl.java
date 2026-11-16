@@ -118,9 +118,8 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
 
         // the module name is the document id; sort the same way whether paged or not
         query.with(Sort.by(Sort.Direction.ASC, EntityFields.ID));
-        MongoPaging.apply(query, startOffset, resultSize);
 
-        results = mongoTemplate.find(query, MongoModuleMetadata.class);
+        results = MongoPaging.find(mongoTemplate, query, startOffset, resultSize, MongoModuleMetadata.class);
 
         logger.debug("Found {} ModuleMetaData records", results.size());
 
@@ -145,10 +144,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         // Count total matching records
         long totalCount = mongoTemplate.count(query, MongoModuleMetadata.class);
 
-        // Apply pagination
-        MongoPaging.apply(query, startOffset, resultSize);
-
-        List<MongoModuleMetadata> results = mongoTemplate.find(query, MongoModuleMetadata.class);
+        List<MongoModuleMetadata> results = MongoPaging.find(mongoTemplate, query, startOffset, resultSize, MongoModuleMetadata.class);
 
         List<ModuleMetaData> moduleMetaDataList = results.stream()
             .map(entity -> convert(entity.getModuleMetadataJson()))
@@ -182,10 +178,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         // Count total matching records
         long totalCount = mongoTemplate.count(query, MongoModuleMetadata.class);
 
-        // Apply pagination
-        MongoPaging.apply(query, startOffset, resultSize);
-
-        List<MongoModuleMetadata> results = mongoTemplate.find(query, MongoModuleMetadata.class);
+        List<MongoModuleMetadata> results = MongoPaging.find(mongoTemplate, query, startOffset, resultSize, MongoModuleMetadata.class);
 
         List<ModuleMetaData> moduleMetaDataList = results.stream()
             .map(entity -> convert(entity.getModuleMetadataJson()))

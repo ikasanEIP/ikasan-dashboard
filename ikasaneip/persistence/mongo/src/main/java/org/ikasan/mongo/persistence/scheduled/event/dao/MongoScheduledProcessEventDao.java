@@ -281,11 +281,8 @@ public class MongoScheduledProcessEventDao {
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
         query.with(Sort.by(direction, "fireTime"));
 
-        // Apply pagination
-        MongoPaging.apply(query, start, limit);
-
         // Execute query
-        List<ContextualisedScheduledProcessEventImpl> results = mongoTemplate.find(query, ContextualisedScheduledProcessEventImpl.class);
+        List<ContextualisedScheduledProcessEventImpl> results = MongoPaging.find(mongoTemplate, query, start, limit, ContextualisedScheduledProcessEventImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 

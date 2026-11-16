@@ -162,9 +162,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
     public List<IkasanPrincipal> getPrincipals(IkasanPrincipalFilter filter, int limit, int offset) {
         Query query = new Query();
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(this::convertRecordToPrincipal)
             .collect(Collectors.toList());
     }
@@ -203,9 +203,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
     public List<IkasanPrincipalLite> getPrincipalLites(IkasanPrincipalFilter filter, int limit, int offset) {
         Query query = new Query();
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
@@ -338,9 +338,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
@@ -376,9 +376,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).in(roleId));
         query.fields().include(EntityFields.PAYLOAD_CONTENT).include(EntityFields.NAME);
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(MongoIkasanPrincipalImpl::getName)
             .collect(Collectors.toList());
@@ -414,9 +414,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         Query query = new Query();
         query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).nin(roleId));
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(this::convertToLite)
             .collect(Collectors.toList());
@@ -448,9 +448,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
             Query query = new Query();
             query.fields().include(EntityFields.NAME).include(EntityFields.PAYLOAD_CONTENT);
             addFilterCriteria(query, filter);
-            addSortingAndPaging(query, filter, limit, offset);
+            addSorting(query, filter);
 
-            return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+            return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
                 .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
                 .map(MongoIkasanPrincipalImpl::getName)
                 .collect(Collectors.toList());
@@ -461,11 +461,11 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         query.addCriteria(Criteria.where(EntityFields.ROLES_RELATED_ENTITY_COLLECTION).nin(roleId));
         query.fields().include(EntityFields.NAME).include(EntityFields.PAYLOAD_CONTENT);
         addFilterCriteria(query, filter);
-        addSortingAndPaging(query, filter, limit, offset);
+        addSorting(query, filter);
 
         this.getAllPrincipals();
 
-        return mongoTemplate.find(query, MongoIkasanPrincipalRecord.class).stream()
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoIkasanPrincipalRecord.class).stream()
             .map(p -> OBJECT_MAPPER.readValue(p.getPrincipal(), MongoIkasanPrincipalImpl.class))
             .map(MongoIkasanPrincipalImpl::getName)
             .collect(Collectors.toList());
@@ -684,14 +684,12 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
     }
 
     /**
-     * Adds sorting and paging to a MongoDB query.
+     * Adds sorting to a MongoDB query; paging is applied by {@link MongoPaging#find}.
      *
      * @param query the query to modify
      * @param filter the filter containing sort criteria
-     * @param limit the maximum number of results (-1 for no limit)
-     * @param offset the offset for pagination (-1 for no offset)
      */
-    private void addSortingAndPaging(Query query, IkasanPrincipalFilter filter, int limit, int offset) {
+    private void addSorting(Query query, IkasanPrincipalFilter filter) {
         // Add sorting
         if (filter != null && filter.getSortColumn() != null && !filter.getSortColumn().isEmpty()) {
             Sort.Direction direction = (filter.getSortOrder() != null && filter.getSortOrder().equals("ASCENDING"))
@@ -702,7 +700,5 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
             query.with(Sort.by(Sort.Direction.ASC, EntityFields.NAME));
         }
 
-        // Add paging
-        MongoPaging.apply(query, offset, limit);
     }
 }

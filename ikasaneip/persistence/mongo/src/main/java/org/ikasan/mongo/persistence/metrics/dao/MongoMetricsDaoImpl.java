@@ -90,9 +90,12 @@ public class MongoMetricsDaoImpl implements MetricsDao {
 
     /**
      * Runs a metrics query with the given paging. An offset / limit of -1 means not paged; an unpaged query
-     * returns every match, but still fails if that is more than the configured maximum.
+     * returns every match, but still fails if that is more than the configured maximum. A limit of 0 returns nothing.
      */
     private List<FlowInvocationMetric> find(Query query, int offset, int limit) {
+        if (MongoPaging.isCountOnly(limit)) {
+            return List.of();
+        }
         MongoPaging.apply(query, offset, limit);
         boolean unlimited = !MongoPaging.hasLimit(limit);
         if (unlimited) {

@@ -36,9 +36,8 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<EmailNotificationContextRecord> results = mongoTemplate.find(query, MongoEmailNotificationContextRecordImpl.class)
+        List<EmailNotificationContextRecord> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoEmailNotificationContextRecordImpl.class)
             .stream()
             .map(record -> (EmailNotificationContextRecord) record)
             .collect(Collectors.toList());
@@ -56,9 +55,8 @@ public class MongoEmailNotificationContextDao implements EmailNotificationContex
 
         long totalCount = mongoTemplate.count(query, MongoEmailNotificationContextRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<EmailNotificationContextRecord> results = mongoTemplate.find(query, MongoEmailNotificationContextRecordImpl.class)
+        List<EmailNotificationContextRecord> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoEmailNotificationContextRecordImpl.class)
             .stream()
             .map(record -> (EmailNotificationContextRecord) record)
             .collect(Collectors.toList());

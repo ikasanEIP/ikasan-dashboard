@@ -161,21 +161,33 @@ public class AtlasSearchQueryHelper {
      * <p>Atlas Search is used when the filter carries search terms; filters without terms are cheaper as a standard
      * B-tree indexed query and are executed that way.
      *
+     * <p>A {@code limit} of {@code 0} asks for the total only: no documents are read, and the count comes from a
+     * {@code $searchMeta} on the index (Atlas) or a {@code count} (standard).
+     *
      * @param filter the filter (terms + restrictions)
      * @param sort the sort, or {@code null}/unsorted for relevance order (Atlas) / natural order (standard)
-     * @param offset number of matches to skip ({@code <= 0} for none)
-     * @param limit maximum number of matches to return ({@code <= 0} for no limit)
+     * @param offset number of matches to skip ({@code <= 0} for none; ignored when {@code limit} is {@code 0})
+     * @param limit maximum number of matches to return ({@code < 0} for no limit, {@code 0} for the count only)
      * @param includeCount whether to compute the total number of matches
      * @param resultClass the entity class to map results to
      * @return the page and, if requested, the total count (otherwise {@code -1})
      */
     public <T> SearchQueryResult<T> search(AtlasSearchFilter filter, Sort sort, int offset, int limit,
                                            boolean includeCount, Class<T> resultClass) {
+        boolean countOnly = MongoPaging.isCountOnly(limit);
+        if (countOnly && !includeCount) {
+            return new SearchQueryResult<>(new ArrayList<>(), -1);
+        }
+
         if (filter.hasTextClauses() && atlasSearchAvailable) {
-            if (!isSortableInSearch(sort)) {
+            // a count does not depend on the sort, so it can always be answered by the index
+            if (!countOnly && !isSortableInSearch(sort)) {
                 logger.debug("Sort [{}] is not sortable in the Atlas Search index, using standard query", sort);
             } else {
                 try {
+                    if (countOnly) {
+                        return new SearchQueryResult<>(new ArrayList<>(), executeSearchMetaCount(filter, resultClass));
+                    }
                     return executeAtlasSearch(filter, sort, offset, limit, includeCount, resultClass);
                 } catch (UncategorizedMongoDbException e) {
                     if (!isAtlasSearchNotAvailableError(e)) {
@@ -257,6 +269,9 @@ public class AtlasSearchQueryHelper {
         }
 
         long totalCount = includeCount ? mongoTemplate.count(query, resultClass) : -1;
+        if (MongoPaging.isCountOnly(limit)) {
+            return new SearchQueryResult<>(new ArrayList<>(), totalCount);
+        }
 
         if (offset > 0) {
             query.skip(offset);

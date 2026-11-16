@@ -93,10 +93,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         // Count total matching records
         long totalCount = mongoTemplate.count(query, MongoBusinessStream.class);
 
-        // Apply pagination
-        MongoPaging.apply(query, startOffset, resultSize);
-
-        List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
+        List<MongoBusinessStream> results = MongoPaging.find(mongoTemplate, query, startOffset, resultSize, MongoBusinessStream.class);
 
         List<BusinessStreamMetaData> businessStreamMetaData = results.stream()
             .map(this::convert)
@@ -119,10 +116,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         Criteria criteria = Criteria.where(EntityFields.PAYLOAD_CONTENT).regex(searchPattern, "i");
         query.addCriteria(criteria);
 
-        // Apply pagination
-        MongoPaging.apply(query, offset, limit);
-
-        List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
+        List<MongoBusinessStream> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoBusinessStream.class);
 
         logger.debug("Found {} BusinessStreams containing flow {}.{}", results.size(), moduleName, flowName);
 
@@ -169,10 +163,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         // Count total matching records
         long totalCount = mongoTemplate.count(query, MongoBusinessStream.class);
 
-        // Apply pagination
-        MongoPaging.apply(query, offset, limit);
-
-        List<MongoBusinessStream> results = mongoTemplate.find(query, MongoBusinessStream.class);
+        List<MongoBusinessStream> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoBusinessStream.class);
 
         List<BusinessStreamMetaData> businessStreamMetaData = results.stream()
             .map(this::convert)
@@ -193,9 +184,8 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         List<MongoBusinessStream> results;
 
         query.with(Sort.by(Sort.Direction.ASC, EntityFields.MODULE_NAME));
-        MongoPaging.apply(query, startOffset, resultSize);
 
-        results = mongoTemplate.find(query, MongoBusinessStream.class);
+        results = MongoPaging.find(mongoTemplate, query, startOffset, resultSize, MongoBusinessStream.class);
 
         logger.debug("Found {} BusinessStreamMetaData records", results.size());
 

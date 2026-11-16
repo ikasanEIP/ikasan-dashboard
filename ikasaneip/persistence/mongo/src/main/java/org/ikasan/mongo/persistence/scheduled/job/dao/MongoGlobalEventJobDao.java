@@ -88,9 +88,8 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
 
         long totalCount = mongoTemplate.count(query, MongoGlobalEventJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoGlobalEventJobRecordImpl> results = mongoTemplate.find(query, MongoGlobalEventJobRecordImpl.class);
+        List<MongoGlobalEventJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoGlobalEventJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);
@@ -108,9 +107,8 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
 
         long totalCount = mongoTemplate.count(query, MongoGlobalEventJobRecordImpl.class);
 
-        MongoPaging.apply(query, offset, limit);
 
-        List<MongoGlobalEventJobRecordImpl> results = mongoTemplate.find(query, MongoGlobalEventJobRecordImpl.class);
+        List<MongoGlobalEventJobRecordImpl> results = MongoPaging.find(mongoTemplate, query, offset, limit, MongoGlobalEventJobRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, queryTime);

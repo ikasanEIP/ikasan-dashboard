@@ -125,12 +125,9 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
-        // Apply pagination if specified
-        MongoPaging.apply(query, offset, limit);
-
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =
-                mongoTemplate.find(query, MongoScheduledContextInstanceRecordImpl.class);
+                MongoPaging.find(mongoTemplate, query, offset, limit, MongoScheduledContextInstanceRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 
@@ -163,12 +160,9 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
-        // Apply pagination if specified
-        MongoPaging.apply(query, offset, limit);
-
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =
-                mongoTemplate.find(query, MongoScheduledContextInstanceRecordImpl.class);
+                MongoPaging.find(mongoTemplate, query, offset, limit, MongoScheduledContextInstanceRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 
@@ -210,12 +204,9 @@ public class MongoScheduledContextInstanceDao implements ScheduledContextInstanc
         // Get total count
         long totalCount = mongoTemplate.count(query, MongoScheduledContextInstanceRecordImpl.class);
 
-        // Apply pagination if specified
-        MongoPaging.apply(query, offset, limit);
-
         // Execute query
         List<MongoScheduledContextInstanceRecordImpl> results =
-                mongoTemplate.find(query, MongoScheduledContextInstanceRecordImpl.class);
+                MongoPaging.find(mongoTemplate, query, offset, limit, MongoScheduledContextInstanceRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - queryStartTime;
 
