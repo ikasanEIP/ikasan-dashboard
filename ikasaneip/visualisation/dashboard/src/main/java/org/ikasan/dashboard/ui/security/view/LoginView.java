@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.security.view;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
@@ -55,6 +57,8 @@ import java.util.Optional;
 public class LoginView extends VerticalLayout implements LocaleChangeObserver
     , AfterNavigationObserver, BeforeEnterObserver
 {
+    private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
+
     public static final String ROUTE = "login";
     public static final String USERNAME = "USERNAME";
 
@@ -156,6 +160,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
             }
             catch (AuthenticationServiceException e)
             {
+                logger.debug("Authentication failed for user [{}]", loginEvent.getUsername(), e);
                 loginEvent.getSource().setError(true);
             }
         });

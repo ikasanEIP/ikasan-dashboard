@@ -89,6 +89,7 @@ public class SelectContextDialog extends AbstractCloseableResizableDialog {
                     jobSchedulerVisualisation.linkToContext(contextTerminalJob.get(), contextStartJob.get(), contextToLinkTo);
                     this.close();
                 } catch (IOException e) {
+                    logger.error("Error linking to context", e);
                     throw new RuntimeException(e);
                 }
             }

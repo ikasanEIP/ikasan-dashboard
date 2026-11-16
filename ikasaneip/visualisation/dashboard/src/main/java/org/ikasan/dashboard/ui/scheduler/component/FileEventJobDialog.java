@@ -154,7 +154,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 createOrUpdateScheduledJob(this.fileEventDrivenJob, authentication);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error creating or updating file event job", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
@@ -593,6 +593,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             }
         }
         catch (ValidationException e) {
+            logger.debug("File event job form failed validation", e);
             return false;
         }
 

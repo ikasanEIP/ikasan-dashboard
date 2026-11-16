@@ -1,11 +1,15 @@
 package org.ikasan.rest.dashboard.model.replay;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ikasan.spec.replay.ReplayEvent;
 
 @JsonIgnoreProperties(value = { "harvested",  "harvestedDateTime"})
 public class ReplayEventImpl implements ReplayEvent
 {
+    private static final Logger logger = LoggerFactory.getLogger(ReplayEventImpl.class);
+
     private String id;
 
     private String moduleName;
@@ -42,6 +46,7 @@ public class ReplayEventImpl implements ReplayEvent
             return Long.parseLong(id);
         }
         catch (NumberFormatException e) {
+            logger.debug("Identifier is not numeric, extracting the numeric suffix instead", e);
             return Long.parseLong(id.substring(id.lastIndexOf("-")+1));
         }
     }

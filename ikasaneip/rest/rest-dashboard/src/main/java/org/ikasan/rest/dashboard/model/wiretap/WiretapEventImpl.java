@@ -1,11 +1,15 @@
 package org.ikasan.rest.dashboard.model.wiretap;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ikasan.spec.wiretap.WiretapEvent;
 
 @JsonIgnoreProperties
 public class WiretapEventImpl implements WiretapEvent<String>
 {
+    private static final Logger logger = LoggerFactory.getLogger(WiretapEventImpl.class);
+
     private String identifier;
 
     private String event;
@@ -35,6 +39,7 @@ public class WiretapEventImpl implements WiretapEvent<String>
             return Long.parseLong(identifier);
         }
         catch (NumberFormatException e) {
+            logger.debug("Identifier is not numeric, extracting the numeric suffix instead", e);
             return Long.parseLong(identifier.substring(identifier.lastIndexOf("-")+1));
         }
     }

@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.administration.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class SystemEventSearchForm extends VerticalLayout {
+    private static final Logger logger = LoggerFactory.getLogger(SystemEventSearchForm.class);
+
     private Button searchButton;
     private Tooltip searchButtonTooltip;
 
@@ -138,6 +142,7 @@ public class SystemEventSearchForm extends VerticalLayout {
             }
             catch (ValidationException e)
             {
+                logger.debug("System event search form failed validation", e);
                 return;
             }
 

@@ -119,6 +119,7 @@ public class BusinessStreamNotificationJob implements DashboardJob {
             }
         }
         catch (Exception e) {
+            logger.error("Error executing business stream notification job", e);
             throw new JobExecutionException(e);
         }
 

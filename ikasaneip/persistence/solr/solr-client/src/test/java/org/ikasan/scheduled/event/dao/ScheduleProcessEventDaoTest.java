@@ -496,7 +496,8 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
                     Thread.sleep(2);
                 }
                 catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while creating test scheduled event records", e);
                 }
             });
 

@@ -88,6 +88,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
                 , rsp.getResults().getNumFound(), rsp.getQTime());
         }
         catch (Exception e) {
+            logger.error("Caught exception performing Solr search by identifiers!", e);
             throw new RuntimeException("Caught exception performing Solr search by identifiers!", e);
         }
     }
@@ -216,7 +217,9 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
                 , new Date(endTime), searchString, eventId, entityTypes, negateQuery, harvestReceivedTimestamp);
         }
         catch (IOException e) {
-            throw new RuntimeException(String.format("An error has occurred building Solr query.", e.getMessage()));
+            String message = String.format("An error has occurred building Solr query.", e.getMessage());
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         query.setQuery(queryFilter);
@@ -239,6 +242,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         }
         catch (Exception e)
         {
+            logger.error("Caught exception perform general ikasan search!", e);
             throw new RuntimeException("Caught exception perform general ikasan search!", e);
         }
     }
@@ -272,7 +276,9 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
             return beans.stream().findFirst().orElse(null);
         }
         catch (Exception e) {
-            throw new RuntimeException(String.format("Caught exception perform ikasan solr search using query %s!", solrQuery), e);
+            String message = String.format("Caught exception perform ikasan solr search using query %s!", solrQuery);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -334,6 +340,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
                 backupLocationPath, numberOfBackupsToKeep, response);
         }
         catch (Exception e) {
+            logger.error("Caught exception performing Ikasan SOLR backup!", e);
             throw new RuntimeException("Caught exception performing Ikasan SOLR backup!", e);
         }
     }

@@ -11,6 +11,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -19,6 +21,8 @@ import java.util.Date;
 @CrossOrigin
 public class JwtAuthenticationController
 {
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationController.class);
+
     private AuthenticationManager authenticationManager;
 
     private JwtTokenUtil jwtTokenUtil;
@@ -44,6 +48,7 @@ public class JwtAuthenticationController
             }
         } catch (ExpiredJwtException e) {
             // the token has expired so will let the authentication happen as normal.
+            logger.debug("JWT token has expired, authentication will happen as normal", e);
         }
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
@@ -63,6 +68,7 @@ public class JwtAuthenticationController
             }
         } catch (ExpiredJwtException e) {
             // the token has expired so will let the authentication happen as normal.
+            logger.debug("JWT token has expired, authentication will happen as normal", e);
         }
 
         return ResponseEntity.badRequest().build();
@@ -83,10 +89,12 @@ public class JwtAuthenticationController
         }
         catch (DisabledException e)
         {
+            logger.error("Authentication failed, user [" + username + "] is disabled", e);
             throw new Exception("USER_DISABLED", e);
         }
         catch (BadCredentialsException e)
         {
+            logger.error("Authentication failed, invalid credentials for user [" + username + "]", e);
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }

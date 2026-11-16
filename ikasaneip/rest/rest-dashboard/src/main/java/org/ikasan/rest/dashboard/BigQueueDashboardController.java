@@ -37,7 +37,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to list queues. Error [%s]", e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -53,7 +53,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to get size for queue [%s]. Error [%s]", queueName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -69,7 +69,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to get size for all queue. Error [%s]", e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -85,7 +85,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to peek queue for queue [%s]. Error [%s]", queueName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -101,7 +101,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to get message for queue [%s]. Error [%s]", queueName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -119,7 +119,7 @@ public class BigQueueDashboardController {
         } catch (Exception e) {
             String message
                 = String.format("Got exception trying to delete message for queue [%s] message [%s]. Error [%s]", queueName, messageId, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -136,7 +136,7 @@ public class BigQueueDashboardController {
         } catch (Exception e) {
             String message
                 = String.format("Got exception trying to delete all messages for queue [%s]. Error [%s]", queueName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -152,7 +152,7 @@ public class BigQueueDashboardController {
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to delete queue for queue [%s]. Error [%s]", queueName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }

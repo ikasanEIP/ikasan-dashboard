@@ -1,11 +1,15 @@
 package org.ikasan.dashboard.ui.visualisation.correlate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.ximpleware.AutoPilot;
 import com.ximpleware.VTDGen;
 import com.ximpleware.VTDNav;
 
 public class XpathCorrelator implements Correlator<String, String>
 {
+    private static final Logger logger = LoggerFactory.getLogger(XpathCorrelator.class);
+
     private String xpath;
 
     public XpathCorrelator(String xpath)
@@ -34,6 +38,7 @@ public class XpathCorrelator implements Correlator<String, String>
         }
         catch (Exception e)
         {
+            logger.debug("Could not evaluate xpath [{}]", this.xpath, e);
             // Ignore as we don't really care
         }
 

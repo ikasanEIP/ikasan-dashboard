@@ -46,7 +46,9 @@ public class SolrSetupDaoImpl extends SolrDaoBase<DashboardPlatformSetup> implem
         try {
             document.addField(PAYLOAD_CONTENT, getDashboardPlatformSetupContent(dashboardPlatformSetup.getPlatformSetupItems()));
         } catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert dashboard platform setup to string! [%s]", dashboardPlatformSetup), e);
+            String message = String.format("Cannot convert dashboard platform setup to string! [%s]", dashboardPlatformSetup);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         document.addField(CREATED_DATE_TIME, dashboardPlatformSetup.getTimestamp());

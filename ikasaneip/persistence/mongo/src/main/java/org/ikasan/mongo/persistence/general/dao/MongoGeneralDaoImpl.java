@@ -146,6 +146,7 @@ public class MongoGeneralDaoImpl implements
 
             return new MongoIkasanDocumentSearchResults(results, totalCount, queryTime);
         } catch (Exception e) {
+            logger.error("Caught exception performing MongoDB search by identifiers!", e);
             throw new RuntimeException("Caught exception performing MongoDB search by identifiers!", e);
         }
     }
@@ -234,6 +235,7 @@ public class MongoGeneralDaoImpl implements
             long queryTime = System.currentTimeMillis() - queryStartTime;
             return new MongoIkasanDocumentSearchResults(resultList, result.getTotalCount(), queryTime);
         } catch (Exception e) {
+            logger.error("Caught exception performing general ikasan search!", e);
             throw new RuntimeException("Caught exception performing general ikasan search!", e);
         }
     }

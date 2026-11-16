@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.module.metadata.dao;
 
 import org.ikasan.mongo.persistence.general.dao.MongoPaging;
+import org.ikasan.mongo.persistence.general.dao.RegexCriteria;
 import org.ikasan.mongo.persistence.module.metadata.model.*;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
 import org.ikasan.spec.entity.EntityFields;
@@ -18,6 +19,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +74,7 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
                 logger.debug("Saved ModuleMetaData: {}", moduleMetaData.getName());
             }
         } catch (JacksonException e) {
+            logger.error("An exception has occurred attempting to write module metadata to MongoDB", e);
             throw new RuntimeException("An exception has occurred attempting to write module metadata to MongoDB", e);
         }
     }
@@ -136,9 +139,9 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         // Add module name filter if provided
-        if (moduleNames != null && !moduleNames.isEmpty()) {
-            Criteria criteria = Criteria.where(EntityFields.ID).in(moduleNames);
-            query.addCriteria(criteria);
+        Criteria moduleNameCriteria = moduleNameCriteria(moduleNames);
+        if (moduleNameCriteria != null) {
+            query.addCriteria(moduleNameCriteria);
         }
 
         // Count total matching records
@@ -163,9 +166,9 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         query.addCriteria(Criteria.where(EntityFields.TYPE).is(MODULE_METADATA));
 
         // Add module name filter if provided
-        if (moduleNames != null && !moduleNames.isEmpty()) {
-            Criteria criteria = Criteria.where(EntityFields.ID).in(moduleNames);
-            query.addCriteria(criteria);
+        Criteria moduleNameCriteria = moduleNameCriteria(moduleNames);
+        if (moduleNameCriteria != null) {
+            query.addCriteria(moduleNameCriteria);
         }
 
         // Add module type filter by searching in JSON content
@@ -190,6 +193,33 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
     }
 
     /**
+     * Builds the module name filter. A name containing {@code *} (typically {@code *partial name*} from a search box)
+     * is a case-insensitive wildcard match, with {@code *} matching any characters; any other name must match exactly.
+     * A mix of both matches a module that satisfies any of them.
+     *
+     * @return the criteria, or {@code null} for no filter (no names given)
+     */
+    static Criteria moduleNameCriteria(List<String> moduleNames) {
+        if (moduleNames == null || moduleNames.isEmpty()) {
+            return null;
+        }
+
+        List<String> exactNames = new ArrayList<>();
+        List<Criteria> alternatives = new ArrayList<>();
+        for (String name : moduleNames) {
+            if (name != null && name.contains("*")) {
+                alternatives.add(RegexCriteria.wildcardIgnoreCase(EntityFields.ID, name));
+            } else {
+                exactNames.add(name);
+            }
+        }
+        if (!exactNames.isEmpty()) {
+            alternatives.add(0, Criteria.where(EntityFields.ID).in(exactNames));
+        }
+        return alternatives.size() == 1 ? alternatives.get(0) : new Criteria().orOperator(alternatives);
+    }
+
+    /**
      * Helper method to convert raw module metadata JSON to ModuleMetaData object.
      *
      * @param rawModuleMetaData JSON string
@@ -199,7 +229,9 @@ public class MongoModuleMetadataDaoImpl implements ModuleMetadataDao {
         try {
             return objectMapper.readValue(rawModuleMetaData, MongoModuleMetaDataImpl.class);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unable to deserialise ModuleMetaData [%s]", rawModuleMetaData), e);
+            String message = String.format("Unable to deserialise ModuleMetaData [%s]", rawModuleMetaData);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

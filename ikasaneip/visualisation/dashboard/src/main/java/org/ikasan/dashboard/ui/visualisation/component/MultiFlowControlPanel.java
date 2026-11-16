@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 public class MultiFlowControlPanel extends ControlPanel {
+    private static final Logger logger = LoggerFactory.getLogger(MultiFlowControlPanel.class);
 
     public MultiFlowControlPanel(ModuleControlService moduleControlRestService) {
         super(moduleControlRestService);
@@ -166,7 +169,7 @@ public class MultiFlowControlPanel extends ControlPanel {
             }
             catch(Exception e)
             {
-                e.printStackTrace();
+                logger.error("Error performing flow action [{}]", action, e);
                 current.access(() -> progressIndicatorDialog.close());
             }
         });

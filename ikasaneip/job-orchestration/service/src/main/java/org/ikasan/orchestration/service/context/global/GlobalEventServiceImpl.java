@@ -52,6 +52,7 @@ public class GlobalEventServiceImpl implements GlobalEventService {
             contextMachine.broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
         }
         catch (IOException e) {
+            LOG.error("An exception has occurred broadcast global events", e);
             throw new GlobalEventServiceException("An exception has occurred broadcast global events", e);
         }
     }
@@ -83,6 +84,7 @@ public class GlobalEventServiceImpl implements GlobalEventService {
         try {
             firstContextMachine.getValue().broadcastGlobalEvents(schedulerJobInitiationEvent, true, true);
         } catch (IOException e) {
+            LOG.error("An exception has occurred broadcast global events", e);
             throw new GlobalEventServiceException("An exception has occurred broadcast global events", e);
         }
     }

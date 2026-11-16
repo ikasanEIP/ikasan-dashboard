@@ -121,7 +121,7 @@ public class SchedulerJobProvisionController
         }
         catch (Exception e)
         {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to provision scheduler jobs! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -148,7 +148,7 @@ public class SchedulerJobProvisionController
             return new ResponseEntity(schedulerJobRecord.getJob(), HttpStatus.OK);
         }
         catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
             return new ResponseEntity(
                 new ErrorDto(String.format("An error has occurred attempting to get job[%s] for job plan[%s]! " +
                     "Error message [%s]", jobName, contextName, e.getMessage()))

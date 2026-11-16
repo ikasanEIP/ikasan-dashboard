@@ -109,7 +109,7 @@ public class EmailNotificationDetailsController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a save of EmailNotificationDetails!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a save of EmailNotificationDetails! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -151,7 +151,7 @@ public class EmailNotificationDetailsController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a save of EmailNotificationDetails!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a save of EmailNotificationDetails! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -214,7 +214,7 @@ public class EmailNotificationDetailsController
 
         } catch (Exception e) {
             String message = String.format("Got exception trying to delete all notification for the context [%s]. Error [%s]", contextName, e.getMessage());
-            logger.warn(message);
+            logger.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -232,7 +232,7 @@ public class EmailNotificationDetailsController
         } catch (Exception e) {
             String message = String.format("Got exception trying to delete notification for the jobName [%s], " +
                 "childContextName [%s] and monitorType [%s]. Error [%s]", jobName, childContextName, monitorType, e.getMessage());
-            logger.warn(message);
+            logger.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }

@@ -184,6 +184,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             }
         }
         catch (Exception e) {
+            logger.error("Error retrieving flows", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

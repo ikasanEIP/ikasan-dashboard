@@ -224,7 +224,7 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
             jobInstanceVisualisationDialog.open();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error opening diagram for context [{}]", contextId, e);
         }
     }
 

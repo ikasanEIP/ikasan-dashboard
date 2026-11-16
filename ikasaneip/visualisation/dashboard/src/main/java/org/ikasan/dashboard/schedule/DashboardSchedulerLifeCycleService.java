@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.schedule;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -7,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 public class DashboardSchedulerLifeCycleService {
+    private static final Logger logger = LoggerFactory.getLogger(DashboardSchedulerLifeCycleService.class);
 
     /**
      * Scheduler
@@ -33,6 +36,7 @@ public class DashboardSchedulerLifeCycleService {
         }
         catch (SchedulerException e)
         {
+            logger.error("Could not start scheduler!", e);
             throw new RuntimeException("Could not start scheduler!", e);
         }
     }
@@ -49,6 +53,7 @@ public class DashboardSchedulerLifeCycleService {
         }
         catch (SchedulerException e)
         {
+            logger.error("Could not stop scheduler!", e);
             throw new RuntimeException("Could not stop scheduler!", e);
         }
     }

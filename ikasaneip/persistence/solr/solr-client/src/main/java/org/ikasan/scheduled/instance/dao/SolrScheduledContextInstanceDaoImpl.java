@@ -42,7 +42,9 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance()));
+            String message = String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance());
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
         document.addField(STATUS, scheduledContextInstanceRecord.getStatus());
         document.addField(MODULE_NAME, scheduledContextInstanceRecord.getContextName());

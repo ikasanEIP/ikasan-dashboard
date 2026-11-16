@@ -416,7 +416,9 @@ public class FlowStateCache implements Consumer<FlowState>
             }
         }
         catch (InterruptedException e) {
+            logger.error("Interrupted waiting for the flow state cache executor to terminate", e);
             executor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
 
         // Shutdown scheduled broadcast executor
@@ -427,7 +429,9 @@ public class FlowStateCache implements Consumer<FlowState>
             }
         }
         catch (InterruptedException e) {
+            logger.error("Interrupted waiting for the scheduled broadcast executor to terminate", e);
             scheduledBroadcastExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
 
         // Clear tracking maps

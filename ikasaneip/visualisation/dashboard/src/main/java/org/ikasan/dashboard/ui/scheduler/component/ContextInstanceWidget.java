@@ -740,6 +740,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
                         this.add(dagComponent);
                     } catch (JacksonException e) {
+                        logger.error("Error converting context instance to DAG", e);
                         throw new RuntimeException(e);
                     }
                 }
@@ -1016,7 +1017,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         ContextInstanceSavedEventBroadcaster.instance().broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error enabling quartz based jobs for context instance [{}]", this.contextInstance.getId(), e);
                         error = true;
                     } finally {
                         if (error) {
@@ -1059,7 +1060,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         ContextInstanceSavedEventBroadcaster.instance().broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error disabling quartz based jobs for context instance [{}]", this.contextInstance.getId(), e);
                         error = true;
                     } finally {
                         if (error) {
@@ -1107,7 +1108,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         ContextInstanceSavedEventBroadcaster.instance().broadcast(contextInstance);
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error manually ending context instance [{}]", this.contextInstance.getId(), e);
                         success = false;
                         dialog.close();
                         current.access(() -> NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale())));
@@ -1156,7 +1157,7 @@ public class ContextInstanceWidget extends VerticalLayout
                     this.addManuallyEndMessage();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error setting context instance [{}] to run until manually ended", this.contextInstance.getId(), e);
                     NotificationHelper.showUserNotification(getTranslation("notification.job-plan-duration-ignored-error", UI.getCurrent().getLocale()));
                 }
 
@@ -1225,7 +1226,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         }
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error updating context instance parameters [{}]", this.contextInstance.getId(), e);
 
                         NotificationHelper.showUserNotification(getTranslation("notification.error-updating-context-instance-parameters"
                             , UI.getCurrent().getLocale()));
@@ -1253,6 +1254,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 contextMachine.propagateContextInstanceToAgents();
             }
             catch (Exception e) {
+                logger.error("Error synchronising context instance [{}] with agents", this.contextInstance.getId(), e);
                 NotificationHelper.showErrorNotification(getTranslation("notification.synchronise-instance-with-agent-error"));
                 return;
             }
@@ -1414,7 +1416,7 @@ public class ContextInstanceWidget extends VerticalLayout
                     "has been reset and replaced with Job Plan Instance Identifier[%s]", contextInstance.getName(), contextInstance.getId(), newInstance.getId() ), this.authentication.getName());
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error resetting context instance [{}]", this.contextInstance.getId(), e);
                 NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
             }
         }

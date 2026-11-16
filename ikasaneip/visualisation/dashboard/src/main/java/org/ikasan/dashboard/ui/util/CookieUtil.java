@@ -1,9 +1,12 @@
 package org.ikasan.dashboard.ui.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.VaadinRequest;
 import jakarta.servlet.http.Cookie;
 
 public class CookieUtil {
+    private static final Logger logger = LoggerFactory.getLogger(CookieUtil.class);
 
     public static Cookie getCookieByName(String name, VaadinRequest request) {
         // Fetch all cookies from the request
@@ -17,6 +20,7 @@ public class CookieUtil {
                 }
             }
         } catch (NullPointerException e) {
+            logger.debug("No cookies available to search", e);
         }
         return null;
     }

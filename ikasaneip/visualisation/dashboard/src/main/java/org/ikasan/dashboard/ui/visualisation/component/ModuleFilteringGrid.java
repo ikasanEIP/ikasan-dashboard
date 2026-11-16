@@ -175,6 +175,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
             results =  this.moduleMetaDataService.find(moduleNames, offset, limit);
         }
         catch (Exception e) {
+            logger.error("Error retrieving modules", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

@@ -198,18 +198,11 @@ public class HospitalViewTest extends UITest {
     }
 
     @Test
-    public void test_hospital_view_redirect_not_found() throws IOException
+    public void test_hospital_view_redirect_not_found() throws Exception
     {
         UI.getCurrent().navigate("exclusion/12345");
 
-        try
-        {
-            PageNotFoundView pageNotFoundView = _get(PageNotFoundView.class);
-            Assertions.assertNotNull(pageNotFoundView);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        PageNotFoundView pageNotFoundView = _get(PageNotFoundView.class);
+        Assertions.assertNotNull(pageNotFoundView);
     }
 }

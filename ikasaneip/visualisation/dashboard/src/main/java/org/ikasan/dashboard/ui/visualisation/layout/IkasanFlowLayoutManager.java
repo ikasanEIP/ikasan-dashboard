@@ -58,6 +58,7 @@ public class IkasanFlowLayoutManager extends LayoutManagerBase implements Layout
 
             return new Draw2DLayout(this.nodeList, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items));
         } catch (Exception e) {
+            logger.error("An exception has occurred attempting to layout flow [{}]", flow.getName(), e);
             throw new LayoutManagerException(String.format("An exception has occurred attempting to layout flow[%s]"
                 , flow.getName()), e);
         }

@@ -642,6 +642,7 @@ public class JobTemplateVisualisationView extends VerticalLayout
                 this.createSchedulerVisualisation(record.getContext(), child);
                 this.isInitialised = true;
             } catch (IOException e) {
+                logger.error("Error creating scheduler visualisation", e);
                 throw new RuntimeException(e);
             }
         }

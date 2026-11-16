@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -25,6 +27,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.IOException;
 
 public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUpdateEventLocalBroadcastListener {
+    private static final Logger logger = LoggerFactory.getLogger(ContextTemplateViewMenuBar.class);
+
     private ContextTemplate contextTemplate;
     private ContextProfileService contextProfileService;
     private SchedulerVisualisation schedulerVisualisation;
@@ -91,7 +95,7 @@ public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUp
                         }
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Error creating scheduler visualisation for context view", e);
                     }
                 });
             });

@@ -182,7 +182,7 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
                         });
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error creating or updating command execution job", e);
                         current.access(() -> {
                             progressIndicatorDialog.close();
                             NotificationHelper.showErrorNotification(
@@ -493,6 +493,7 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
             }
         }
         catch (ValidationException e) {
+            logger.debug("Command execution job form failed validation", e);
             return false;
         }
 

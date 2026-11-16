@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -31,6 +33,7 @@ import java.io.IOException;
 
 public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstanceStateChangeEventLocalBroadcastListener
     , ContextViewUpdateEventLocalBroadcastListener {
+    private static final Logger logger = LoggerFactory.getLogger(ContextInstanceViewMenuBar.class);
 
     private ContextInstance contextInstance;
     private ContextProfileService contextProfileService;
@@ -104,7 +107,7 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
                         }
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Error refreshing context instance for context views submenu", e);
                     }
                 });
             });
@@ -143,7 +146,7 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
                         }
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Error refreshing context instance for my context views submenu", e);
                     }
                 });
             });

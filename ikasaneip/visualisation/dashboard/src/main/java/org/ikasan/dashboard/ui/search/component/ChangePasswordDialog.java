@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.search.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -21,6 +23,8 @@ import java.util.function.IntPredicate;
 
 public class ChangePasswordDialog extends Dialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(ChangePasswordDialog.class);
+
     private UserService userService;
     private User user;
 
@@ -98,11 +102,12 @@ public class ChangePasswordDialog extends Dialog
             }
             catch (ValidationException e)
             {
+                logger.debug("Change password form failed validation", e);
                 // Ignore as the form will provide feedback to the user via the validation mechanism.
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                logger.error("Failed to change password", e);
                 NotificationHelper.showErrorNotification(String.format(getTranslation("error.falied-to-create-user", UI.getCurrent().getLocale(), null)));
             }
         });

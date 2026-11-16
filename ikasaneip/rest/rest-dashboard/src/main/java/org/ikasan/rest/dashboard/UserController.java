@@ -110,6 +110,7 @@ public class UserController
         }
         catch (Exception e)
         {
+            logger.error("User [" + username + "] not found.", e);
             return new ResponseEntity(new ErrorDto("User [" + username + "] not found."), HttpStatus.NOT_FOUND);
         }
     }
@@ -133,6 +134,7 @@ public class UserController
         }
         catch (Exception e)
         {
+            logger.error("An error has occurred attempting to get users", e);
             return new ResponseEntity(new ErrorDto("Issue when not found."), HttpStatus.NOT_FOUND);
         }
     }

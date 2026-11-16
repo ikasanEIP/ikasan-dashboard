@@ -228,7 +228,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error raising global event job", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                 }
             });
@@ -463,7 +463,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                 , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), globalEventJob.getContextName(), globalEventJob.getContextInstanceId(), true), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error skipping job [{}]", this.globalEventJob.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -493,7 +493,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                 , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), globalEventJob.getContextName(), globalEventJob.getContextInstanceId(), false), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error enabling job [{}]", this.globalEventJob.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
             return false;
         }

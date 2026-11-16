@@ -134,6 +134,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                     replayReport.append(String.format("Event id [%s] successfully replayed to [%s]", document.getEventId(), replayDialogDto.getTargetServer())).append("\r\n");
                                 }
                                 catch (ReplayFailException e) {
+                                    logger.error("Error replaying event [{}]", document.getEventId(), e);
                                     containErrors = true;
                                     replayReport.append(String.format("Error replaying event[%s]: [%s]", document.getEventId(), e.getMessage())).append("\r\n");
                                 }
@@ -170,6 +171,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                             replayReport.append(String.format("Event id [%s] successfully replayed to [%s]", document.getEventId(), replayDialogDto.getTargetServer())).append("\r\n");
                                         }
                                         catch (ReplayFailException e) {
+                                            logger.error("Error replaying event [{}]", document.getEventId(), e);
                                             containErrors = true;
                                             replayReport.append(String.format("Error replaying event[%s]: [%s]", document.getEventId(), e.getMessage())).append("\r\n");
                                         }
@@ -196,7 +198,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                     }
                     catch(Exception e)
                     {
-                        e.printStackTrace();
+                        logger.error("Error replaying events", e);
                         current.access(() ->
                         {
                             progressIndicatorDialog.close();

@@ -164,7 +164,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error skipping job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -200,7 +200,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                     , this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error enabling job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -265,7 +265,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                     , this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error holding job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -336,7 +336,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                     , this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error releasing job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -427,7 +427,6 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                     , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true, this.contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
             }
             catch (Exception e) {
-                e.printStackTrace();
                 logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
                     , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName()
                     , schedulerJobInstance.getContextInstanceId()), e);
@@ -502,7 +501,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error initiating downstream jobs", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.downstream-job-initiation", UI.getCurrent().getLocale()));
             }
 

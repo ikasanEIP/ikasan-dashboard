@@ -225,7 +225,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                         SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error submitting file event job [{}]", this.fileEventDrivenJobInstance.getJobName(), e);
                     NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                 }
             });
@@ -547,7 +547,6 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                     , this.fileEventDrivenJobInstance.getAgentName(), fileEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
             }
             catch (Exception e) {
-                e.printStackTrace();
                 logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
                     , fileEventDrivenJobInstance.getJobName(), fileEventDrivenJobInstance.getContextName()
                     , fileEventDrivenJobInstance.getContextInstanceId()), e);

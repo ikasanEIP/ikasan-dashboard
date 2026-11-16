@@ -317,6 +317,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 jobParameterRefreshService.refreshLocalAndPropagateBestEffort();
                 NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-successful", UI.getCurrent().getLocale()));
             } catch (RestClientException e) {
+                logger.error("Could not refresh job parameters", e);
                 NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-unsuccessful", UI.getCurrent().getLocale()));
             }
         });
@@ -558,7 +559,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             , contextTemplate.getName()), this.authentication.getName());
                         ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error enabling scheduled jobs for context [{}]", scheduledContextRecord.getContextName(), e);
                         error = true;
                     } finally {
                         if (error) {
@@ -594,7 +595,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             , contextTemplate.getName()), this.authentication.getName());
                         ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error disabling scheduled jobs for context [{}]", scheduledContextRecord.getContextName(), e);
                         error = true;
                     } finally {
                         if (error) {
@@ -1096,7 +1097,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 , scheduledContextRecord.getContextName(), contextInstanceId), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error creating job plan instance for context [{}]", scheduledContextRecord.getContextName(), e);
             NotificationHelper.showUserNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
         }
 

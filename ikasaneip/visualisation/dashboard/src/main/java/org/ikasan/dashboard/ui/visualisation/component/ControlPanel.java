@@ -320,7 +320,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
             }
             catch(Exception e)
             {
-                e.printStackTrace();
+                logger.error("Error performing flow action [{}]", action, e);
                 current.access(() ->
                 {
                     progressIndicatorDialog.close();

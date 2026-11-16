@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.util.Map;
 
 public class BusinessStreamMetaDataDaoImpl implements BusinessStreamMetaDataDao
 {
+    private static final Logger logger = LoggerFactory.getLogger(BusinessStreamMetaDataDaoImpl.class);
+
     private static final String SIMPLE_BOND = "/data/graph/bondFlowsGraph.json";
     private static final String COMPLEX_BOND = "/data/graph/bondFlowsGraphElaborate.json";
     private static final String REFERENCE_DATA = "/data/graph/referenceDataGraph.json";
@@ -29,7 +33,7 @@ public class BusinessStreamMetaDataDaoImpl implements BusinessStreamMetaDataDao
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error("Could not load business stream metadata", e);
         }
     }
 

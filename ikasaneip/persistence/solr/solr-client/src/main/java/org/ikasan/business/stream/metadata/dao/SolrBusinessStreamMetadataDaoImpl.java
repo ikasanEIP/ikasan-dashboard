@@ -124,7 +124,9 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr business stream meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr business stream meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
        return results;
@@ -200,7 +202,9 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return results;
@@ -247,7 +251,9 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

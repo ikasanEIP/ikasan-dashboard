@@ -306,7 +306,7 @@ public class SearchResults extends Div {
                     zos.close();
                     return new ByteArrayInputStream(baos.toByteArray());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error creating download ZIP", e);
                     optionalUI.ifPresent(ui -> {
                         if(ui.isAttached()) {
                             ui.access(() ->

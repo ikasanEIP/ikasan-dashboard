@@ -619,7 +619,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully"));
                         }
                         catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising file event job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error"));
                         }
                     });
@@ -652,7 +652,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully"));
                         }
                         catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising quartz scheduler job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error"));
                         }
                     });
@@ -687,7 +687,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully"));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising global event job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error"));
                         }
                     });
@@ -726,7 +726,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                                 this.ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord));
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising local event job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error"));
                         }
                     });
@@ -841,7 +841,7 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                     jobInstanceSplitVisualisationDialog.open();
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Cannot open visualisation for child context", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation"));
                 }
             });

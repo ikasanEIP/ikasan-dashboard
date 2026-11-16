@@ -159,6 +159,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanESBDocument>
                                     this.replayEvent.getPayloadRaw(), ikasanAuthentication.getName());
                             }
                             catch (ReplayFailException e) {
+                                logger.error("Replay of event failed", e);
                                 errorMessage = e.getMessage();
                             }
 
@@ -198,7 +199,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanESBDocument>
                         }
                         catch(Exception e)
                         {
-                            e.printStackTrace();
+                            logger.error("Error replaying event", e);
                             current.access(() ->
                             {
                                 progressIndicatorDialog.close();

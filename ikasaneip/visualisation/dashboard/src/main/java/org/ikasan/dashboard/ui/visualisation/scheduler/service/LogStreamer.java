@@ -39,8 +39,8 @@ public class LogStreamer {
         try {
             logStreamingService.streamLogFile(host, endPoint, logFile, logConsumer, errorConsumer, completedRunner);
         } catch (Exception e) {
-            LOG.error("Could not stream logging. Error: " + e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            LOG.error("Could not stream logging. Error: " + e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }

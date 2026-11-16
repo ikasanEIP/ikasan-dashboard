@@ -16,18 +16,11 @@ public class SearchViewTest extends UITest
     }
 
     @Test
-    public void testSearchView() throws IOException
+    public void testSearchView() throws Exception
     {
         UI.getCurrent().navigate("Search");
 
-        try
-        {
-            SearchView searchView = _get(SearchView.class);
-            Assertions.assertNotNull(searchView);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        SearchView searchView = _get(SearchView.class);
+        Assertions.assertNotNull(searchView);
     }
 }

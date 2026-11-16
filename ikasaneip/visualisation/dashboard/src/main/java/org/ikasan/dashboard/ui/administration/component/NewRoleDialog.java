@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.administration.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -23,6 +25,8 @@ import org.ikasan.spec.security.service.SecurityService;
 
 public class NewRoleDialog extends AbstractCloseableResizableDialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(NewRoleDialog.class);
+
     private SecurityService securityService;
     private SystemEventLogger systemEventLogger;
 
@@ -93,10 +97,12 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
             }
             catch (ValidationException e)
             {
+                logger.debug("New role form failed validation", e);
                 // Ignore as the form will provide feedback to the user via the validation mechanism.
             }
             catch (Exception e)
             {
+                logger.error("Could not save new role", e);
                 NotificationHelper.showErrorNotification(String.format(getTranslation("message.role-name-must-be-unique", UI.getCurrent().getLocale(), null)));
             }
         });

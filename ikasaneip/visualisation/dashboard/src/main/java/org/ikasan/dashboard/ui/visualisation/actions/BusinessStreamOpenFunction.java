@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.actions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.html.Image;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamOpenDialog;
 import org.ikasan.designer.DesignerCanvas;
@@ -13,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class BusinessStreamOpenFunction implements OpenFunction {
+    private static final Logger logger = LoggerFactory.getLogger(BusinessStreamOpenFunction.class);
+
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
     private BusinessStreamMetaData businessStreamMetaData;
     private DesignerDynamicImageManager designerDynamicImageManager;
@@ -63,7 +67,7 @@ public class BusinessStreamOpenFunction implements OpenFunction {
                     designerCanvas.setCanvasJson(json);
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Could not open business stream", e);
                 }
 
                 designerCanvas.clear();

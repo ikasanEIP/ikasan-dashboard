@@ -96,7 +96,7 @@ public class ErrorController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a batch insert of ErrorOccurrences!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of ErrorOccurrences! Error message ["
                     + e.getMessage() + "]"),

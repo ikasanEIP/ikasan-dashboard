@@ -48,7 +48,7 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
                 this.aceEditor.setValue(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contents));
             }
             catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logger.error("Could not convert contents to JSON", e);
             }
         }
     }

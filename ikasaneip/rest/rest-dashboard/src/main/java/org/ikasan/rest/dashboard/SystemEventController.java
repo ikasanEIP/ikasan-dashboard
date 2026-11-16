@@ -115,7 +115,7 @@ public class SystemEventController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a batch insert of SystemEvents!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of SystemEvents! Error message ["
                     + e.getMessage() + "]"),

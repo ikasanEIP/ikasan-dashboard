@@ -348,7 +348,9 @@ public class MongoUserDaoImpl implements UserDao {
         try {
             record.setUser(OBJECT_MAPPER.writeValueAsString(user));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
+            String message = "Cannot convert User to string! [" + user.getUsername() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return record;

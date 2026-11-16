@@ -28,8 +28,9 @@ public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<Schedu
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getContextInstance()));
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceRecord to string! [%s]"
-                , record.getContextInstance()));
+            String message = String.format("Cannot convert ScheduledContextInstanceRecord to string! [%s]" , record.getContextInstance());
+            LOG.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.setField(COMPONENT_NAME, record.getContextInstanceId());

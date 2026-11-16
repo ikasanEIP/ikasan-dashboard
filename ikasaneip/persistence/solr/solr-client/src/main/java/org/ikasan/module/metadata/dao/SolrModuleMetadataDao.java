@@ -75,6 +75,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred attempting to write a module metadata to Solr", e);
             throw new RuntimeException("An exception has occurred attempting to write a module metadata to Solr", e);
         }
     }
@@ -91,7 +92,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (JacksonException e)
         {
-            throw new RuntimeException("Unable to convert ["+moduleMetaData+"] to json format.");
+            String message = "Unable to convert ["+moduleMetaData+"] to json format.";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
@@ -165,7 +168,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -221,7 +226,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return results;
@@ -282,7 +289,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return results;
@@ -305,8 +314,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         }
         catch (Exception e)
         {
-            throw new RuntimeException(String.format("Unable to deserialise ModuleMetaData [%s]"
-                , rawModuleMetaData), e);
+            String message = String.format("Unable to deserialise ModuleMetaData [%s]" , rawModuleMetaData);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

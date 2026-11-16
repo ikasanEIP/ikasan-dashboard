@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -20,6 +22,8 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 
 public class ReplayCommentsDialog extends AbstractCloseableResizableDialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(ReplayCommentsDialog.class);
+
     private ReplayDialogDto replayDialogDto;
     private boolean isSaved;
 
@@ -100,6 +104,7 @@ public class ReplayCommentsDialog extends AbstractCloseableResizableDialog
             }
             catch (ValidationException e)
             {
+                logger.debug("Replay comments form failed validation", e);
                 // Ignore as the form will provide feedback to the user via the validation mechanism.
             }
         });

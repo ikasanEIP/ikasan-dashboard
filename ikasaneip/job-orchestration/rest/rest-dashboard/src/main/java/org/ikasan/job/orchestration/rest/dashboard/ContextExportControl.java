@@ -127,7 +127,7 @@ public class ContextExportControl {
                 });
 
         } catch (Exception e) {
-            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName, e);
             return ResponseEntity
                 .internalServerError()
                 .header("Content-Disposition", "attachment;filename=error.zip")
@@ -189,7 +189,7 @@ public class ContextExportControl {
                 });
 
         } catch (Exception e) {
-            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName, e);
             return ResponseEntity
                 .internalServerError()
                 .header("Content-Disposition", "attachment;filename=error.zip")
@@ -252,7 +252,7 @@ public class ContextExportControl {
                 });
 
         } catch (Exception e) {
-            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName, e);
             return ResponseEntity
                 .internalServerError()
                 .header("Content-Disposition", "attachment;filename=error.zip")
@@ -316,7 +316,7 @@ public class ContextExportControl {
                 });
 
         } catch (Exception e) {
-            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName, e);
             return ResponseEntity
                 .internalServerError()
                 .header("Content-Disposition", "attachment;filename=error.zip")

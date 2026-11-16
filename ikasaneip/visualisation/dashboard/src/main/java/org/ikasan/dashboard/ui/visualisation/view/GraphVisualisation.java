@@ -198,7 +198,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 metaData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(moduleMetaData);
             }
             catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logger.error("Could not convert module metadata to JSON", e);
             }
 
             Icon downloadButton = VaadinIcon.DOWNLOAD.create();
@@ -366,7 +366,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                logger.error("Could not open business stream", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.could-not-open-business-stream", UI.getCurrent().getLocale()));
             }
 

@@ -6,6 +6,8 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
  * Class to provide validation of context templates.
  */
 public class ContextTemplateValidator {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContextTemplateValidator.class);
     private StringBuffer errorReport = new StringBuffer("The context template is invalid!\n");
     private List<ContextError> errors = new ArrayList<>();
     private boolean inError = false;
@@ -68,6 +72,7 @@ public class ContextTemplateValidator {
                         " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
                 }
                 catch (JacksonException e) {
+                    logger.error("Could not serialise job[{}] sourced from the job definition artefact to JSON for error reporting!", job.getIdentifier(), e);
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job definition artefact" +
                         " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
                 }
@@ -84,6 +89,7 @@ public class ContextTemplateValidator {
                         " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
                 }
                 catch (JacksonException e) {
+                    logger.error("Could not serialise job[{}] sourced from the job plan template to JSON for error reporting!", job.getIdentifier(), e);
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
                         " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
                 }

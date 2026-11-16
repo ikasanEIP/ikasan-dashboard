@@ -8,10 +8,15 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheManagementService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.List;
 
 public class JobLockCacheManagementServiceImpl implements JobLockCacheManagementService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JobLockCacheManagementServiceImpl.class);
 
     @Override
     public void releaseLockedJob(String jobIdentifier, String parentContextName, String contextName
@@ -32,6 +37,7 @@ public class JobLockCacheManagementServiceImpl implements JobLockCacheManagement
                                 (queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())
                             .publishJobInitiationEvent(queuedEvent.getSchedulerJobInitiationEvent());
                     } catch (IOException e) {
+                        logger.error("An error has occurred releasing locked job {} from context {}!", jobIdentifier, contextName, e);
                         throw new RuntimeException(String.format("An error has occurred releasing locked job %s from context %s!"
                             , jobIdentifier, contextName), e);
                     }

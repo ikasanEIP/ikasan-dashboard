@@ -56,7 +56,7 @@ public class IkasanI18NProvider implements I18NProvider {
                 return resourceBundle.getString(key);
             }
             catch(Exception e) {
-                e.printStackTrace();
+                logger.error("Could not get translation for key [{}]", key, e);
                 return "";
             }
         }

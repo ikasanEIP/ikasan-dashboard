@@ -1,5 +1,7 @@
 package org.ikasan.security.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -41,6 +43,7 @@ import static org.ikasan.spec.entity.EntityFields.*;
  * @author Ikasan Development Team
  */
 public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements RoleDao {
+    private static final Logger logger = LoggerFactory.getLogger(SolrRoleDaoImpl.class);
 
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
@@ -144,7 +147,9 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements Role
         try {
             record.setRole(OBJECT_MAPPER.writeValueAsString(role));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert Role to string! [" + role.getName() + "]", e);
+            String message = "Cannot convert Role to string! [" + role.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         super.save(record);
@@ -428,7 +433,9 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> implements Role
 
             return role;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

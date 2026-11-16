@@ -185,7 +185,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                             size.addAndGet(GraphLayout.parseInstance(session.getSession().getAttribute(name)).totalSize());
                         }
                         catch (Exception e) {
-                            logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage());
+                            logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage(), e);
                         }
                     });
 
@@ -422,7 +422,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                                     o1Size.addAndGet(GraphLayout.parseInstance(o1.getSession().getAttribute(name)).totalSize());
                                 }
                                 catch (Exception e) {
-                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage());
+                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage(), e);
                                 }
                             });
                             AtomicLong o2Size = new AtomicLong(0L);
@@ -431,7 +431,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                                     o2Size.addAndGet(GraphLayout.parseInstance(o2.getSession().getAttribute(name)).totalSize());
                                 }
                                 catch (Exception e) {
-                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage());
+                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage(), e);
                                 }
                             });
                             return o1Size.get() < o2Size.get() ? 1 : -1;
@@ -461,7 +461,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                                     o1Size.addAndGet(GraphLayout.parseInstance(o1.getSession().getAttribute(name)).totalSize());
                                 }
                                 catch (Exception e) {
-                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage());
+                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage(), e);
                                 }
                             });
                             AtomicLong o2Size = new AtomicLong(0L);
@@ -470,7 +470,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                                     o2Size.addAndGet(GraphLayout.parseInstance(o2.getSession().getAttribute(name)).totalSize());
                                 }
                                 catch (Exception e) {
-                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage());
+                                    logger.debug("Could not calculate attribute size[{}] - message[{}]!", name, e.getMessage(), e);
                                 }
                             });
                             return o2Size.get() < o1Size.get() ? 1 : -1;

@@ -34,7 +34,9 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
             document.addField(PAYLOAD_CONTENT, getNotificationSendAuditContent(notificationSendAuditRecord.getNotificationSendAudit()));
         }
         catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", notificationSendAuditRecord));
+            String message = String.format("Cannot convert Email Notification Details to string! [%s]", notificationSendAuditRecord);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         document.addField(ID, generateId(notificationSendAuditRecord));

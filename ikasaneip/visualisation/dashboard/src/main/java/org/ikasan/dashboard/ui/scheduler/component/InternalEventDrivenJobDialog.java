@@ -172,7 +172,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                 createOrUpdateScheduledJob(this.internalEventDrivenJob, authentication);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error creating or updating command execution job", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
@@ -542,6 +542,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             }
         }
         catch (ValidationException e) {
+            logger.debug("Command execution job form failed validation", e);
             return false;
         }
 

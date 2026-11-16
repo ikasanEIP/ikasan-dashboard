@@ -115,6 +115,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
                     horizontalLayout.add(objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                         , SystemEventImpl.class).getActor());
                 } catch (JsonProcessingException e) {
+                    logger.debug("System event payload is not valid JSON", e);
                     // Not much we can do if the event is not valid json.
                 }
             }
@@ -138,6 +139,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
                     horizontalLayout.add(objectMapper.readValue(((SystemEventRecord)ikasanSolrDocument).getPayload()
                         , SystemEventImpl.class).getSubject());
                 } catch (JsonProcessingException e) {
+                    logger.debug("System event payload is not valid JSON", e);
                     // Not much we can do if the event is not valid json.
                 }
             }
@@ -163,6 +165,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
                         horizontalLayout.add(action.length() > 200 ? action.substring(0, 200) + "..." : action);
                     }
                 } catch (JsonProcessingException e) {
+                    logger.debug("System event payload is not valid JSON", e);
                     // Not much we can do if the event is not valid json.
                 }
             }
@@ -256,7 +259,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
                     return new ByteArrayInputStream(csvConverter.getCvsContents().getBytes());
                 }
                 catch (JsonProcessingException jsonProcessingException) {
-
+                    logger.error("Could not create system events CSV download", jsonProcessingException);
                 }
 
                 return new ByteArrayInputStream(new byte[0]);

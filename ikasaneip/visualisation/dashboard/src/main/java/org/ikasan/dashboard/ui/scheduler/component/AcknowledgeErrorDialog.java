@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -29,6 +31,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class AcknowledgeErrorDialog extends AbstractCloseableResizableDialog {
+    private static final Logger logger = LoggerFactory.getLogger(AcknowledgeErrorDialog.class);
+
     private TextField acknowledgementTicketId;
     private TextArea acknowledgementReason;
     private ContextInstance contextInstance;
@@ -113,7 +117,7 @@ public class AcknowledgeErrorDialog extends AbstractCloseableResizableDialog {
                     NotificationHelper.showUserNotification(getTranslation("message.error-acknowledged"));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error acknowledging job error", e);
                 NotificationHelper.showUserNotification(getTranslation("error.error-acknowledged"));
             }
             finally {

@@ -54,7 +54,6 @@ public abstract class AbstractMonitorBase<T> implements Monitor<T> {
                     catch(RuntimeException e)
                     {
                         logger.warn("Failed to invoke notifier[" + notifier.getClass().getName() + "]", e);
-                        e.printStackTrace(); // TODO TEMP
                     }
             });
         }

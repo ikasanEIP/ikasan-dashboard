@@ -267,7 +267,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             });
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not get integrated systems", e);
         }
 
         DesignerPalletButtonItem palletIconItem = new DesignerPalletButtonItem(VaadinIcon.PLUS.create(), designerPalletItem -> {
@@ -417,7 +417,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             fileInputStream.close();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not read image [{}]", file, e);
         }
 
         DownloadHandler downloadHandler = DownloadHandler.fromInputStream(downloadEvent

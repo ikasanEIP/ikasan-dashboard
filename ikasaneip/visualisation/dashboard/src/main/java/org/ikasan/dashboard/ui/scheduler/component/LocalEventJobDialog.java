@@ -91,7 +91,7 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
                 createOrUpdateScheduledJob(this.localEventJob, authentication);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error creating or updating local event job", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
@@ -202,6 +202,7 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
             }
         }
         catch (ValidationException e) {
+            logger.debug("Local event job form failed validation", e);
             return false;
         }
 

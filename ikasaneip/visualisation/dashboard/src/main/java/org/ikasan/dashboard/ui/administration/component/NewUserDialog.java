@@ -134,11 +134,12 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
             }
             catch (ValidationException e)
             {
+                logger.debug("New user form failed validation", e);
                 // Ignore as the form will provide feedback to the user via the validation mechanism.
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                logger.error("Failed to create user", e);
                 NotificationHelper.showErrorNotification(String.format(getTranslation("error.falied-to-create-user", UI.getCurrent().getLocale(), null)));
             }
         });

@@ -215,6 +215,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
             contextTemplate = this.contextService.getContextTemplate(this.aceEditor.getValue());
         }
         catch (JacksonException e) {
+            logger.debug("Job plan JSON is not valid", e);
             JsonValidationError jsonValidationError = new JsonValidationError(e.getMessage(), e.getLocation().getLineNr()-1,
                 e.getLocation().getColumnNr());
 
@@ -243,6 +244,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
             contextTemplateValidator.validateJobs(contextTemplate, jobs);
         }
         catch (InvalidContextTemplateException e) {
+            logger.debug("Job plan failed job validation", e);
             AceCursorPosition position = this.aceEditor.getCursorPosition();
             e.getContextErrors().forEach(contextError -> {
                 int lineNumber = 0;
@@ -261,6 +263,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
             this.aceEditor.setCursorPosition(position.getRow(), position.getColumn());
         }
         catch (Exception e) {
+            logger.error("Error validating job plan jobs", e);
             NotificationHelper.showUserNotification(getTranslation("error.job-plan-validation-failure", UI.getCurrent().getLocale()));
         }
 
@@ -270,9 +273,11 @@ public class JobPlanEditorWidget extends VerticalLayout {
             contextTemplateValidator.validate(contextTemplate);
         }
         catch (InvalidContextTemplateException e) {
+            logger.debug("Job plan validation found warnings", e);
             jsonValidationWarnings.addAll(e.getContextErrors());
         }
         catch (Exception e) {
+            logger.error("Error validating job plan", e);
             NotificationHelper.showUserNotification(getTranslation("error.job-plan-validation-failure", UI.getCurrent().getLocale()));
         }
 

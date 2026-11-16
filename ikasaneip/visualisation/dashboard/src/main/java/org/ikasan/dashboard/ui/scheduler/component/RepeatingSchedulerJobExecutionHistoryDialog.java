@@ -91,7 +91,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         try {
             processEventHolderMap = this.getAuditRecords();
         } catch (Exception e) {
-            logger.warn("There was an issue to get the list of logs files for the job and context instance: {}", e.getMessage());
+            logger.error("There was an issue to get the list of logs files for the job and context instance: {}", e.getMessage(), e);
         }
 
         if (processEventHolderMap == null || processEventHolderMap.isEmpty()) {

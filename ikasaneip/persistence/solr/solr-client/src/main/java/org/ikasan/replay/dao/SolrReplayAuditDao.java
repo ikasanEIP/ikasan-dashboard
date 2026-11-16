@@ -53,6 +53,7 @@ public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred attempting to write replay audit event to Solr", e);
             throw new RuntimeException("An exception has occurred attempting to write replay audit event to Solr", e);
         }
     }
@@ -76,6 +77,7 @@ public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred convert a replay audit event to a solr document", e);
             throw new RuntimeException("An exception has occurred convert a replay audit event to a solr document", e);
         }
 

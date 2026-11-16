@@ -60,7 +60,9 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
             }
 
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Error converting context profile record! [%s]", event));
+            String message = String.format("Error converting context profile record! [%s]", event);
+            LOG.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
         if(event.getCreatedDateTime() == 0) {
             document.addField(CREATED_DATE_TIME, System.currentTimeMillis());

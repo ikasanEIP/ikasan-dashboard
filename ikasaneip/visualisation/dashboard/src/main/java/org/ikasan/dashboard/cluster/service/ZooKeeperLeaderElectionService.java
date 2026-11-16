@@ -126,7 +126,7 @@ public class ZooKeeperLeaderElectionService implements LeaderElectionService {
         try {
             return leaderLatch.getLeader().getId();
         } catch (Exception e) {
-            LOGGER.warn("Failed to retrieve leader URL from ZooKeeper: {}", e.getMessage());
+            LOGGER.error("Failed to retrieve leader URL from ZooKeeper: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -173,7 +173,9 @@ public class ZooKeeperLeaderElectionService implements LeaderElectionService {
             leaderLatch.await();
         } catch (EOFException e) {
             LOGGER.error("Connection closed while waiting for leadership", e);
-            throw new InterruptedException("Connection closed while waiting for leadership");
+            InterruptedException interruptedException = new InterruptedException("Connection closed while waiting for leadership");
+            interruptedException.initCause(e);
+            throw interruptedException;
         }
     }
 

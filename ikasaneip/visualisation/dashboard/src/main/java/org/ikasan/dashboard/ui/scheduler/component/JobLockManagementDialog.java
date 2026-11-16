@@ -192,7 +192,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                 .writeValueAsString(this.contextTemplate.getJobLocks());
         }
         catch (JacksonException e) {
-            LOGGER.info("Could not initialise job locks string for audit!");
+            LOGGER.error("Could not initialise job locks string for audit!", e);
         }
 
         VerticalLayout layout = new VerticalLayout();
@@ -282,7 +282,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    LOGGER.error("Cannot open visualisation", e);
                                     NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
                                 }
 
@@ -442,7 +442,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                     lockCountTf.setValue(null);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error("Error deleting job lock", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.deleting-job-lock", UI.getCurrent().getLocale()));
                 }
             });
@@ -661,7 +661,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                     .writeValueAsString(this.contextTemplate.getJobLocks());
             }
             catch (JacksonException e) {
-                LOGGER.info("Could not initialise job locks string for audit!");
+                LOGGER.error("Could not initialise job locks string for audit!", e);
             }
 
             StringBuffer auditMessage = new StringBuffer();
@@ -675,7 +675,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             return true;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error saving job locks", e);
             NotificationHelper.showErrorNotification(getTranslation("notification.error-saving-job-locks", UI.getCurrent().getLocale()));
             return false;
         }

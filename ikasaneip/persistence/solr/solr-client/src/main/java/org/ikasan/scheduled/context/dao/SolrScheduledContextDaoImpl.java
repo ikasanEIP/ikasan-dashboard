@@ -40,8 +40,9 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             document.addField(QUARTZ_SCHEDULED_JOBS_DISABLED, contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext());
         }
         catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
-                , scheduledContextRecord.getContext()));
+            String message = String.format("Cannot convert FileEventDrivenJob to string! [%s]" , scheduledContextRecord.getContext());
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
         document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT_TYPE);
         document.addField(MODULE_NAME, scheduledContextRecord.getContextName());

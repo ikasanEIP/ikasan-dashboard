@@ -120,8 +120,7 @@ public class ContextProvisionController
         }
         catch (Exception e)
         {
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to provision context! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);

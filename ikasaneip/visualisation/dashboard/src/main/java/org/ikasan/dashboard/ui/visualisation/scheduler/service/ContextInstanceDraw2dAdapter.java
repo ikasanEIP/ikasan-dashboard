@@ -76,6 +76,7 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             }
             catch (JsonProcessingException e) {
+                logger.error("An exception has occurred attempting to translate jobs for context[{}] to the draw 2d data format", context.getName(), e);
                 throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate jobs for" +
                     " context[%s] to the draw 2d data format", context.getName()), e);
             }
@@ -185,6 +186,7 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
         }
         catch (JsonProcessingException e) {
+            logger.error("An exception has occurred attempting to translate context[{}] to the draw 2d data format", context.getName(), e);
             throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate context[%s] to the draw 2d data format", context.getName()), e);
         }
     }

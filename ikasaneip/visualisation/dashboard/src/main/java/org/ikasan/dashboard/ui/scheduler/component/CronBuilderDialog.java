@@ -22,6 +22,7 @@ public class CronBuilderDialog extends AbstractCronBuilderDialog {
             this.naturalLanguageTf.setValue(descriptor.describe(quartzCron));
         }
         catch (IllegalArgumentException e) {
+            logger.debug("Could not describe cron expression [{}]", cronExpression, e);
             // ignore as the user might manually enter a bad cron that can not be converted to natural language.
         }
     }

@@ -41,8 +41,9 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getScheduledContextInstanceAuditAggregate()));
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceAuditAggregateRecord to string! [%s]"
-                , record.getScheduledContextInstanceAuditAggregate()));
+            String message = String.format("Cannot convert ScheduledContextInstanceAuditAggregateRecord to string! [%s]" , record.getScheduledContextInstanceAuditAggregate());
+            LOG.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.setField(FLOW_NAME, record.getContextInstanceId());
@@ -163,8 +164,9 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
                 results.put(id, jobStatusCount);
 
             } catch (Exception e) {
-                throw new RuntimeException("Error resolving repeating job status count by query [" + queryString
-                    + "] from the Ikasan solr index!", e);
+                String message = "Error resolving repeating job status count by query [" + queryString + "] from the Ikasan solr index!";
+                LOG.error(message, e);
+                throw new RuntimeException(message, e);
             }
         });
 

@@ -157,7 +157,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                logger.error("Could not delete configuration [{}]", this.configurationMetaData.getConfigurationId(), e);
                 NotificationHelper.showUserNotification(getTranslation("error.could-not-delete-configuration"
                     , UI.getCurrent().getLocale()));
             }
@@ -207,6 +207,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
                         }
                         catch (NumberFormatException e)
                         {
+                            logger.debug("Configuration value is not a valid integer", e);
                             ((TextField) component).setErrorMessage(getTranslation("error.configuration-must-be-an-integer", UI.getCurrent().getLocale()));
                             ((TextField) component).setInvalid(true);
                             formIsValid = false;
@@ -225,6 +226,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
                         }
                         catch (NumberFormatException e)
                         {
+                            logger.debug("Configuration value is not a valid long", e);
                             ((TextField) component).setErrorMessage(getTranslation("error.configuration-must-be-a-long", UI.getCurrent().getLocale()));
                             ((TextField) component).setInvalid(true);
                             formIsValid = false;

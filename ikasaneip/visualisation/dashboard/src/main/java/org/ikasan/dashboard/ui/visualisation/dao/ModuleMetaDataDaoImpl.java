@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 
 public class ModuleMetaDataDaoImpl implements ModuleMetaDataDao
 {
+    private static final Logger logger = LoggerFactory.getLogger(ModuleMetaDataDaoImpl.class);
+
     private static final String MODULE_ONE = "/data/graph/module-one.json";
     private static final String MODULE_TWO = "/data/graph/module-two.json";
     private static final String MODULE_THREE = "/data/graph/module-three.json";
@@ -46,7 +50,7 @@ public class ModuleMetaDataDaoImpl implements ModuleMetaDataDao
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error("Could not load module metadata", e);
         }
     }
 

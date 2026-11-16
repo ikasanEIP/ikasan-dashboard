@@ -212,7 +212,7 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
             this.close();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error submitting job", e);
             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
         }
     }

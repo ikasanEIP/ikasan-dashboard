@@ -43,7 +43,7 @@ public class Draw2dCanvasJsonHelper {
                 }
             }
         } catch (Exception e) {
-            logger.info("Could not get job images from canvas JSON. Will revert to auto-layout for rendering the context diagram.");
+            logger.info("Could not get job images from canvas JSON. Will revert to auto-layout for rendering the context diagram.", e);
         }
 
         return schedulerJobs;
@@ -68,7 +68,7 @@ public class Draw2dCanvasJsonHelper {
                 }
             }
         } catch (Exception e) {
-            logger.info("Could not get logical boundaries from canvas JSON. Will revert to auto-layout for rendering the context diagram.");
+            logger.info("Could not get logical boundaries from canvas JSON. Will revert to auto-layout for rendering the context diagram.", e);
         }
 
         return logicalBoundaries.size() == 0 ? null : logicalBoundaries;

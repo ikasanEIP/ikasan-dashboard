@@ -99,6 +99,7 @@ public class JobContextParamsSetupConfiguration {
                     }
 
                 } catch (IOException e) {
+                    logger.error("Unexpected error occurred while loading configuration file for context [{}] and [file {}]", key, value, e);
                     throw new RuntimeException("Unexpected error occurred while loading configuration file for context [" + key + "] and [file " + value +"]", e);
                 }
             });
@@ -176,7 +177,7 @@ public class JobContextParamsSetupConfiguration {
         try {
             return Files.lines(Paths.get(mappingFilePath));
         } catch (NoSuchFileException e) {
-            logger.error("ATTENTION: File path [{}] does not exist. Skipping!", mappingFilePath);
+            logger.error("ATTENTION: File path [{}] does not exist. Skipping!", mappingFilePath, e);
         }
         return Stream.empty();
     }
