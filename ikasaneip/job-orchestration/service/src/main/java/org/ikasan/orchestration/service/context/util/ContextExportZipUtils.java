@@ -259,13 +259,14 @@ public final class ContextExportZipUtils {
 
             return baos;
         } catch (Exception e) {
-            e.printStackTrace();
-            LOG.warn(String.format("Got exception creating zip file. Error [%s]", e.getMessage()));
+            LOG.error(String.format("Got exception creating zip file. Error [%s]", e.getMessage()), e);
             // clean up everything in case there is anything there
             try {
                 deleteWorkingDirectory(getWorkingDirectory(workingDirectory) +
                     sanitiseForUseAsFilename(context.getName()));
-            } catch (IOException ex) {}
+            } catch (IOException ex) {
+                LOG.error("Could not clean up working directory after failing to create zip file!", ex);
+            }
 
             return null;
         }
@@ -376,13 +377,14 @@ public final class ContextExportZipUtils {
 
             return baos;
         } catch (Exception e) {
-            e.printStackTrace();
-            LOG.warn(String.format("Got exception creating zip file. Error [%s]", e.getMessage()));
+            LOG.error(String.format("Got exception creating zip file. Error [%s]", e.getMessage()), e);
             // clean up everything in case there is anything there
             try {
                 deleteWorkingDirectory(getWorkingDirectory(workingDirectory) +
                     StringUtils.replaceEach(context.getName(), UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR));
-            } catch (IOException ex) {}
+            } catch (IOException ex) {
+                LOG.error("Could not clean up working directory after failing to create zip file!", ex);
+            }
 
             return null;
         }

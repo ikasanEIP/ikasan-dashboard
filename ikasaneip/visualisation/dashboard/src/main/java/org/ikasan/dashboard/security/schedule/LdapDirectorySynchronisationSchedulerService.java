@@ -54,7 +54,7 @@ public class LdapDirectorySynchronisationSchedulerService extends AbstractDashbo
         }
         catch (Exception e) {
             logger.warn("Unable to retrieve ldap configuration details. This has most likely occurred as a result" +
-                " of the dashboard database not yet being created.");
+                " of the dashboard database not yet being created.", e);
             return;
         }
 

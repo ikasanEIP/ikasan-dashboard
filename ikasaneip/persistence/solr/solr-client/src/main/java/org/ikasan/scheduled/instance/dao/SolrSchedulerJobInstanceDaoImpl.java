@@ -111,8 +111,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstance));
         } catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance()));
+            String message = String.format("Cannot convert FileEventDrivenJob to string! [%s]" , schedulerJobInstanceRecord.getSchedulerJobInstance());
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         if(schedulerJobInstance.getScheduledProcessEvent() != null) {
@@ -382,8 +383,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                     jobStatusCount, false));
 
             } catch (Exception e) {
-                throw new RuntimeException("Error resolving aggregate jobs statuses record data by query [" + queryString
-                    + "] from the Ikasan solr index!", e);
+                String message = "Error resolving aggregate jobs statuses record data by query [" + queryString + "] from the Ikasan solr index!";
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
             }
         });
         return results;
@@ -467,8 +469,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                     this.doesJobPlanInstanceContainRepeatingJobs(id)));
 
             } catch (Exception e) {
-                throw new RuntimeException("Error resolving aggregate jobs statuses record data by query [" + queryString
-                    + "] from the Ikasan solr index!", e);
+                String message = "Error resolving aggregate jobs statuses record data by query [" + queryString + "] from the Ikasan solr index!";
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
             }
         });
         return results;

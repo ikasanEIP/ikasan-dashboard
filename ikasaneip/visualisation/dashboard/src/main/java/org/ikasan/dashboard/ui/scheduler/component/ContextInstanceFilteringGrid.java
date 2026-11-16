@@ -223,7 +223,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
             results = this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving context instances", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

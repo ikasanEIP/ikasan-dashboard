@@ -162,8 +162,9 @@ public class MongoScheduledContextDaoImpl implements ScheduledContextDao {
                 (contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext());
         }
         catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
-                , scheduledContextRecord.getContext()));
+            String message = String.format("Cannot convert FileEventDrivenJob to string! [%s]" , scheduledContextRecord.getContext());
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         mongoRecord.setContextName(scheduledContextRecord.getContextName());

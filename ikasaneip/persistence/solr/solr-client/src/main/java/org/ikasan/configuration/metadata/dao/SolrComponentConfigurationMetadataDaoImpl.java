@@ -65,6 +65,7 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred attempting to write a component configuration to Solr", e);
             throw new RuntimeException("An exception has occurred attempting to write a component configuration to Solr", e);
         }
     }
@@ -81,7 +82,9 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
         }
         catch (JacksonException e)
         {
-            throw new RuntimeException("Unable to convert ["+configurationMetaData+"] to json format.");
+            String message = "Unable to convert ["+configurationMetaData+"] to json format.";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
 
@@ -158,8 +161,9 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
         }
         catch (Exception e)
         {
-            throw new RuntimeException(String.format("Unable to deserialise ConfigurationMetaData [%s]"
-                , solrComponentConfiguration), e);
+            String message = String.format("Unable to deserialise ConfigurationMetaData [%s]" , solrComponentConfiguration);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -197,7 +201,9 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr component configuration by query [" + queryString + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr component configuration by query [" + queryString + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

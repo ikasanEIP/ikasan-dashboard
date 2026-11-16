@@ -39,7 +39,9 @@ public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
             document.addField(PAYLOAD_CONTENT, getGlobalEventJob(job));
             document.addField(COMPONENT_NAME, job.getContextName());
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert GlobalEventJob to string! [%s]", event), e);
+            String message = String.format("Cannot convert GlobalEventJob to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(MODULE_NAME, event.getAgentName());

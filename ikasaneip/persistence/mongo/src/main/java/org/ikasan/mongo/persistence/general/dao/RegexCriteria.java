@@ -31,6 +31,41 @@ public final class RegexCriteria {
     }
 
     /**
+     * Case-insensitive wildcard match of the whole field value, where {@code *} in {@code pattern} matches any sequence
+     * of characters and everything else is matched literally. For example {@code *billing*} matches any value
+     * containing "billing", {@code billing*} any value starting with it.
+     *
+     * @param field the document field
+     * @param pattern the user-supplied pattern; {@code *} is the only wildcard
+     * @return the criteria
+     */
+    public static Criteria wildcardIgnoreCase(String field, String pattern) {
+        return Criteria.where(field).regex(wildcard(pattern), "i");
+    }
+
+    /**
+     * Convert a {@code *} wildcard pattern into an anchored regular expression: each {@code *} becomes {@code .*} and
+     * the text between them is quoted, so no other character has a special meaning.
+     *
+     * @param pattern the user-supplied pattern
+     * @return the anchored regex
+     */
+    public static String wildcard(String pattern) {
+        StringBuilder regex = new StringBuilder("^");
+        // -1 keeps trailing empty segments, so a trailing * still produces a trailing .*
+        String[] literals = (pattern == null ? "" : pattern).split("\\*", -1);
+        for (int i = 0; i < literals.length; i++) {
+            if (i > 0) {
+                regex.append(".*");
+            }
+            if (!literals[i].isEmpty()) {
+                regex.append(Pattern.quote(literals[i]));
+            }
+        }
+        return regex.append('$').toString();
+    }
+
+    /**
      * Quote user input for literal use inside a regular expression. The returned pattern is unanchored, so on its own
      * it performs a substring match.
      *

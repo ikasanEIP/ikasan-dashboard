@@ -687,7 +687,7 @@ public class ContextMachineImpl implements ContextMachine {
             this.contextInstance = null;
             this.statusConverter = null;
         } catch (Exception e) {
-            logger.warn(String.format("Could not tear down context machine: Error [%s]", e.getMessage()));
+            logger.error(String.format("Could not tear down context machine: Error [%s]", e.getMessage()), e);
         }
     }
 
@@ -704,6 +704,7 @@ public class ContextMachineImpl implements ContextMachine {
                 threadPool.shutdownNow();
             }
         } catch (InterruptedException ex) {
+            logger.error("Interrupted while waiting for thread pool to terminate!", ex);
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
         }
@@ -1072,6 +1073,7 @@ public class ContextMachineImpl implements ContextMachine {
                             });
                         } catch (ContextMachineException e) {
                             // safe to ignore this exception
+                            logger.debug("Ignoring exception determining events that can run for job[{}]", schedulerJobInstance.getIdentifier(), e);
                         }
                     }
                 });
@@ -1263,10 +1265,11 @@ public class ContextMachineImpl implements ContextMachine {
                     outboundQueue.enqueue(serialised.getBytes());
                     logger.debug("Outbound queue size: " + outboundQueue.size());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new ContextMachineException(String.format("Attempting to release job[%s] currently held in context[%s] " +
+                    String message = String.format("Attempting to release job[%s] currently held in context[%s] " +
                             "with instance id[%s]. Could not enqueue the outbound job initiation event!", schedulerJobInstance.getChildContextName()
-                        , this.contextInstance.getName(), this.contextInstance.getId()));
+                        , this.contextInstance.getName(), this.contextInstance.getId());
+                    logger.error(message, e);
+                    throw new ContextMachineException(message, e);
                 }
 
                 InstanceStatus previousState = schedulerJobInstance.getStatus();
@@ -1722,8 +1725,10 @@ public class ContextMachineImpl implements ContextMachine {
                            this.publishJobInitiationEvent(contextualisedSchedulerJobInitiationEvent
                                .getSchedulerJobInitiationEvent());
                        } catch (IOException e) {
-                           throw new RuntimeException(String.format("An error has occurred publishing locked job initiation event[%s]!"
-                               , contextualisedSchedulerJobInitiationEvent),  e);
+                           String message = String.format("An error has occurred publishing locked job initiation event[%s]!"
+                               , contextualisedSchedulerJobInitiationEvent);
+                           logger.error(message, e);
+                           throw new RuntimeException(message,  e);
                        }
                    }
                });
@@ -1777,7 +1782,7 @@ public class ContextMachineImpl implements ContextMachine {
                 // We are just going to put a warn message as the job may have already finished
                 logger.info(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. The job may have already ended " +
                         "when the request to kill the job was issued. Error Message: %s"
-                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()));
+                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()), e);
             }
         });
     }
@@ -3054,8 +3059,7 @@ public class ContextMachineImpl implements ContextMachine {
                 }
                 catch (Exception ex) {
                     logger.error(String.format("An error has occurred attempting to enqueue outbound message that is in error [%s]"
-                        , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
-                    ex.printStackTrace();
+                        , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), ex);
                 }
             }
             finally {
@@ -3070,7 +3074,6 @@ public class ContextMachineImpl implements ContextMachine {
                     catch (IOException e) {
                         logger.error(String.format("An error has occurred attempting to dequeue outbound message [%s]"
                             , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
-                        e.printStackTrace();
                     }
                 }
 
@@ -3100,7 +3103,7 @@ public class ContextMachineImpl implements ContextMachine {
             inboundListenableFuture.addListener(inboundQueueMessageRunner, this.contextExecutor);
         }
         catch (Exception e) {
-            logger.warn("Could not add inbound listener for context machine. This is likely due to the context instance being ended.");
+            logger.warn("Could not add inbound listener for context machine. This is likely due to the context instance being ended.", e);
         }
     }
 

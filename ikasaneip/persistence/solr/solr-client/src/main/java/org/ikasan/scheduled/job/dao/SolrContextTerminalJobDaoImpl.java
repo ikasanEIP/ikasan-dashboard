@@ -39,7 +39,9 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
             document.addField(DISPLAY_NAME, job.getDisplayName());
             document.addField(MODULE_NAME, job.getAgentName());
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert GlobalEventJob to string! [%s]", event), e);
+            String message = String.format("Cannot convert GlobalEventJob to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(FLOW_NAME, event.getJobName());

@@ -99,7 +99,7 @@ public class NotifierController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to update dashboard flow state cache!", e);
             return new ResponseEntity(new ErrorDto("An error has occurred attempting to update dashboard flow state cache! Error message ["
                 + e.getMessage() + "]")
                 , HttpStatus.BAD_REQUEST);
@@ -125,7 +125,7 @@ public class NotifierController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to update dashboard flow state cache!", e);
             return new ResponseEntity(new ErrorDto("An error has occurred attempting to update dashboard flow state cache! Error message ["
                 + e.getMessage() + "]")
                 , HttpStatus.BAD_REQUEST);

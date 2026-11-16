@@ -257,7 +257,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
             results = this.schedulerJobService.findByFilter(filter, limit, offset, sortColumn, sortDirection);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving scheduler jobs", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

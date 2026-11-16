@@ -6,11 +6,15 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContextInstanceToContextInstanceStatusConverter implements Converter<ContextInstance, ContextInstanceStatus> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContextInstanceToContextInstanceStatusConverter.class);
 
     @Override
     public ContextInstanceStatus convert(ContextInstance contextInstance) throws TransformationException {
@@ -20,6 +24,7 @@ public class ContextInstanceToContextInstanceStatusConverter implements Converte
             return this.populateStatus(contextInstanceStatus, contextInstance);
         }
         catch (Exception e) {
+            logger.error("An error has occurred trying to convert a ContextInstance to a ContextInstanceStatus", e);
             throw new TransformationException("An error has occurred trying to convert a ContextInstance to a ContextInstanceStatus", e);
         }
     }

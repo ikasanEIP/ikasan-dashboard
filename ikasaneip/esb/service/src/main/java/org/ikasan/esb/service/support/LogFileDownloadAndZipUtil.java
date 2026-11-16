@@ -182,6 +182,7 @@ public class LogFileDownloadAndZipUtil {
                 return null;
             }
         } catch (RestClientException e) {
+            logger.error("Failed to list log files from: [{}]", url, e);
             throw new IOException(String.format("Failed to list log files from: [%s]", url), e);
         }
     }

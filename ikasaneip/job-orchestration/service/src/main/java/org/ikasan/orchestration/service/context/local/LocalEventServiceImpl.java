@@ -10,9 +10,14 @@ import org.ikasan.spec.scheduled.instance.model.LocalEventJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.LocalEventService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 public class LocalEventServiceImpl implements LocalEventService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LocalEventServiceImpl.class);
     public static final String LOCAL_EVENT_MANUALLY_RAISED = "LOCAL_EVENT_MANUALLY_RAISED";
 
     @Override
@@ -48,6 +53,7 @@ public class LocalEventServiceImpl implements LocalEventService {
             contextMachine.broadcastLocalEvent(schedulerJobInitiationEvent);
         }
         catch (IOException e) {
+            logger.error("An exception has occurred broadcast a local event!", e);
             throw new LocalEventServiceException("An exception has occurred broadcast a local event!", e);
         }
     }

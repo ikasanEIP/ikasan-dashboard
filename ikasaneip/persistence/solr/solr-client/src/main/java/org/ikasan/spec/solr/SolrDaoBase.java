@@ -556,7 +556,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
-            throw new RuntimeException("An error has occurred deleting using query [" + query + "].: " + e.getMessage(), e);
+            String message = "An error has occurred deleting using query [" + query + "].: " + e.getMessage();
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -584,6 +586,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred attempting to write a document to Solr", e);
             throw new RuntimeException("An exception has occurred attempting to write a document to Solr", e);
         }
 
@@ -616,6 +619,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
+            logger.error("An exception has occurred attempting to write a document list to Solr", e);
             throw new RuntimeException("An exception has occurred attempting to write a document list to Solr", e);
         }
     }
@@ -673,8 +677,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
                 .collect(Collectors.toList());
         }
         catch (Exception e) {
-            throw new RuntimeException(String.format("An error has occurred performing a facet field query" +
-                ". Query[%s]: Field[%s]", query, field), e);
+            String message = String.format("An error has occurred performing a facet field query" + ". Query[%s]: Field[%s]", query, field);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -696,7 +701,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
                 , rsp.getResults().getNumFound(), rsp.getElapsedTime());
         }
         catch (Exception e) {
-            throw new RuntimeException("Error resolving " + clazz.getTypeName() + " by query [" + query + "] from the ikasan solr index!", e);
+            String message = "Error resolving " + clazz.getTypeName() + " by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -743,8 +750,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving " + clazz.getTypeName() + " record data by query [" + query
-                + "] from the ikasan solr index!", e);
+            String message = "Error resolving " + clazz.getTypeName() + " record data by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

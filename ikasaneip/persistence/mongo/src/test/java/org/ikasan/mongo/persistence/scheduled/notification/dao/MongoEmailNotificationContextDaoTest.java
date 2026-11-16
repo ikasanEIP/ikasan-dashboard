@@ -176,7 +176,7 @@ public class MongoEmailNotificationContextDaoTest {
     }
 
     @Test
-    public void test_save_updates_existing_record() {
+    public void test_save_updates_existing_record() throws InterruptedException {
         EmailNotificationContextRecord record = createTestRecord("context1", "user1");
         dao.save(record);
 
@@ -185,11 +185,7 @@ public class MongoEmailNotificationContextDaoTest {
         long timestamp1 = results1.getResultList().get(0).getModifiedTimestamp();
 
         // Wait a bit to ensure different timestamp
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(10);
 
         EmailNotificationContextRecord updatedRecord = createTestRecord("context1", "user2");
         dao.save(updatedRecord);

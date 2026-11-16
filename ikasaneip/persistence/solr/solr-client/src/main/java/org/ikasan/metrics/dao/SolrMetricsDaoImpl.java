@@ -79,6 +79,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -96,6 +97,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -108,6 +110,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return this.count(query);
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics count query!", e);
             throw new RuntimeException("Could not execute solr metrics count query!", e);
         }
     }
@@ -125,6 +128,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -142,6 +146,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -154,6 +159,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return this.count(query);
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics count query!", e);
             throw new RuntimeException("Could not execute solr metrics count query!", e);
         }
     }
@@ -171,6 +177,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -189,6 +196,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return results;
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics query!", e);
             throw new RuntimeException("Could not execute solr metrics query!", e);
         }
     }
@@ -201,6 +209,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
             return this.count(query);
         }
         catch (IOException e) {
+            logger.error("Could not execute solr metrics count query!", e);
             throw new RuntimeException("Could not execute solr metrics count query!", e);
         }
     }
@@ -236,8 +245,9 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr flow invocation metric by query [" + query + "] " +
-                "from the ikasan solr index!", e);
+            String message = "Error resolving solr flow invocation metric by query [" + query + "] " + "from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -259,8 +269,9 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr flow invocation metric count by query [" + query + "] " +
-                "from the ikasan solr index!", e);
+            String message = "Error resolving solr flow invocation metric count by query [" + query + "] " + "from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -280,8 +291,9 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
         }
         catch (Exception e)
         {
-            throw new RuntimeException(String.format("Unable to deserialise FlowInvocationMetric [%s]"
-                , rawFlowInvocationMetric), e);
+            String message = String.format("Unable to deserialise FlowInvocationMetric [%s]" , rawFlowInvocationMetric);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

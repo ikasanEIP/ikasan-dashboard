@@ -317,7 +317,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
 
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error raising local event job", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                 }
             });
@@ -537,7 +537,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 , this.localEventJobInstance.getAgentName(), localEventJobInstance.getJobName(), localEventJobInstance.getContextName(), localEventJobInstance.getContextInstanceId(), true), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error skipping job [{}]", this.localEventJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -567,7 +567,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 , this.localEventJobInstance.getAgentName(), localEventJobInstance.getJobName(), localEventJobInstance.getContextName(), localEventJobInstance.getContextInstanceId(), false), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error enabling job [{}]", this.localEventJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -598,7 +598,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 , localEventJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error holding job [{}]", this.localEventJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -629,7 +629,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 , this.localEventJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error releasing job [{}]", this.localEventJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -666,7 +666,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 , localEventJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error disabling job [{}]", this.localEventJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.disabled-general-error", UI.getCurrent().getLocale()));
         }
 

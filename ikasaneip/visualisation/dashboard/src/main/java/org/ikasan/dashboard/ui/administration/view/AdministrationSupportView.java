@@ -111,6 +111,7 @@ public class AdministrationSupportView extends HorizontalLayout implements Befor
             try {
                 this.initiateDashboardLogsZipOutputStream(event.getOutputStream());
             } catch (Exception e) {
+                logger.error("Error processing Dashboard Logs ZIP download", e);
                 throw new RuntimeException("Error processing Dashbord Logs ZIP download", e);
             }
         };
@@ -189,6 +190,7 @@ public class AdministrationSupportView extends HorizontalLayout implements Befor
             try {
                 this.initiateSolrLogsZipOutputStream(event.getOutputStream());
             } catch (Exception e) {
+                logger.error("Error processing SOLR Logs ZIP download", e);
                 throw new RuntimeException("Error processing SOLR Logs ZIP download", e);
             }
         };
@@ -276,6 +278,7 @@ public class AdministrationSupportView extends HorizontalLayout implements Befor
             try {
                 this.initModuleLogsZipOutputStream(event.getOutputStream(), moduleNames.getValue());
             } catch (Exception e) {
+                logger.error("Error processing Module Logs ZIP download", e);
                 throw new RuntimeException("Error processing Modul Logs ZIP download", e);
             }
         };
@@ -362,6 +365,7 @@ public class AdministrationSupportView extends HorizontalLayout implements Befor
             try {
                 this.initSystemEventZipOutputStream(event.getOutputStream());
             } catch (Exception e) {
+                logger.error("Error processing System Events ZIP download", e);
                 throw new RuntimeException("Error processing System Events ZIP download", e);
             }
         };

@@ -361,7 +361,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    logger.error("Error opening job visualisation", e);
                                     NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
                                         , UI.getCurrent().getLocale()));
                                 }
@@ -1234,7 +1234,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         , contextTemplate.getName()), this.authentication.getName());
                     ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error enabling scheduled jobs for context template [{}]", contextTemplate.getName(), e);
                     error = true;
                 } finally {
                     if (error) {
@@ -1267,7 +1267,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             , contextTemplate.getName()), this.authentication.getName());
                         ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error disabling scheduled jobs for context template [{}]", contextTemplate.getName(), e);
                         error = true;
                     } finally {
                         if (error) {

@@ -1034,7 +1034,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 jobInstanceSplitVisualisationDialog.open();
             }
             catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Cannot open visualisation for child context", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
             }
         });
@@ -1249,7 +1249,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                         contextMachine.skipJobs(contextInstance.getName(), true);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error skipping jobs for context instance [{}]", this.contextInstance.getId(), e);
                         error = true;
                     } finally {
                         boolean finalError = error;
@@ -1307,7 +1307,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                         contextMachine.skipJobs(contextInstance.getName(), false);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error enabling jobs for context instance [{}]", this.contextInstance.getId(), e);
                         error = true;
                     } finally {
                         boolean finalError = error;
@@ -1717,7 +1717,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error manually submitting job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                         }
                     });
@@ -1748,7 +1748,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising quartz scheduler job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                         }
                     });
@@ -1783,7 +1783,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising global event job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                         }
                     });
@@ -1818,7 +1818,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error("Error raising local event job [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                         }
                     });

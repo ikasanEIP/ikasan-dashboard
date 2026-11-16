@@ -210,7 +210,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                     super.prepareFutureContextInstance(context.getName());
                                 } catch (Exception e) {
                                     LOG.error(String.format("Got error back filling context [%s] with custom cron schedule [%s]. Error: %s"
-                                        , scheduledContextRecord.getContextName(), scheduledContextRecord.getContext().getTimeWindowStart(), e));
+                                        , scheduledContextRecord.getContextName(), scheduledContextRecord.getContext().getTimeWindowStart(), e), e);
                                 }
                             });
                         }
@@ -267,7 +267,6 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                             }
                         } catch (Exception e) {
                             // todo probably want to send a notification here.
-                            e.printStackTrace();
                             if(instance != null) {
                                 LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows. Ending it"
                                     , instance.getName(), instance.getId()), e);

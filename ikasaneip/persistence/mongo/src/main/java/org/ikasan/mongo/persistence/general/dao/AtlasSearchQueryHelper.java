@@ -191,9 +191,10 @@ public class AtlasSearchQueryHelper {
                     return executeAtlasSearch(filter, sort, offset, limit, includeCount, resultClass);
                 } catch (UncategorizedMongoDbException e) {
                     if (!isAtlasSearchNotAvailableError(e)) {
+                        logger.error("Atlas Search query failed", e);
                         throw e;
                     }
-                    logger.info("Atlas Search not available, falling back to regex-based search");
+                    logger.info("Atlas Search not available, falling back to regex-based search", e);
                     atlasSearchAvailable = false;
                 }
             }

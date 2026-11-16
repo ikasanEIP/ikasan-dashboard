@@ -39,7 +39,9 @@ public class SolrContextStartJobDaoImpl extends SolrDaoBase<ContextStartJobRecor
             document.addField(MODULE_NAME, job.getAgentName());
             document.addField(DISPLAY_NAME,job.getDisplayName());
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert GlobalEventJob to string! [%s]", event), e);
+            String message = String.format("Cannot convert GlobalEventJob to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(FLOW_NAME, event.getJobName());

@@ -41,6 +41,8 @@ import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -66,6 +68,8 @@ import static org.mockito.Mockito.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextProvisionServiceImplTest extends AbstractTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContextProvisionServiceImplTest.class);
     @Mock
     private ScheduledContextService scheduledContextService;
     @Mock
@@ -447,7 +451,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle1);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -458,7 +462,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle2);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -468,7 +472,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle3);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -529,7 +533,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle1);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -540,7 +544,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle2);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -550,7 +554,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle3);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -634,7 +638,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -645,7 +649,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -716,7 +720,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });
@@ -727,7 +731,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
                 service.provisionContext(contextBundle);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception encountered in test thread", e);
                 exception.set((JobProvisionLockException)e);
             }
         });

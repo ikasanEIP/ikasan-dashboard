@@ -219,6 +219,7 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
                                                 , String.format("Released lock on job [%s] child context [%s], environment [%s]."
                                                     , jobIdentifier, contextName, environmentCacheItem.getEnvironment()), ikasanAuthentication.getName());
                                         } catch (Exception e) {
+                                            logger.error("Unable to release locked job [{}]", jobIdentifier, e);
                                             error = true;
                                             ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation
                                                 ("error.unable-to-release-jocked-job"), jobIdentifier))));

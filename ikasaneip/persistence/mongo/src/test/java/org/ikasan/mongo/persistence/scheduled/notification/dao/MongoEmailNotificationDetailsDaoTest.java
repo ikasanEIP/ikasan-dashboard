@@ -197,7 +197,7 @@ public class MongoEmailNotificationDetailsDaoTest {
     }
 
     @Test
-    public void test_save_updates_existing_record() {
+    public void test_save_updates_existing_record() throws InterruptedException {
         EmailNotificationDetailsRecord record = createTestRecord("job1", "context1", "child1", "RUNNING");
         dao.save(record);
 
@@ -206,11 +206,7 @@ public class MongoEmailNotificationDetailsDaoTest {
         long timestamp1 = results1.getResultList().get(0).getModifiedTimestamp();
 
         // Wait a bit to ensure different timestamp
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(10);
 
         EmailNotificationDetailsRecord updatedRecord = createTestRecord("job1", "context1", "child1", "RUNNING");
         updatedRecord.setModifiedBy("updatedUser");

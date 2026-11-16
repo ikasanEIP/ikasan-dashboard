@@ -367,6 +367,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                                 , String.format("Released lock on job [%s] job plan [%s], child context [%s]."
                                                     , job.getJobName(), job.getContextName(), contextName), ikasanAuthentication.getName());
                                         } catch (Exception e) {
+                                            logger.error("Unable to release locked job [{}]", job.getJobName(), e);
                                             error = true;
                                             ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation
                                                 ("error.unable-to-release-jocked-job"), job.getJobName()))));
@@ -526,7 +527,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                             .getInternalEventDrivenJob().getChildContextName(), contextInstance));
                                         jobTemplateVisualisationDialog.open();
                                     } catch (IOException e) {
-                                        e.printStackTrace();
+                                        logger.error("Cannot open visualisation", e);
                                         ui.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale())));
                                     }
                                 });
@@ -626,6 +627,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                             , String.format("Released lock on job [%s] child context [%s]."
                                 , jobIdentifier,  contextName), ikasanAuthentication.getName());
                     } catch (Exception e) {
+                        logger.error("Unable to release locked job [{}]", jobIdentifier, e);
                         error = true;
                         ui.access(() -> NotificationHelper.showErrorNotification
                             ((String.format(getTranslation("error.unable-to-release-jocked-job"), jobIdentifier))));

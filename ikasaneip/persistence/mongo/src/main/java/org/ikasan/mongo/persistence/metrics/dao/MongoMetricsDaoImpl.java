@@ -229,8 +229,9 @@ public class MongoMetricsDaoImpl implements MetricsDao {
         }
         catch (Exception e)
         {
-            throw new RuntimeException(String.format("Unable to deserialise FlowInvocationMetric [%s]"
-                , entity.getRawFlowInvocationMetric()), e);
+            String message = String.format("Unable to deserialise FlowInvocationMetric [%s]" , entity.getRawFlowInvocationMetric());
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

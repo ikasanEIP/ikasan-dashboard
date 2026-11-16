@@ -123,7 +123,7 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_job_success_exclusions_found() throws JobExecutionException {
+    public void test_job_success_exclusions_found() throws Exception {
         mockery.checking(new Expectations(){{
             ignoring(templateEngine);
             oneOf(businessStreamNotification).isNewExclusionsOnlyNotification();
@@ -166,18 +166,12 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
 
             notification.execute(jobExecutionContext);
         }
-        catch (SolrServerException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
 
         mockery.assertIsSatisfied();
     }
 
     @Test
-    public void test_job_success_no_exclusions_found_due_to_last_run_timestamp() throws JobExecutionException {
+    public void test_job_success_no_exclusions_found_due_to_last_run_timestamp() throws Exception {
         mockery.checking(new Expectations(){{
             ignoring(templateEngine);
             oneOf(businessStreamNotification).isNewExclusionsOnlyNotification();
@@ -211,18 +205,12 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
 
             notification.execute(jobExecutionContext);
         }
-        catch (SolrServerException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
 
         mockery.assertIsSatisfied();
     }
 
     @Test(expected = JobExecutionException.class)
-    public void test_job_success_exclusions_found_exception_sending_email() throws JobExecutionException {
+    public void test_job_success_exclusions_found_exception_sending_email() throws Exception {
         mockery.checking(new Expectations(){{
             ignoring(templateEngine);
             oneOf(businessStreamNotification).isNewExclusionsOnlyNotification();
@@ -262,12 +250,6 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
                 , businessStreamNotificationService, platformConfigurationService, emailNotifier);
 
             notification.execute(jobExecutionContext);
-        }
-        catch (SolrServerException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

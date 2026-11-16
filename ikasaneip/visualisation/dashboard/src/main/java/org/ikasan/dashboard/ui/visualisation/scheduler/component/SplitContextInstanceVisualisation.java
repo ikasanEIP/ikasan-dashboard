@@ -301,6 +301,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                                 this.contextSelected(child.getName());
                                 this.contextOpened(child);
                             } catch (Exception e) {
+                                logger.error("Could not open child job plan [{}]", child.getName(), e);
                                 NotificationHelper.showUserNotification(getTranslation("notification.could-not-open-child-job-plan", UI.getCurrent().getLocale()));
                             }
                         } else {
@@ -313,7 +314,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
                 this.setVisible(false);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error opening visualisation", e);
                 NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
                     , UI.getCurrent().getLocale()));
             }

@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialog {
+    private static final Logger logger = LoggerFactory.getLogger(SuccessfulReturnCodesDialog.class);
 
     private boolean isSaveClose = false;
     private VerticalLayout buttonLayout;
@@ -208,6 +211,7 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
                 Integer.parseInt(this.returnCode.getValue());
             }
             catch (Exception e) {
+                logger.debug("Return code is not a valid integer", e);
                 returnCode.setInvalid(true);
                 isValid = false;
             }

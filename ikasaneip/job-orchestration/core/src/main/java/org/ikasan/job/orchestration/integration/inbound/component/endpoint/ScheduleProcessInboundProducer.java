@@ -254,10 +254,11 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 this.scheduledProcessProducerConnectionCallback.execute();
         }
         catch (Exception e) {
-            e.printStackTrace();
             logger.error("Could not commit transaction! Exception!", e);
-            throw new XAException(String.format("Could not commit transaction! Exception Class[%s], Message[%s], Payload"
+            XAException xaException = new XAException(String.format("Could not commit transaction! Exception Class[%s], Message[%s], Payload"
                 , e, e.getMessage(), this.scheduledProcessProducerConnectionCallback.getPayload()));
+            xaException.initCause(e);
+            throw xaException;
         }
     }
 

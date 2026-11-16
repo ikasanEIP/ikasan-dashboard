@@ -117,7 +117,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
                 createOrUpdateScheduledJob(this.globalEventJob, authentication);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error creating or updating global event job", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
@@ -239,6 +239,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
             }
         }
         catch (ValidationException e) {
+            logger.debug("Global event job form failed validation", e);
             return false;
         }
 

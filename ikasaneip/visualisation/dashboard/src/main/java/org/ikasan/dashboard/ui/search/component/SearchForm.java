@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.search.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
@@ -30,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class SearchForm extends VerticalLayout {
+    private static final Logger logger = LoggerFactory.getLogger(SearchForm.class);
+
     private Icon searchButton;
     private Image wiretapImage;
     private Tooltip wiretapButtonTooltip;
@@ -306,6 +310,7 @@ public class SearchForm extends VerticalLayout {
             }
             catch (ValidationException e)
             {
+                logger.debug("Search form failed validation", e);
                 return;
             }
 

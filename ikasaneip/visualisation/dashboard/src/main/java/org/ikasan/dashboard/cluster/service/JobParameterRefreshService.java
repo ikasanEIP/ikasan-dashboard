@@ -58,7 +58,7 @@ public class JobParameterRefreshService {
                         this.springCloudConfigRefreshService.actuatorRefreshAtUrl(peerUrl);
                     }
                     catch (RestClientException e) {
-                        LOGGER.warn("Failed to propagate job parameter refresh to peer [{}]: {}", peerUrl, e.getMessage());
+                        LOGGER.warn("Failed to propagate job parameter refresh to peer [{}]: {}", peerUrl, e.getMessage(), e);
                     }
                 });
             }

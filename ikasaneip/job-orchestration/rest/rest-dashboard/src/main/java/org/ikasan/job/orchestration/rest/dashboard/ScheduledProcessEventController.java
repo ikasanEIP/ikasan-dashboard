@@ -121,7 +121,7 @@ public class ScheduledProcessEventController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a batch insert of ScheduledProcessEvents!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of ScheduledProcessEvents! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -144,7 +144,7 @@ public class ScheduledProcessEventController
             logger.info("Received Global Event Job Name from external sources - {}", globalEventJobName);
             this.globalEventService.raiseGlobalEventJob(globalEventJobName);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to send global event to all active context instances", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to send global event to all active context instances ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -164,7 +164,7 @@ public class ScheduledProcessEventController
                 map.put(CONTEXT_INSTANCE_ID, scheduledProcessEvent.getContextInstanceId());
             }
         } catch (Exception e) {
-            logger.warn("Could not deserialise payload " + scheduledProcessEventPayload);
+            logger.warn("Could not deserialise payload " + scheduledProcessEventPayload, e);
         }
         return map;
     }

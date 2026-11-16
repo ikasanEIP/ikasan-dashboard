@@ -296,7 +296,7 @@ public class QuartzSchedulerView extends VerticalLayout implements BeforeEnterOb
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not retrieve quartz scheduler jobs", e);
         }
 
 

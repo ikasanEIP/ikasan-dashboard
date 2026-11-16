@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.ui.general.component.AbstractConfigurationDialog;
@@ -13,6 +15,8 @@ import org.ikasan.spec.module.client.ConfigurationService;
 
 public class FlowConfigurationDialog extends AbstractConfigurationDialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(FlowConfigurationDialog.class);
+
     private Flow flow;
     private DesignerCanvas designerCanvas;
 
@@ -73,6 +77,7 @@ public class FlowConfigurationDialog extends AbstractConfigurationDialog
                 designerCanvas.addImageFigureWithXYOfImageProvided(new ObjectMapper().writerWithDefaultPrettyPrinter()
                     .writeValueAsString(recordingBuilder.build()));
             } catch (JsonProcessingException e) {
+                logger.error("Could not convert recording to JSON", e);
                 throw new RuntimeException(e);
             }
         }

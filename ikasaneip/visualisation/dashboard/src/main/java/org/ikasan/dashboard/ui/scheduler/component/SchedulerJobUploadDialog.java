@@ -101,6 +101,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
                         .readValue(uploadedJob, this.schedulerJobClass);
                 }
                 catch (Exception e) {
+                    logger.error("Uploaded job template is not in a valid format", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.bad-job-template-format", UI.getCurrent().getLocale()));
                     return;
                 }
@@ -119,6 +120,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
                         .readValue(uploadedJob, this.schedulerJobClass);
                 }
                 catch (Exception e) {
+                    logger.error("Uploaded job template is not in a valid format", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.bad-job-template-format", UI.getCurrent().getLocale()));
                     return;
                 }
@@ -137,6 +139,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
                         .readValue(uploadedJob, this.schedulerJobClass);
                 }
                 catch (Exception e) {
+                    logger.error("Uploaded job template is not in a valid format", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.bad-job-template-format", UI.getCurrent().getLocale()));
                     return;
                 }
@@ -203,7 +206,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error saving uploaded job", e);
             NotificationHelper.showUserNotification(getTranslation("error.job-upload", UI.getCurrent().getLocale()));
         }
     }

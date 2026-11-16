@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.cronutils.model.Cron;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class JobPlanCronBuilderDialog extends CronBuilderDialog {
+    private static final Logger logger = LoggerFactory.getLogger(JobPlanCronBuilderDialog.class);
 
     private ContextTemplate contextTemplate;
 
@@ -56,6 +59,7 @@ public class JobPlanCronBuilderDialog extends CronBuilderDialog {
             }
         }
         catch (IllegalArgumentException e) {
+            logger.debug("Could not describe cron expression [{}]", cronExpression, e);
             // ignore as the user might manually enter a bad cron that can not be converted to natural language.
         }
     }

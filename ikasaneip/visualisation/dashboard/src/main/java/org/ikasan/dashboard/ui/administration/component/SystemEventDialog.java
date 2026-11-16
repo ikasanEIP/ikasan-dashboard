@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.administration.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.componentfactory.Tooltip;
@@ -31,6 +33,8 @@ import java.io.ByteArrayInputStream;
 
 public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
 {
+    private static final Logger logger = LoggerFactory.getLogger(SystemEventDialog.class);
+
     private TextField actionedByTf;
     private TextField contextTf;
     private TextField dateTimeTf;
@@ -99,6 +103,7 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
             open(systemEventImpl.getAction(), systemEventImpl);
         }
         catch (JsonProcessingException e) {
+            logger.error("Error opening system event", e);
             NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-system-event", UI.getCurrent().getLocale()));
         }
     }
@@ -117,6 +122,7 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
                 event = ConfigurationChangedSystemEventFormatter.format(event);
             }
             catch (Exception e) {
+                logger.debug("Could not format configuration changed system event", e);
                 //ignore if we cannot format
             }
             aceEditor.setValue(event);

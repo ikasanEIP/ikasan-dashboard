@@ -69,6 +69,7 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
                 logger.debug("Saved ConfigurationMetaData: {}", configurationMetaData.getConfigurationId());
             }
         } catch (JacksonException e) {
+            logger.error("An exception has occurred attempting to write component configuration to MongoDB", e);
             throw new RuntimeException("An exception has occurred attempting to write component configuration to MongoDB", e);
         }
     }
@@ -141,8 +142,9 @@ public class MongoComponentConfigurationMetadataDaoImpl implements ComponentConf
         try {
             return objectMapper.readValue(rawConfigurationMetadata, MongoConfigurationMetaData.class);
         } catch (Exception e) {
-            throw new RuntimeException(
-                String.format("Unable to deserialise ConfigurationMetaData [%s]", rawConfigurationMetadata), e);
+            String message = String.format("Unable to deserialise ConfigurationMetaData [%s]", rawConfigurationMetadata);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

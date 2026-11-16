@@ -143,7 +143,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                 createOrUpdateScheduledJob(this.quartzScheduleDrivenJob, authentication);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error creating or updating quartz scheduled job", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
@@ -355,6 +355,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
         }
         catch (ValidationException e) {
+            logger.debug("Quartz scheduled job form failed validation", e);
             return false;
         }
 

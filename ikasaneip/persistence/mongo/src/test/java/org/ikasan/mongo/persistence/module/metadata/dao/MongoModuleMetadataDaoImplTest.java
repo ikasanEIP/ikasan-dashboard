@@ -474,4 +474,96 @@ public class MongoModuleMetadataDaoImplTest {
         PagingConvention.assertFollowed(25, (offset, limit) ->
             PagingConvention.page(dao.find(null, ModuleType.INTEGRATION_MODULE, offset, limit)));
     }
+
+    @Test
+    public void testFindWithWildcardModuleNameIsCaseInsensitiveContains() throws IOException {
+        saveModule("Billing-Agent", ModuleType.SCHEDULER_AGENT);
+        saveModule("billing-loader", ModuleType.INTEGRATION_MODULE);
+        saveModule("payroll", ModuleType.INTEGRATION_MODULE);
+
+        ModuleMetadataSearchResults results = dao.find(new ArrayList<>(List.of("*BILLING*")), 0, 10);
+
+        assertEquals(List.of("Billing-Agent", "billing-loader"), names(results));
+        assertEquals(2, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void testFindWithPrefixAndSuffixWildcards() throws IOException {
+        saveModule("billing-agent", ModuleType.SCHEDULER_AGENT);
+        saveModule("billing-loader", ModuleType.INTEGRATION_MODULE);
+        saveModule("payroll-agent", ModuleType.SCHEDULER_AGENT);
+
+        assertEquals(List.of("billing-agent", "billing-loader"), names(dao.find(List.of("billing*"), 0, 10)));
+        assertEquals(List.of("billing-agent", "payroll-agent"), names(dao.find(List.of("*agent"), 0, 10)));
+        assertEquals(List.of("billing-agent"), names(dao.find(List.of("bill*agent"), 0, 10)));
+    }
+
+    @Test
+    public void testFindWithWildcardTreatsRegexCharactersLiterally() throws IOException {
+        saveModule("a.c-module", ModuleType.INTEGRATION_MODULE);
+        saveModule("abc-module", ModuleType.INTEGRATION_MODULE);
+        saveModule("x(y)+z", ModuleType.INTEGRATION_MODULE);
+
+        assertEquals(List.of("a.c-module"), names(dao.find(List.of("*a.c*"), 0, 10)));
+        assertEquals(List.of("x(y)+z"), names(dao.find(List.of("*(y)+*"), 0, 10)));
+        assertEquals(List.of("a.c-module"), names(dao.find(List.of("*.*"), 0, 10)));
+    }
+
+    @Test
+    public void testFindWithExactAndWildcardNamesMatchesEither() throws IOException {
+        saveModule("billing-agent", ModuleType.SCHEDULER_AGENT);
+        saveModule("billing-loader", ModuleType.INTEGRATION_MODULE);
+        saveModule("payroll", ModuleType.INTEGRATION_MODULE);
+        saveModule("reporting", ModuleType.INTEGRATION_MODULE);
+
+        ModuleMetadataSearchResults results = dao.find(List.of("payroll", "*loader*"), 0, 10);
+
+        assertEquals(List.of("billing-loader", "payroll"), names(results));
+        assertEquals(2, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void testFindWithNamesWithoutWildcardStillMatchExactly() throws IOException {
+        saveModule("billing-agent", ModuleType.SCHEDULER_AGENT);
+
+        assertEquals(List.of(), names(dao.find(List.of("billing"), 0, 10)));
+        assertEquals(List.of(), names(dao.find(List.of("BILLING-AGENT"), 0, 10)));
+        assertEquals(List.of("billing-agent"), names(dao.find(List.of("billing-agent"), 0, 10)));
+    }
+
+    @Test
+    public void testFindWithWildcardAndModuleType() throws IOException {
+        saveModule("billing-agent", ModuleType.SCHEDULER_AGENT);
+        saveModule("billing-loader", ModuleType.INTEGRATION_MODULE);
+        saveModule("payroll-agent", ModuleType.SCHEDULER_AGENT);
+
+        ModuleMetadataSearchResults results = dao.find(new ArrayList<>(List.of("*Billing*")), ModuleType.SCHEDULER_AGENT,
+            0, 10);
+
+        assertEquals(List.of("billing-agent"), names(results));
+        assertEquals(1, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void testFindWithWildcardPagesAndCounts() throws IOException {
+        for (int i = 0; i < 9; i++) {
+            saveModule("paging-agent-" + i, ModuleType.SCHEDULER_AGENT);
+        }
+        saveModule("other", ModuleType.SCHEDULER_AGENT);
+
+        PagingConvention.assertFollowed(9, (offset, limit) ->
+            PagingConvention.page(dao.find(List.of("*paging*"), ModuleType.SCHEDULER_AGENT, offset, limit)));
+    }
+
+    private void saveModule(String name, ModuleType type) throws IOException {
+        ModuleMetaData module = loadModuleMetaDataFromFile(
+            type == ModuleType.SCHEDULER_AGENT ? MODULE_SCHEDULER_AGENT_JSON : MODULE_JSON);
+        module.setName(name);
+        module.setType(type);
+        dao.save(List.of(module));
+    }
+
+    private static List<String> names(ModuleMetadataSearchResults results) {
+        return results.getResultList().stream().map(ModuleMetaData::getName).sorted().toList();
+    }
 }

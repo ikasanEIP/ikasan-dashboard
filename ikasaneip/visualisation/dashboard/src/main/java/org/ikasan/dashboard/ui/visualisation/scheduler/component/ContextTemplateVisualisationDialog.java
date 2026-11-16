@@ -207,7 +207,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                 this.close();
                             }
                             catch (IOException e) {
-                                e.printStackTrace();
+                                logger.error("Error opening parent context visualisation", e);
                             }
                         }
                     }

@@ -141,6 +141,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                 , counter, this.contextInstance.getName(), this.contextInstance.getId())
                             , authentication.getName());
                     } catch (Exception e) {
+                        logger.error("Unable to resubmit all DLQ messages", e);
                         error = true;
                         if(this.getUI().isPresent()) {
                             this.getUI().get().access(() -> {
@@ -202,6 +203,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                 , this.contextInstance.getName(), this.contextInstance.getId())
                             , authentication.getName());
                     } catch (Exception e) {
+                        logger.error("Unable to delete all DLQ messages", e);
                         error = true;
                         if(this.getUI().isPresent()) {
                             this.getUI().get().access(() -> {
@@ -281,7 +283,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             , ScheduledProcessEventImpl.class)));
                 }
                 catch (JacksonException e) {
-                    logger.info("Could not resolve bigQueueMessage - ", e.getMessage());
+                    logger.info("Could not resolve bigQueueMessage - {}", e.getMessage(), e);
                 }
 
 
@@ -312,7 +314,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                         .getFormattedDate(scheduledProcessEvent.getFireTime()));
                 }
                 catch (JacksonException e) {
-                    logger.info("Could not resolve bigQueueMessage - ", e.getMessage());
+                    logger.info("Could not resolve bigQueueMessage - {}", e.getMessage(), e);
                 }
 
                 return verticalLayout;
@@ -360,6 +362,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                     , this.contextInstance.getId())
                                 , authentication.getName());
                         } catch (Exception e) {
+                            logger.error("Unable to resubmit DLQ message [{}]", bigQueueMessage.getMessageId(), e);
                             error = true;
                             if(this.getUI().isPresent()) {
                                 this.getUI().get().access(() -> {
@@ -421,6 +424,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                     , this.contextInstance.getId())
                                 , authentication.getName());
                         } catch (Exception e) {
+                            logger.error("Unable to delete DLQ message [{}]", bigQueueMessage.getMessageId(), e);
                             error = true;
                             if(this.getUI().isPresent()) {
                                 this.getUI().get().access(() -> {
@@ -530,6 +534,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             }
         }
         catch (Exception e) {
+            logger.error("Error retrieving DLQ messages", e);
             return new ArrayList<>();
         }
     }

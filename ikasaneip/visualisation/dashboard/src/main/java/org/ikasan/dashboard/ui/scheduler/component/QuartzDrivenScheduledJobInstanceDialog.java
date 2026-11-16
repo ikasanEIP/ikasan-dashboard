@@ -171,7 +171,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error submitting quartz scheduled job [{}]", this.quartzScheduleDrivenJobInstance.getJobName(), e);
                     NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                 }
             });

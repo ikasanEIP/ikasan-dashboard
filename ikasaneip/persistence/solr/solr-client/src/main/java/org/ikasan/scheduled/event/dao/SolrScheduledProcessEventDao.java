@@ -46,7 +46,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
             document.addField(PAYLOAD_CONTENT, getScheduledProcessEventContent(scheduledProcessEvent));
         }
         catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent));
+            String message = String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(ID, scheduledProcessEvent.getAgentName()
@@ -100,8 +102,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
-                + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr solr scheduled process event by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -164,8 +167,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
-                + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr solr scheduled process event by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -209,8 +213,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
-                + "] from the ikasan solr index!", e);
+            String message = "Error resolving solr solr scheduled process event by query [" + query + "] from the ikasan solr index!";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

@@ -803,7 +803,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         }
         catch (IOException e) {
             // todo raise message
-            e.printStackTrace();
+            logger.error("Error initialising visualisation for context template [{}]", this.contextTemplate.getName(), e);
         }
     }
 
@@ -819,6 +819,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                     try {
                         this.schedulerVisualisation.addBoundaryToItem(child.getName(), true);
                     } catch (Exception e) {
+                        logger.error("Could not open child job plan [{}]", child.getName(), e);
                         NotificationHelper.showUserNotification(getTranslation("notification.could-not-open-child-job-plan", UI.getCurrent().getLocale()));
                     }
                 } else {
@@ -1473,7 +1474,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
             );
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error creating download bundle for context template [{}]", this.contextTemplate.getName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
             return null;
         }
@@ -1494,12 +1495,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         try {
             contextTemplateValidator.validateJobs(contextTemplate, jobs);
         } catch (InvalidContextTemplateException e) {
+            logger.debug("Context template job validation found errors", e);
             this.contextErrors.addAll(e.getContextErrors());
         }
 
         try {
             contextTemplateValidator.validate(contextTemplate);
         } catch (InvalidContextTemplateException e) {
+            logger.debug("Context template validation found warnings", e);
             this.contextWarnings.addAll(e.getContextErrors());
         }
 

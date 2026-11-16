@@ -76,7 +76,7 @@ public class ContextResetController {
         try {
             resetService.resetContext(contextName, false);
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("An error has occurred attempting to reset context for context name %s!", contextName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
@@ -97,7 +97,7 @@ public class ContextResetController {
         try {
             resetService.resetContext(contextInstanceId, false);
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("An error has occurred attempting to reset context for context instance ID %s!", contextInstanceId);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["

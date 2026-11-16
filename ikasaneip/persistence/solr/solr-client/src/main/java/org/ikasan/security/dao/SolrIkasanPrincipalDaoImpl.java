@@ -1,5 +1,7 @@
 package org.ikasan.security.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -45,6 +47,7 @@ import static org.ikasan.spec.entity.EntityFields.*;
  * @author Ikasan Development Team
  */
 public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalRecord> implements IkasanPrincipalDao {
+    private static final Logger logger = LoggerFactory.getLogger(SolrIkasanPrincipalDaoImpl.class);
 
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
@@ -133,7 +136,9 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
         try {
             record.setPrincipal(OBJECT_MAPPER.writeValueAsString(principal));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]", e);
+            String message = "Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         super.save(record);
@@ -170,7 +175,9 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
             try {
                 record.setPrincipal(OBJECT_MAPPER.writeValueAsString(principal));
             } catch (JacksonException e) {
-                throw new RuntimeException("Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]", e);
+                String message = "Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]";
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
             }
 
             records.add(record);
@@ -734,7 +741,9 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
 
             return ikasanPrincipal;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipal! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipal! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -752,7 +761,9 @@ public class SolrIkasanPrincipalDaoImpl extends SolrDaoBase<SolrIkasanPrincipalR
         try {
             return OBJECT_MAPPER.readValue(record.getPrincipal(), SolrIkasanPrincipalLiteImpl.class);
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipalLite! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipalLite! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

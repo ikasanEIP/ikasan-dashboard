@@ -106,7 +106,7 @@ public class MongoNotificationSendAuditDaoTest {
     }
 
     @Test
-    public void test_save_updates_existing_record() {
+    public void test_save_updates_existing_record() throws InterruptedException {
         NotificationSendAuditRecord record = createTestRecord("instance1", "context1", "job1", "RUNNING", "EMAIL", true);
         dao.save(record);
 
@@ -116,11 +116,7 @@ public class MongoNotificationSendAuditDaoTest {
         assertTrue(found1.getNotificationSendAudit().isNotificationSend());
 
         // Wait a bit to ensure different timestamp
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(10);
 
         NotificationSendAuditRecord updatedRecord = createTestRecord("instance1", "context1", "job1", "RUNNING", "EMAIL", false);
         updatedRecord.setModifiedBy("updatedUser");

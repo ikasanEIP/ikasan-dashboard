@@ -104,8 +104,7 @@ public final class ContextImportZipUtils {
                 }
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            LOG.warn("Could not read zip file, Error: " + e.getMessage());
+            LOG.error("Could not read zip file, Error: " + e.getMessage(), e);
             throw new RuntimeException(e);
         }
 

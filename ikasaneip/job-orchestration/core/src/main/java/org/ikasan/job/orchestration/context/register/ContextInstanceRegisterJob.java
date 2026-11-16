@@ -123,6 +123,7 @@ public class ContextInstanceRegisterJob implements DashboardJob {
                     TimeUnit.MILLISECONDS.sleep(registrationJobRetryIntervalMilliseconds);
                 }
                 catch (InterruptedException interruptedException) {
+                    logger.error("Interrupted while waiting to retry ContextInstanceRegisterJob[{}]!", this.jobName, interruptedException);
                     Thread.currentThread().interrupt();
                     return;
                 }

@@ -209,7 +209,9 @@ public class MongoSystemEventDaoImpl implements SystemEventSearchDao, EntityDao<
             mongoEvent.setPayload(objectMapper.writeValueAsString(systemEvent));
         }
         catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert system event to string! [%s]", systemEvent));
+            String message = String.format("Cannot convert system event to string! [%s]", systemEvent);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
         mongoEvent.setModuleName(systemEvent.getModuleName());
         mongoEvent.setActor(systemEvent.getActor());

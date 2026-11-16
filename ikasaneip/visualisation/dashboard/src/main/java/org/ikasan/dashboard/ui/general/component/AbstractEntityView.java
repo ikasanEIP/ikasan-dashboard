@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.f0rce.ace.AceEditor;
@@ -20,6 +22,8 @@ import java.io.StringWriter;
 
 public abstract class AbstractEntityView<ENTITY> extends VerticalLayout
 {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractEntityView.class);
+
     protected DocumentBuilder documentBuilder;
     protected Transformer transformer;
     protected AceEditor aceEditor;
@@ -42,6 +46,7 @@ public abstract class AbstractEntityView<ENTITY> extends VerticalLayout
         }
         catch (Exception e)
         {
+            logger.error("Could not construct EventViewDialog!", e);
             throw  new IllegalStateException("Could not construct EventViewDialog!", e);
         }
 
@@ -84,6 +89,7 @@ public abstract class AbstractEntityView<ENTITY> extends VerticalLayout
         }
         catch (Exception e)
         {
+            logger.debug("Could not format event as XML, displaying it unformatted", e);
             xmlString = event;
         }
 

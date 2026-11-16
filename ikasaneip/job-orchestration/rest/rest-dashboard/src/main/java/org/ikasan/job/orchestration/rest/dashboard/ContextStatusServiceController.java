@@ -92,7 +92,7 @@ public class ContextStatusServiceController {
                 contextNameStatus = contextStatusService.getContextStatusForJob(jobPlanName, contextName, jobIdentifier);
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
                 jobPlanName, contextName, jobIdentifier);
             return new ResponseEntity(
@@ -121,7 +121,7 @@ public class ContextStatusServiceController {
                 contextStatus = contextStatusService.getJsonContextStatusForJob(jobPlanName, contextName, jobName);
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("An error has occurred attempting to get status for job plan %s, context %s, jobName %s!",
                 jobPlanName, contextName, jobName);
             return new ResponseEntity(
@@ -151,7 +151,7 @@ public class ContextStatusServiceController {
         try {
             allInstance = contextStatusService.getJsonContextMachineStatus(includePrepared);
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = String.format("An error has occurred attempting to get all status found in the context machine, includePrepared = [%s]",
                 includePrepared);
             return new ResponseEntity(
@@ -193,7 +193,7 @@ public class ContextStatusServiceController {
             try {
                 statusToSearch = InstanceStatus.valueOf(instanceStatus);
             } catch (Exception e) {
-                LOG.error(e.getMessage());
+                LOG.error(e.getMessage(), e);
                 String errorMessage = String.format("Instance Status [%s] is not valid, please try again", instanceStatus);
                 return new ResponseEntity(
                     new ErrorDto(errorMessage + " Error message ["
@@ -205,7 +205,7 @@ public class ContextStatusServiceController {
         try {
             jobStatusJson = contextStatusService.getJsonContextJobStatus(statusToSearch, contextMachineMap);
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             String errorMessage = "An error has occurred attempting to get job status from the context machine";
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["

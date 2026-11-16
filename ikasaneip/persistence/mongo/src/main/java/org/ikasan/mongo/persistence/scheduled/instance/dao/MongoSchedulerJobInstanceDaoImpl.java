@@ -370,7 +370,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
                 InstanceStatus instanceStatus = InstanceStatus.valueOf(status);
                 aggregate.addStatusCount(instanceStatus, count);
             } catch (IllegalArgumentException e) {
-                logger.warn("Unknown status: {}", status);
+                logger.warn("Unknown status: {}", status, e);
             }
         }
 
@@ -436,7 +436,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
                 InstanceStatus instanceStatus = InstanceStatus.valueOf(status);
                 aggregate.addStatusCount(instanceStatus, count);
             } catch (IllegalArgumentException e) {
-                logger.warn("Unknown status: {}", status);
+                logger.warn("Unknown status: {}", status, e);
             }
         }
 

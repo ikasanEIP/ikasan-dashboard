@@ -4,9 +4,14 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.spec.scheduled.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 public class ContextResetServiceImpl implements ContextResetService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContextResetServiceImpl.class);
 
     @Override
     public void resetContext(String contextName, boolean holdCommandExecutionJob) {
@@ -18,7 +23,8 @@ public class ContextResetServiceImpl implements ContextResetService {
             try {
                 contextMachine.resetContextInstance(holdCommandExecutionJob, false, null);
             } catch (Exception e) {
-                throw new ContextResetException("Failed to reset context " + e.getMessage());
+                logger.error("Failed to reset context", e);
+                throw new ContextResetException("Failed to reset context " + e.getMessage(), e);
             }
         }
     }
@@ -32,7 +38,8 @@ public class ContextResetServiceImpl implements ContextResetService {
         try {
             contextMachine.resetContextInstance(holdCommandExecutionJob, false, null);
         } catch (Exception e) {
-            throw new ContextResetException("Failed to reset context " + e.getMessage());
+            logger.error("Failed to reset context", e);
+            throw new ContextResetException("Failed to reset context " + e.getMessage(), e);
         }
     }
 }

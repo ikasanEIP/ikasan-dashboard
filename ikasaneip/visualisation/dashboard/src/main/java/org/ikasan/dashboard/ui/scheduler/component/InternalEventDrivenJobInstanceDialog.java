@@ -515,7 +515,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                     }
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Error initiating downstream jobs", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.downstream-job-initiation"
                         , UI.getCurrent().getLocale()));
                 }
@@ -584,7 +584,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 NotificationHelper.showUserNotification(getTranslation("notification.job-killed", UI.getCurrent().getLocale()));
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error killing job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
                 this.internalEventDrivenJobInstance.setKilled(false);
                 this.updateScheduledJob(this.internalEventDrivenJobInstance, this.authentication);
                 NotificationHelper.showErrorNotification(getTranslation("error.kill-job", UI.getCurrent().getLocale()));
@@ -903,7 +903,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error skipping job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -940,7 +940,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error disabling job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.disabled-general-error", UI.getCurrent().getLocale()));
         }
 
@@ -1013,7 +1013,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error enabling job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1044,7 +1044,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error holding job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1075,7 +1075,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error releasing job [{}]", this.internalEventDrivenJobInstance.getJobName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1116,7 +1116,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                     , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
             }
             catch (Exception e) {
-                e.printStackTrace();
                 logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
                     , internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
                     , this.schedulerJobInstanceRecord.getContextInstanceId()), e);

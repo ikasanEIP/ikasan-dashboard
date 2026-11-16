@@ -199,8 +199,9 @@ public class MongoAuthenticationMethodDaoImpl implements AuthenticationMethodDao
         try {
             record.setAuthenticationMethod(OBJECT_MAPPER.writeValueAsString(authenticationMethod));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert AuthenticationMethod to string! ["
-                + authenticationMethod.getName() + "]", e);
+            String message = "Cannot convert AuthenticationMethod to string! [" + authenticationMethod.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return record;

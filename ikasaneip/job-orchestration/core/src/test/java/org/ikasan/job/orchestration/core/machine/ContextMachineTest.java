@@ -47,6 +47,8 @@ import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -75,6 +77,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextMachineTest extends AbstractTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContextMachineTest.class);
 
     protected ContextService contextService = new ContextService();
     protected JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
@@ -8943,7 +8947,7 @@ public class ContextMachineTest extends AbstractTest {
                         contextMachine.eventReceived(eventInstance);
                     }
                 } catch (ConcurrentModificationException concurrentModificationException) {
-                    concurrentModificationException.printStackTrace();
+                    logger.error("Exception encountered in test thread", concurrentModificationException);
                     concurrentModificationExceptionEncountered.set(true);
                 } catch (Exception e) {
                     generalExceptionEncountered.set(true);
@@ -9507,7 +9511,7 @@ public class ContextMachineTest extends AbstractTest {
                         contextMachine.getContext();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Exception encountered in test thread", e);
                     hasException.set(true);
                 }
             });
@@ -9545,7 +9549,7 @@ public class ContextMachineTest extends AbstractTest {
                         assertFalse(ctx == null);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Exception encountered in test thread", e);
                     hasException.set(true);
                 }
             });

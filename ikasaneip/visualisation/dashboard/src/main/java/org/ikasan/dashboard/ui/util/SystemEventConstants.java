@@ -41,6 +41,7 @@
 package org.ikasan.dashboard.ui.util;
 
 
+import org.slf4j.LoggerFactory;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
@@ -132,6 +133,8 @@ public class SystemEventConstants
                     return (String) field.get(SystemEventConstants.class);
                 } catch (IllegalAccessException e) {
                     // Ignore as we are interested in all string values only!
+                    // Logger obtained locally: a static Logger field would be picked up by the reflective scan above.
+                    LoggerFactory.getLogger(SystemEventConstants.class).debug("Ignoring field that cannot be accessed [{}]", field.getName(), e);
                     return null;
                 }
             })

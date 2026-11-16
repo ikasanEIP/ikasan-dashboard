@@ -242,7 +242,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             jobInstanceVisualisationDialog.open();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error opening context visualisation [{}]", context, e);
         }
     }
 

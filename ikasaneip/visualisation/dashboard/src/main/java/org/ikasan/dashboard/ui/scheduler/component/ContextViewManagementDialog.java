@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -47,6 +49,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContextViewManagementDialog extends AbstractCloseableResizableDialog {
+    private static final Logger logger = LoggerFactory.getLogger(ContextViewManagementDialog.class);
 
     private final ContextProfileService contextProfileService;
     private final UserService userService;
@@ -134,6 +137,7 @@ public class ContextViewManagementDialog extends AbstractCloseableResizableDialo
                 binder.writeBean(this.contextProfileRecord);
             }
             catch (ValidationException e) {
+                logger.debug("Context view form failed validation", e);
                 NotificationHelper.showErrorNotification(getTranslation("error.could-not-save-context", UI.getCurrent().getLocale()));
                 return;
             }

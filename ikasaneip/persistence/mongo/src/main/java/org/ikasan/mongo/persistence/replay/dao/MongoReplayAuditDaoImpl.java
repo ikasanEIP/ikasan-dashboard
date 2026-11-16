@@ -59,6 +59,7 @@ public class MongoReplayAuditDaoImpl implements BatchInsert<ReplayAuditEvent>, E
             repository.save(entity);
             logger.debug("Saved batch replay audit event with id: {}", entity.getId());
         } catch (Exception e) {
+            logger.error("An exception has occurred attempting to write replay audit event to MongoDB", e);
             throw new RuntimeException("An exception has occurred attempting to write replay audit event to MongoDB", e);
         }
     }

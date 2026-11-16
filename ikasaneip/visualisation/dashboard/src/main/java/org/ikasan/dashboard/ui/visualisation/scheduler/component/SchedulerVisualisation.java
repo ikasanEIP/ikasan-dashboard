@@ -367,7 +367,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error opening context visualisation", e);
         }
     }
 
@@ -593,6 +593,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 -> listener.jobPlanSaveRequired(false));
         }
         catch (CanvasJsonValidationException e) {
+            logger.debug("Canvas JSON failed validation", e);
             ConfirmDialog errorDialog = new ConfirmDialog();
             errorDialog.setHeader(getTranslation("error-dialog-header.cannot-save-context"
                 , UI.getCurrent().getLocale()));

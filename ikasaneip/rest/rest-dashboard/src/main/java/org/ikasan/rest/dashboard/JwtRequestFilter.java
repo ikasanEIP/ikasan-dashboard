@@ -93,12 +93,12 @@ public class JwtRequestFilter extends OncePerRequestFilter
                 }
                 catch (IllegalArgumentException e)
                 {
-                    logger.warn("Unable to get JWT Token by [" + requestServletUrl + "]");
+                    logger.warn("Unable to get JWT Token by [" + requestServletUrl + "]", e);
 
                 }
                 catch (ExpiredJwtException e)
                 {
-                    logger.warn("JWT Token has expired called by [" + requestServletUrl + "]");
+                    logger.warn("JWT Token has expired called by [" + requestServletUrl + "]", e);
                 }
             }
             else

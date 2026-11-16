@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -40,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog {
+    private static final Logger logger = LoggerFactory.getLogger(CloneContextTemplateDialog.class);
+
     private ScheduledContextService scheduledContextService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -111,7 +115,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                         return;
                     }
                 } catch (ValidationException e) {
-                    e.printStackTrace();
+                    logger.error("Error validating context template form", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.error-validating-context-template-form"
                         , UI.getCurrent().getLocale()));
                     return;
@@ -150,7 +154,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null   );
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Error creating new context template", e);
                     inError = true;
                     NotificationHelper.showErrorNotification(getTranslation("error.error-creating-new-context-template"
                         , UI.getCurrent().getLocale()));

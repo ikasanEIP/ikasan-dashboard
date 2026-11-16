@@ -74,7 +74,7 @@ public class BigQueueModuleController {
             }
         } catch (Exception e) {
             String message = String.format("Got exception trying to list queues for the module [%s]. Error [%s]", moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -102,7 +102,7 @@ public class BigQueueModuleController {
             }
         } catch (Exception e) {
             String message = String.format("Got exception trying to get size of queue [%s] for the module [%s]. Error [%s]", queueName, moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -136,7 +136,7 @@ public class BigQueueModuleController {
         } catch (Exception e) {
             String message = String.format("Got exception trying to get all sizes of the queues for the module [%s] with setting includeZeros = [%s]. Error [%s]",
                 moduleName, includeZeros, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -186,7 +186,7 @@ public class BigQueueModuleController {
                     }
                 } catch (Exception e1) {
                     // May get errors due to the module not supporting BigQueue
-                    LOG.warn("Unable to get Big Queue details for module [{}], with error [{}]", module.getName(), e1.getMessage());
+                    LOG.warn("Unable to get Big Queue details for module [{}], with error [{}]", module.getName(), e1.getMessage(), e1);
                     bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), module.getUrl(), new HashMap<>(), false));
                 }
             }
@@ -219,7 +219,7 @@ public class BigQueueModuleController {
         } catch (Exception e) {
             String message = String.format("Got exception trying to get the first message from the queue [%s] for the module [%s]. Error [%s]",
                 queueName, moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -249,7 +249,7 @@ public class BigQueueModuleController {
         } catch (Exception e) {
             String message = String.format("Got exception trying to get all messages from the queue [%s] for the module [%s]. Error [%s]",
                 queueName, moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -280,7 +280,7 @@ public class BigQueueModuleController {
         } catch (Exception e) {
             String message = String.format("Got exception trying to delete the messagesId [%s] from the queue [%s] for the module [%s]. Error [%s]",
                 messageId, queueName, moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
@@ -310,7 +310,7 @@ public class BigQueueModuleController {
         } catch (Exception e) {
             String message = String.format("Got exception trying to delete all messages from the queue [%s] for the module [%s]. Error [%s]",
                 queueName, moduleName, e.getMessage());
-            LOG.warn(message);
+            LOG.error(message, e);
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }

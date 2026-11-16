@@ -486,6 +486,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 .getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
         }
         catch (IllegalArgumentException e){
+            logger.debug("Ignoring double click event with an identifier that cannot be parsed", e);
             // we ignore any events that we cannot parse the identifier for.
             return;
         }

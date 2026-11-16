@@ -47,7 +47,9 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
             document.setField(COMPONENT_NAME, job.getContextName());
         }
         catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert InternalEventDrivenJob to string! [%s]", event), e);
+            String message = String.format("Cannot convert InternalEventDrivenJob to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.setField(MODULE_NAME, event.getAgentName());

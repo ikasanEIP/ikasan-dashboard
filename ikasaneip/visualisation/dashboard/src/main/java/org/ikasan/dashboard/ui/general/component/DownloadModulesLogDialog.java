@@ -90,7 +90,7 @@ public class DownloadModulesLogDialog extends AbstractCloseableResizableDialog {
         try {
             logFilesMap = downloadLogFileService.listLogFiles(moduleMetaData.getUrl());
         } catch (Exception e) {
-            LOGGER.warn("There was an issue to get the list of logs files form the module: {}", e.getMessage());
+            LOGGER.error("There was an issue to get the list of logs files form the module: {}", e.getMessage(), e);
         }
 
         if (logFilesMap == null || logFilesMap.isEmpty()) {

@@ -1,5 +1,7 @@
 package org.ikasan.security.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrAuthenticationMethodImpl;
@@ -35,6 +37,7 @@ import static org.ikasan.spec.entity.EntityFields.*;
  * @author Ikasan Development Team
  */
 public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticationMethodRecord> implements AuthenticationMethodDao {
+    private static final Logger logger = LoggerFactory.getLogger(SolrAuthenticationMethodDaoImpl.class);
 
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
@@ -108,8 +111,9 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
         try {
             record.setAuthenticationMethod(OBJECT_MAPPER.writeValueAsString(authenticationMethod));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert AuthenticationMethod to string! ["
-                + authenticationMethod.getName() + "]", e);
+            String message = "Cannot convert AuthenticationMethod to string! [" + authenticationMethod.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         super.save(record);
@@ -221,8 +225,9 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
         try {
             return OBJECT_MAPPER.readValue(record.getAuthenticationMethod(), SolrAuthenticationMethodImpl.class);
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrAuthenticationMethodRecord to AuthenticationMethod! ["
-                + record.getName() + "]", e);
+            String message = "Cannot convert SolrAuthenticationMethodRecord to AuthenticationMethod! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

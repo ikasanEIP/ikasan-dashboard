@@ -41,7 +41,9 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record));
+            String message = String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record);
+            LOG.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);

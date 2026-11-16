@@ -1,5 +1,7 @@
 package org.ikasan.security.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -40,6 +42,7 @@ import static org.ikasan.spec.entity.EntityFields.*;
  * @author Ikasan Development Team
  */
 public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements PolicyDao {
+    private static final Logger logger = LoggerFactory.getLogger(SolrPolicyDaoImpl.class);
 
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
@@ -117,7 +120,9 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements 
         try {
             record.setPolicy(OBJECT_MAPPER.writeValueAsString(policy));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert Policy to string! [" + policy.getName() + "]", e);
+            String message = "Cannot convert Policy to string! [" + policy.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         super.save(record);
@@ -251,7 +256,9 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> implements 
             policy.setId(record.getId());
             return policy;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrPolicyRecord to Policy! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrPolicyRecord to Policy! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

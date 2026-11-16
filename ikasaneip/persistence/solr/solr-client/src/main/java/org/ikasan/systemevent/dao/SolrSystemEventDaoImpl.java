@@ -38,7 +38,9 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
             document.addField(PAYLOAD_CONTENT, getSystemEventContent(systemEvent));
         }
         catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert system event to string! [%s]", systemEvent));
+            String message = String.format("Cannot convert system event to string! [%s]", systemEvent);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         if(systemEvent.getModuleName() != null){

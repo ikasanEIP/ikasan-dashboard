@@ -98,7 +98,7 @@ public class MetricsController
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to perform a batch insert of FlowInvocationMetric!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of FlowInvocationMetric! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -119,7 +119,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -136,7 +136,7 @@ public class MetricsController
             return new ResponseEntity(this.metricsService.count(startTime, endTime), HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get count of metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -157,7 +157,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -177,7 +177,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -196,7 +196,7 @@ public class MetricsController
             return new ResponseEntity(this.metricsService.count(moduleName, startTime, endTime), HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get count of metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -219,7 +219,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -241,7 +241,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -261,7 +261,7 @@ public class MetricsController
             return new ResponseEntity(this.metricsService.count(moduleName, flowName, startTime, endTime), HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get count of metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -285,7 +285,7 @@ public class MetricsController
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error has occurred attempting to get metrics events!", e);
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);

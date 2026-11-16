@@ -38,7 +38,9 @@ public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> imp
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
         } catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheRecord lockHolders to string! [%s]", record));
+            String message = String.format("Cannot convert JobLockCacheRecord lockHolders to string! [%s]", record);
+            LOG.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
         if(record.getTimestamp() == 0) {
             document.addField(CREATED_DATE_TIME, System.currentTimeMillis());

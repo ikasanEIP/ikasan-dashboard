@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
@@ -23,6 +25,7 @@ import java.util.function.Supplier;
  */
 
 public class LazyDownloadButton extends Button {
+    private static final Logger logger = LoggerFactory.getLogger(LazyDownloadButton.class);
 
     private static final String DEFAULT_FILE_NAME = "download";
     private static final Supplier<String> DEFAULT_FILE_NAME_SUPPLIER = () -> DEFAULT_FILE_NAME;
@@ -131,6 +134,7 @@ public class LazyDownloadButton extends Button {
                         });
 
                     } catch (Exception e) {
+                        logger.error("Could not create input stream for download", e);
                         throw new RuntimeException(e);
                     }
                 });

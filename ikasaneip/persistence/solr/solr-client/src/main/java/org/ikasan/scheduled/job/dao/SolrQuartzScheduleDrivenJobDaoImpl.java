@@ -36,7 +36,9 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
             document.addField(PAYLOAD_CONTENT, getQuartzScheduleDrivenJob(event.getQuartzScheduleDrivenJob()));
         }
         catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
+            String message = String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(ID, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()

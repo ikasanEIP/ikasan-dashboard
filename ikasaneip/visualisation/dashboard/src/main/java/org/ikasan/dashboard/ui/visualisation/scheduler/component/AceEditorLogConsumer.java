@@ -111,6 +111,7 @@ public class AceEditorLogConsumer {
             sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
             aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
         } catch (UIDetachedException e) {
+            LOG.debug("UI detached while completing log streaming", e);
             // do nothing for UI detached exceptions
         }
     }
@@ -136,10 +137,12 @@ public class AceEditorLogConsumer {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            LOG.error("Interrupted while pausing to let the editor render, retrying", e);
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException ex) {
-                LOG.error("Could not pause, error: " + e.getMessage());
+                LOG.error("Could not pause, error: " + ex.getMessage(), ex);
+                Thread.currentThread().interrupt();
             }
         }
     }

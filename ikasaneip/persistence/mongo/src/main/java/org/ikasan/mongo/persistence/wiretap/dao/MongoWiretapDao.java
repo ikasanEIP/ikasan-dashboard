@@ -88,7 +88,7 @@ public class MongoWiretapDao implements EntityDao<WiretapEvent> {
             // For now, we'll just try the direct lookup
             logger.debug("Could not find wiretap event by id: {}", id);
         } catch (NumberFormatException e) {
-            logger.debug("ID is not numeric: {}", id);
+            logger.debug("ID is not numeric: {}", id, e);
         }
 
         return null;

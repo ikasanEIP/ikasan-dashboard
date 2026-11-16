@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ModalityMode;
@@ -22,6 +24,8 @@ import java.nio.file.Paths;
 
 public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseableResizableDialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(BusinessStreamIntegratedSystemUploadDialog.class);
+
     private byte[] businessStreamFile;
     private String filename;
     private String uploadPath;
@@ -73,7 +77,7 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
                 this.uploaded = true;
             }
             catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error uploading integrated system file", e);
             }
 
             this.close();
@@ -100,7 +104,7 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
             fileWriter.write(this.businessStreamFile);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not write integrated system file [{}]", filename, e);
         }
         finally {
             if(fileWriter != null) {

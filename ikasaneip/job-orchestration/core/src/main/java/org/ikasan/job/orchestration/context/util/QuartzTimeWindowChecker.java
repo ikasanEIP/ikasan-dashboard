@@ -6,6 +6,8 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.time.ZoneId;
@@ -19,6 +21,8 @@ import static com.cronutils.model.CronType.QUARTZ;
 
 
 public class QuartzTimeWindowChecker {
+
+    private static final Logger logger = LoggerFactory.getLogger(QuartzTimeWindowChecker.class);
 
     public static final long TWENTY_FOUR_HOURS_MILLISECONDS = 24 * 60 * 60 * 1000;
 
@@ -110,7 +114,8 @@ public class QuartzTimeWindowChecker {
             cronExpressionStart.setTimeZone(TimeZone.getTimeZone(zoneId));
             return cronExpressionStart.isSatisfiedBy(referenceDateTime);
         } catch (ParseException e) {
-            throw new RuntimeException("Can not parse quartz expression " + cronExpression);
+            logger.error("Can not parse quartz expression {}", cronExpression, e);
+            throw new RuntimeException("Can not parse quartz expression " + cronExpression, e);
         }
     }
 
@@ -196,6 +201,7 @@ public class QuartzTimeWindowChecker {
 
             return ExecutionTime.forCron(parse);
         } catch (IllegalArgumentException e) {
+            logger.error("Can not parse quartz expression {}", cronExpression, e);
             throw new RuntimeException("Can not parse quartz expression " + cronExpression, e);
         }
     }

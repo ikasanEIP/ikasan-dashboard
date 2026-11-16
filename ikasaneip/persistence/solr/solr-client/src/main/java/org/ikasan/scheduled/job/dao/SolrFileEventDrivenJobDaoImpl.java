@@ -39,7 +39,9 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
             document.addField(PAYLOAD_CONTENT, this.getFileEventDrivenJob(event.getFileEventDrivenJob()));
         }
         catch (JacksonException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", event));
+            String message = String.format("Cannot convert FileEventDrivenJob to string! [%s]", event);
+            logger.error(message, e);
+            throw new SolrEntityConversionException(message, e);
         }
 
         document.addField(ID, JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()

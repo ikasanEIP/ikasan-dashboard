@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree;
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class CanvasJsonToContextTemplateAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(CanvasJsonToContextTemplateAdapter.class);
 
     private ObjectMapper objectMapper;
 
@@ -72,6 +75,7 @@ public class CanvasJsonToContextTemplateAdapter {
             });
         }
         catch (Exception e) {
+           logger.error("Exception validating canvas JSON!", e);
            throw new CanvasJsonValidationException("Exception validating canvas JSON!", e);
         }
 
@@ -169,6 +173,7 @@ public class CanvasJsonToContextTemplateAdapter {
             return contextTree;
         }
         catch (Exception e) {
+            logger.error("Exception adapting parent view canvas JSON", e);
             throw new CanvasJsonToContextTemplateAdapterException(e);
         }
     }
@@ -325,6 +330,7 @@ public class CanvasJsonToContextTemplateAdapter {
 
         }
         catch (Exception e) {
+            logger.error("Exception adapting canvas JSON to context template", e);
             throw new CanvasJsonToContextTemplateAdapterException(e);
         }
     }

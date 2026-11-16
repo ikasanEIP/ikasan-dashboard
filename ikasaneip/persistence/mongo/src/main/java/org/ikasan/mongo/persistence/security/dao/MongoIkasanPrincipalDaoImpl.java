@@ -607,7 +607,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
 
             return ikasanPrincipal;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipal! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrIkasanPrincipalRecord to IkasanPrincipal! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -650,7 +652,9 @@ public class MongoIkasanPrincipalDaoImpl implements IkasanPrincipalDao {
         try {
             record.setPrincipal(OBJECT_MAPPER.writeValueAsString(principal));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]", e);
+            String message = "Cannot convert IkasanPrincipal to string! [" + principal.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return record;

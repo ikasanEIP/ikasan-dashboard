@@ -458,7 +458,9 @@ public class MongoRoleDaoImpl implements RoleDao {
         try {
             record.setRole(OBJECT_MAPPER.writeValueAsString(role));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert Role to string! [" + role.getName() + "]", e);
+            String message = "Cannot convert Role to string! [" + role.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         return record;
@@ -496,7 +498,9 @@ public class MongoRoleDaoImpl implements RoleDao {
 
             return role;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]", e);
+            String message = "Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 }

@@ -117,7 +117,7 @@ public class SchedulerNotificationJobTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_job_success_failed_scheduled_events_found() throws JobExecutionException {
+    public void test_job_success_failed_scheduled_events_found() throws Exception {
         mockery.checking(new Expectations(){{
             ignoring(templateEngine);
             oneOf(schedulerNotification).getSchedulerAgentName();
@@ -155,18 +155,12 @@ public class SchedulerNotificationJobTest extends SolrTestCaseJ4 {
 
             notification.execute(jobExecutionContext);
         }
-        catch (SolrServerException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
 
         mockery.assertIsSatisfied();
     }
 
     @Test
-    public void test_job_success_failed_scheduled_no_events_found_due_to_last_tun_timestamp() throws JobExecutionException {
+    public void test_job_success_failed_scheduled_no_events_found_due_to_last_tun_timestamp() throws Exception {
         mockery.checking(new Expectations(){{
             ignoring(templateEngine);
             oneOf(schedulerNotification).getSchedulerAgentName();
@@ -196,12 +190,6 @@ public class SchedulerNotificationJobTest extends SolrTestCaseJ4 {
                 , schedulerNotificationService, platformConfigurationService, emailNotifier);
 
             notification.execute(jobExecutionContext);
-        }
-        catch (SolrServerException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
         }
 
         mockery.assertIsSatisfied();

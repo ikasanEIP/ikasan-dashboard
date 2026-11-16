@@ -189,7 +189,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                     this.bindFieldsToContext(this.contextTemplate);
 
                 } catch (ValidationException e) {
-                    e.printStackTrace();
+                    logger.error("Error validating context template form", e);
                     NotificationHelper.showErrorNotification(getTranslation("error.error-validating-context-template-form"
                         , UI.getCurrent().getLocale()));
                     return;
@@ -688,7 +688,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error creating new context template", e);
             NotificationHelper.showErrorNotification(getTranslation("error.error-creating-new-context-template"
                 , UI.getCurrent().getLocale()));
         }
@@ -756,7 +756,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_MODIFIED, action, authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error saving context template [{}]", this.contextTemplate.getName(), e);
             NotificationHelper.showErrorNotification(getTranslation("error.error-saving-context-template"
                 , UI.getCurrent().getLocale()));
             return;

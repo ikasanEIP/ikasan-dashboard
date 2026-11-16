@@ -116,6 +116,7 @@ public class SchedulerNotificationJob implements DashboardJob {
             }
         }
         catch (Exception e) {
+            logger.error("Error executing scheduler notification job", e);
             throw new JobExecutionException(e);
         }
 

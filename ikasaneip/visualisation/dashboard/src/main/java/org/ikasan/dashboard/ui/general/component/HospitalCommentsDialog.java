@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.general.component;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -19,6 +21,8 @@ import org.ikasan.spec.hospital.model.ExclusionEventAction;
 
 public class HospitalCommentsDialog extends AbstractCloseableResizableDialog
 {
+    private static final Logger logger = LoggerFactory.getLogger(HospitalCommentsDialog.class);
+
     private ExclusionEventAction exclusionEventAction;
     private boolean isSaved;
     private String action;
@@ -106,6 +110,7 @@ public class HospitalCommentsDialog extends AbstractCloseableResizableDialog
                     this.close();
                 } catch (ValidationException e)
                 {
+                    logger.debug("Hospital comments form failed validation", e);
                     // Ignore as the form will provide feedback to the user via the validation mechanism.
                 }
             });
@@ -125,6 +130,7 @@ public class HospitalCommentsDialog extends AbstractCloseableResizableDialog
                     this.close();
                 } catch (ValidationException e)
                 {
+                    logger.debug("Hospital comments form failed validation", e);
                     // Ignore as the form will provide feedback to the user via the validation mechanism.
                 }
             });

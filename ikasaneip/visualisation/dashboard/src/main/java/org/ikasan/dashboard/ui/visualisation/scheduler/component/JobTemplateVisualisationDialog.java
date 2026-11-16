@@ -229,7 +229,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                         contextTemplateVisualisationDialog.open();
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Error opening parent context visualisation", e);
                     }
                 });
             });
@@ -256,7 +256,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                         contextTemplateVisualisationDialog.open();
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Error opening parent context visualisation", e);
                     }
                 });
             });
@@ -285,7 +285,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                 contextTemplateVisualisationDialog.open();
                             }
                             catch (IOException e) {
-                                e.printStackTrace();
+                                logger.error("Error opening parent context visualisation", e);
                             }
                         }
                     }

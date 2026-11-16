@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddChildContextDialog extends AbstractCloseableResizableDialog {
+    private static final Logger logger = LoggerFactory.getLogger(AddChildContextDialog.class);
 
     private List<NewContextListener> newContextListeners = new ArrayList<>();
 
@@ -69,6 +72,7 @@ public class AddChildContextDialog extends AbstractCloseableResizableDialog {
                 formBinder.writeBean(contextDetails);
             }
             catch (ValidationException e) {
+                logger.debug("Add child context form failed validation", e);
                 return;
             }
 

@@ -36,7 +36,9 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
             document.addField(PAYLOAD_CONTENT, getEmailNotificationDetailsContent(emailNotificationDetailsRecord.getEmailNotificationDetails()));
         }
         catch (JacksonException e) {
-            throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", emailNotificationDetailsRecord));
+            String message = String.format("Cannot convert Email Notification Details to string! [%s]", emailNotificationDetailsRecord);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();

@@ -1,5 +1,7 @@
 package org.ikasan.security.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrIkasanPrincipalFilterImpl;
@@ -41,6 +43,7 @@ import static org.ikasan.spec.entity.EntityFields.*;
  * @author Ikasan Development Team
  */
 public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements UserDao {
+    private static final Logger logger = LoggerFactory.getLogger(SolrUserDaoImpl.class);
 
     /** Jackson JsonMapper for JSON serialization/deserialization */
     private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
@@ -689,7 +692,9 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         try {
             record.setUser(OBJECT_MAPPER.writeValueAsString(user));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
+            String message = "Cannot convert User to string! [" + user.getUsername() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
 
         super.save(record);
@@ -722,7 +727,9 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
             try {
                 record.setUser(OBJECT_MAPPER.writeValueAsString(user));
             } catch (JacksonException e) {
-                throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
+                String message = "Cannot convert User to string! [" + user.getUsername() + "]";
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
             }
 
             records.add(record);
@@ -762,7 +769,9 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
             return user;
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrUserRecord to User! [" + record.getUsername() + "]", e);
+            String message = "Cannot convert SolrUserRecord to User! [" + record.getUsername() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -777,7 +786,9 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         try {
             return OBJECT_MAPPER.readValue(record.getUser(), SolrUserLiteImpl.class);
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert SolrUserRecord to UserLite! [" + record.getUsername() + "]", e);
+            String message = "Cannot convert SolrUserRecord to UserLite! [" + record.getUsername() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 

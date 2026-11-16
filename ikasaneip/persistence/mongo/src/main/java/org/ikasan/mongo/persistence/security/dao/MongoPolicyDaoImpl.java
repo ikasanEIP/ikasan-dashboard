@@ -288,7 +288,9 @@ public class MongoPolicyDaoImpl implements PolicyDao {
         try {
             record.setPolicy(OBJECT_MAPPER.writeValueAsString(policy));
         } catch (JacksonException e) {
-            throw new RuntimeException("Cannot convert Policy to string! [" + policy.getName() + "]", e);
+            String message = "Cannot convert Policy to string! [" + policy.getName() + "]";
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
         }
         return record;
     }

@@ -71,15 +71,13 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
-            e.printStackTrace();
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, responseCode: %s, error: %s",
                 url, contextInstance.getName(), e.getStatusCode(), e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.error(message, e);
         } catch (Exception e) {
-            e.printStackTrace();
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, error: %s",
                 url, contextInstance.getName(), e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.error(message, e);
         }
     }
 
@@ -98,15 +96,13 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
-            e.printStackTrace();
             String message = String.format("Could not remove all context instances from agent for agent url %s, responseCode: %s, error: %s",
                 url, e.getStatusCode(), e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.error(message, e);
         } catch (Exception e) {
-            e.printStackTrace();
             String message = String.format("Could not remove all context instances from agent for agent url %s, error: %s",
                 url, e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.error(message, e);
         }
     }
 }
