@@ -23,7 +23,7 @@ import static org.ikasan.spec.scheduled.job.model.JobConstants.FILE_EVENT_DRIVEN
 /**
  * MongoDB implementation of FileEventDrivenJobDao.
  */
-public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEventDrivenJobRecord> {
+public class MongoFileEventDrivenJobDaoImpl implements FileEventDrivenJobDao<FileEventDrivenJobRecord> {
 
     private final MongoFileEventDrivenJobRepository repository;
     private final MongoTemplate mongoTemplate;
@@ -34,7 +34,7 @@ public class MongoFileEventDrivenJobDao implements FileEventDrivenJobDao<FileEve
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoDB template for custom queries
      */
-    public MongoFileEventDrivenJobDao(MongoFileEventDrivenJobRepository repository, MongoTemplate mongoTemplate) {
+    public MongoFileEventDrivenJobDaoImpl(MongoFileEventDrivenJobRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

@@ -24,11 +24,11 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class MongoEmailNotificationContextDaoTest {
+public class MongoEmailNotificationContextDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
-    private MongoEmailNotificationContextDao dao;
+    private MongoEmailNotificationContextDaoImpl dao;
     private MongoEmailNotificationContextRepository repository;
 
     @Before
@@ -44,7 +44,7 @@ public class MongoEmailNotificationContextDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoEmailNotificationContextRepository.class);
 
-        dao = new MongoEmailNotificationContextDao(repository, mongoTemplate);
+        dao = new MongoEmailNotificationContextDaoImpl(repository, mongoTemplate);
     }
 
     @After

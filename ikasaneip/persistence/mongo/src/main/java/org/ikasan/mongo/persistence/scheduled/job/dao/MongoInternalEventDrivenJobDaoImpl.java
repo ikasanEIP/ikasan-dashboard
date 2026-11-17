@@ -22,13 +22,13 @@ import static org.ikasan.spec.entity.EntityFields.ID;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
 import static org.ikasan.spec.scheduled.job.model.JobConstants.INTERNAL_EVENT_DRIVEN_JOB;
 
-public class MongoInternalEventDrivenJobDao implements InternalEventDrivenJobDao<InternalEventDrivenJobRecord> {
+public class MongoInternalEventDrivenJobDaoImpl implements InternalEventDrivenJobDao<InternalEventDrivenJobRecord> {
 
     private final MongoInternalEventDrivenJobRepository repository;
     private final MongoTemplate mongoTemplate;
 
-    public MongoInternalEventDrivenJobDao(MongoInternalEventDrivenJobRepository repository,
-                                          MongoTemplate mongoTemplate) {
+    public MongoInternalEventDrivenJobDaoImpl(MongoInternalEventDrivenJobRepository repository,
+                                              MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

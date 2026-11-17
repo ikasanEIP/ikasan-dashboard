@@ -104,7 +104,7 @@ public class MongoGeneralServiceImpl implements
      * @param document the document to save
      */
     public void saveOrUpdate(IkasanESBDocument document) {
-        this.mongoGeneralDao.saveOrUpdate((MongoIkasanDocument) document);
+        this.mongoGeneralDao.saveOrUpdate(toMongoDocument(document));
     }
 
     /**
@@ -114,8 +114,43 @@ public class MongoGeneralServiceImpl implements
      */
     public void saveOrUpdate(List<IkasanESBDocument> documents) {
         this.mongoGeneralDao.saveOrUpdate(documents.stream()
-            .map(doc -> (MongoIkasanDocument) doc)
+            .map(MongoGeneralServiceImpl::toMongoDocument)
             .toList());
+    }
+
+    /**
+     * Return the document as a {@link MongoIkasanDocument}. A document that is already one is returned unchanged;
+     * any other {@link IkasanESBDocument} implementation has its fields copied onto a new {@link MongoIkasanDocument}
+     * rather than being cast.
+     *
+     * @param document the document to convert
+     * @return the MongoDB document
+     */
+    static MongoIkasanDocument toMongoDocument(IkasanESBDocument document) {
+        if (document == null) {
+            throw new IllegalArgumentException("document cannot be null!");
+        }
+        if (document instanceof MongoIkasanDocument mongoDocument) {
+            return mongoDocument;
+        }
+
+        MongoIkasanDocument mongoDocument = new MongoIkasanDocument();
+        mongoDocument.setId(document.getId());
+        mongoDocument.setType(document.getType());
+        mongoDocument.setModuleName(document.getModuleName());
+        mongoDocument.setFlowName(document.getFlowName());
+        mongoDocument.setComponentName(document.getComponentName());
+        mongoDocument.setTimeStamp(document.getTimestamp());
+        mongoDocument.setExpiry(document.getExpiry());
+        mongoDocument.setEvent(document.getEvent());
+        mongoDocument.setEventId(document.getEventId());
+        mongoDocument.setErrorUri(document.getErrorUri());
+        mongoDocument.setErrorAction(document.getErrorAction());
+        mongoDocument.setErrorDetail(document.getErrorDetail());
+        mongoDocument.setErrorMessage(document.getErrorMessage());
+        mongoDocument.setExceptionClass(document.getExceptionClass());
+        mongoDocument.setPayloadRaw(document.getPayloadRaw());
+        return mongoDocument;
     }
 
     @Override

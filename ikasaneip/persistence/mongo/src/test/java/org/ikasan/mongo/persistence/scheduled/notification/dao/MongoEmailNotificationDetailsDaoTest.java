@@ -28,7 +28,7 @@ public class MongoEmailNotificationDetailsDaoTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
-    private MongoEmailNotificationDetailsDao dao;
+    private MongoEmailNotificationDetailsDaoImpl dao;
     private MongoEmailNotificationDetailsRepository repository;
 
     @Before
@@ -44,7 +44,7 @@ public class MongoEmailNotificationDetailsDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoEmailNotificationDetailsRepository.class);
 
-        dao = new MongoEmailNotificationDetailsDao(repository, mongoTemplate);
+        dao = new MongoEmailNotificationDetailsDaoImpl(repository, mongoTemplate);
     }
 
     @After

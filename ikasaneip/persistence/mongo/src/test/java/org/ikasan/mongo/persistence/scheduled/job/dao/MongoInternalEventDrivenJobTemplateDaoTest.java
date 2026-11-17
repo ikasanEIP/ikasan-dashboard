@@ -23,7 +23,7 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoInternalEventDrivenJobRepository repository;
-    private MongoInternalEventDrivenJobTemplateDao dao;
+    private MongoInternalEventDrivenJobTemplateDaoImpl dao;
 
     @Before
     public void setup() {
@@ -38,7 +38,7 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoInternalEventDrivenJobRepository.class);
 
-        dao = new MongoInternalEventDrivenJobTemplateDao(repository, mongoTemplate);
+        dao = new MongoInternalEventDrivenJobTemplateDaoImpl(repository, mongoTemplate);
     }
 
     @After
@@ -262,7 +262,7 @@ public class MongoInternalEventDrivenJobTemplateDaoTest {
     @Test
     public void test_findAll_only_returns_templates() {
         // Create a regular job using the parent DAO
-        MongoInternalEventDrivenJobDao regularDao = new MongoInternalEventDrivenJobDao(repository, mongoTemplate);
+        MongoInternalEventDrivenJobDaoImpl regularDao = new MongoInternalEventDrivenJobDaoImpl(repository, mongoTemplate);
         MongoInternalEventDrivenJobRecordImpl regularJob = createInternalEventDrivenJobRecord("regular", "job", "context");
         regularDao.save(regularJob);
 

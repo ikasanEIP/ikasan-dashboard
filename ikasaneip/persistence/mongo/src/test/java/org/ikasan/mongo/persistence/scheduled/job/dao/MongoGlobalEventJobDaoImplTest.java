@@ -18,12 +18,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MongoGlobalEventJobDaoTest {
+public class MongoGlobalEventJobDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoGlobalEventJobRepository repository;
-    private MongoGlobalEventJobDao dao;
+    private MongoGlobalEventJobDaoImpl dao;
 
     @Before
     public void setup() {
@@ -39,7 +39,7 @@ public class MongoGlobalEventJobDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoGlobalEventJobRepository.class);
 
-        dao = new MongoGlobalEventJobDao(repository, mongoTemplate);
+        dao = new MongoGlobalEventJobDaoImpl(repository, mongoTemplate);
     }
 
     @After

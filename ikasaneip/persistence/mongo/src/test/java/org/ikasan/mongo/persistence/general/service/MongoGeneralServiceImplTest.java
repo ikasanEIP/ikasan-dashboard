@@ -961,4 +961,113 @@ public class MongoGeneralServiceImplTest {
         doc.setEvent("Test event payload");
         return doc;
     }
+
+    // --- saving documents that are not MongoIkasanDocument ---
+
+    @Test
+    public void test_save_non_mongo_document_copies_all_fields() {
+        IkasanESBDocument doc = new StubIkasanESBDocument("stub-1");
+
+        service.saveOrUpdate(doc);
+
+        MongoIkasanDocument saved = mongoTemplate.findById("stub-1", MongoIkasanDocument.class);
+        assertNotNull(saved);
+        assertStubFields("stub-1", saved);
+    }
+
+    @Test
+    public void test_save_list_of_mixed_documents() {
+        MongoIkasanDocument mongoDoc = createTestDocument("mongo-1", "wiretap", "module1", "flow1");
+        IkasanESBDocument stubDoc = new StubIkasanESBDocument("stub-2");
+
+        service.saveOrUpdate(Arrays.asList(mongoDoc, stubDoc));
+
+        assertEquals("module1", mongoTemplate.findById("mongo-1", MongoIkasanDocument.class).getModuleName());
+        assertStubFields("stub-2", mongoTemplate.findById("stub-2", MongoIkasanDocument.class));
+    }
+
+    @Test
+    public void test_to_mongo_document_returns_mongo_document_unchanged() {
+        MongoIkasanDocument mongoDoc = createTestDocument("mongo-1", "wiretap", "module1", "flow1");
+        assertSame(mongoDoc, MongoGeneralServiceImpl.toMongoDocument(mongoDoc));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test_save_null_document_throws() {
+        service.saveOrUpdate((IkasanESBDocument) null);
+    }
+
+    private static void assertStubFields(String id, IkasanESBDocument saved) {
+        assertEquals(id, saved.getId());
+        assertEquals("stubType", saved.getType());
+        assertEquals("stubModule", saved.getModuleName());
+        assertEquals("stubFlow", saved.getFlowName());
+        assertEquals("stubComponent", saved.getComponentName());
+        assertEquals(1234L, saved.getTimestamp());
+        assertEquals(Long.MAX_VALUE, saved.getExpiry());
+        assertEquals("stubEvent", saved.getEvent());
+        assertEquals("stubEventId", saved.getEventId());
+        assertEquals("stubErrorUri", saved.getErrorUri());
+        assertEquals("stubErrorAction", saved.getErrorAction());
+        assertEquals("stubErrorDetail", saved.getErrorDetail());
+        assertEquals("stubErrorMessage", saved.getErrorMessage());
+        assertEquals("stubExceptionClass", saved.getExceptionClass());
+        assertArrayEquals(new byte[] {1, 2, 3}, saved.getPayloadRaw());
+    }
+
+    /**
+     * An IkasanESBDocument that is not a MongoIkasanDocument.
+     */
+    private static class StubIkasanESBDocument implements IkasanESBDocument {
+        private String id;
+        private String type = "stubType";
+        private String moduleName = "stubModule";
+        private String flowName = "stubFlow";
+        private String componentName = "stubComponent";
+        private long timestamp = 1234L;
+        private long expiry = Long.MAX_VALUE;
+        private String event = "stubEvent";
+        private String eventId = "stubEventId";
+        private String errorUri = "stubErrorUri";
+        private String errorAction = "stubErrorAction";
+        private String errorDetail = "stubErrorDetail";
+        private String errorMessage = "stubErrorMessage";
+        private String exceptionClass = "stubExceptionClass";
+        private byte[] payloadRaw = {1, 2, 3};
+
+        StubIkasanESBDocument(String id) { this.id = id; }
+
+        @Override public String getId() { return id; }
+        @Override public void setId(String id) { this.id = id; }
+        @Override public String getIdentifier() { return id; }
+        @Override public String getType() { return type; }
+        @Override public void setType(String type) { this.type = type; }
+        @Override public String getModuleName() { return moduleName; }
+        @Override public void setModuleName(String moduleName) { this.moduleName = moduleName; }
+        @Override public String getFlowName() { return flowName; }
+        @Override public void setFlowName(String flowName) { this.flowName = flowName; }
+        @Override public String getComponentName() { return componentName; }
+        @Override public void setComponentName(String componentName) { this.componentName = componentName; }
+        @Override public long getTimestamp() { return timestamp; }
+        @Override public long getTimeStamp() { return timestamp; }
+        @Override public void setTimeStamp(long timeStamp) { this.timestamp = timeStamp; }
+        @Override public long getExpiry() { return expiry; }
+        @Override public void setExpiry(long expiry) { this.expiry = expiry; }
+        @Override public String getEvent() { return event; }
+        @Override public void setEvent(String event) { this.event = event; }
+        @Override public String getEventId() { return eventId; }
+        @Override public void setEventId(String eventId) { this.eventId = eventId; }
+        @Override public String getErrorUri() { return errorUri; }
+        @Override public void setErrorUri(String errorUri) { this.errorUri = errorUri; }
+        @Override public String getErrorAction() { return errorAction; }
+        @Override public void setErrorAction(String errorAction) { this.errorAction = errorAction; }
+        @Override public String getErrorDetail() { return errorDetail; }
+        @Override public void setErrorDetail(String errorDetail) { this.errorDetail = errorDetail; }
+        @Override public String getErrorMessage() { return errorMessage; }
+        @Override public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+        @Override public String getExceptionClass() { return exceptionClass; }
+        @Override public void setExceptionClass(String exceptionClass) { this.exceptionClass = exceptionClass; }
+        @Override public byte[] getPayloadRaw() { return payloadRaw; }
+        @Override public void setPayloadRaw(byte[] payloadRaw) { this.payloadRaw = payloadRaw; }
+    }
 }

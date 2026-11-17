@@ -4,6 +4,7 @@ import org.ikasan.mongo.persistence.general.dao.PagingConvention;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
 import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
@@ -862,5 +863,123 @@ public class MongoSchedulerJobInstanceDaoImplTest {
             dao.getSchedulerJobInstancesByContextInstanceId("ctx-inst-1", limit, offset, "jobName", "ASC")));
         PagingConvention.assertFollowed(25, (offset, limit) -> PagingConvention.page(
             dao.getSchedulerJobInstancesByContextName("context-1", limit, offset, "jobName", "ASC")));
+    }
+
+    // --- saving records that are not MongoSchedulerJobInstanceRecordImpl ---
+
+    private SchedulerJobInstanceRecordImpl genericRecord(SchedulerJobInstance jobInstance) {
+        SchedulerJobInstanceRecordImpl record = new SchedulerJobInstanceRecordImpl();
+        record.setJobName(jobInstance.getJobName());
+        record.setContextName(jobInstance.getContextName());
+        record.setContextInstanceId(jobInstance.getContextInstanceId());
+        record.setSchedulerJobInstance(jobInstance);
+        return record;
+    }
+
+    private static String quartzId(SchedulerJobInstance jobInstance) {
+        return jobInstance.getJobName() + "_" + jobInstance.getContextInstanceId() + "_"
+            + jobInstance.getChildContextName() + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE;
+    }
+
+    @Test
+    public void testSaveNonMongoRecordKeepsRecordFields() {
+        SchedulerJobInstance jobInstance = createJobInstance("job-1", "context-1", "ctx-inst-1",
+            InstanceStatus.RUNNING);
+        jobInstance.setChildContextName("child-1");
+
+        SchedulerJobInstanceRecordImpl record = genericRecord(jobInstance);
+        record.setStatus(InstanceStatus.ERROR_ACKNOWLEDGED.name());
+        record.setStartTime(1000L);
+        record.setEndTime(2000L);
+        record.setTimestamp(500L);
+        record.setModifiedBy("modifier");
+        record.setManuallySubmittedBy("submitter");
+
+        long beforeSave = System.currentTimeMillis();
+        dao.save(record);
+
+        MongoSchedulerJobInstanceRecordImpl saved =
+            (MongoSchedulerJobInstanceRecordImpl) dao.findById(quartzId(jobInstance));
+        assertNotNull(saved);
+        assertEquals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, saved.getType());
+        assertEquals("job-1", saved.getJobName());
+        assertEquals("context-1", saved.getContextName());
+        assertEquals("ctx-inst-1", saved.getContextInstanceId());
+        assertEquals("child-1", saved.getChildContextName());
+        assertEquals(InstanceStatus.ERROR_ACKNOWLEDGED.name(), saved.getStatus());
+        assertEquals(1000L, saved.getStartTime());
+        assertEquals(2000L, saved.getEndTime());
+        assertEquals(500L, saved.getTimestamp());
+        assertTrue(saved.getModifiedTimestamp() >= beforeSave);
+        assertEquals("modifier", saved.getModifiedBy());
+        assertEquals("submitter", saved.getManuallySubmittedBy());
+        assertEquals("job-1", saved.getSchedulerJobInstance().getJobName());
+    }
+
+    @Test
+    public void testSaveNonMongoRecordDerivesTimesFromProcessEvent() {
+        SchedulerJobInstance jobInstance = createJobInstance("job-1", "context-1", "ctx-inst-1",
+            InstanceStatus.COMPLETE);
+        ContextualisedScheduledProcessEventImpl event = new ContextualisedScheduledProcessEventImpl();
+        event.setFireTime(1000L);
+        event.setCompletionTime(3000L);
+        jobInstance.setScheduledProcessEvent(event);
+
+        long beforeSave = System.currentTimeMillis();
+        dao.save(genericRecord(jobInstance));
+
+        SchedulerJobInstanceRecord saved = dao.findById(quartzId(jobInstance));
+        assertNotNull(saved);
+        assertEquals("start time comes from the fire time", 1000L, saved.getStartTime());
+        assertEquals("end time comes from the completion time", 3000L, saved.getEndTime());
+        assertEquals(InstanceStatus.COMPLETE.name(), saved.getStatus());
+        assertTrue("timestamp defaults to now", saved.getTimestamp() >= beforeSave);
+    }
+
+    @Test
+    public void testSaveNonMongoRecordDerivesErrorAcknowledgedStatus() {
+        SchedulerJobInstance jobInstance = createJobInstance("job-1", "context-1", "ctx-inst-1",
+            InstanceStatus.ERROR);
+        jobInstance.setErrorAcknowledged(true);
+
+        dao.save(genericRecord(jobInstance));
+
+        assertEquals(InstanceStatus.ERROR_ACKNOWLEDGED.name(), dao.findById(quartzId(jobInstance)).getStatus());
+    }
+
+    @Test
+    public void testSaveNonMongoRecordWithNullStatus() {
+        SchedulerJobInstance jobInstance = createJobInstance("job-1", "context-1", "ctx-inst-1", null);
+        // a mock rather than SchedulerJobInstanceRecordImpl, whose JSON round trip defaults the status to WAITING
+        SchedulerJobInstanceRecord record = org.mockito.Mockito.mock(SchedulerJobInstanceRecord.class);
+        org.mockito.Mockito.when(record.getSchedulerJobInstance()).thenReturn(jobInstance);
+
+        // previously threw NullPointerException
+        dao.save(record);
+
+        MongoSchedulerJobInstanceRecordImpl saved =
+            (MongoSchedulerJobInstanceRecordImpl) dao.findById(quartzId(jobInstance));
+        assertNotNull(saved);
+        assertNull(saved.getStatus());
+    }
+
+    @Test
+    public void testSaveListOfNonMongoRecordsKeepsRecordFields() {
+        SchedulerJobInstance job1 = createJobInstance("job-1", "context-1", "ctx-inst-1", InstanceStatus.WAITING);
+        SchedulerJobInstance job2 = createJobInstance("job-2", "context-1", "ctx-inst-1", InstanceStatus.WAITING);
+        SchedulerJobInstanceRecordImpl record1 = genericRecord(job1);
+        record1.setModifiedBy("user-1");
+        SchedulerJobInstanceRecordImpl record2 = genericRecord(job2);
+        record2.setManuallySubmittedBy("user-2");
+
+        dao.save(List.of(record1, record2));
+
+        assertEquals("user-1", dao.findById(quartzId(job1)).getModifiedBy());
+        assertEquals("user-2", dao.findById(quartzId(job2)).getManuallySubmittedBy());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveNonMongoRecordWithoutJobInstanceThrows() {
+        dao.save(new SchedulerJobInstanceRecordImpl());
     }
 }

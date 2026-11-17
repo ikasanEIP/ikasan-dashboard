@@ -22,14 +22,14 @@ import static org.ikasan.spec.entity.EntityFields.ID;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
 import static org.ikasan.spec.scheduled.job.model.JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB;
 
-public class MongoQuartzScheduleDrivenJobDao implements QuartzScheduleDrivenJobDao<QuartzScheduleDrivenJobRecord> {
+public class MongoQuartzScheduleDrivenJobDaoImpl implements QuartzScheduleDrivenJobDao<QuartzScheduleDrivenJobRecord> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MongoQuartzScheduleDrivenJobDao.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MongoQuartzScheduleDrivenJobDaoImpl.class);
 
     private final MongoQuartzScheduleDrivenJobRepository repository;
     private final MongoTemplate mongoTemplate;
 
-    public MongoQuartzScheduleDrivenJobDao(MongoQuartzScheduleDrivenJobRepository repository, MongoTemplate mongoTemplate) {
+    public MongoQuartzScheduleDrivenJobDaoImpl(MongoQuartzScheduleDrivenJobRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

@@ -23,12 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class MongoInternalEventDrivenJobDaoTest {
+public class MongoInternalEventDrivenJobDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoInternalEventDrivenJobRepository repository;
-    private MongoInternalEventDrivenJobDao dao;
+    private MongoInternalEventDrivenJobDaoImpl dao;
 
     @Before
     public void setup() {
@@ -44,7 +44,7 @@ public class MongoInternalEventDrivenJobDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoInternalEventDrivenJobRepository.class);
 
-        dao = new MongoInternalEventDrivenJobDao(repository, mongoTemplate);
+        dao = new MongoInternalEventDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @After

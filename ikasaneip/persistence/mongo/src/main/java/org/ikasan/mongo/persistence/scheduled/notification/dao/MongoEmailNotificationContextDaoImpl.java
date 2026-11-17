@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 import static org.ikasan.spec.entity.EntityFields.COMPONENT_NAME;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
 
-public class MongoEmailNotificationContextDao implements EmailNotificationContextDao, BatchInsert<EmailNotificationContextRecord> {
+public class MongoEmailNotificationContextDaoImpl implements EmailNotificationContextDao, BatchInsert<EmailNotificationContextRecord> {
 
     private final MongoEmailNotificationContextRepository repository;
     private final MongoTemplate mongoTemplate;
 
-    public MongoEmailNotificationContextDao(MongoEmailNotificationContextRepository repository,
-                                            MongoTemplate mongoTemplate) {
+    public MongoEmailNotificationContextDaoImpl(MongoEmailNotificationContextRepository repository,
+                                                MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

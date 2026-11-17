@@ -4,7 +4,6 @@ import com.mongodb.client.MongoClients;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.mongo.persistence.scheduled.job.model.MongoFileEventDrivenJobRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoFileEventDrivenJobRepository;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
@@ -21,12 +20,12 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MongoFileEventDrivenJobDaoTest {
+public class MongoFileEventDrivenJobDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoFileEventDrivenJobRepository repository;
-    private MongoFileEventDrivenJobDao dao;
+    private MongoFileEventDrivenJobDaoImpl dao;
 
     @Before
     public void setup() {
@@ -42,7 +41,7 @@ public class MongoFileEventDrivenJobDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoFileEventDrivenJobRepository.class);
 
-        dao = new MongoFileEventDrivenJobDao(repository, mongoTemplate);
+        dao = new MongoFileEventDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @After

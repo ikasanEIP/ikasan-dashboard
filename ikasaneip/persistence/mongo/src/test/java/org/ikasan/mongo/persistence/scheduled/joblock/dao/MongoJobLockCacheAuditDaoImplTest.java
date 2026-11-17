@@ -16,12 +16,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class MongoJobLockCacheAuditDaoTest {
+public class MongoJobLockCacheAuditDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoJobLockCacheAuditRepository repository;
-    private MongoJobLockCacheAuditDao dao;
+    private MongoJobLockCacheAuditDaoImpl dao;
 
     @Before
     public void setup() {
@@ -36,7 +36,7 @@ public class MongoJobLockCacheAuditDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoJobLockCacheAuditRepository.class);
 
-        dao = new MongoJobLockCacheAuditDao(repository, mongoTemplate, 7);
+        dao = new MongoJobLockCacheAuditDaoImpl(repository, mongoTemplate, 7);
     }
 
     @After
