@@ -24,7 +24,7 @@ import static org.ikasan.spec.scheduled.job.model.JobConstants.GLOBAL_EVENT_JOB;
 /**
  * MongoDB implementation of GlobalEventJobDao.
  */
-public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobRecord> {
+public class MongoGlobalEventJobDaoImpl implements GlobalEventJobDao<GlobalEventJobRecord> {
 
     private final MongoGlobalEventJobRepository repository;
     private final MongoTemplate mongoTemplate;
@@ -35,7 +35,7 @@ public class MongoGlobalEventJobDao implements GlobalEventJobDao<GlobalEventJobR
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoDB template for custom queries
      */
-    public MongoGlobalEventJobDao(MongoGlobalEventJobRepository repository, MongoTemplate mongoTemplate) {
+    public MongoGlobalEventJobDaoImpl(MongoGlobalEventJobRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

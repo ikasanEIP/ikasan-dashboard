@@ -22,7 +22,7 @@ import static org.ikasan.spec.scheduled.job.model.JobConstants.CONTEXT_TERMINAL_
 /**
  * MongoDB implementation of ContextTerminalJobDao.
  */
-public class MongoContextTerminalJobDao implements ContextTerminalJobDao<ContextTerminalJobRecord> {
+public class MongoContextTerminalJobDaoImpl implements ContextTerminalJobDao<ContextTerminalJobRecord> {
 
     private final MongoContextTerminalJobRepository repository;
     private final MongoTemplate mongoTemplate;
@@ -33,7 +33,7 @@ public class MongoContextTerminalJobDao implements ContextTerminalJobDao<Context
      * @param repository the MongoDB repository
      * @param mongoTemplate the MongoDB template for custom queries
      */
-    public MongoContextTerminalJobDao(MongoContextTerminalJobRepository repository, MongoTemplate mongoTemplate) {
+    public MongoContextTerminalJobDaoImpl(MongoContextTerminalJobRepository repository, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

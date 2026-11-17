@@ -17,18 +17,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class MongoJobLockCacheAuditDao implements JobLockCacheAuditDao {
+public class MongoJobLockCacheAuditDaoImpl implements JobLockCacheAuditDao {
 
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE_ID = "jockLockCacheRecordAuditID";
-    private static final Logger logger = LoggerFactory.getLogger(MongoJobLockCacheAuditDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoJobLockCacheAuditDaoImpl.class);
 
     private final MongoJobLockCacheAuditRepository repository;
     private final MongoTemplate mongoTemplate;
     private final int daysToKeep;
 
-    public MongoJobLockCacheAuditDao(MongoJobLockCacheAuditRepository repository,
-                                     MongoTemplate mongoTemplate,
-                                     int daysToKeep) {
+    public MongoJobLockCacheAuditDaoImpl(MongoJobLockCacheAuditRepository repository,
+                                         MongoTemplate mongoTemplate,
+                                         int daysToKeep) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
         this.daysToKeep = daysToKeep;

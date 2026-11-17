@@ -89,7 +89,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         MongoSchedulerJobInstanceRecordImpl mongoRecord;
 
         if (!(schedulerJobInstanceRecord instanceof MongoSchedulerJobInstanceRecordImpl)) {
-            mongoRecord = this.convert(schedulerJobInstanceRecord.getSchedulerJobInstance());
+            mongoRecord = this.convert(schedulerJobInstanceRecord);
         }
         else {
             mongoRecord = (MongoSchedulerJobInstanceRecordImpl) schedulerJobInstanceRecord;
@@ -105,7 +105,7 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
         List<MongoSchedulerJobInstanceRecordImpl> records = schedulerJobInstanceRecords.stream()
                 .map(record -> {
                     if(!(record instanceof MongoSchedulerJobInstanceRecordImpl)) {
-                        return this.convert(record.getSchedulerJobInstance());
+                        return this.convert(record);
                     }
                     else {
                         MongoSchedulerJobInstanceRecordImpl mongoRecord = (MongoSchedulerJobInstanceRecordImpl) record;
@@ -116,6 +116,38 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
                 .collect(Collectors.toList());
 
         repository.saveAll(records);
+    }
+
+    /**
+     * Convert a {@link SchedulerJobInstanceRecord} that is not a {@link MongoSchedulerJobInstanceRecordImpl} into one.
+     * The id, type and lock flags are derived from the job instance; the status, start/end times, created timestamp,
+     * modifiedBy and manuallySubmittedBy set on the record are kept, falling back to values derived from the job
+     * instance when the record does not have them.
+     */
+    private MongoSchedulerJobInstanceRecordImpl convert(SchedulerJobInstanceRecord record) {
+        if (record.getSchedulerJobInstance() == null) {
+            throw new IllegalArgumentException("SchedulerJobInstanceRecord [" + record.getId()
+                + "] has no SchedulerJobInstance and can not be saved!");
+        }
+
+        MongoSchedulerJobInstanceRecordImpl instanceRecord = this.convert(record.getSchedulerJobInstance());
+
+        if (record.getStatus() != null) {
+            instanceRecord.setStatus(record.getStatus());
+        }
+        if (record.getStartTime() > 0) {
+            instanceRecord.setStartTime(record.getStartTime());
+        }
+        if (record.getEndTime() > 0) {
+            instanceRecord.setEndTime(record.getEndTime());
+        }
+        if (record.getTimestamp() > 0) {
+            instanceRecord.setTimestamp(record.getTimestamp());
+        }
+        instanceRecord.setModifiedBy(record.getModifiedBy());
+        instanceRecord.setManuallySubmittedBy(record.getManuallySubmittedBy());
+
+        return instanceRecord;
     }
 
     private MongoSchedulerJobInstanceRecordImpl convert(SchedulerJobInstance schedulerJobInstance) {
@@ -184,14 +216,14 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
         if(schedulerJobInstance.getScheduledProcessEvent() != null) {
             instanceRecord.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getFireTime());
-            instanceRecord.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
+            instanceRecord.setEndTime(schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
         }
 
-        instanceRecord.setStatus(schedulerJobInstance.isErrorAcknowledged() != null
-            && schedulerJobInstance.isErrorAcknowledged()
-            && schedulerJobInstance.getStatus() != null
-            && schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)
-            ? InstanceStatus.ERROR_ACKNOWLEDGED.name() : schedulerJobInstance.getStatus().name());
+        InstanceStatus status = schedulerJobInstance.getStatus();
+        if (status == InstanceStatus.ERROR && Boolean.TRUE.equals(schedulerJobInstance.isErrorAcknowledged())) {
+            status = InstanceStatus.ERROR_ACKNOWLEDGED;
+        }
+        instanceRecord.setStatus(status == null ? null : status.name());
 
         instanceRecord.setSchedulerJobInstance(schedulerJobInstance);
         instanceRecord.setContextName(schedulerJobInstance.getContextName());

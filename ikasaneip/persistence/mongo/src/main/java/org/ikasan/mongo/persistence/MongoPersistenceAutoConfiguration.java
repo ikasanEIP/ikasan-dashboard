@@ -39,24 +39,24 @@ import org.ikasan.mongo.persistence.scheduled.instance.dao.MongoSchedulerJobInst
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceAuditAggregateRepository;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoScheduledContextInstanceRepository;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoBridgingJobDao;
-import org.ikasan.mongo.persistence.scheduled.joblock.dao.MongoJobLockCacheAuditDao;
-import org.ikasan.mongo.persistence.scheduled.joblock.dao.MongoJobLockCacheDao;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoBridgingJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.joblock.dao.MongoJobLockCacheAuditDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.joblock.dao.MongoJobLockCacheDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.joblock.repository.MongoJobLockCacheAuditRepository;
 import org.ikasan.mongo.persistence.scheduled.joblock.repository.MongoJobLockCacheRepository;
-import org.ikasan.mongo.persistence.scheduled.notification.dao.MongoEmailNotificationContextDao;
-import org.ikasan.mongo.persistence.scheduled.notification.dao.MongoEmailNotificationDetailsDao;
+import org.ikasan.mongo.persistence.scheduled.notification.dao.MongoEmailNotificationContextDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.notification.dao.MongoEmailNotificationDetailsDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.notification.dao.MongoNotificationSendAuditDao;
 import org.ikasan.mongo.persistence.scheduled.notification.repository.MongoEmailNotificationContextRepository;
 import org.ikasan.mongo.persistence.scheduled.notification.repository.MongoEmailNotificationDetailsRepository;
 import org.ikasan.mongo.persistence.scheduled.notification.repository.MongoNotificationSendAuditRepository;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoContextStartJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoContextTerminalJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoFileEventDrivenJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoGlobalEventJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobTemplateDao;
-import org.ikasan.mongo.persistence.scheduled.job.dao.MongoQuartzScheduleDrivenJobDao;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoContextStartJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoContextTerminalJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoFileEventDrivenJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoGlobalEventJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoInternalEventDrivenJobTemplateDaoImpl;
+import org.ikasan.mongo.persistence.scheduled.job.dao.MongoQuartzScheduleDrivenJobDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.job.dao.MongoSchedulerJobDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoBridgingJobRepository;
 import org.ikasan.mongo.persistence.scheduled.job.repository.MongoContextStartJobRepository;
@@ -343,25 +343,25 @@ public class MongoPersistenceAutoConfiguration {
     @Bean("jobLockCacheDao")
     public JobLockCacheDao jobLockCacheDao(MongoJobLockCacheRepository repository,
                                            MongoTemplate mongoTemplate) {
-        return new MongoJobLockCacheDao(repository, mongoTemplate);
+        return new MongoJobLockCacheDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("jobLockCacheAuditDao")
     public JobLockCacheAuditDao jobLockCacheAuditDao(MongoJobLockCacheAuditRepository repository,
                                                      MongoTemplate mongoTemplate) {
-        return new MongoJobLockCacheAuditDao(repository, mongoTemplate, this.schedulerInstanceEntityRetentionDays);
+        return new MongoJobLockCacheAuditDaoImpl(repository, mongoTemplate, this.schedulerInstanceEntityRetentionDays);
     }
 
     @Bean("emailNotificationContextDao")
     public EmailNotificationContextDao emailNotificationContextDao(MongoEmailNotificationContextRepository repository,
                                                                    MongoTemplate mongoTemplate) {
-        return new MongoEmailNotificationContextDao(repository, mongoTemplate);
+        return new MongoEmailNotificationContextDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("emailNotificationDetailsDao")
     public EmailNotificationDetailsDao emailNotificationDetailsDao(MongoEmailNotificationDetailsRepository repository,
                                                                    MongoTemplate mongoTemplate) {
-        return new MongoEmailNotificationDetailsDao(repository, mongoTemplate);
+        return new MongoEmailNotificationDetailsDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("notificationSendAuditDao")
@@ -411,56 +411,56 @@ public class MongoPersistenceAutoConfiguration {
     public QuartzScheduleDrivenJobDao quartzScheduleDrivenJobDao(
             MongoQuartzScheduleDrivenJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoQuartzScheduleDrivenJobDao(repository, mongoTemplate);
+        return new MongoQuartzScheduleDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("bridgingJobRecordDao")
     public BridgingJobDao bridgingJobDao(
             MongoBridgingJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoBridgingJobDao(repository, mongoTemplate);
+        return new MongoBridgingJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("contextStartJobDao")
     public ContextStartJobDao contextStartJobDao(
             MongoContextStartJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoContextStartJobDao(repository, mongoTemplate);
+        return new MongoContextStartJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("contextTerminalJobDao")
     public ContextTerminalJobDao contextTerminalJobDao(
             MongoContextTerminalJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoContextTerminalJobDao(repository, mongoTemplate);
+        return new MongoContextTerminalJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("fileEventDrivenJobRecordDao")
     public FileEventDrivenJobDao fileEventDrivenJobDao(
             MongoFileEventDrivenJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoFileEventDrivenJobDao(repository, mongoTemplate);
+        return new MongoFileEventDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("globalEventJobRecordDao")
     public GlobalEventJobDao globalEventJobDao(
             MongoGlobalEventJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoGlobalEventJobDao(repository, mongoTemplate);
+        return new MongoGlobalEventJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("internalEventDrivenJobRecordDao")
     public InternalEventDrivenJobDao internalEventDrivenJobDao(
             MongoInternalEventDrivenJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoInternalEventDrivenJobDao(repository, mongoTemplate);
+        return new MongoInternalEventDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("internalEventDrivenJobTemplateDao")
     public InternalEventDrivenJobDao internalEventDrivenJobTemplateDao(
             MongoInternalEventDrivenJobRepository repository,
             MongoTemplate mongoTemplate) {
-        return new MongoInternalEventDrivenJobTemplateDao(repository, mongoTemplate);
+        return new MongoInternalEventDrivenJobTemplateDaoImpl(repository, mongoTemplate);
     }
 
     @Bean("businessStreamMetadataDao")

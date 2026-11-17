@@ -284,7 +284,8 @@ public abstract class ContextInstanceServiceBase {
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
                 if(child == null) {
                     LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
-                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
+                        "This is likely due to the child context name being " +
+                        "duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
                 }
                 else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
                     LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",

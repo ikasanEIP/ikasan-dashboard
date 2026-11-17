@@ -16,12 +16,12 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MongoQuartzScheduleDrivenJobDaoTest {
+public class MongoQuartzScheduleDrivenJobDaoImplTest {
 
     private static MongoDBContainer mongoDBContainer;
     private MongoTemplate mongoTemplate;
     private MongoQuartzScheduleDrivenJobRepository repository;
-    private MongoQuartzScheduleDrivenJobDao dao;
+    private MongoQuartzScheduleDrivenJobDaoImpl dao;
 
     @Before
     public void setup() {
@@ -38,7 +38,7 @@ public class MongoQuartzScheduleDrivenJobDaoTest {
         var factory = new org.springframework.data.mongodb.repository.support.MongoRepositoryFactory(mongoTemplate);
         repository = factory.getRepository(MongoQuartzScheduleDrivenJobRepository.class);
 
-        dao = new MongoQuartzScheduleDrivenJobDao(repository, mongoTemplate);
+        dao = new MongoQuartzScheduleDrivenJobDaoImpl(repository, mongoTemplate);
     }
 
     @After

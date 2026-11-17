@@ -22,15 +22,15 @@ import static org.ikasan.spec.entity.EntityFields.ID;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
 import static org.ikasan.spec.scheduled.job.model.JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE;
 
-public class MongoInternalEventDrivenJobTemplateDao extends MongoInternalEventDrivenJobDao {
+public class MongoInternalEventDrivenJobTemplateDaoImpl extends MongoInternalEventDrivenJobDaoImpl {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoInternalEventDrivenJobTemplateDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoInternalEventDrivenJobTemplateDaoImpl.class);
 
     private final MongoInternalEventDrivenJobRepository repository;
     private final MongoTemplate mongoTemplate;
 
-    public MongoInternalEventDrivenJobTemplateDao(MongoInternalEventDrivenJobRepository repository,
-                                                   MongoTemplate mongoTemplate) {
+    public MongoInternalEventDrivenJobTemplateDaoImpl(MongoInternalEventDrivenJobRepository repository,
+                                                      MongoTemplate mongoTemplate) {
         super(repository, mongoTemplate);
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;

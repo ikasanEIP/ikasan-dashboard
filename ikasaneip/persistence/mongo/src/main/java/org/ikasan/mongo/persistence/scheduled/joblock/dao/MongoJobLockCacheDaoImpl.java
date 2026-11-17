@@ -13,16 +13,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import static org.ikasan.spec.entity.EntityFields.ID;
 import static org.ikasan.spec.entity.EntityFields.TYPE;
 
-public class MongoJobLockCacheDao implements JobLockCacheDao {
+public class MongoJobLockCacheDaoImpl implements JobLockCacheDao {
 
     public static final String JOB_LOCK_CACHE_ID = "jobLockCacheIdentifier";
-    private static final Logger logger = LoggerFactory.getLogger(MongoJobLockCacheDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoJobLockCacheDaoImpl.class);
 
     private final MongoJobLockCacheRepository repository;
     private final MongoTemplate mongoTemplate;
 
-    public MongoJobLockCacheDao(MongoJobLockCacheRepository repository,
-                                MongoTemplate mongoTemplate) {
+    public MongoJobLockCacheDaoImpl(MongoJobLockCacheRepository repository,
+                                    MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }
@@ -43,21 +43,28 @@ public class MongoJobLockCacheDao implements JobLockCacheDao {
         return mongoTemplate.findOne(query, MongoJobLockCacheRecordImpl.class);
     }
 
+    /**
+     * Save the record. The record may be any {@link JobLockCacheRecord} implementation (for example the
+     * {@code JobLockCacheRecordImpl} created by the job lock cache), so its fields are copied onto a new
+     * {@link MongoJobLockCacheRecordImpl} rather than casting it. The record passed in is not modified.
+     */
     @Override
     public void save(JobLockCacheRecord record) {
-        MongoJobLockCacheRecordImpl mongoRecord = (MongoJobLockCacheRecordImpl) record;
+        if(record == null) {
+            throw new IllegalArgumentException("JobLockCacheRecord can not be null!");
+        }
 
-        mongoRecord.setId(JOB_LOCK_CACHE_ID + "__" + record.getEnvironment());
+        String environment = record.getEnvironment() == null
+            ? JobLockCacheRecord.DEFAULT_ENVIRONMENT : record.getEnvironment();
+        long now = System.currentTimeMillis();
+
+        MongoJobLockCacheRecordImpl mongoRecord = new MongoJobLockCacheRecordImpl();
+        mongoRecord.setId(JOB_LOCK_CACHE_ID + "__" + environment);
+        mongoRecord.setEnvironment(environment);
         mongoRecord.setType(JOB_LOCK_CACHE_TYPE);
         mongoRecord.setJobLockCache(record.getJobLockCache());
-        if(record.getTimestamp() == 0) {
-            mongoRecord.setTimestamp(System.currentTimeMillis());
-        }
-        else {
-            mongoRecord.setTimestamp(record.getTimestamp());
-        }
-
-        mongoRecord.setModifiedTimestamp(System.currentTimeMillis());
+        mongoRecord.setTimestamp(record.getTimestamp() == 0 ? now : record.getTimestamp());
+        mongoRecord.setModifiedTimestamp(now);
         mongoRecord.setExpiry(-1);
 
         logger.debug("Saving JobLockCacheRecord with id: {}", mongoRecord.getId());
