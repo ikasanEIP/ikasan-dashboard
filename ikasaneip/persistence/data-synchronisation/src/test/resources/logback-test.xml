@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>[%p] %c{1} - %m%n</Pattern>
+        </encoder>
+    </appender>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.apache.solr" level="WARN"/>
+    <logger name="org.mongodb" level="WARN"/>
+    <logger name="org.testcontainers" level="WARN"/>
+    <logger name="tc" level="WARN"/>
+    <logger name="com.github.dockerjava" level="WARN"/>
+    <logger name="org.ikasan" level="WARN"/>
+    <logger name="org.ikasan.data.synchronisation" level="INFO"/>
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
