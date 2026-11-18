@@ -415,6 +415,21 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-data-synchronisation</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-commons</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-persistence-initialisation</artifactId>
         </dependency>
 

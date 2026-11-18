@@ -109,6 +109,8 @@ import org.ikasan.spec.security.dao.SecurityDao;
 import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.persistence.dao.SetupDao;
 import org.ikasan.spec.persistence.service.SetupService;
+import com.mongodb.event.CommandListener;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -201,7 +203,8 @@ public class MongoPersistenceAutoConfiguration {
             @Value("${mongodb.compression.enabled:false}") boolean compressionEnabled,
             @Value("${mongodb.compression.compressors:snappy,zlib,zstd}") String compressors,
             @Value("${mongodb.command-logging.max-length:" + MongoCommandLoggingListener.DEFAULT_MAX_LENGTH + "}")
-                int commandLoggingMaxLength) {
+                int commandLoggingMaxLength,
+            ObjectProvider<CommandListener> additionalCommandListeners) {
 
         MongoClientSettings.Builder settingsBuilder = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(connectionString));
@@ -294,6 +297,8 @@ public class MongoPersistenceAutoConfiguration {
 
         // Logs every command with its execution time when this listener's logger is at DEBUG; a no-op otherwise.
         settingsBuilder.addCommandListener(new MongoCommandLoggingListener(commandLoggingMaxLength));
+        // Any CommandListener beans in the context, e.g. the data-synchronisation module's write capture listener.
+        additionalCommandListeners.orderedStream().forEach(settingsBuilder::addCommandListener);
 
         return MongoClients.create(settingsBuilder.build());
     }

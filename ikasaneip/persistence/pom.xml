@@ -57,6 +57,7 @@
         <module>solr</module>
         <module>db-relational</module>
         <module>mongo</module>
+        <module>data-synchronisation</module>
         <module>persistence-initialisation</module>
     </modules>
 
