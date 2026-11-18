@@ -69,12 +69,19 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
      *
      * @return the list of ContextInstanceAggregateJobStatuses
      */
-    public List<ContextInstanceAggregateJobStatus> getContextInstanceAggregateJobStatuses() {
+    public synchronized List<ContextInstanceAggregateJobStatus> getContextInstanceAggregateJobStatuses() {
         if(this.jobStatuses == null) {
             this.populateJobStatuses();
         }
 
         return this.jobStatuses;
+    }
+
+    /**
+     * Refreshes the aggregate job statuses by repopulating them from the scheduler job instance service.
+     */
+    public synchronized void refresh() {
+        this.populateJobStatuses();
     }
 
     /**
@@ -99,7 +106,7 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     }
 
     @Override
-    public void receiveBroadcast(ContextInstance contextInstance) {
+    public synchronized void receiveBroadcast(ContextInstance contextInstance) {
         if(contextInstance.getStatus().equals(InstanceStatus.PREPARED) ||
             contextInstance.getStatus().equals(InstanceStatus.WAITING) ||
             contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
@@ -108,7 +115,7 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     }
 
     @Override
-    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+    public synchronized void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if(event.getContextInstance().getStatus().equals(InstanceStatus.PREPARED) ||
             event.getContextInstance().getStatus().equals(InstanceStatus.WAITING) ||
             event.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) {
