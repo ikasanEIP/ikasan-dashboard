@@ -1402,6 +1402,8 @@ public class ContextInstanceWidget extends VerticalLayout
                 ContextInstance newInstance = ContextMachineCache.instance()
                     .getByContextInstanceId(machine.getContext().getId()).getContext();
 
+                AggregateStatusCollector.instance().refresh();
+
                 this.contextInstanceSchedulerService.registerEndJobAndTrigger(newInstance.getName(), CronUtils.buildCronFromOriginal(newInstance.getProjectedEndTime(), newInstance.getTimezone())
                     , newInstance.getTimezone(), newInstance.getId());
 
