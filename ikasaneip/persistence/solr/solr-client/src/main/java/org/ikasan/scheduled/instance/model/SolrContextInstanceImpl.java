@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
@@ -33,7 +34,7 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();
         this.id = UUID.randomUUID().toString();
-        this.heldJobs = new HashMap<>();
+        this.heldJobs = new ConcurrentHashMap<>();
     }
 
     @Override
