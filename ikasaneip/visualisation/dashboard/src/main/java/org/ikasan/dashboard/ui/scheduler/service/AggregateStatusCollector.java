@@ -37,6 +37,10 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     /**
      * Initializes the {@link AggregateStatusCollector} singleton instance if it has not been initialized before,
      * and returns the instance.
+     * <p>
+     * If the singleton already exists but a different {@link SchedulerJobInstanceService} is supplied (e.g. a new
+     * Spring application context has been created), the service is replaced and the cached statuses are cleared so
+     * that subsequent refreshes are served by the current service rather than a stale one.
      *
      * @param schedulerJobInstanceService the service used to retrieve job status count for context instances
      * @return the initialized and registered {@link AggregateStatusCollector} instance
@@ -44,6 +48,12 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     public synchronized static AggregateStatusCollector init(SchedulerJobInstanceService schedulerJobInstanceService) {
         if (instance != null)
         {
+            synchronized (instance) {
+                if (instance.schedulerJobInstanceService != schedulerJobInstanceService) {
+                    instance.schedulerJobInstanceService = schedulerJobInstanceService;
+                    instance.jobStatuses = null;
+                }
+            }
             return instance;
         }
 
@@ -101,7 +111,7 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     }
 
     @Override
-    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
+    public synchronized void receiveBroadcast(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
         populateJobStatuses();
     }
 
