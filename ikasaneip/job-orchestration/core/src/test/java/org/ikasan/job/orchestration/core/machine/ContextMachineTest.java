@@ -9019,6 +9019,121 @@ public class ContextMachineTest extends AbstractTest {
         contextMachine.releaseJob("non-existent-job", "Context1");
     }
 
+    /**
+     * IKASAN-2831 - a null held jobs collection on the context instance must not prevent a held job from being released.
+     */
+    @Test
+    public void test_release_job_success_when_context_instance_held_jobs_is_null() throws Exception {
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        SchedulerJobInstance job = this.getHeldContext3Job(contextInstance);
+        contextInstance.setHeldJobs(null);
+
+        ContextMachine contextMachine = this.createReleaseTestContextMachine(contextInstance);
+        contextMachine.init();
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
+
+        Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        Assert.assertFalse(job.isHeld());
+        Assert.assertNotNull(contextInstance.getHeldJobs());
+        Assert.assertTrue(contextInstance.getHeldJobs().isEmpty());
+    }
+
+    /**
+     * A held job with a stored initiation event is released by enqueuing that event and removing it from the held jobs.
+     */
+    @Test
+    public void test_release_job_with_held_initiation_event_enqueues_event() throws Exception {
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        SchedulerJobInstance job = this.getHeldContext3Job(contextInstance);
+        SchedulerJobInitiationEventImpl heldEvent = new SchedulerJobInitiationEventImpl();
+        heldEvent.setAgentName("agentName1");
+        heldEvent.setJobName("jobName1");
+        contextInstance.setHeldJobs(new ConcurrentHashMap<>(Map.of("agentName1-jobName1_Context3", heldEvent)));
+
+        ContextMachine contextMachine = this.createReleaseTestContextMachine(contextInstance);
+        contextMachine.init();
+        IBigQueue outboundQueue = mock(IBigQueue.class);
+        ReflectionTestUtils.setField(contextMachine, "outboundQueue", outboundQueue);
+
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
+
+        verify(outboundQueue, times(1)).enqueue(any(byte[].class));
+        Assert.assertTrue(contextInstance.getHeldJobs().isEmpty());
+        Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        Assert.assertFalse(job.isHeld());
+    }
+
+    /**
+     * When the outbound queue fails, the exception must identify the job (not the child context) and carry the original cause.
+     */
+    @Test
+    public void test_release_job_enqueue_failure_throws_exception_with_job_identifier_and_cause() throws Exception {
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        SchedulerJobInstance job = this.getHeldContext3Job(contextInstance);
+        SchedulerJobInitiationEventImpl heldEvent = new SchedulerJobInitiationEventImpl();
+        heldEvent.setAgentName("agentName1");
+        heldEvent.setJobName("jobName1");
+        contextInstance.setHeldJobs(new ConcurrentHashMap<>(Map.of("agentName1-jobName1_Context3", heldEvent)));
+
+        ContextMachine contextMachine = this.createReleaseTestContextMachine(contextInstance);
+        contextMachine.init();
+        IBigQueue outboundQueue = mock(IBigQueue.class);
+        IOException enqueueFailure = new IOException("enqueue failed");
+        doThrow(enqueueFailure).when(outboundQueue).enqueue(any(byte[].class));
+        ReflectionTestUtils.setField(contextMachine, "outboundQueue", outboundQueue);
+
+        try {
+            contextMachine.releaseJob("agentName1-jobName1", "Context3");
+            Assert.fail("Expected ContextMachineException");
+        }
+        catch (ContextMachineException e) {
+            Assert.assertSame(enqueueFailure, e.getCause());
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("job[agentName1-jobName1]"));
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("childContext[Context3]"));
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("instance id[" + contextInstance.getId() + "]"));
+        }
+
+        Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        Assert.assertTrue(job.isHeld());
+    }
+
+    /**
+     * A job without a child context name cannot be matched to a held event, so it is skipped and left untouched.
+     */
+    @Test
+    public void test_release_job_skipped_when_child_context_name_is_null() throws Exception {
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        SchedulerJobInstance job = new SchedulerJobInstanceImpl();
+        job.setAgentName("agentName1");
+        job.setJobName("jobName1");
+        job.setIdentifier("agentName1-jobName1");
+        job.setStatus(InstanceStatus.ON_HOLD);
+        job.setHeld(true);
+
+        ContextMachine contextMachine = this.createReleaseTestContextMachine(contextInstance);
+        ReflectionTestUtils.invokeMethod(contextMachine, "_releaseJob", List.of(job));
+
+        Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        Assert.assertTrue(job.isHeld());
+    }
+
+    private SchedulerJobInstance getHeldContext3Job(ContextInstance contextInstance) {
+        ContextHelper.enrichJobs(contextInstance);
+        SchedulerJobInstance job = contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1");
+        job.setStatus(InstanceStatus.ON_HOLD);
+        job.setHeld(true);
+        return job;
+    }
+
+    private ContextMachine createReleaseTestContextMachine(ContextInstance contextInstance) throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        return new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , createInternalJobsMap(context), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+    }
+
 
     // The below is used to disable the outbound threads from consuming the data so that interrogating what is on the BigQueue is possible
     protected class SchedulerJobInitiationEventRaisedListenerToDisableOutboundBigQueue implements SchedulerJobInitiationEventRaisedListener {

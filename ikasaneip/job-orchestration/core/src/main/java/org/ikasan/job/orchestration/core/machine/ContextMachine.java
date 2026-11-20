@@ -1367,7 +1367,12 @@ public class ContextMachine {
      */
     private void _releaseJob(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
-            if(schedulerJobInstance.getChildContextName() == null || this.contextInstance.getHeldJobs() == null) return;
+            if(schedulerJobInstance.getChildContextName() == null) {
+                logger.warn("Not releasing job[{}] in context[{}] with instance id[{}] as the job has a null child context name."
+                    , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId());
+                return;
+            }
+            if (this.contextInstance.getHeldJobs() == null) this.contextInstance.setHeldJobs(new ConcurrentHashMap<>());
             SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(schedulerJobInstance.getIdentifier() + "_" + schedulerJobInstance.getChildContextName());
             if(event != null) {
                 InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier());
@@ -1391,10 +1396,12 @@ public class ContextMachine {
                     outboundQueue.enqueue(serialised.getBytes());
                     logger.debug("Outbound queue size: " + outboundQueue.size());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new ContextMachineException(String.format("Attempting to release job[%s] currently held in context[%s] " +
-                            "with instance id[%s]. Could not enqueue the outbound job initiation event!", schedulerJobInstance.getChildContextName()
-                        , this.contextInstance.getName(), this.contextInstance.getId()));
+                    logger.error(String.format("Error enqueuing job initiation event when releasing job[%s] in context[%s], childContext[%s] with instance id[%s]."
+                        , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName()
+                        , this.contextInstance.getId()), e);
+                    throw new ContextMachineException(String.format("Attempting to release job[%s] currently held in context[%s], childContext[%s] " +
+                            "with instance id[%s]. Could not enqueue the outbound job initiation event!", schedulerJobInstance.getIdentifier()
+                        , this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()), e);
                 }
 
                 InstanceStatus previousState = schedulerJobInstance.getStatus();
@@ -1411,7 +1418,12 @@ public class ContextMachine {
             else {
                 if(schedulerJobInstance != null) {
                     if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)
-                        || (schedulerJobInstance.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE))) return;
+                        || (schedulerJobInstance.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE))) {
+                        logger.warn("Not releasing job[{}] in context[{}], childContext[{}] with instance id[{}] as the job has status[{}] and agent[{}]."
+                            , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName()
+                            , this.contextInstance.getId(), schedulerJobInstance.getStatus(), schedulerJobInstance.getAgentName());
+                        return;
+                    }
                     if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) && !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                         throw new ContextMachineException(String.format("Attempting to release job[%s], " +
                                 "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."

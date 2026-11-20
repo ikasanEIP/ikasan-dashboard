@@ -544,8 +544,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
@@ -577,8 +577,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
@@ -610,8 +610,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
@@ -645,8 +645,8 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
                             localEventService.raiseLocalEventJob(localEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             localEventJobInstance.setStatus(InstanceStatus.COMPLETE);
@@ -1084,41 +1084,6 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
         // no implementation necessary
     }
 
-
-//    /**
-//     * Helper method to update the state of a job and to broadcast that state change.
-//     *
-//     * @param schedulerJobInstanceRecord
-//     * @param newStatus
-//     */
-//    private void updateJobState(SchedulerJobInstanceRecord schedulerJobInstanceRecord, InstanceStatus newStatus) {
-//        InstanceStatus previousStatus = schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus();
-//        SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
-//        schedulerJobInstance.setStatus(newStatus);
-//        schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
-//        updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
-//
-//        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-//            = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
-//            this.contextInstance, previousStatus, newStatus);
-//
-//        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-//    }
-
-//    /**
-//     * Update a scheduled job.
-//     *
-//     * @param schedulerJobInstanceRecord
-//     * @param authentication
-//     */
-//    private void updateScheduledJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord, IkasanAuthentication authentication) {
-//
-//        schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
-//        schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
-//        schedulerJobInstanceRecord.setStatus(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().name());
-//
-//        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
-//    }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
