@@ -1750,7 +1750,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
      * @return the filtered list of ContextInstanceAggregateJobStatus
      */
     private List<ContextInstanceAggregateJobStatus> filterContextInstanceAggregateJobStatus(StatusFilter statusFilter, int offset, int limit) {
-        AggregateStatusCollector.instance().refresh();
         List<ContextInstanceAggregateJobStatus> jobStatuses = AggregateStatusCollector.instance().getContextInstanceAggregateJobStatuses();
 
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
@@ -2138,12 +2137,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                 if(event.getContextInstance().getStatus().equals(InstanceStatus.PREPARED) ||
                     event.getContextInstance().getStatus().equals(InstanceStatus.WAITING) ||
                     event.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) {
-                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
-                    this.completedContextInstanceGrid.getDataCommunicator().reset();
-                    this.completedContextInstanceGrid.getDataProvider().refreshAll();
                 }
             });
         }
@@ -2161,12 +2156,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                 if(event.getStatus().equals(InstanceStatus.PREPARED) ||
                     event.getStatus().equals(InstanceStatus.WAITING) ||
                     event.getStatus().equals(InstanceStatus.ENDED)) {
-                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
-                    this.completedContextInstanceGrid.getDataCommunicator().reset();
-                    this.completedContextInstanceGrid.getDataProvider().refreshAll();
                 }
             });
         }
@@ -2182,7 +2173,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
                 this.updateAggregateContextInstanceAggregateStatus(event.getContextInstance().getId());
-                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
         }
     }
