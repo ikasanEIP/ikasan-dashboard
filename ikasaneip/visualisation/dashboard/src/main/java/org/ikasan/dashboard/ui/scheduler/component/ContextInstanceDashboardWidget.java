@@ -2186,7 +2186,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
         List<ContextInstanceAggregateJobStatus> statuses = this.schedulerJobInstanceService
             .getJobStatusCountForContextInstances(List.of(contextInstanceId));
         if(!statuses.isEmpty()) {
-            statuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshItem(status));
+//            statuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshItem(status));
+            this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
         }
         this.updateAggregateJobStatusFilteringCounts();
     }

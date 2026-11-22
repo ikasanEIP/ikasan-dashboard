@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.Objects;
+
 /**
  * MongoDB implementation of ReplayEvent.
  *
@@ -181,15 +183,41 @@ public class MongoReplayEventImpl implements ReplayEvent {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MongoReplayEventImpl other = (MongoReplayEventImpl) obj;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((eventId == null) ? 0 : eventId.hashCode());
+        result = prime * result + ((flowName == null) ? 0 : flowName.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((moduleName == null) ? 0 : moduleName.hashCode());
+        result = prime * result + ((timestamp == null) ? 0 : Long.hashCode(timestamp));
+        return result;
+    }
+
+    @Override
     public String toString() {
-        return "MongoReplayEventImpl{" +
-                "id='" + id + '\'' +
-                ", moduleName='" + moduleName + '\'' +
-                ", flowName='" + flowName + '\'' +
-                ", eventId='" + eventId + '\'' +
-                ", timestamp=" + timestamp +
-                ", expiry=" + expiry +
-                ", createdTimestamp=" + timestamp +
-                '}';
+        final StringBuffer sb = new StringBuffer("MongoReplayEventImpl{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", moduleName='").append(moduleName).append('\'');
+        sb.append(", flowName='").append(flowName).append('\'');
+        sb.append(", eventId='").append(eventId).append('\'');
+        sb.append(", event='").append(payloadRaw).append('\'');
+        sb.append(", eventAsString='").append(eventAsString).append('\'');
+        sb.append(", timestamp=").append(timestamp);
+        sb.append(", expiry=").append(expiry);
+        sb.append('}');
+        return sb.toString();
     }
 }

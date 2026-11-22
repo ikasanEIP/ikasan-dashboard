@@ -1,5 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.context.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.entity.EntityFields;
@@ -198,14 +200,6 @@ public class MongoScheduledContextRecordImpl implements ScheduledContextRecord {
 
     @Override
     public String toString() {
-        return "MongoScheduledContextRecordImpl{" +
-            "id='" + id + '\'' +
-            ", contextName='" + contextName + '\'' +
-            ", timestamp=" + timestamp +
-            ", modifiedTimestamp=" + modifiedTimestamp +
-            ", modifiedBy='" + modifiedBy + '\'' +
-            ", disabled=" + disabled +
-            ", quartzScheduledJobsDisabledForContext=" + isQuartzScheduleDrivenJobsDisabledForContext +
-            '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
