@@ -1,4 +1,6 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.mongo.persistence.general.model.MongoConstants;
 
 import org.ikasan.job.orchestration.exception.EntityConversionException;
@@ -189,5 +191,10 @@ public class MongoScheduledContextInstanceAuditAggregateRecordImpl implements Sc
 
     public void setExpiry(long expiry) {
         this.expiry = expiry;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

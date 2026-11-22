@@ -1,10 +1,13 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ContextInstanceAggregateJobStatusImpl implements ContextInstanceAggregateJobStatus {
     private final String contextInstanceId;
@@ -63,5 +66,18 @@ public class ContextInstanceAggregateJobStatusImpl implements ContextInstanceAgg
         if (repeatingJobsStatusCounts != null) {
             this.repeatingJobsStatusCounts.putAll(repeatingJobsStatusCounts);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextInstanceAggregateJobStatusImpl that = (ContextInstanceAggregateJobStatusImpl) o;
+        return Objects.equals(contextInstanceId, that.contextInstanceId);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

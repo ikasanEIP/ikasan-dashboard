@@ -1,5 +1,8 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import java.util.Objects;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
@@ -59,5 +62,23 @@ public class MongoContextInstanceAggregateJobStatusImpl implements ContextInstan
         if (repeatingJobsStatusCounts != null) {
             this.repeatingJobsStatusCounts.putAll(repeatingJobsStatusCounts);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MongoContextInstanceAggregateJobStatusImpl that = (MongoContextInstanceAggregateJobStatusImpl) o;
+        return Objects.equals(contextInstanceId, that.contextInstanceId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contextInstanceId);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
