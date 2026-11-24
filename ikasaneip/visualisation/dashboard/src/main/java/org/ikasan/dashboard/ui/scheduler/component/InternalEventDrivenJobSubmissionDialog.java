@@ -165,6 +165,8 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
             ModuleMetaData agent = this.moduleMetaDataService.findById(this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
             SchedulerJobInitiationEvent schedulerJobInitiationEvent = createSchedulerJobInitiationEvent(agent, (InternalEventDrivenJobInstance) this.schedulerJobInstanceRecord.getSchedulerJobInstance()
                 , this.contextParameterInstances, this.contextInstance);
+            // before the job is sent: see ManualJobSubmission
+            ManualJobSubmission.recordSubmitter(this.schedulerJobInstanceService, this.schedulerJobInstanceRecord, this.authentication.getName());
             logger.info("Submitting job[{}] to [{}]", schedulerJobInitiationEvent, agent.getUrl());
 
             if(JobLockCacheImpl.instance().doesJobParticipateInLock(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
@@ -203,8 +205,6 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
                 NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
             }
 
-            this.schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-            this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
                 , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
                 , this.contextInstance.getId()), this.authentication.getName());

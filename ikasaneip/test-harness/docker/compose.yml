@@ -1,0 +1,115 @@
+# Ikasan Dashboard test harness stack.
+#
+# One backend per run, selected with a compose profile:
+#   docker compose -f docker/compose.yml --profile mongo up -d
+#   docker compose -f docker/compose.yml --profile solr  up -d
+#
+# The harness normally drives this itself (see support/Compose.java): it starts the datastore,
+# seeds it, then starts the dashboard so that the dashboard's in-memory caches load from the baseline.
+#
+# The dashboard runs the jar built by visualisation/dashboard (mvn -pl visualisation/dashboard package),
+# bind-mounted into a plain JRE image, so no image build is needed.
+#
+# Host ports can be changed with HARNESS_MONGO_PORT / HARNESS_SOLR_PORT / HARNESS_DASHBOARD_PORT / HARNESS_AGENT_PORT.
+#
+# Profile 'agent' adds the real Ikasan scheduler agent (scheduler.agent: real); by default the harness uses an
+# in-JVM fake agent instead.
+
+name: ikasan-harness
+
+x-dashboard: &dashboard
+  image: eclipse-temurin:25-jre
+  # an init process forwards signals and reaps children, so the container can always be stopped
+  init: true
+  # lets the dashboard reach the harness's fake scheduler agent on the host (built in on Docker Desktop)
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  working_dir: /app
+  command: ["java", "-Xmx1g", "-Dmodule.name=ikasan-dashboard", "-jar", "/app/dashboard.jar"]
+  # one dashboard runs at a time; the real scheduler agent reaches it by this alias
+  networks:
+    default:
+      aliases: [dashboard]
+  ports:
+    - "${HARNESS_DASHBOARD_PORT:-9190}:9090"
+  volumes:
+    - ${HARNESS_DASHBOARD_JAR:-../../visualisation/dashboard/target/ikasan-dashboard-5.0.0-SNAPSHOT.jar}:/app/dashboard.jar:ro
+    - ./dashboard:/app/harness-config:ro
+  healthcheck:
+    # the JRE image has no curl: a bare HTTP request over bash's /dev/tcp
+    test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/9090 && printf 'GET /actuator/health HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]
+    interval: 5s
+    timeout: 5s
+    retries: 120
+    start_period: 30s
+
+services:
+
+  mongo:
+    profiles: [mongo]
+    image: mongodb/mongodb-atlas-local:7.0.14
+    ports:
+      - "${HARNESS_MONGO_PORT:-27117}:27017"
+    volumes:
+      - ../../persistence/mongo/src/main/resources/mongo/indexes:/indexes:ro
+    # Use the image's own health check: Atlas Local restarts mongod while it wires up mongot (search),
+    # so a plain ping reports healthy too early. Only the timing is tightened here.
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/runner", "healthcheck"]
+      interval: 3s
+      timeout: 30s
+      start_period: 120s
+      start_interval: 2s
+      retries: 60
+
+  solr:
+    profiles: [solr]
+    image: solr:9.10.1
+    # precreate the 'ikasan' core from the distribution's configset
+    command: ["solr-precreate", "ikasan", "/opt/ikasan-configset"]
+    ports:
+      - "${HARNESS_SOLR_PORT:-8993}:8983"
+    volumes:
+      - ../../persistence/solr/solr-distribution/src/main/resources/ikasan/conf:/opt/ikasan-configset/conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'http://localhost:8983/solr/ikasan/admin/ping' | grep -q OK"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+
+  dashboard-mongo:
+    <<: *dashboard
+    profiles: [mongo-dashboard]
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "file:/app/harness-config/application-harness.properties,file:/app/harness-config/application-harness-mongo.properties"
+      MONGODB_URI: "mongodb://mongo:27017/?directConnection=true"
+      MONGODB_ATLAS_SEARCH_ENABLED: "${HARNESS_MONGO_ATLASSEARCH:-true}"
+
+  dashboard-solr:
+    <<: *dashboard
+    profiles: [solr-dashboard]
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "file:/app/harness-config/application-harness.properties,file:/app/harness-config/application-harness-solr.properties"
+      SOLR_URL: "http://solr:8983/solr"
+
+  # The real Ikasan scheduler agent: runs the command jobs of job plan instances. The 5.x agent jar targets Java 26.
+  scheduler-agent:
+    profiles: [agent]
+    image: eclipse-temurin:26-jre
+    init: true
+    working_dir: /tmp/agent
+    command: ["java", "-Xmx512m", "--add-opens", "java.base/sun.nio.fs=ALL-UNNAMED", "-Dmodule.name=scheduler-agent",
+              "-Dorg.apache.activemq.SERIALIZABLE_PACKAGES=*", "-jar", "/app/agent.jar"]
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "file:/app/agent-config/application.properties,file:/app/agent-config/application-harness-agent.properties"
+    ports:
+      - "${HARNESS_AGENT_PORT:-18080}:8080"
+    volumes:
+      - ${HARNESS_AGENT_JAR:-${HOME}/.m2/repository/org/ikasan/scheduler-agent/5.0.0/scheduler-agent-5.0.0.jar}:/app/agent.jar:ro
+      - ./agent:/app/agent-config:ro
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /scheduler-agent/actuator/health HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 30s

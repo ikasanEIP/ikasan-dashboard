@@ -1,0 +1,8 @@
+{
+  "agentName": "GLOBAL_EVENT",
+  "jobName": "e2e-go",
+  "jobDescription": "harness global event",
+  "contextName": "GLOBAL_EVENT",
+  "startupControlType": "AUTOMATIC",
+  "identifier": "GLOBAL_EVENT-e2e-go"
+}

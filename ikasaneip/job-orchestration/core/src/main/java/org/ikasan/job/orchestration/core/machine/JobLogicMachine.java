@@ -50,8 +50,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         this.agents = agents;
         this.moduleMetaDataService = moduleMetaDataService;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
-        // todo make pool size configurable
-        this.executor = Executors.newFixedThreadPool(5, new JobThreadFactory("JobLogicMachine"));
+        // One thread, so that state changes are handed to the listeners in the order they happened. The listeners
+        // persist each change with a read-modify-write of the job's record; with several threads a job's RUNNING
+        // update could be written after its COMPLETE update and leave the record RUNNING.
+        this.executor = Executors.newSingleThreadExecutor(new JobThreadFactory("JobLogicMachine"));
         this.jobLockCache = jobLockCache;
         this.contextParametersInstanceService = contextParametersInstanceService;
     }
@@ -500,9 +502,29 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      *
      * @param event
      */
-    protected void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl event) {
-        this.executor.submit(() -> this.schedulerJobInstanceStateChangeEventListeners
-            .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
+    protected void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl liveEvent) {
+        // The listeners run later, on another thread, while the machine keeps changing the job (its status and its
+        // scheduled process event are set separately). Hand them a copy of the job as it is now, so a listener never
+        // sees a mix of two states, e.g. a completed job's event with the RUNNING status.
+        SchedulerJobInstanceStateChangeEventImpl event = liveEvent.getSchedulerJobInstance() == null ? liveEvent
+            : new SchedulerJobInstanceStateChangeEventImpl(
+                org.apache.commons.lang3.SerializationUtils.clone(liveEvent.getSchedulerJobInstance()),
+                liveEvent.getContextInstance(), liveEvent.getPreviousStatus(), liveEvent.getNewStatus());
+        // execute, not submit: a failure must not disappear into an unread Future. Each listener is guarded so that one
+        // failing (e.g. persisting the change) does not stop the others (e.g. broadcasting it to the dashboard).
+        this.executor.execute(() -> this.schedulerJobInstanceStateChangeEventListeners.forEach(listener -> {
+            try {
+                listener.onSchedulerJobInstanceStateChangeEvent(event);
+            }
+            catch (RuntimeException e) {
+                logger.error(String.format("Scheduler job state change listener [%s] failed for job [%s] in child context [%s] " +
+                        "of context instance [%s] (%s -> %s)", listener,
+                    event.getSchedulerJobInstance() != null ? event.getSchedulerJobInstance().getJobName() : null,
+                    event.getSchedulerJobInstance() != null ? event.getSchedulerJobInstance().getChildContextName() : null,
+                    event.getSchedulerJobInstance() != null ? event.getSchedulerJobInstance().getContextInstanceId() : null,
+                    event.getPreviousStatus(), event.getNewStatus()), e);
+            }
+        }));
     }
 
 

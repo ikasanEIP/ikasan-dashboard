@@ -3292,15 +3292,15 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
 
-        verify(mockSchedulerJobInstanceService, times(1)).findByContextIdJobNameChildContextName(anyString(), anyString(), anyString());
+        verify(mockSchedulerJobInstanceService, times(2)).findByContextIdJobNameChildContextName(anyString(), anyString(), anyString());
 
-        verify(jobUtilsService, times(1)).killJob(anyString(), anyLong(), anyBoolean());
+        verify(jobUtilsService, times(2)).killJob(anyString(), anyLong(), anyBoolean());
 
-        verify(mockInternalEventDrivenJobInstance, times(1)).setKilled(true);
-        verify(mockInternalEventDrivenJobInstance, times(1)).setStatus(InstanceStatus.KILLED);
+        verify(mockInternalEventDrivenJobInstance, times(2)).setKilled(true);
+        verify(mockInternalEventDrivenJobInstance, times(2)).setStatus(InstanceStatus.KILLED);
 
 
-        verify(mockSchedulerJobInstanceService, times(1)).save(schedulerJobInstanceRecord);
+        verify(mockSchedulerJobInstanceService, times(2)).save(schedulerJobInstanceRecord);
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,

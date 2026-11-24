@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "next",
+  "contextName": "E2E-SLOW",
+  "childContextNames": [
+    "E2E-SLOW-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-next",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo next",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": [],
+  "jobDescription": "next"
+}

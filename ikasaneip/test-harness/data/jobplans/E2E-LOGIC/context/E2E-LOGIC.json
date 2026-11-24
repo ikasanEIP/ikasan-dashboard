@@ -1,0 +1,113 @@
+{
+  "name": "E2E-LOGIC",
+  "description": "Harness job plan: AND and OR dependencies",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": false,
+  "contexts": [
+    {
+      "name": "E2E-LOGIC-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "a",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-a"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "b",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-b"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "c",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-c"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "d",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-d"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "e",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-e"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-a",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-b",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-c",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-d",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-a"
+              },
+              {
+                "identifier": "scheduler-agent-b"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-e",
+          "logicalGrouping": {
+            "or": [
+              {
+                "identifier": "scheduler-agent-b"
+              },
+              {
+                "identifier": "scheduler-agent-c"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

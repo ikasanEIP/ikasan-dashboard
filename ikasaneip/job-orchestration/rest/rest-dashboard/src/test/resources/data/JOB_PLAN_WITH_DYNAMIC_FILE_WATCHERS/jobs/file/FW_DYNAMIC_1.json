@@ -1,0 +1,37 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "FW_DYNAMIC_1",
+  "jobDescription" : "test",
+  "contextName" : "JOB_PLAN_WITH_DYNAMIC_FILE_WATCHERS",
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "cronExpression" : "0 0 0 ? * * *",
+  "ignoreMisfire" : true,
+  "eager" : false,
+  "maxEagerCallbacks" : 0,
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 1800000,
+  "filePath" : "/the/path/yyy",
+  "filenames" : [ "test-xxx.txt" ],
+  "includeHeader" : false,
+  "includeTrailer" : false,
+  "sortByModifiedDateTime" : false,
+  "sortAscending" : true,
+  "directoryDepth" : 1,
+  "logMatchedFilenames" : false,
+  "ignoreFileRenameWhilstScanning" : true,
+  "minFileAgeSeconds" : 0,
+  "filePathSpel" : "#filePathPattern.replace('yyy', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache).getContextParameter(#correlatingIdentifier, 'yyy'))",
+  "filenameSpel" : "#fileNamePattern.replace('xxx', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache).getContextParameter(#correlatingIdentifier, 'xxx'))",
+  "filenameReplacementPairs" : [ {
+    "replacementToken" : "xxx",
+    "jobPlanParameterName" : "xxx"
+  } ],
+  "filePathReplacementPairs" : [ {
+    "replacementToken" : "yyy",
+    "jobPlanParameterName" : "yyy"
+  } ],
+  "dynamic" : true,
+  "dropEventOnBlackout" : false,
+  "identifier" : "scheduler-agent-FW_DYNAMIC_1"
+}

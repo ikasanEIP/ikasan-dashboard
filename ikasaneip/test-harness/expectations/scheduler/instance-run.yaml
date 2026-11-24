@@ -1,0 +1,22 @@
+# Running job plan instances end to end (JobPlanInstanceRunIT). Plans: data/jobplans/<plan>.
+# Rows are complete Job Instances grid rows (see GridRows); values that vary use the patterns below.
+patterns:
+  timestamp: '/\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]/'
+
+scenarios:
+  - name: chain runs to completion
+    input: { plan: E2E-CHAIN, childContext: E2E-CHAIN-1, rootJob: trigger }
+    expect:
+      finalInstanceStatus: ENDED
+      initiationOrder: [okA, okB]
+      waiting:
+        rows:
+          - { "Job Name": "trigger", "Job Type": "Scheduled Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "N/A", "End Time": "N/A", "Modified By": "", "Manually Submitted By": "", "Status": "WAITING" }
+          - { "Job Name": "okA", "Job Type": "Command Execution Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "N/A", "End Time": "N/A", "Modified By": "", "Manually Submitted By": "", "Status": "WAITING" }
+          - { "Job Name": "okB", "Job Type": "Command Execution Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "N/A", "End Time": "N/A", "Modified By": "", "Manually Submitted By": "", "Status": "WAITING" }
+      # every job COMPLETE with its start and end time
+      completed:
+        rows:
+          - { "Job Name": "trigger", "Job Type": "Scheduled Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "@timestamp", "End Time": "@timestamp", "Modified By": "ContextMachine", "Manually Submitted By": "", "Status": "COMPLETE" }
+          - { "Job Name": "okA", "Job Type": "Command Execution Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "@timestamp", "End Time": "@timestamp", "Modified By": "ContextMachine", "Manually Submitted By": "", "Status": "COMPLETE" }
+          - { "Job Name": "okB", "Job Type": "Command Execution Job", "Child Job Plan Name": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Start Time": "@timestamp", "End Time": "@timestamp", "Modified By": "ContextMachine", "Manually Submitted By": "", "Status": "COMPLETE" }

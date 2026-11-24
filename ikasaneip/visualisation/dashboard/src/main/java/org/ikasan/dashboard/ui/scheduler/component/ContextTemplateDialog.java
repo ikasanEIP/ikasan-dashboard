@@ -624,8 +624,9 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         boolean isValid = this.binder.validate().isOk();
 
-        if(this.contextTtlDays.getValue() == 0 && this.contextTtlHours.getValue() == 0
-            && this.contextTtlMinutes.getValue() == 0) {
+        // an empty duration field is reported as invalid below; it must not fail the zero duration check
+        if(Integer.valueOf(0).equals(this.contextTtlDays.getValue()) && Integer.valueOf(0).equals(this.contextTtlHours.getValue())
+            && Integer.valueOf(0).equals(this.contextTtlMinutes.getValue())) {
             this.contextTtlMinutes.setErrorMessage("Cannot have a job plan duration of zero!");
             this.contextTtlMinutes.setInvalid(true);
         }
@@ -645,7 +646,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
 
         if(isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
-            && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
+            && !this.contextTtlDays.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
             && !this.contextVisualisationLevelDistanceIf.isInvalid() && !this.contextVisualisationNodeDistanceIf.isInvalid()
             && !this.jobVisualisationHorizontalSpacingIf.isInvalid() && !this.jobVisualisationVerticalSpacingIf.isInvalid() && !this.fontSize.isInvalid()) {
             boolean intervalGreaterThanNextFireTime = CronUtils.isDurationGreaterThanNextFireTime(this.startWindowCronExpressionTf.getValue(), ContextDurationUtils.getMilliseconds(this.contextTtlDays.getValue()
@@ -660,7 +661,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         }
 
         return isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
-            && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
+            && !this.contextTtlDays.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
             && !this.contextVisualisationLevelDistanceIf.isInvalid() && !this.contextVisualisationNodeDistanceIf.isInvalid()
             && !this.jobVisualisationHorizontalSpacingIf.isInvalid() && !this.jobVisualisationVerticalSpacingIf.isInvalid() && !this.fontSize.isInvalid();
     }
@@ -669,6 +670,15 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * Save new if the is managing a new context.
      */
     private void saveNew() {
+        // A job plan's name is its id: saving a new plan under an existing name would overwrite that plan.
+        if(this.scheduledContextService.findByName(this.contextTemplate.getName()) != null) {
+            String message = getTranslation("message.job-plan-name-must-be-unique", UI.getCurrent().getLocale());
+            this.contextNameTf.setErrorMessage(message);
+            this.contextNameTf.setInvalid(true);
+            NotificationHelper.showErrorNotification(message);
+            return;
+        }
+
         try {
             // new context templates should be disabled
             this.contextTemplate.setDisabled(true);
@@ -688,9 +698,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
         }
         catch (Exception e) {
+            // report the failure only, and keep the dialog open so the user can correct and retry
             logger.error("Error creating new context template", e);
             NotificationHelper.showErrorNotification(getTranslation("error.error-creating-new-context-template"
                 , UI.getCurrent().getLocale()));
+            return;
         }
 
         NotificationHelper.showUserNotification(getTranslation("notification.context-template-created-successfully"

@@ -765,6 +765,17 @@
                 <module>developer</module>
             </modules>
         </profile>
+        <!--
+            End-to-end Playwright test harness for the dashboard. Requires Docker and downloads Node,
+            so it is opt-in. Because 'all' is activeByDefault, list it explicitly:
+              mvn -Pall,e2e verify -pl test-harness -am
+        -->
+        <profile>
+            <id>e2e</id>
+            <modules>
+                <module>test-harness</module>
+            </modules>
+        </profile>
         <profile>
             <id>java8-doclint-disabled</id>
             <activation>

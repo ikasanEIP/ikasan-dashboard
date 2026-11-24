@@ -1,0 +1,49 @@
+{
+  "name": "E2E-PARAMS",
+  "description": "Harness job plan: a job using a plan parameter",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": true,
+  "contextParameters": [
+    {
+      "name": "GREETING",
+      "defaultValue": "hello"
+    }
+  ],
+  "contexts": [
+    {
+      "name": "E2E-PARAMS-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "paramJob",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-paramJob"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-paramJob",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

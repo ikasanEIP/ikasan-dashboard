@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "failJob",
+  "contextName": "E2E-FAILURE",
+  "childContextNames": [
+    "E2E-FAILURE-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-failJob",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo boom; exit 3",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": [],
+  "jobDescription": "failJob"
+}

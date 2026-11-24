@@ -23,4 +23,18 @@ public class ContextCache {
 
         return context;
     }
+
+    /**
+     * Get and remove the cached context for the given id, so a deep link is only followed once.
+     *
+     * @param id the http session id
+     * @return the cached context, or null
+     */
+    public static String consumeContext(String id) {
+        String context = CONTEXT_CACHE.getIfPresent(id);
+        if(context != null) {
+            CONTEXT_CACHE.invalidate(id);
+        }
+        return context;
+    }
 }

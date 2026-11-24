@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ikasan Dashboard end-to-end test harness (Playwright for Java + JUnit 5).
+
+  Not part of the default build. Run with:
+    mvn -Pall,e2e verify -pl test-harness -am
+  Options:
+    -Dharness.skip=true            skip the end-to-end run
+    -Dharness.env=compose-mongo    harness environment (compose-mongo | compose-solr | external)
+    -Dharness.include=smoke        only run tests/scenarios with any of these tags (comma separated)
+    -Dharness.exclude=slow         skip tests/scenarios with any of these tags (comma separated)
+    -Dit.test=SearchIT             run a single test class (standard failsafe option)
+  Any harness setting can also be overridden with a HARNESS_* environment variable or a
+  -Dharness.<section>.<key>=value system property (see config/harness.default.yaml).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.ikasan</groupId>
+        <artifactId>ikasan-dashboard-build</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ikasan-test-harness</artifactId>
+    <packaging>jar</packaging>
+    <name>Ikasan Dashboard Test Harness</name>
+    <description>Playwright end-to-end test harness for the Ikasan Dashboard</description>
+
+    <properties>
+        <version.com.microsoft.playwright>1.55.0</version.com.microsoft.playwright>
+        <version.org.mongodb.driver-sync>5.8.1</version.org.mongodb.driver-sync>
+        <version.tools.jackson.dataformat.yaml>3.1.0</version.tools.jackson.dataformat.yaml>
+        <version.maven-failsafe-plugin>3.5.3</version.maven-failsafe-plugin>
+        <harness.skip>false</harness.skip>
+        <harness.env>compose-mongo</harness.env>
+        <harness.include />
+        <harness.exclude />
+        <!-- nothing to deploy: the harness is only ever run from source -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <!--
+            Only here so that -am builds the dashboard jar first (the compose stack runs that jar).
+            Its transitive dependencies are excluded: the harness needs none of them, and they would
+            fail the parent's dependencyConvergence enforcer rule.
+        -->
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-dashboard</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${version.com.microsoft.playwright}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${version.org.mongodb.driver-sync}</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${version.tools.jackson.dataformat.yaml}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- the parent pins junit-platform-commons to 1.10.2; Jupiter 5.14.4's engine needs the matching 1.14.4 -->
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!-- command line tools: mvn -q exec:java -Dexec.args="seed | stack up|down | capture <dataset>" -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>org.ikasan.testharness.cli.HarnessCli</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>harness.root</key>
+                            <value>${project.basedir}</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+            <!-- unit tests of the harness itself (config, tokens, datasets) run in the normal test phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.maven-failsafe-plugin}</version>
+            </plugin>
+            <!-- the end-to-end tests (*IT) run against the dashboard in the integration-test phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${version.maven-failsafe-plugin}</version>
+                <configuration>
+                    <skipITs>${harness.skip}</skipITs>
+                    <workingDirectory>${project.basedir}</workingDirectory>
+                    <trimStackTrace>false</trimStackTrace>
+                    <systemPropertyVariables>
+                        <harness.root>${project.basedir}</harness.root>
+                    </systemPropertyVariables>
+                    <environmentVariables>
+                        <HARNESS_ENV>${harness.env}</HARNESS_ENV>
+                        <HARNESS_RUN_INCLUDE>${harness.include}</HARNESS_RUN_INCLUDE>
+                        <HARNESS_RUN_EXCLUDE>${harness.exclude}</HARNESS_RUN_EXCLUDE>
+                    </environmentVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

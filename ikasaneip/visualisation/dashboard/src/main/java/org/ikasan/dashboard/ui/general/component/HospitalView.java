@@ -80,7 +80,7 @@ public class HospitalView extends AbstractEntityView<IkasanESBDocument> implemen
     private DateFormatter dateFormatter;
 
     public HospitalView(@Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ESBSearchService esbSearchService, DateFormatter dateFormatter)
+        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, @Qualifier("esbSearchService") ESBSearchService esbSearchService, DateFormatter dateFormatter)
     {
         this.hospitalAuditService = hospitalAuditService;
         if(this.hospitalAuditService == null)

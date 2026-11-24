@@ -1,0 +1,25 @@
+# Error search scenarios against the 'core' dataset (data/baseline/core/error.ndjson).
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: all errors in the last day
+    tags: [smoke, error]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [error], term: "" }
+    expect:
+      total: 5
+      rowsExact: true
+      rows:
+      - { "Entity Type": "error", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-ERR-001 / err-0001", "Timestamp": "{{now-7m|table}}" }
+      - { "Entity Type": "error", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-ERR-002 / err-0002", "Timestamp": "{{now-14m|table}}" }
+      - { "Entity Type": "error", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-ERR-003 / err-0003", "Timestamp": "{{now-21m|table}}" }
+      - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-004 / err-0004", "Timestamp": "{{now-28m|table}}" }
+      - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-005 / err-0005", "Timestamp": "{{now-35m|table}}" }
+
+  - name: errors for the payment module
+    tags: [error]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [error], term: "", filters: { moduleName: harness-module-b } }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-004 / err-0004", "Timestamp": "{{now-28m|table}}" }
+      - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-005 / err-0005", "Timestamp": "{{now-35m|table}}" }

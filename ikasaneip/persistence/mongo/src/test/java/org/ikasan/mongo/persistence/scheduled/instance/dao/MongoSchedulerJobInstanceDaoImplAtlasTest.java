@@ -123,13 +123,42 @@ public class MongoSchedulerJobInstanceDaoImplAtlasTest {
         assertEquals(List.of("file-loader", "file-watcher"), jobNames(find(f -> f.setDisplayNameFilter("file "))));
     }
 
+    /**
+     * A filter scoped to one context instance is answered by the collection, not Atlas Search (which lags behind
+     * writes), with the same matching: job name as a case-insensitive substring, the rest exact.
+     */
     @Test
     public void context_and_context_instance_filters() {
-        assertEquals(List.of("file-loader", "file-watcher", "file-start"), jobNames(find(f -> {
-            f.setJobName("file");
-            f.setContextName("billing");
-            f.setContextInstanceId("ci-1");
-        })));
+        SchedulerJobInstanceSearchFilterImpl filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setJobName("FILE");
+        filter.setContextName("billing");
+        filter.setContextInstanceId("ci-1");
+
+        SearchResults<SchedulerJobInstanceRecord> results = AtlasLocalSupport.withoutSearch(DB,
+            () -> dao.getScheduledContextInstancesByFilter(filter, -1, -1, "startTime", "DESC"));
+
+        assertEquals(List.of("file-loader", "file-watcher", "file-start"), jobNames(results));
+        assertEquals(3, results.getTotalNumberOfResults());
+    }
+
+    /**
+     * The scheduler updates a job's record straight after the instance's records are created and expects to find it:
+     * a context instance scoped query must see a record saved a moment ago (Atlas Search indexes it ~1s later).
+     */
+    @Test
+    public void a_job_saved_a_moment_ago_is_found_within_its_context_instance() {
+        String contextInstanceId = "ci-just-saved-" + System.nanoTime();
+        dao.save(job("just-saved", "Just saved", "billing", contextInstanceId, "child", InstanceStatus.WAITING,
+            JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE, new InternalEventDrivenJobInstanceImpl(), 1, 0));
+
+        SchedulerJobInstanceSearchFilterImpl filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobName("just-saved");
+        filter.setChildContextName("child");
+        SearchResults<SchedulerJobInstanceRecord> results = dao.getScheduledContextInstancesByFilter(filter, 1, 0, null, null);
+
+        assertEquals(List.of("just-saved"), jobNames(results));
+        assertEquals(1, results.getTotalNumberOfResults());
     }
 
     @Test

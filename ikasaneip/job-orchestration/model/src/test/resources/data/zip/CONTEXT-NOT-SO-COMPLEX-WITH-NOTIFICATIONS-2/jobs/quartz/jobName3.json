@@ -1,0 +1,17 @@
+{
+	"agentName": "scheduler-agent",
+	"jobName": "jobName3",
+	"contextId": "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+	"childContextIds": [
+		"childId3"
+	],
+	"startupControlType": "AUTOMATIC",
+	"cronExpression": "0 0 * ? * * *",
+	"ignoreMisfire": true,
+	"eager": false,
+	"maxEagerCallbacks": 0,
+	"passthroughProperties": {},
+	"persistentRecovery": true,
+	"recoveryTolerance": 1800000,
+	"identifier": "scheduler-agent-jobName3"
+}

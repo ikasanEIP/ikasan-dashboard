@@ -210,6 +210,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                     GlobalEventJobInstance globalEventJobInstance = (GlobalEventJobInstance)schedulerJobInstanceRecord
                         .getSchedulerJobInstance();
 
+                    // before the job is sent: see ManualJobSubmission
+                    ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
                     this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                         this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
@@ -221,8 +223,6 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                     globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                     schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
                     schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
-                    schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                    schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                     this.setButtonVisibility();
 

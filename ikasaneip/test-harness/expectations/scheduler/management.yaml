@@ -1,0 +1,35 @@
+# Job plan template management (JobPlanManagementIT), route contextTemplateManagement/<plan>.
+patterns:
+  timestamp: '/\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]/'
+
+scenarios:
+  - name: management view shows the plan
+    input: { plan: E2E-CHAIN }
+    expect:
+      heading: "Job Plan Template Management - E2E-CHAIN"
+      tabs: [Job Plan Visualisation, Job Plan Raw JSON, Job Plan Instances, Job Templates]
+      validation: "The job plan is valid!"
+
+  - name: job templates grid
+    input: { plan: E2E-CHAIN }
+    expect:
+      headers: [Job Name, Job Type, Template, Residing Job Plans, In Lock, Targeted, Actions, Created Date/Time, Modified Date/Time, Modified By, Status]
+      rowsExact: true
+      rows:
+        - { "Job Name": "trigger", "Job Type": "Scheduled Job", "Template": "", "Residing Job Plans": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Modified By": "system", "Status": "" }
+        - { "Job Name": "okA", "Job Type": "Command Execution Job", "Template": "", "Residing Job Plans": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Modified By": "system", "Status": "" }
+        - { "Job Name": "okB", "Job Type": "Command Execution Job", "Template": "", "Residing Job Plans": "E2E-CHAIN-1", "In Lock": "", "Targeted": "", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Modified By": "system", "Status": "" }
+
+  - name: raw json shows the plan
+    input: { plan: E2E-CHAIN }
+    expect: { contains: ['"name"', 'E2E-CHAIN-1', 'scheduler-agent-okA'] }
+
+  - name: exports with and without tokens
+    input:
+      plan: E2E-CHAIN
+      menu: { plain: "Download Job Plan Bundle", withTokens: "Download Job Plan Bundle With Tokens" }
+      links: ["Download Job Plan Bundle", "Download Split Job Plan Bundle"]
+    expect:
+      # every exported job (none of this plan's are global event jobs) names its agent; with tokens, as a token
+      agent: scheduler-agent
+      agentToken: "[[agent.name]]"

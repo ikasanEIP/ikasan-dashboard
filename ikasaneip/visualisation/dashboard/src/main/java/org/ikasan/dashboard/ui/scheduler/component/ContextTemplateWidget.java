@@ -270,6 +270,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
         Button uploadJobPlan = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
+        uploadJobPlan.setId("uploadJobPlanButton");
         uploadJobPlan.setIconAfterText(true);
         uploadJobPlan.addClickListener(buttonClickEvent -> {
             ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, this.userService, this.authentication);
@@ -289,6 +290,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         Icon newContextIcon = VaadinIcon.PLUS.create();
         Button newContextButton = new Button(getTranslation("button.new-job-plan", UI.getCurrent().getLocale()), newContextIcon);
+        newContextButton.setId("newJobPlanButton");
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
             ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.contextInstanceRegistrationService
@@ -310,6 +312,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         Icon refreshIcon = VaadinIcon.REFRESH.create();
         Button refreshContextParamButton = new Button(getTranslation("button.refresh-job-params", UI.getCurrent().getLocale()), refreshIcon);
+        refreshContextParamButton.setId("refreshJobParametersButton");
         refreshContextParamButton.setIconAfterText(true);
         refreshContextParamButton.addClickListener(buttonClickEvent -> {
             if (showFollowerNodeNotSupportedDialog()) return;
@@ -329,6 +332,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         Icon refreshJobPlansIcon = VaadinIcon.REFRESH.create();
         Button refreshJobPlansButton = new Button(getTranslation("button.refresh-grid", UI.getCurrent().getLocale()), refreshJobPlansIcon);
+        refreshJobPlansButton.setId("refreshJobPlanGridButton");
         refreshJobPlansButton.setIconAfterText(true);
         refreshJobPlansButton.addClickListener(buttonClickEvent -> {
             this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -385,6 +389,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         // Create a modulesGrid bound to the list
         ScheduledContextSearchFilter contextSearchFilter = new SolrScheduledContextSearchFilterImpl();
         contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, contextSearchFilter);
+        contextTemplateFilteringGrid.setId("jobPlanGrid");
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
         contextTemplateFilteringGrid.setWidthFull();
@@ -563,10 +568,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         error = true;
                     } finally {
                         if (error) {
-                            NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                            NotificationHelper.showUserNotification(getTranslation("notification.enable-scheduled-jobs-error"
                                 , UI.getCurrent().getLocale()));
                         } else {
-                            NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                            NotificationHelper.showUserNotification(getTranslation("notification.enabled-scheduled-successfully"
                                 , UI.getCurrent().getLocale()));
                         }
                     }
@@ -992,6 +997,15 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
                     , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
                     , SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+                // The security checks above enable both buttons for users who may change the plan's state; the button of
+                // the state the plan is already in must stay disabled (it was enabled again by those checks).
+                if(scheduledContextRecord.isDisabled()) {
+                    disabled.setEnabled(false);
+                }
+                else {
+                    enabled.setEnabled(false);
+                }
 
                 HorizontalLayout buttons = new HorizontalLayout();
                 buttons.setWidth("200px");

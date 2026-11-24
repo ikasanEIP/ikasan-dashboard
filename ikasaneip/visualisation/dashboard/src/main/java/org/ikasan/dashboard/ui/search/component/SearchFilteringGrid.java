@@ -146,6 +146,7 @@ public class SearchFilteringGrid extends Grid<IkasanESBDocument>
             this.resultsLabel.setText(String.format(getTranslation("label.search-results-returned",
                 UI.getCurrent().getLocale(), null), this.resultSize, this.queryTime));
             this.resultsLabel.getElement().getStyle().set("fontSize", "10pt");
+            this.resultsLabel.getElement().setAttribute("data-result-count", String.valueOf(this.resultSize));
 
             return (int) results.getTotalNumberOfResults();
         });

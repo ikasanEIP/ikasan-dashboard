@@ -1,0 +1,18 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "trigger",
+  "contextName": "E2E-SLOW",
+  "childContextNames": [
+    "E2E-SLOW-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-trigger",
+  "cronExpression": "0 0 0 1 1 ? *",
+  "ignoreMisfire": true,
+  "eager": false,
+  "maxEagerCallbacks": 0,
+  "passthroughProperties": {},
+  "persistentRecovery": true,
+  "recoveryTolerance": 1800000,
+  "jobDescription": "trigger"
+}

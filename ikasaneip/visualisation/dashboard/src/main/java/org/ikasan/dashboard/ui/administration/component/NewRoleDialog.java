@@ -88,6 +88,15 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
             {
                 binder.writeBean(role);
 
+                // Role ids are derived from the role name, so saving a role whose name is already taken would
+                // silently overwrite the existing role (clearing its policies) rather than fail.
+                if(roleNameExists(role.getName()))
+                {
+                    NotificationHelper.showErrorNotification(getTranslation("message.role-name-must-be-unique",
+                        UI.getCurrent().getLocale(), null));
+                    return;
+                }
+
                 this.securityService.saveRole(role);
 
                 this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_ROLE_ADDED
@@ -121,5 +130,18 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
         this.content.add(layout);
         this.setHeight("475px");
         this.setWidth("600px");
+    }
+
+    /**
+     * Is the name already used by a role? Compares names exactly against all roles: name lookups on some
+     * backends are token based (a lookup of 'admin' would also match 'super-admin').
+     *
+     * @param name the new role's name
+     * @return true if a role with exactly this name exists
+     */
+    private boolean roleNameExists(String name)
+    {
+        return name != null && this.securityService.getAllRoles().stream()
+            .anyMatch(existing -> name.equals(existing.getName()));
     }
 }

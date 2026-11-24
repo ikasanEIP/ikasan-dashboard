@@ -81,9 +81,11 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
             contextZipFile = dataStream;
         });
         Upload upload = new Upload(inMemoryHandler);
+        upload.setId("jobPlanUpload");
         upload.setMaxFiles(1);
 
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
+        saveButton.setId("jobPlanUploadSaveButton");
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             if (this.contextZipFile == null) {
                 NotificationHelper.showUserNotification(getTranslation("error.provisioning-context-jobs-no-file", UI.getCurrent().getLocale()));
@@ -161,6 +163,7 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
         });
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton.setId("jobPlanUploadCancelButton");
         cancelButton.addClickListener(buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();

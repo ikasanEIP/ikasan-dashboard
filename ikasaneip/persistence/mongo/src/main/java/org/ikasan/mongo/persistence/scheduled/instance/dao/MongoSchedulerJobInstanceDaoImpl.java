@@ -302,8 +302,16 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
         long startTime = System.currentTimeMillis();
 
-        AtlasSearchQueryHelper.SearchQueryResult<MongoSchedulerJobInstanceRecordImpl> result =
-            atlasSearchQueryHelper.search(buildSearchFilter(filter), buildSort(sortField, sortDirection),
+        // Queries scoped to one job plan instance come from the scheduler itself (updating a job's state, finding a job
+        // for an operator action, building a context machine) and must see writes made a moment ago. Atlas Search
+        // indexes asynchronously (typically ~1s behind), so these go straight to the collection (the instance's jobs
+        // are found through the type/componentName index); searches across instances keep using $search.
+        boolean withinContextInstance = filter != null && filter.getContextInstanceId() != null
+            && !filter.getContextInstanceId().isBlank();
+        AtlasSearchQueryHelper.SearchQueryResult<MongoSchedulerJobInstanceRecordImpl> result = withinContextInstance
+            ? atlasSearchQueryHelper.searchWithoutIndex(buildSearchFilter(filter), buildSort(sortField, sortDirection),
+                Math.max(offset, 0), limit, true, MongoSchedulerJobInstanceRecordImpl.class)
+            : atlasSearchQueryHelper.search(buildSearchFilter(filter), buildSort(sortField, sortDirection),
                 Math.max(offset, 0), limit, MongoSchedulerJobInstanceRecordImpl.class);
 
         long queryTime = System.currentTimeMillis() - startTime;

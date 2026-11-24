@@ -1,0 +1,59 @@
+{
+  "name": "E2E-SLOW",
+  "description": "Harness job plan: a long running job",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": false,
+  "contexts": [
+    {
+      "name": "E2E-SLOW-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "slowJob",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-slowJob"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "next",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-next"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-slowJob",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-next",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-slowJob"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

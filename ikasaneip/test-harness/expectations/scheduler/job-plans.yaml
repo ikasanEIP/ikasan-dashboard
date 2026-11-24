@@ -1,0 +1,69 @@
+# Job plan provisioning and lifecycle (JobPlanProvisioningIT, JobPlanLifecycleIT). Plans: data/jobplans/<plan>.
+# The job plan grid shows its times in the server's zone (UTC), so they are patterns.
+patterns:
+  timestamp: '/\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]/'
+
+scenarios:
+  - name: upload every fixture
+    input:
+      plans: [E2E-CHAIN, E2E-FAILURE, E2E-LOGIC, E2E-SLOW, E2E-PARAMS, E2E-GLOBAL, E2E-NESTED]
+    expect:
+      notification: "Successfully provisioned context!"
+      # other test classes upload plans too, so these rows must be present but others are allowed
+      rowsExact: false
+      rows:
+        - { "Job Plan Name": "E2E-CHAIN", "Description": "Harness job plan: a quartz trigger followed by two command jobs in sequence", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-FAILURE", "Description": "Harness job plan: a job that fails (exit 3) and its downstream job", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-LOGIC", "Description": "Harness job plan: AND and OR dependencies", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-SLOW", "Description": "Harness job plan: a long running job", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-PARAMS", "Description": "Harness job plan: a job using a plan parameter", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-GLOBAL", "Description": "Harness job plan: started by the global event e2e-go", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+        - { "Job Plan Name": "E2E-NESTED", "Description": "Harness job plan: two child job plans joined by terminal and start jobs", "Actions": "", "Created Date/Time": "@timestamp", "Modified Date/Time": "@timestamp", "Scheduled Jobs Disabled": "", "Modified By": "", "Enabled/Disabled": "EnabledDisabled" }
+
+  - name: upload without a file
+    expect: { notification: "No input file uploaded!" }
+
+  - name: upload a file that is not a job plan
+    expect: { notification: "An error has occurred provisioning context and/or jobs! Please contact Ikasan support." }
+
+  - name: export round trip
+    input: { plan: E2E-CHAIN, links: ["Download Job Plan Bundle", "Download Split Job Plan Bundle"] }
+    expect: { file: "E2E-CHAIN.zip" }
+
+  - name: new job plan validation
+    expect:
+      errors:
+        "Job Plan Name": "Job Plan name is required!"
+        "Time Window Start Cron Expression": "Cron expression is required!"
+        "Timezone": "A timezone is required!"
+        "Job Plan description": "A context description is required!"
+
+  - name: job plan lifecycle
+    input: { name: E2E-NEW-PLAN, description: "Created by the test harness", cron: "0 0 0 1 1 ? *", durationDays: 1, durationHours: 0, durationMinutes: 0, timezone: "Europe/London" }
+    expect:
+      created: "The job plan template has been created successfully!"
+      deleted: "The context template has been deleted successfully."
+
+  - name: job plan can be disabled and enabled
+    # its own plan with jobs: enabling a plan provisions its jobs to their agents
+    input: { plan: E2E-TOGGLE }
+
+  - name: a new job plan cannot reuse an existing name
+    input: { name: E2E-CHAIN, description: "Would overwrite E2E-CHAIN", cron: "0 0 0 1 1 ? *", durationDays: 1, durationHours: 0, durationMinutes: 0, timezone: "Europe/London" }
+    expect:
+      error: "A job plan with this name already exists. Job plan names must be unique!"
+      # the existing plan is unchanged
+      description: "Harness job plan: a quartz trigger followed by two command jobs in sequence"
+
+  - name: an empty duration is a validation error
+    input: { name: E2E-NO-DURATION, description: "Duration hours left empty", cron: "0 0 0 1 1 ? *", durationDays: 1, timezone: "Europe/London" }
+    expect:
+      notification: "A validation error has occurred when attempting to save the job plan. Please see the form for details."
+      fieldError: "Duration Hours is required and must be between 0 and 23."
+
+  - name: scheduled jobs can be disabled and enabled
+    # its own plan, so the changes do not show up in other expectations
+    input: { plan: E2E-SCHEDULED }
+    expect:
+      disabled: "All scheduled jobs have been successfully disabled."
+      enabled: "All scheduled jobs have been successfully enabled."

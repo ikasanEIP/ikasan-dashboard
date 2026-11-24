@@ -1,0 +1,96 @@
+# Base configuration for the Ikasan Dashboard test harness.
+#
+# Layering (later wins), see org.ikasan.testharness.config.ConfigLoader:
+#   1. this file
+#   2. config/environments/<env>.yaml       env from HARNESS_ENV or -Dharness.env (default compose-mongo)
+#   3. config/local.yaml                    optional, git-ignored personal settings
+#   4. -Dharness.<section>.<key>=value      e.g. -Dharness.run.headless=false
+#   5. HARNESS_<SECTION>_<KEY>              e.g. HARNESS_DASHBOARD_URL, HARNESS_MONGO_URI, HARNESS_RUN_INCLUDE=smoke
+# Keys match case-insensitively, underscores are ignored, list values are comma separated.
+
+dashboard:
+  # the harness stack uses non-default host ports so it never collides with (or wipes) a local dev install
+  url: http://localhost:9190
+  username: admin
+  password: admin
+  # credentials for the REST api (/authenticate -> JWT)
+  restUsername: admin
+  restPassword: admin
+  # how long to wait for /actuator/health to report UP
+  startupTimeoutSeconds: 300
+
+# mongo | solr
+backend: mongo
+
+mongo:
+  uri: mongodb://localhost:27117/?directConnection=true
+  database: ikasan
+  collection: ikasan
+  # apply the repo's index definitions (persistence/mongo/src/main/resources/mongo/indexes)
+  applyIndexes: true
+  atlasSearch: true
+
+solr:
+  url: http://localhost:8993/solr
+  core: ikasan
+  username: ikasan
+  password: 1ka5an
+
+compose:
+  # when true the harness starts/stops the docker compose stack itself
+  enabled: true
+  file: docker/compose.yml
+  project: ikasan-harness
+  # tear the stack down after the run
+  teardown: false
+  # dashboard jar mounted into the container (relative to the harness module)
+  dashboardJar: ../visualisation/dashboard/target/ikasan-dashboard-5.0.0-SNAPSHOT.jar
+
+seed:
+  # wipe the datastore and load the baseline dataset before the run
+  enabled: true
+  dataset: core
+  # ISO timestamp the {{now...}} time tokens resolve against; empty = run start time
+  clockAnchor: ""
+  # document types left untouched by the wipe. Empty for compose runs: the dashboard re-creates the
+  # security baseline (admin/admin) on start-up when the 'dashboardPlatformSetup' marker is missing.
+  preserveTypes: []
+
+scheduler:
+  # who runs the jobs of job plan instances:
+  #   fake - an agent stand-in inside the harness JVM (default; outcomes from the job's command line, scriptable)
+  #   real - the Ikasan scheduler-agent container (compose profile 'agent'): real commands, logs, kill
+  #   none - no agent; job plans can be managed but command jobs never run
+  agent: fake
+  agentName: scheduler-agent
+  # port the fake agent listens on, and the host the dashboard container reaches the harness JVM with
+  fakeAgentPort: 18090
+  fakeAgentHost: host.docker.internal
+  # real mode: the scheduler-agent container (docker/compose.yml service 'scheduler-agent', profile 'agent'), the
+  # url the dashboard reaches it on, and the jar it runs (scheduler-agent 5.x targets Java 26; ~ is expanded)
+  realAgentUrl: http://scheduler-agent:8080/scheduler-agent
+  realAgentJar: ~/.m2/repository/org/ikasan/scheduler-agent/5.0.0/scheduler-agent-5.0.0.jar
+
+expectations:
+  # directories searched (in order, later wins) for expectation files;
+  # use ${env} to layer per-environment overrides
+  paths:
+    - expectations
+    - expectations/env/${env}
+
+run:
+  # chromium | firefox | webkit
+  browser: chromium
+  headless: true
+  # slow every browser action down by this many ms (useful with headless: false)
+  slowMoMillis: 0
+  timeoutSeconds: 30
+  expectTimeoutSeconds: 15
+  # tag filters applied to test classes/methods (JUnit @Tag) and expectation scenarios (tags:),
+  # e.g. [smoke] or [search, admin]; empty = everything
+  include: []
+  exclude: []
+  # keep a Playwright trace and screenshot for each failed test under target/playwright/
+  traceOnFailure: true
+  # time zone of the browser (the dashboard shows times in it) and of the time tokens; empty = this machine's zone
+  timezone: ""

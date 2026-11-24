@@ -1,0 +1,6 @@
+# Session management (mutating). A second, separate login is created and ended by the admin.
+scenarios:
+  - name: end another user session
+    input: {}
+    # detailsLabel: a form label of the Session Details dialog body (the dialog title is in its header part)
+    expect: { ended: "The users session has been successfully ended!", detailsLabel: "Session Id", locale: "English" }

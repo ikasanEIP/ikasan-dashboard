@@ -158,11 +158,13 @@ public class SchedulerJobInstanceServiceImplTest {
     @Test
     public void testFindByContextIdJobNameChildContextName() {
         // Given
+        when(mockJobInstanceRecord.getJobName()).thenReturn("test-job");
+        when(mockJobInstanceRecord.getChildContextName()).thenReturn("child-ctx");
         List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord);
         SearchResults<SchedulerJobInstanceRecord> searchResults =
             new SearchResultsImpl<>(records, 1L, 100L);
         when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(searchResults);
 
         // When
@@ -176,12 +178,34 @@ public class SchedulerJobInstanceServiceImplTest {
         ArgumentCaptor<SchedulerJobInstanceSearchFilter> filterCaptor =
             ArgumentCaptor.forClass(SchedulerJobInstanceSearchFilter.class);
         verify(mockJobInstanceDao).getScheduledContextInstancesByFilter(
-            filterCaptor.capture(), eq(1), eq(0), isNull(), isNull());
+            filterCaptor.capture(), eq(-1), eq(-1), isNull(), isNull());
 
         SchedulerJobInstanceSearchFilter capturedFilter = filterCaptor.getValue();
         assertEquals("child-ctx", capturedFilter.getChildContextName());
         assertEquals("test-job", capturedFilter.getJobName());
         assertEquals("ctx-uuid-1", capturedFilter.getContextInstanceId());
+        assertTrue("start, terminal and bridging jobs are looked up too",
+            capturedFilter.includeStartAndTerminalJobsInSearchResults());
+    }
+
+    /** The filter matches job and child context names as substrings; only the exact job is returned. */
+    @Test
+    public void testFindByContextIdJobNameChildContextNameIgnoresSubstringMatches() {
+        // Given: looking for job "e" also finds "trigger", and child "child" also finds "child-2"
+        SchedulerJobInstanceRecord trigger = mock(SchedulerJobInstanceRecord.class);
+        when(trigger.getJobName()).thenReturn("trigger");
+        SchedulerJobInstanceRecord otherChild = mock(SchedulerJobInstanceRecord.class);
+        when(otherChild.getJobName()).thenReturn("e");
+        when(otherChild.getChildContextName()).thenReturn("child-2");
+        SchedulerJobInstanceRecord e = mock(SchedulerJobInstanceRecord.class);
+        when(e.getJobName()).thenReturn("e");
+        when(e.getChildContextName()).thenReturn("child");
+        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(Arrays.asList(trigger, otherChild, e), 3L, 1L));
+
+        // When / Then
+        assertSame(e, service.findByContextIdJobNameChildContextName("ctx-uuid-1", "e", "child"));
     }
 
     @Test
@@ -190,7 +214,7 @@ public class SchedulerJobInstanceServiceImplTest {
         SearchResults<SchedulerJobInstanceRecord> searchResults =
             new SearchResultsImpl<>(new ArrayList<>(), 0L, 50L);
         when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(searchResults);
 
         // When
@@ -238,12 +262,14 @@ public class SchedulerJobInstanceServiceImplTest {
 
         SchedulerJobInstance persistedInstance = mock(SchedulerJobInstance.class);
         when(mockJobInstanceRecord.getSchedulerJobInstance()).thenReturn(persistedInstance);
+        when(mockJobInstanceRecord.getJobName()).thenReturn("test-job");
+        when(mockJobInstanceRecord.getChildContextName()).thenReturn("child-ctx");
 
         List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord);
         SearchResults<SchedulerJobInstanceRecord> searchResults =
             new SearchResultsImpl<>(records, 1L, 100L);
         when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(searchResults);
 
         // When
@@ -258,6 +284,56 @@ public class SchedulerJobInstanceServiceImplTest {
         verify(mockJobInstanceRecord).setModifiedTimestamp(anyLong());
         verify(mockJobInstanceRecord).setModifiedBy("ContextMachine");
         verify(mockJobInstanceDao).save(mockJobInstanceRecord);
+        verify(mockJobInstanceRecord, never()).setStartTime(anyLong());
+        verify(mockJobInstanceRecord, never()).setEndTime(anyLong());
+    }
+
+    /** The record's start and end times (shown and filtered on in the grids) come from the job's latest event. */
+    @Test
+    public void testUpdateSetsStartAndEndTimesFromTheEvent() {
+        // Given
+        org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent event =
+            mock(org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent.class);
+        when(event.getFireTime()).thenReturn(1000L);
+        when(event.getCompletionTime()).thenReturn(2000L);
+        when(mockJobInstance.getContextInstanceId()).thenReturn("ctx-instance-1");
+        when(mockJobInstance.getJobName()).thenReturn("test-job");
+        when(mockJobInstance.getChildContextName()).thenReturn("child-ctx");
+        when(mockJobInstance.getStatus()).thenReturn(InstanceStatus.COMPLETE);
+        when(mockJobInstance.getScheduledProcessEvent()).thenReturn(event);
+        when(mockJobInstanceRecord.getSchedulerJobInstance()).thenReturn(mock(SchedulerJobInstance.class));
+        when(mockJobInstanceRecord.getJobName()).thenReturn("test-job");
+        when(mockJobInstanceRecord.getChildContextName()).thenReturn("child-ctx");
+        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(Arrays.asList(mockJobInstanceRecord), 1L, 1L));
+
+        // When
+        service.update(mockJobInstance);
+
+        // Then
+        verify(mockJobInstanceRecord).setStartTime(1000L);
+        verify(mockJobInstanceRecord).setEndTime(2000L);
+        verify(mockJobInstanceDao).save(mockJobInstanceRecord);
+    }
+
+    /** A state change for a job without a record is logged and skipped, instead of failing. */
+    @Test
+    public void testUpdateWithoutARecordSavesNothing() {
+        // Given
+        when(mockJobInstance.getContextInstanceId()).thenReturn("ctx-instance-1");
+        when(mockJobInstance.getJobName()).thenReturn("test-job");
+        when(mockJobInstance.getChildContextName()).thenReturn("child-ctx");
+        when(mockJobInstance.getStatus()).thenReturn(InstanceStatus.COMPLETE);
+        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(new ArrayList<>(), 0L, 1L));
+
+        // When
+        service.update(mockJobInstance);
+
+        // Then
+        verify(mockJobInstanceDao, never()).save(any(SchedulerJobInstanceRecord.class));
     }
 
     @Test
@@ -539,8 +615,12 @@ public class SchedulerJobInstanceServiceImplTest {
         List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord, record2);
         SearchResults<SchedulerJobInstanceRecord> searchResults =
             new SearchResultsImpl<>(records, 2L, 100L);
+        when(mockJobInstanceRecord.getJobName()).thenReturn("test-job");
+        when(mockJobInstanceRecord.getChildContextName()).thenReturn("child-ctx");
+        when(record2.getJobName()).thenReturn("test-job");
+        when(record2.getChildContextName()).thenReturn("child-ctx");
         when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
+            any(SchedulerJobInstanceSearchFilter.class), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(searchResults);
 
         // When

@@ -1,0 +1,26 @@
+{
+  "contextName" : "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+  "monitorTypes" : ["START","COMPLETE","ERROR","OVERDUE","RUNNING_TIME"],
+  "emailSendTo" : [ "some@email.com" ],
+  "emailSendToByMonitorType" : {
+	"OVERDUE" : [ "some@email.com" ]
+  },
+  "emailSendCcByMonitorType" : {
+	"COMPLETE" : [ "some@email.com" ]
+  },
+  "emailSubjectNotificationTemplate" : {
+    "ERROR" : "/home/userHome/notification-error-email-subject-template.txt",
+    "OVERDUE" : "/home/userHome/notification-overdue-email-subject-template.txt",
+    "RUNNING_TIME": "/home/userHome/notification-runningtimes-email-subject-template.txt",
+	"START": "/home/userHome/notification-start-email-subject-template.txt",
+	"COMPLETE": "/home/userHome/notification-complete-email-subject-template.txt"
+  },
+  "emailBodyNotificationTemplate" : {
+    "ERROR" : "/home/userHome/notification-error-email-body-template.txt",
+    "OVERDUE" : "/home/userHome/notification-overdue-email-body-template.txt",
+    "RUNNING_TIME": "/home/userHome/notification-runningtimes-email-body-template.txt",
+	"START": "/home/userHome/notification-start-email-body-template.txt",
+	"COMPLETE": "/home/userHome/notification-complete-email-body-template.txt"
+  },
+  "html" : false
+}

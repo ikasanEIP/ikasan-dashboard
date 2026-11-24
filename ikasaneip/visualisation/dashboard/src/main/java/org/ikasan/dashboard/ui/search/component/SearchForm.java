@@ -82,11 +82,13 @@ public class SearchForm extends VerticalLayout {
         this.startDate = new DatePicker(nowDate);
         this.startDate.setLocale(Locale.UK);
         this.startDate.setWidth("150px");
+        this.startDate.setId("searchFormStartDate");
 
         this.startTimePicker.setStep(Duration.ofMinutes(15l));
         this.startTimePicker.setLocale(UI.getCurrent().getLocale());
         this.startTimePicker.setValue(LocalTime.of(0, 0));
         this.startTimePicker.setWidth("150px");
+        this.startTimePicker.setId("searchFormStartTime");
 
         startDateTimeLayout.add(startDate, startTimePicker);
 
@@ -94,12 +96,14 @@ public class SearchForm extends VerticalLayout {
         this.endDate = new DatePicker(nowDate.plus(1, ChronoUnit.DAYS));
         this.endDate.setLocale(Locale.UK);
         this.endDate.setWidth("150px");
+        this.endDate.setId("searchFormEndDate");
 
 
         this.endTimePicker.setStep(Duration.ofMinutes(15l));
         this.endTimePicker.setLocale(UI.getCurrent().getLocale());
         this.endTimePicker.setValue(LocalTime.of(0, 0));
         this.endTimePicker.setWidth("150px");
+        this.endTimePicker.setId("searchFormEndTime");
 
         endDateTimeLayout.add(endDate, endTimePicker);
 
@@ -111,6 +115,7 @@ public class SearchForm extends VerticalLayout {
         this.searchText.setHeight("80px");
         this.searchText.setPlaceholder(getTranslation("label.search-term", UI.getCurrent().getLocale()));
         this.searchText.setRequired(true);
+        this.searchText.setId("searchFormSearchText");
 
         HorizontalLayout searchTextLayout = new HorizontalLayout();
         searchTextLayout.setMargin(true);
@@ -154,6 +159,7 @@ public class SearchForm extends VerticalLayout {
 
         this.wiretapCheckButton.addClickListener(buttonClickEvent -> {
             this.wiretapChecked = !this.wiretapChecked;
+            this.updatePressedState();
 
             if(wiretapChecked) {
                 this.wiretapImage = new Image("frontend/images/wiretap-inverse.png", "");
@@ -179,6 +185,7 @@ public class SearchForm extends VerticalLayout {
 
         this.errorCheckButton.addClickListener(buttonClickEvent -> {
             this.errorChecked = !this.errorChecked;
+            this.updatePressedState();
 
             if(this.errorChecked) {
                 this.errorImage = new Image("frontend/images/error-inverse.png", "");
@@ -204,6 +211,7 @@ public class SearchForm extends VerticalLayout {
 
         this.hospitalCheckButton.addClickListener(buttonClickEvent -> {
             this.hospitalChecked = !this.hospitalChecked;
+            this.updatePressedState();
 
             if(this.hospitalChecked) {
                 this.hospitalImage = new Image("frontend/images/hospital-inverse.png", "");
@@ -229,6 +237,7 @@ public class SearchForm extends VerticalLayout {
 
         this.replayCheckButton.addClickListener(buttonClickEvent -> {
             this.replayChecked = !this.replayChecked;
+            this.updatePressedState();
 
             if(this.replayChecked) {
                 this.replayImage = new Image("frontend/images/replay-inverse.png", "");
@@ -246,6 +255,7 @@ public class SearchForm extends VerticalLayout {
 
         this.negateQueryCheckbox = new Checkbox(getTranslation("checkbox-label.negate-search", UI.getCurrent().getLocale()));
         this.negateQueryCheckbox.setWidth("100px");
+        this.negateQueryCheckbox.setId("searchFormNegateCheckbox");
         HorizontalLayout checkboxLayout = new HorizontalLayout();
         checkboxLayout.setWidth("100px");
         checkboxLayout.add(this.negateQueryCheckbox);
@@ -284,9 +294,23 @@ public class SearchForm extends VerticalLayout {
             this.replayChecked = false;
         }
 
+        this.updatePressedState();
+
         this.add(searchLayout, searchIconLayout);
         this.setHorizontalComponentAlignment(Alignment.CENTER, searchLayout);
         this.setHorizontalComponentAlignment(Alignment.CENTER, searchIconLayout);
+    }
+
+    /**
+     * Expose the toggle state of the entity type buttons as aria-pressed so it is visible to assistive
+     * technology and to the end-to-end test harness.
+     */
+    private void updatePressedState()
+    {
+        this.wiretapCheckButton.getElement().setAttribute("aria-pressed", String.valueOf(this.wiretapChecked));
+        this.errorCheckButton.getElement().setAttribute("aria-pressed", String.valueOf(this.errorChecked));
+        this.hospitalCheckButton.getElement().setAttribute("aria-pressed", String.valueOf(this.hospitalChecked));
+        this.replayCheckButton.getElement().setAttribute("aria-pressed", String.valueOf(this.replayChecked));
     }
 
     /**

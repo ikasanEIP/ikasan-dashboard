@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,26 +88,34 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         return this.schedulerJobInstanceDao.findById(id);
     }
 
+    /**
+     * The job instance record with exactly this job name in exactly this child context of the context instance, of any
+     * job type (including start, terminal and bridging jobs).
+     * <p>
+     * The search filter matches job and child context names as substrings (e.g. job "e" also matches "trigger"), so the
+     * candidates are narrowed to exact matches here rather than taking the first search result.
+     */
     @Override
     public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String uuid, String jobName, String childContextName) {
         SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SchedulerJobInstanceSearchFilterImpl();
         schedulerJobInstanceSearchFilter.setChildContextName(childContextName);
         schedulerJobInstanceSearchFilter.setJobName(jobName);
         schedulerJobInstanceSearchFilter.setContextInstanceId(uuid);
+        schedulerJobInstanceSearchFilter.setIncludeStartAndTerminalJobsInSearchResults(true);
 
-        SearchResults<SchedulerJobInstanceRecord> jobs = this.getScheduledContextInstancesByFilter(schedulerJobInstanceSearchFilter,
-            1, 0, null, null);
+        SearchResults<SchedulerJobInstanceRecord> candidates = this.getScheduledContextInstancesByFilter(schedulerJobInstanceSearchFilter,
+            -1, -1, null, null);
 
-        if(jobs.getTotalNumberOfResults() > 1) {
+        List<SchedulerJobInstanceRecord> jobs = candidates.getResultList().stream()
+            .filter(job -> Objects.equals(jobName, job.getJobName()) && Objects.equals(childContextName, job.getChildContextName()))
+            .collect(Collectors.toList());
+
+        if(jobs.size() > 1) {
             logger.warn("SchedulerJobInstance search returned more than one result for Context ID[{}], Job Name[{}] and Child Context Name[{}]",
                 uuid, jobName, childContextName);
         }
 
-        if(jobs.getResultList().size() > 0) {
-            return jobs.getResultList().get(0);
-        }
-
-        return null;
+        return jobs.isEmpty() ? null : jobs.get(0);
     }
 
     @Override
@@ -119,17 +128,22 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         this.schedulerJobInstanceDao.save(scheduledContextInstanceRecords);
     }
 
+    /**
+     * Persist a job instance's state change (status, held flag and latest scheduled process event, with the start and
+     * end times taken from that event) onto its record.
+     */
     @Override
     public void update(SchedulerJobInstance schedulerJobInstance) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(schedulerJobInstance.getContextInstanceId());
-        filter.setJobName(schedulerJobInstance.getJobName());
-        filter.setChildContextName(schedulerJobInstance.getChildContextName());
+        SchedulerJobInstanceRecord record = this.findByContextIdJobNameChildContextName(schedulerJobInstance.getContextInstanceId(),
+            schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName());
 
-        SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceDao
-            .getScheduledContextInstancesByFilter(filter, 1, 0, null, null);
-
-        SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+        if(record == null) {
+            logger.warn("Could not update the state of job[{}] in child context[{}] of context instance[{}] to [{}]: " +
+                    "no scheduler job instance record was found.", schedulerJobInstance.getJobName(),
+                schedulerJobInstance.getChildContextName(), schedulerJobInstance.getContextInstanceId(),
+                schedulerJobInstance.getStatus());
+            return;
+        }
 
         record.setStatus(schedulerJobInstance.getStatus().name());
         SchedulerJobInstance persistedInstance = record.getSchedulerJobInstance();
@@ -137,6 +151,11 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
         persistedInstance.setStatus(schedulerJobInstance.getStatus());
         persistedInstance.setHeld(schedulerJobInstance.isHeld());
         record.setSchedulerJobInstance(persistedInstance);
+        // the record's own start/end times are what the job instance grids show and filter on
+        if(schedulerJobInstance.getScheduledProcessEvent() != null) {
+            record.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getFireTime());
+            record.setEndTime(schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
+        }
         record.setModifiedTimestamp(System.currentTimeMillis());
         // todo sort out modified by
         record.setModifiedBy("ContextMachine");

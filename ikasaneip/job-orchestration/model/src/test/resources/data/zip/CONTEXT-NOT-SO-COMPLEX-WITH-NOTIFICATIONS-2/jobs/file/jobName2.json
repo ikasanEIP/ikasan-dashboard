@@ -1,0 +1,28 @@
+{
+	"agentName": "scheduler-agent",
+	"jobName": "jobName2",
+	"contextId": "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+	"childContextIds": [
+		"childId2"
+	],
+	"startupControlType": "AUTOMATIC",
+	"cronExpression": "0 0 * ? * * *",
+	"ignoreMisfire": true,
+	"eager": false,
+	"maxEagerCallbacks": 0,
+	"passthroughProperties": {},
+	"persistentRecovery": true,
+	"recoveryTolerance": 1800000,
+	"filenames": [
+		"/some/file/path/name.txt"
+	],
+	"includeHeader": false,
+	"includeTrailer": false,
+	"sortByModifiedDateTime": false,
+	"sortAscending": true,
+	"directoryDepth": 1,
+	"logMatchedFilenames": false,
+	"ignoreFileRenameWhilstScanning": true,
+	"minFileAgeSeconds": 0,
+	"identifier": "scheduler-agent-jobName2"
+}

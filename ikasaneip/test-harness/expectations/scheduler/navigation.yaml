@@ -1,0 +1,7 @@
+# The Scheduler view. The fake agent registers itself with this description (HarnessSession).
+scenarios:
+  - name: registered agent is listed
+    expect:
+      rowsExact: true
+      rows:
+        - { "Module Name": "scheduler-agent", "Description": "Test harness fake scheduler agent" }

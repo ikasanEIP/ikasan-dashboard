@@ -616,7 +616,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
     @Override
     public List<User> getUserByUsernameLike(String username) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + NAME + COLON + "*" + username + "*");
+        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + containsClause(NAME, username));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrUserRecord> results = this.findByQuery(query, SolrUserRecord.class);
@@ -635,7 +635,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
     @Override
     public List<User> getUserByFirstnameLike(String firstname) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + FIRST_NAME + COLON + "*" + firstname + "*");
+        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + containsClause(FIRST_NAME, firstname));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrUserRecord> results = this.findByQuery(query, SolrUserRecord.class);
@@ -654,7 +654,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
     @Override
     public List<User> getUserBySurnameLike(String surname) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + SURNAME + COLON + "*" + surname + "*");
+        query.setQuery(TYPE + COLON + "\"" + USER_TYPE + "\" AND " + containsClause(SURNAME, surname));
         query.setRows(Integer.MAX_VALUE);
 
         SearchResults<SolrUserRecord> results = this.findByQuery(query, SolrUserRecord.class);
@@ -803,27 +803,60 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         // Add username filter if present
         if (filter.getUsernameFilter() != null && !filter.getUsernameFilter().isEmpty()) {
-            queryBuffer.append(AND).append(NAME).append(COLON).append("*").append(filter.getUsernameFilter()).append("*");
+            queryBuffer.append(AND).append(containsClause(NAME, filter.getUsernameFilter()));
         }
 
         // Add email filter if present
         if (filter.getEmailFilter() != null && !filter.getEmailFilter().isEmpty()) {
-            queryBuffer.append(AND).append(EMAIL).append(COLON).append("*").append(filter.getEmailFilter()).append("*");
+            queryBuffer.append(AND).append(containsClause(EMAIL, filter.getEmailFilter()));
         }
 
         // Add first name filter if present
         if (filter.getNameFilter() != null && !filter.getNameFilter().isEmpty()) {
-            queryBuffer.append(AND).append(FIRST_NAME).append(COLON).append("*").append(filter.getNameFilter()).append("*");
+            queryBuffer.append(AND).append(containsClause(FIRST_NAME, filter.getNameFilter()));
         }
 
         // Add surname filter if present
         if (filter.getLastNameFilter() != null && !filter.getLastNameFilter().isEmpty()) {
-            queryBuffer.append(AND).append(SURNAME).append(COLON).append("*").append(filter.getLastNameFilter()).append("*");
+            queryBuffer.append(AND).append(containsClause(SURNAME, filter.getLastNameFilter()));
         }
 
         // Add department filter if present
         if (filter.getDepartmentFilter() != null && !filter.getDepartmentFilter().isEmpty()) {
-            queryBuffer.append(AND).append(DEPARTMENT).append(COLON).append("*").append(filter.getDepartmentFilter()).append("*");
+            queryBuffer.append(AND).append(containsClause(DEPARTMENT, filter.getDepartmentFilter()));
         }
+    }
+
+    /** Characters Solr's StandardTokenizer keeps inside a token (besides letters and digits), e.g. john.smith. */
+    private static final java.util.regex.Pattern TOKEN_SEPARATORS = java.util.regex.Pattern.compile("[^\\p{L}\\p{N}._']+");
+
+    /**
+     * A "contains" clause for a filter value on a tokenised (text_general) field.
+     * <p>
+     * A plain {@code field:*value*} wildcard is matched against single indexed tokens, so a value the tokenizer
+     * splits (e.g. 'harness-user-1' or 'a@b.com') never matched. The value is split the same way and every part must
+     * be contained in a token: {@code (field:*harness* AND field:*user* AND field:*1*)}. Parts are escaped, so
+     * characters with a query meaning (':', '(', '*', ...) are taken literally.
+     *
+     * @param field the field to filter
+     * @param value the filter text as typed
+     * @return the clause; matches everything when the value has no searchable characters
+     */
+    static String containsClause(String field, String value)
+    {
+        List<String> parts = new ArrayList<>();
+        if(value != null)
+        {
+            for(String part : TOKEN_SEPARATORS.split(value.trim()))
+            {
+                // the tokenizer drops leading/trailing '.', '_' and quote characters from a token
+                String trimmed = part.replaceAll("^[._']+|[._']+$", "");
+                if(!trimmed.isEmpty())
+                {
+                    parts.add(field + COLON + "*" + org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars(trimmed) + "*");
+                }
+            }
+        }
+        return parts.isEmpty() ? field + COLON + "*" : "(" + String.join(AND, parts) + ")";
     }
 }

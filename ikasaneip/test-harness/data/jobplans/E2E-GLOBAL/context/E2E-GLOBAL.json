@@ -1,0 +1,43 @@
+{
+  "name": "E2E-GLOBAL",
+  "description": "Harness job plan: started by the global event e2e-go",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": false,
+  "contexts": [
+    {
+      "name": "E2E-GLOBAL-1",
+      "scheduledJobs": [
+        {
+          "agentName": "GLOBAL_EVENT",
+          "jobName": "e2e-go",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "GLOBAL_EVENT-e2e-go"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "afterGlobal",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-afterGlobal"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "GLOBAL_EVENT-e2e-go"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-afterGlobal",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "GLOBAL_EVENT-e2e-go"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

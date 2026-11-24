@@ -1,0 +1,59 @@
+{
+  "name": "E2E-FAILURE",
+  "description": "Harness job plan: a job that fails (exit 3) and its downstream job",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": false,
+  "contexts": [
+    {
+      "name": "E2E-FAILURE-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "failJob",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-failJob"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "after",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-after"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-failJob",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-after",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-failJob"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

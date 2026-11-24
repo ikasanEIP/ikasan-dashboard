@@ -1,0 +1,52 @@
+# Wiretap search scenarios against the 'core' dataset (data/baseline/core/wiretap.ndjson).
+# input:  from/to (epoch millis, use time tokens), types, term, negate, filters (grid column key -> text)
+# expect: total (search result count), rows / rowsExact
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: all wiretaps in the last day
+    tags: [smoke, wiretap]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [wiretap], term: "" }
+    expect:
+      total: 12
+      rowsExact: true
+      rows:
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-001", "Timestamp": "{{now-5m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-A-002", "Timestamp": "{{now-10m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-003", "Timestamp": "{{now-15m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-A-004", "Timestamp": "{{now-20m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-005", "Timestamp": "{{now-25m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-A-006", "Timestamp": "{{now-30m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-007", "Timestamp": "{{now-35m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-A-008", "Timestamp": "{{now-40m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-001", "Timestamp": "{{now-45m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-002", "Timestamp": "{{now-50m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-003", "Timestamp": "{{now-55m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-004", "Timestamp": "{{now-60m|table}}" }
+
+  - name: wiretaps by payload term
+    tags: [wiretap]
+    # 'expedite' appears in exactly one payload (EVT-A-003). Avoid hyphenated terms such as ORDER-1003:
+    # the search analyzers split on '-', so 'order' would match every payload.
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [wiretap], term: "expedite" }
+    expect:
+      total: 1
+      rowsExact: true
+      rows:
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-003", "Timestamp": "{{now-15m|table}}" }
+
+  - name: wiretaps for a module via the grid filter
+    tags: [wiretap]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [wiretap], term: "", filters: { moduleName: harness-module-b } }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-001", "Timestamp": "{{now-45m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-002", "Timestamp": "{{now-50m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-003", "Timestamp": "{{now-55m|table}}" }
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-B-004", "Timestamp": "{{now-60m|table}}" }
+
+  - name: nothing before the data window
+    tags: [wiretap]
+    input: { from: "{{now-3d}}", to: "{{now-2d}}", types: [wiretap], term: "" }
+    expect: { total: 0, rowsExact: true, rows: [] }

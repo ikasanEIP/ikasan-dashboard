@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.security.view;
 
+import org.ikasan.dashboard.ui.util.SessionLocale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.AttachEvent;
@@ -43,7 +44,6 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -96,6 +96,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
         layout.setSizeFull();
         layout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
+        login.setId("loginForm");
         login.setForgotPasswordButtonVisible(false);
         login.setI18n(this.getI18n());
         login.getStyle().set("vaadin-button-text-color", "white");
@@ -141,6 +142,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                 this.userService.updateUser(user);
 
                 VaadinSession.getCurrent().getSession().setAttribute(USERNAME, user.getUsername());
+                SessionLocale.remember(VaadinSession.getCurrent(), VaadinSession.getCurrent().getLocale());
 
                 UI.getCurrent().getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
                     this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS
@@ -149,8 +151,12 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                     UI.getCurrent().getSession().setAttribute(SessionAttributeConstants.TIMEZONE_ID,
                         extendedClientDetails.getTimeZoneId());
 
-                    String cacheContext = ContextCache.getContext(UI.getCurrent().getSession().getSession().getId());
-                    if(cacheContext != null && isRouteValid(cacheContext)) {
+                    String sessionId = UI.getCurrent().getSession().getSession().getId();
+                    String cacheContext = ContextCache.consumeContext(sessionId);
+                    boolean validRoute = cacheContext != null && isRouteValid(cacheContext);
+                    logger.debug("Post login deep link for session [{}]: cached [{}], valid route [{}]",
+                        sessionId, cacheContext, validRoute);
+                    if(validRoute) {
                         UI.getCurrent().navigate(cacheContext);
                     }
                     else {
@@ -170,6 +176,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
 
     private void buildLanguageSelect() {
         lang = new Select<>();
+        lang.setId("loginLanguageSelect");
         lang.setLabel(getTranslation("label.language", getLocale()));
         lang.setItems(IkasanI18NProvider.providedLocales);
         lang.setItemLabelGenerator(item -> item.getDisplayLanguage(item));
@@ -195,6 +202,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                     ui.getSession().setAttribute("locale",
                         e.getValue().getLanguage());
                     ui.setLocale(e.getValue());
+                    SessionLocale.remember(ui.getSession(), e.getValue());
                     Cookie myCookie = new Cookie("ikasan-language", e.getValue().getLanguage());
                     myCookie.setMaxAge(60 * 60 * 24 * 7 * 52);
                     myCookie.setPath("/");
@@ -240,6 +248,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                 lang.setValue(locale.get());
             }
             VaadinSession.getCurrent().setLocale(locale.get());
+            SessionLocale.remember(VaadinSession.getCurrent(), locale.get());
             event.getLocationChangeEvent().getUI().setLocale(locale.get());
         }
     }
@@ -257,25 +266,23 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
         }
     }
 
+    /**
+     * Is the cached deep link a route we can navigate to? The path is resolved through the Vaadin router,
+     * so both plain routes (e.g. 'Search') and routes with url parameters (e.g. 'eventLifeId/{id}',
+     * whose registered template is 'eventLifeId/:___url_parameter') are recognised.
+     *
+     * @param context the path, without a leading '/'
+     * @return true if navigation to the path is possible
+     */
     private boolean isRouteValid(String context) {
         if(context.isEmpty()) {
             return true;
         }
 
-        List<RouteData> routes = RouteConfiguration.forApplicationScope().getAvailableRoutes();
-
-        return routes.stream().anyMatch(route -> {
-            String url = route.getTemplate();
-
-            if(!url.isEmpty() && context.startsWith(url + "/")){
-                return true;
-            }
-
-            return false;
-        });
+        return RouteConfiguration.forApplicationScope().getRoute(context)
+            .filter(target -> !LoginView.class.equals(target))
+            .isPresent();
     }
-
-
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
@@ -290,6 +297,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                 beforeEnterEvent.getUI().getSession().setAttribute("locale",
                     optionalLocale.get().getLanguage());
                 VaadinSession.getCurrent().setLocale(optionalLocale.get());
+                SessionLocale.remember(VaadinSession.getCurrent(), optionalLocale.get());
                 beforeEnterEvent.getUI().setLocale(optionalLocale.get());
             }
         }

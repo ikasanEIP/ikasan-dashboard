@@ -1,0 +1,25 @@
+# User management (mutating). Names get a unique run suffix appended by the test.
+scenarios:
+  - name: create user
+    input: { username: harness-user, firstName: Harness, surname: Tester, email: harness@example.com, password: Harness-Passw0rd }
+    # NewUserDialog adds the 'User' role to every new user
+    expect: { defaultRoles: [User] }
+
+  - name: new user validation
+    input: {}
+    expect: { errors: ["you must provide a username", "you must provide a first name", "you must provide a surname", "you must provide an email address", "you must provide a password"] }
+
+  - name: add and remove a role
+    input: { role: WriteUser }
+    expect: {}
+
+  # regression for Solr: user filter values containing separators ('-', '@', ...) used to never match
+  - name: filter users by full username
+    input: { username: harness.filter-user }
+    expect: {}
+
+  # Regression: user ids are derived from the username, so creating an existing username used to overwrite that
+  # user (e.g. resetting 'admin'). The test uses its own user.
+  - name: duplicate username is rejected
+    input: { username: harness-dup-user, firstName: Original, duplicateFirstName: Duplicate }
+    expect: { notification: "Usernames must be unique" }

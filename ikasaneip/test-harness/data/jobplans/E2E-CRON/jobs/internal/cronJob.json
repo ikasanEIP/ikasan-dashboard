@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "cronJob",
+  "jobDescription": "cronJob",
+  "contextName": "E2E-CRON",
+  "childContextNames": [
+    "E2E-CRON-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-cronJob",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo cron",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": []
+}
