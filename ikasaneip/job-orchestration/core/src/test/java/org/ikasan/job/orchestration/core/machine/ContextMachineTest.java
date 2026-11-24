@@ -66,6 +66,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -4223,6 +4224,120 @@ public class ContextMachineTest extends AbstractTest {
 
         // Make sure the failing job is still in error!
         this.assertJobStatus(contextMachine, "Context3", "agentName2-jobName2", InstanceStatus.ERROR);
+    }
+
+    /**
+     * The status of every job and every (nested) context of the machine's instance, keyed "context/job" and "context".
+     */
+    private Map<String, InstanceStatus> snapshotStatuses(ContextMachineImpl contextMachine) {
+        Map<String, InstanceStatus> statuses = new TreeMap<>();
+        java.util.Deque<ContextInstance> contexts = new java.util.ArrayDeque<>(List.of(contextMachine.getContext()));
+        while (!contexts.isEmpty()) {
+            ContextInstance context = contexts.pop();
+            statuses.put(context.getName(), context.getStatus());
+            if (context.getScheduledJobsMap() != null) {
+                context.getScheduledJobsMap().forEach((identifier, job) -> statuses.put(context.getName() + "/" + identifier, job.getStatus()));
+            }
+            if (context.getContexts() != null) {
+                contexts.addAll(context.getContexts());
+            }
+        }
+        return statuses;
+    }
+
+    /**
+     * A plan whose nested child contexts Context3 and Context4 both contain agentName6-jobName6 (not targeted at one
+     * child context). Context3's jobs run up to jobName6, which then fails: in Context3 only, or in every child context.
+     * Both copies of jobName6 are not targeted at their residing child context, and the command execution jobs are given
+     * in key order (a TreeMap), so a query evaluates Context3's copy before Context4's: the order in which evaluating one
+     * copy can change the other.
+     */
+    private ContextMachineImpl machineWithJob6Failed(boolean inContext3Only) throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-with-job-initiating-event-in-next-child-context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-with-job-initiating-event-in-next-child-context.json"));
+
+        // jobName6 is not targeted at its residing child context: a resubmission of one copy is assessed in every child
+        // context that holds the job (only then does the evaluation of one copy reach the other)
+        Map<String, InternalEventDrivenJobInstance> commandJobs = new TreeMap<>(createInternalJobsMap(context));
+        commandJobs.values().stream().filter(job -> job.getIdentifier().equals("agentName6-jobName6"))
+            .forEach(job -> job.setTargetResidingContextOnly(false));
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , commandJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService
+            , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        for (String job : List.of("1", "2", "4", "5")) {
+            contextMachine.eventReceived(scheduledProcessEventInstance("jobName" + job, "agentName" + job, true));
+        }
+        ContextualisedScheduledProcessEventImpl failure = scheduledProcessEventInstance("jobName6", "agentName6", false);
+        if (inContext3Only) {
+            failure.setChildContextNames(List.of("Context3"));
+        }
+        contextMachine.eventReceived(failure);
+
+        Assert.assertEquals(InstanceStatus.ERROR, contextMachine.getJobStatus("Context3", "agentName6-jobName6"));
+        Assert.assertEquals(inContext3Only ? InstanceStatus.WAITING : InstanceStatus.ERROR,
+            contextMachine.getJobStatus("Context4", "agentName6-jobName6"));
+        return contextMachine;
+    }
+
+    /** The resubmission event the dashboard builds for the failed job in Context3. */
+    private ContextualisedScheduledProcessEventImpl resubmissionOfJob6InContext3() {
+        ContextualisedScheduledProcessEventImpl resubmission = scheduledProcessEventInstance("jobName6", "agentName6", false);
+        resubmission.setRaisedDueToFailureResubmission(true);
+        resubmission.getInternalEventDrivenJob().setChildContextName("Context3");
+        return resubmission;
+    }
+
+    private static List<String> jobNames(List<SchedulerJobInitiationEvent> events) {
+        return events.stream().map(SchedulerJobInitiationEvent::getJobName).collect(Collectors.toList());
+    }
+
+    /**
+     * getEventsThatCanRun is a view and must not change state in nested child contexts either (they are evaluated with
+     * the caller's updateState). Here jobName6 failed in Context3 only. A resubmission must find every copy of a
+     * non-targeted job in ERROR, so the query is refused - and the copy of the job in the sibling child context, which
+     * never ran, is still WAITING. When nested contexts were always evaluated with updateState=true, evaluating
+     * Context3's copy could leave Context4's copy in ERROR, after which the precondition passed and the query
+     * answered on a corrupted state (depending on the order the copies were evaluated in).
+     */
+    @Test
+    public void test_query_machine_for_jobs_that_can_run_does_not_change_the_job_in_a_sibling_child_context() throws IOException {
+        ContextMachineImpl contextMachine = machineWithJob6Failed(true);
+        Map<String, InstanceStatus> before = snapshotStatuses(contextMachine);
+
+        ContextMachineException refused = Assert.assertThrows(ContextMachineException.class,
+            () -> contextMachine.getEventsThatCanRun(resubmissionOfJob6InContext3()));
+
+        Assert.assertTrue(refused.getMessage(), refused.getMessage().contains("Child Context[Context4] was in a State[WAITING]"));
+        Assert.assertEquals("the same job in the sibling child context is untouched",
+            InstanceStatus.WAITING, contextMachine.getJobStatus("Context4", "agentName6-jobName6"));
+        Assert.assertEquals("job and context statuses after the query", before, snapshotStatuses(contextMachine));
+    }
+
+    /** With the job failed in every child context the query answers, and leaves every job and context as it was. */
+    @Test
+    public void test_query_machine_for_jobs_that_can_run_leaves_every_job_and_context_status_unchanged() throws IOException {
+        ContextMachineImpl contextMachine = machineWithJob6Failed(false);
+        Map<String, InstanceStatus> before = snapshotStatuses(contextMachine);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.getEventsThatCanRun(resubmissionOfJob6InContext3());
+
+        // the jobs downstream of jobName6 that would run on resubmission
+        Assert.assertEquals(List.of("jobName7", "jobName8"), jobNames(events));
+        Assert.assertEquals("job and context statuses after the query", before, snapshotStatuses(contextMachine));
+    }
+
+    @Test
+    public void test_query_machine_for_jobs_that_can_run_repeatedly_gives_the_same_answer() throws IOException {
+        ContextMachineImpl contextMachine = machineWithJob6Failed(false);
+        Map<String, InstanceStatus> before = snapshotStatuses(contextMachine);
+
+        List<String> first = jobNames(contextMachine.getEventsThatCanRun(resubmissionOfJob6InContext3()));
+        List<String> second = jobNames(contextMachine.getEventsThatCanRun(resubmissionOfJob6InContext3()));
+
+        Assert.assertEquals(first, second);
+        Assert.assertEquals(before, snapshotStatuses(contextMachine));
     }
 
     @Test
