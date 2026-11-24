@@ -2215,7 +2215,7 @@ public class ContextMachineImpl implements ContextMachine {
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised, true));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised, updateState));
                 this.setContextStatus(contextInstance, false);
             }
         }

@@ -98,7 +98,8 @@ public class JwtRequestFilter extends OncePerRequestFilter
                 }
                 catch (ExpiredJwtException e)
                 {
-                    logger.warn("JWT Token has expired called by [" + requestServletUrl + "]", e);
+                    // only log message not full exception
+                    logger.warn("JWT Token has expired called by [" + requestServletUrl + "]");
                 }
             }
             else
