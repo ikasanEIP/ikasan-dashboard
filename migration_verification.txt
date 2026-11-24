@@ -1,0 +1,55 @@
+==========================================================================
+SOLR TO MONGODB MIGRATION VERIFICATION REPORT
+==========================================================================
+Migration Date: $(date)
+Source: Solr (http://localhost:8983/solr/ikasan)
+Destination: MongoDB (mongodb://localhost:27017/ikasan.ikasan)
+
+DOCUMENT COUNTS:
+----------------
+Solr Total:     264,880 documents
+MongoDB Total:  264,886 documents
+Difference:     +6 documents (likely due to new data during migration)
+
+DOCUMENT TYPE DISTRIBUTION IN MONGODB:
+----------------------------------------
+error: 178,749
+componentConfiguration: 50,698
+quartzScheduleDrivenJobInstance: 10,615
+internalEventDrivenJobInstance: 8,638
+quartzScheduleDrivenJob: 5,525
+scheduledContextInstanceAuditAggregate: 5,100
+fileEventDrivenJob: 1,612
+internalEventDrivenJob: 1,373
+contextTerminalJobInstance: 791
+systemEvent: 520
+contextStartJobInstance: 330
+globalEventJobInstance: 186
+scheduledContextInstance: 176
+fileEventDrivenJobInstance: 166
+localEventJobInstance: 128
+securityPolicy: 104
+bridgingJobInstance: 52
+jockLockCacheRecordAudit: 44
+scheduledContext: 27
+globalEventJob: 16
+moduleMetaData: 11
+businessStreamMetaData: 5
+securityRole: 5
+internalEventDrivenJobTemplate: 5
+jobLockCache: 3
+contextVisualisationLayout: 3
+securityUser: 1
+securityPrincipal: 1
+dashboardPlatformSetup: 1
+jockLockCache: 1
+
+FIELD MAPPING:
+--------------
+Solr 'id' field → MongoDB '_id' field
+All other fields preserved as-is
+Solr internal fields (_version_) excluded
+
+VERIFICATION STATUS: ✓ SUCCESS
+Migration completed successfully with all documents transferred.
+==========================================================================

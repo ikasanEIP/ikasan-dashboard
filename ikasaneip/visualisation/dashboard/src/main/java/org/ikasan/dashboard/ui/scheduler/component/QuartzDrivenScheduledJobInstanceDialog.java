@@ -157,6 +157,8 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
+                    // before the job is sent: see ManualJobSubmission
+                    ManualJobSubmission.recordSubmitter(this.schedulerJobInstanceService, this.schedulerJobInstanceRecord, authentication.getName());
                     this.jobInitiationService.raiseQuartzSchedulerJob(
                         this.agent.getUrl(), this.agent.getName(), this.quartzScheduleDrivenJobInstance, this.quartzScheduleDrivenJobInstance.getContextInstanceId());
 
@@ -165,8 +167,6 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
                         , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), this.schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId())
                         , this.authentication.getName());
 
-                    this.schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
-                    this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
 
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 }

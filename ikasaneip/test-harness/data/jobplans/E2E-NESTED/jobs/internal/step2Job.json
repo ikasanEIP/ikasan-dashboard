@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "step2Job",
+  "jobDescription": "step2Job",
+  "contextName": "E2E-NESTED",
+  "childContextNames": [
+    "E2E-NESTED-STEP-2"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-step2Job",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo step two",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": []
+}

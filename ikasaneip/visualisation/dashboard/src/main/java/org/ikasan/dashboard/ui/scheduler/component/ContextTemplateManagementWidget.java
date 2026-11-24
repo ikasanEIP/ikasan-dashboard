@@ -652,10 +652,15 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      */
     private void initialiseTabs() {
         this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
+        this.visualisationTab.setId("jobPlanVisualisationTab");
         this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
+        this.rawContextTab.setId("jobPlanRawContextTab");
         this.contextInstancesTab = new Tab(getTranslation("tab.context-instances", UI.getCurrent().getLocale()));
+        this.contextInstancesTab.setId("jobPlanContextInstancesTab");
         this.jobTemplatesTab = new Tab(getTranslation("tab.job-templates", UI.getCurrent().getLocale()));
+        this.jobTemplatesTab.setId("jobPlanJobTemplatesTab");
         this.statisticsTab = new Tab(getTranslation("tab.statistics", UI.getCurrent().getLocale()));
+        this.statisticsTab.setId("jobPlanStatisticsTab");
 
         this.tabs = new Tabs();
         this.tabs.add(this.visualisationTab, this.rawContextTab
@@ -948,6 +953,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
         Button validateJobPlanButton = new Button(getTranslation("button.validate-job-plan"));
+        validateJobPlanButton.setId("validateJobPlanButton");
         validateJobPlanButton.addClickListener(event -> this.validate(true));
 
         this.errorsButton = new Button(getTranslation("button.errors", UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
@@ -1080,13 +1086,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout
             verticalLayout.setWidthFull();
 
             Anchor downloadNotSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
-                -> new DownloadResponse(this.getContextBundleStreamResource(false, finalDownloadFileName, false)
+                -> new DownloadResponse(this.getContextBundleStreamResource(true, finalDownloadFileName, false)
                 , finalDownloadFileName + ".zip",
                 "application/zip", -1)), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
 
 
             Anchor downloadSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
-                -> new DownloadResponse(this.getContextBundleStreamResource(false, finalDownloadFileName, true)
+                -> new DownloadResponse(this.getContextBundleStreamResource(true, finalDownloadFileName, true)
                 , finalDownloadFileName + ".zip",
                 "application/zip", -1)), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
 
@@ -1136,6 +1142,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      */
     private Button createSynchroniseJobsButton() {
         Button synchroniseJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
+        synchroniseJobsButton.setId("synchroniseJobsButton");
         synchroniseJobsButton.setIconAfterText(true);
 
         ComponentSecurityVisibility.applySecurity(synchroniseJobsButton, SecurityConstants.ALL_AUTHORITY,

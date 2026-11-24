@@ -233,7 +233,7 @@ public class ContextInstanceRegistrationLifecycleTest {
         verify(scheduledContextService, times(1)).findAll();
         verify(scheduledContextService, times(4)).findById(anyString());
         verify(scheduledContextInstanceService, times(4)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
-        verify(schedulerJobInstanceService, times(28)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
+        verify(schedulerJobInstanceService, times(7)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
         verify(moduleMetadataService, times(4)).find(any(), any(), anyInt(), anyInt());
 
         mockStatic.verify(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler),(times(2)));
@@ -333,7 +333,7 @@ public class ContextInstanceRegistrationLifecycleTest {
         verify(scheduledContextService, times(1)).findAll();
         verify(scheduledContextService, times(4)).findById(anyString());
         verify(scheduledContextInstanceService, times(4)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
-        verify(schedulerJobInstanceService, times(28)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
+        verify(schedulerJobInstanceService, times(7)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
         verify(moduleMetadataService, times(4)).find(any(), any(), anyInt(), anyInt());
 
         mockStatic.verify(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler),(times(2)));

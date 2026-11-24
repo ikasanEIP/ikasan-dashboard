@@ -1,0 +1,9 @@
+{
+  "agentName" : "GLOBAL_EVENT",
+  "jobName" : "blah",
+  "jobDescription" : "blah",
+  "contextName" : "GLOBAL_EVENT",
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "identifier" : "GLOBAL_EVENT-blah"
+}

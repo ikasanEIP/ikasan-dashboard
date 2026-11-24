@@ -141,6 +141,21 @@ public final class AtlasLocalSupport {
     }
 
     /**
+     * Run {@code call} and assert it was not answered by Atlas Search: no {@code $search}/{@code $searchMeta} was sent
+     * to {@code database}. For queries that must read their own writes, which an asynchronously updated search index
+     * cannot guarantee.
+     *
+     * @return the call's result
+     */
+    public static <T> T withoutSearch(String database, Supplier<T> call) {
+        SEARCHES.clear();
+        T result = call.get();
+        assertTrue("expected the query not to use Atlas Search on database " + database + ", searches sent: "
+            + SEARCHES, !SEARCHES.contains(database));
+        return result;
+    }
+
+    /**
      * {@link #usingSearch} for a paged call to a DAO method that returns a plain list (no total). With
      * {@code limit = 0} such a call asks for nothing, so it must not query the database at all; that is asserted
      * instead.

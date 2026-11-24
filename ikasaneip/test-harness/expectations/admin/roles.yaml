@@ -1,0 +1,20 @@
+# Role management (mutating). Role names get a unique run suffix appended by the test.
+scenarios:
+  - name: create role
+    input: { name: harness-role, description: Role created by the test harness }
+    expect: {}
+
+  # The test creates its own role and tries to create it again; it never touches the baseline roles.
+  # Regression: role ids are derived from the name, so a second save used to overwrite the first role
+  # (clearing its policies) instead of failing.
+  - name: duplicate role name is rejected
+    input: { name: harness-dup-role, description: original description, duplicateDescription: duplicate description }
+    expect: { notification: "Role names must be unique" }
+
+  - name: add a policy to a role
+    input: { policy: wiretap-read }
+    expect: {}
+
+  - name: add a user to a role
+    input: { user: admin }
+    expect: {}

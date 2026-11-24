@@ -1,5 +1,7 @@
 package org.ikasan.orchestration.service.context;
 
+import org.apache.commons.lang.SerializationUtils;
+
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -269,13 +271,16 @@ public abstract class ContextInstanceServiceBase {
             this.saveContextTemplate(context);
         }
 
+        // The jobs just created for the instance. The machine is built from these rather than reading them back:
+        // a datastore whose searches lag behind its writes (e.g. MongoDB Atlas Search) may not return them yet.
+        List<SchedulerJobInstance> createdJobs = null;
         if(initialiseJobs) {
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(false);
-            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
+            createdJobs = schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
         }
 
-        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId());
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId(), createdJobs);
         HashMap<String, ModuleMetaData> agents = getAgents(context);
 
         internalJobs.entrySet().forEach(job -> {
@@ -318,7 +323,7 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId());
+        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId(), createdJobs);
 
         globalEventJobMap.entrySet().forEach(job -> {
             if(job.getValue().getSkippedContexts() != null && job.getValue().getSkippedContexts().containsKey(instance.getName())) {
@@ -338,11 +343,11 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
-        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
-        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
-        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
-        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId(), createdJobs);
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId(), createdJobs);
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId(), createdJobs);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId(), createdJobs);
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId(), createdJobs);
 
         ContextMachineImpl contextMachine = new ContextMachineImpl(context, instance, scheduledContextInstanceService, globalEventJobMap,
             quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap,
@@ -408,12 +413,14 @@ public abstract class ContextInstanceServiceBase {
         SchedulerJobInstancesInitialisationParameters parameters
             = new SchedulerJobInstancesInitialisationParametersImpl(false);
 
+        // see initialiseContextMachine: build the machine from the jobs just created rather than reading them back
+        List<SchedulerJobInstance> createdJobs = null;
         if(initialiseJobs) {
-            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
+            createdJobs = schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
         }
 
 
-        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId());
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId(), createdJobs);
         HashMap<String, ModuleMetaData> agents = getAgents(context);
 
         internalJobs.entrySet().forEach(job -> {
@@ -455,7 +462,7 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId());
+        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId(), createdJobs);
 
         globalEventJobMap.entrySet().forEach(job -> {
             if(job.getValue().getSkippedContexts() != null && job.getValue().getSkippedContexts().containsKey(instance.getName())) {
@@ -475,11 +482,11 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
-        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
-        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
-        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
-        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId(), createdJobs);
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId(), createdJobs);
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId(), createdJobs);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId(), createdJobs);
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId(), createdJobs);
 
         ContextMachineImpl contextMachine = new ContextMachineImpl(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap,
             internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
@@ -651,11 +658,67 @@ public abstract class ContextInstanceServiceBase {
      * @return A map of command execution jobs, where the key is the job ID and the value is the corresponding InternalEventDrivenJobInstance.
      */
     protected Map<String, InternalEventDrivenJobInstance> getAllCommandExecutionJobs(String contextInstanceId) {
+        return this.getAllCommandExecutionJobs(contextInstanceId, null);
+    }
+
+    /**
+     * As {@link #getAllCommandExecutionJobs(String)}, taken from createdJobs when given (the jobs just created for the
+     * instance) instead of the datastore.
+     */
+    protected Map<String, InternalEventDrivenJobInstance> getAllCommandExecutionJobs(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        if(createdJobs == null) {
+            SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+            filter.setContextInstanceId(contextInstanceId);
+            filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+
+            return this.getFilteredCommandExecutionJobs(filter);
+        }
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = this.<InternalEventDrivenJobInstance>jobsOfType(
+                contextInstanceId, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE, createdJobs).stream()
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        internalEventDrivenJobMap.values().forEach(job -> {
+            if(InstanceStatus.SKIPPED.equals(job.getStatus())) {
+                job.setSkip(true);
+            }
+        });
+        return internalEventDrivenJobMap;
+    }
+
+    /**
+     * The job instances of one type of a context instance: copies of those in createdJobs when given (the jobs just
+     * created for the instance, which a lagging search might not return yet), else those in the datastore.
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends SchedulerJobInstance> List<T> jobsOfType(String contextInstanceId, String jobType, List<SchedulerJobInstance> createdJobs) {
+        if(createdJobs != null) {
+            // copies, as the machine previously got its own instances from the datastore
+            return createdJobs.stream()
+                .filter(job -> jobType.equals(jobInstanceType(job)))
+                .map(job -> (T) SerializationUtils.clone(job))
+                .collect(Collectors.toList());
+        }
+
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        filter.setJobType(jobType);
+        return this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null)
+            .getResultList().stream()
+            .map(record -> (T) record.getSchedulerJobInstance())
+            .collect(Collectors.toList());
+    }
 
-        return this.getFilteredCommandExecutionJobs(filter);
+    /** The record type of a job instance, decided in the same order as the datastores do when saving it. */
+    private static String jobInstanceType(SchedulerJobInstance job) {
+        if(job instanceof FileEventDrivenJobInstance) return JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE;
+        if(job instanceof InternalEventDrivenJobInstance) return JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE;
+        if(job instanceof QuartzScheduleDrivenJobInstance) return JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE;
+        if(job instanceof GlobalEventJobInstance) return JobConstants.GLOBAL_EVENT_JOB_INSTANCE;
+        if(job instanceof ContextStartJobInstance) return JobConstants.CONTEXT_START_JOB_INSTANCE;
+        if(job instanceof ContextTerminalJobInstance) return JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE;
+        if(job instanceof LocalEventJobInstance) return JobConstants.LOCAL_EVENT_JOB_INSTANCE;
+        if(job instanceof BridgingJobInstance) return JobConstants.BRIDGING_JOB_INSTANCE;
+        return null;
     }
 
     /**
@@ -689,17 +752,13 @@ public abstract class ContextInstanceServiceBase {
      * the corresponding QuartzScheduleDrivenJobInstance object.
      */
     protected Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.getQuartzBasedJobs(contextInstanceId, null);
+    }
 
-        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
-            .map(internalEventDrivenJobRecord -> (QuartzScheduleDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+    /** As {@link #getQuartzBasedJobs(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<QuartzScheduleDrivenJobInstance>jobsOfType(contextInstanceId, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (a1, a2) -> a1));
-
-        return quartzScheduleDrivenJobInstanceMap;
     }
 
     /**
@@ -710,16 +769,13 @@ public abstract class ContextInstanceServiceBase {
      *JobInstance object.
      */
     protected Map<String, ContextStartJobInstance> getContextStartJobInstances(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.CONTEXT_START_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.getContextStartJobInstances(contextInstanceId, null);
+    }
 
-        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
-            .map(jobInstanceRecord -> (ContextStartJobInstance) jobInstanceRecord.getSchedulerJobInstance())
+    /** As {@link #getContextStartJobInstances(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, ContextStartJobInstance> getContextStartJobInstances(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<ContextStartJobInstance>jobsOfType(contextInstanceId, JobConstants.CONTEXT_START_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
-        return contextStartJobInstanceMap;
     }
 
     /**
@@ -730,42 +786,33 @@ public abstract class ContextInstanceServiceBase {
      *         and the value is the corresponding ContextTerminalJobInstance object.
      */
     protected Map<String, ContextTerminalJobInstance> geContextTerminalJobInstances(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.geContextTerminalJobInstances(contextInstanceId, null);
+    }
 
-        Map<String, ContextTerminalJobInstance> contextStartJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
-            .map(jobInstanceRecord -> (ContextTerminalJobInstance) jobInstanceRecord.getSchedulerJobInstance())
+    /** As {@link #geContextTerminalJobInstances(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, ContextTerminalJobInstance> geContextTerminalJobInstances(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<ContextTerminalJobInstance>jobsOfType(contextInstanceId, JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
-        return contextStartJobInstanceMap;
     }
 
     protected Map<String, LocalEventJobInstance> getLocalEventJobs(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.LOCAL_EVENT_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.getLocalEventJobs(contextInstanceId, null);
+    }
 
-        Map<String, LocalEventJobInstance> localEventJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
-            .map(globalEventJobRecord -> (LocalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+    /** As {@link #getLocalEventJobs(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, LocalEventJobInstance> getLocalEventJobs(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<LocalEventJobInstance>jobsOfType(contextInstanceId, JobConstants.LOCAL_EVENT_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
-        return localEventJobInstanceMap;
     }
 
     protected Map<String, BridgingJobInstance> getBridgingJobs(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.BRIDGING_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> bridgingJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.getBridgingJobs(contextInstanceId, null);
+    }
 
-        Map<String, BridgingJobInstance> bridgingJobInstanceMap = bridgingJobRecordSearchResults.getResultList().stream()
-            .map(globalEventJobRecord -> (BridgingJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+    /** As {@link #getBridgingJobs(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, BridgingJobInstance> getBridgingJobs(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<BridgingJobInstance>jobsOfType(contextInstanceId, JobConstants.BRIDGING_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
-        return bridgingJobInstanceMap;
     }
 
     /**
@@ -776,16 +823,13 @@ public abstract class ContextInstanceServiceBase {
      * identifier and child context name, and the value is the corresponding GlobalEventJobInstance.
      */
     protected Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType(JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
-        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+        return this.getGlobalEventJobs(contextInstanceId, null);
+    }
 
-        Map<String, GlobalEventJobInstance> globalEventJobMap = globalEventJobRecordSearchResults.getResultList().stream()
-            .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+    /** As {@link #getGlobalEventJobs(String)}, taken from createdJobs when given (see {@link #jobsOfType}). */
+    protected Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId, List<SchedulerJobInstance> createdJobs) {
+        return this.<GlobalEventJobInstance>jobsOfType(contextInstanceId, JobConstants.GLOBAL_EVENT_JOB_INSTANCE, createdJobs).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
-        return globalEventJobMap;
     }
 
     /**

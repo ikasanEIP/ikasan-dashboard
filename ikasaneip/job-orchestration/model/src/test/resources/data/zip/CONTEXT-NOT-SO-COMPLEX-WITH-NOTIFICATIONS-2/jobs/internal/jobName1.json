@@ -1,0 +1,13 @@
+{
+	"agentName": "scheduler-agent",
+	"jobName": "jobName1",
+	"contextId": "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+	"childContextIds": [
+		"childId1"
+	],
+	"startupControlType": "AUTOMATIC",
+	"minExecutionTime": 10,
+	"maxExecutionTime": 10000,
+	"contextParameters": [],
+	"identifier": "scheduler-agent-jobName1"
+}

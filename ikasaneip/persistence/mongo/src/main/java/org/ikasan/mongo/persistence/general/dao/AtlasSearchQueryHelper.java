@@ -203,6 +203,20 @@ public class AtlasSearchQueryHelper {
     }
 
     /**
+     * As {@link #search(AtlasSearchFilter, Sort, int, int, boolean, Class)}, but always as a standard query against the
+     * collection, never Atlas Search. Atlas Search indexes asynchronously, so a {@code $search} may not yet see a
+     * document written a moment ago; callers that must read their own writes use this. Text clauses are evaluated as
+     * case-insensitive regular expressions, as in the fallback used when Atlas Search is unavailable.
+     */
+    public <T> SearchQueryResult<T> searchWithoutIndex(AtlasSearchFilter filter, Sort sort, int offset, int limit,
+                                                       boolean includeCount, Class<T> resultClass) {
+        if (MongoPaging.isCountOnly(limit) && !includeCount) {
+            return new SearchQueryResult<>(new ArrayList<>(), -1);
+        }
+        return executeStandardQuery(filter, sort, offset, limit, includeCount, resultClass);
+    }
+
+    /**
      * Build the {@code $search} stage for the given filter. Exposed for tests and for callers that need to compose
      * further pipeline stages (which must not filter or sort).
      */

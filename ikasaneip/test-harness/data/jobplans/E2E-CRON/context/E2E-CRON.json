@@ -1,0 +1,43 @@
+{
+  "name": "E2E-CRON",
+  "description": "Harness job plan: started by its time window every minute",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 * * ? * * *",
+  "contextTtlMilliseconds": 90000,
+  "ableToRunConcurrently": false,
+  "endJobPlanUponCompletion": false,
+  "contexts": [
+    {
+      "name": "E2E-CRON-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "cronJob",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-cronJob"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-cronJob",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

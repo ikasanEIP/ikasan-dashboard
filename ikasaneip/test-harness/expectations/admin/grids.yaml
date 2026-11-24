@@ -1,0 +1,195 @@
+# Administration list views. The security data is the baseline the dashboard creates on start-up
+# (persistence/persistence-initialisation/src/main/resources/baseline-security/*.json).
+# input:  route (dashboard route of the view)
+# expect: size / minSize (item count), headers (column headers, in order), rows / rowsExact
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+# Values that genuinely vary (login times, session ids, fire times) reference these patterns as "@name".
+patterns:
+  timestamp: '/\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]/'
+  optionalTimestamp: '/(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]|N/A)?/'
+  sessionId: '/[0-9A-F]{32}/'
+  number: '/\d+/'
+
+scenarios:
+  - name: users view lists the admin user
+    tags: [smoke, users]
+    input: { route: userManagement }
+    expect:
+      headers: [Username, First Name, Surname, Email Address, Department, Last Access]
+      rowsExact: true
+      rows:
+      - { "Username": "admin", "First Name": "Admin", "Surname": "User", "Email Address": "", "Department": "", "Last Access": "@timestamp" }
+
+  - name: roles view lists the baseline roles
+    tags: [smoke, roles]
+    input: { route: roleManagement }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Role Name": "ADMIN", "Description": "Users who may perform administration functions on the system" }
+      - { "Role Name": "User", "Description": "Users who have a read only view on the system" }
+      - { "Role Name": "RESTAccess", "Description": "Users who have Access to REST endpoint on the system" }
+      - { "Role Name": "AdminUser", "Description": "Users who have Access to REST endpoint on the system" }
+      - { "Role Name": "WriteUser", "Description": "Users who have Access to REST endpoint on the system" }
+
+  - name: policies view lists the baseline policies
+    tags: [policies]
+    input: { route: policyManagement }
+    expect:
+      size: 104
+      headers: [Policy Name, Description]
+      rowsExact: true
+      rows:
+      - { "Policy Name": "ALL", "Description": "Policy to do everything" }
+      - { "Policy Name": "Discover", "Description": "A policy to allow users to perform topology discovery." }
+      - { "Policy Name": "wiretap-read", "Description": "Wiretap read only policy." }
+      - { "Policy Name": "wiretap-write", "Description": "Wiretap write policy." }
+      - { "Policy Name": "wiretap-admin", "Description": "Wiretap admin policy." }
+      - { "Policy Name": "error-read", "Description": "Error read only policy." }
+      - { "Policy Name": "error-write", "Description": "Error write policy." }
+      - { "Policy Name": "error-admin", "Description": "Error admin policy." }
+      - { "Policy Name": "actioned_error-read", "Description": "Actioned Error read only policy." }
+      - { "Policy Name": "actioned_error-write", "Description": "Actioned Error write policy." }
+      - { "Policy Name": "actioned_error-admin", "Description": "Actioned Error admin policy." }
+      - { "Policy Name": "categorised_error-read", "Description": "Categorised Error read only policy." }
+      - { "Policy Name": "categorised_error-write", "Description": "Categorised Error write policy." }
+      - { "Policy Name": "categorised_error-admin", "Description": "Categorised Error admin policy." }
+      - { "Policy Name": "exclusion-read", "Description": "Exclusion read only policy." }
+      - { "Policy Name": "exclusion-write", "Description": "Exclusion write policy." }
+      - { "Policy Name": "exclusion-admin", "Description": "Exclusion admin policy." }
+      - { "Policy Name": "actioned_exclusion-read", "Description": "Actioned Exclusion read only policy." }
+      - { "Policy Name": "actioned_exclusion-write", "Description": "Actioned Exclusion write policy." }
+      - { "Policy Name": "actioned_exclusion-admin", "Description": "Actioned Exclusion admin policy." }
+      - { "Policy Name": "system_event-read", "Description": "System Event read only policy." }
+      - { "Policy Name": "system_event-write", "Description": "System Event write policy." }
+      - { "Policy Name": "system_event-admin", "Description": "System Event admin policy." }
+      - { "Policy Name": "filter-read", "Description": "Filter read only policy." }
+      - { "Policy Name": "filter-write", "Description": "Filter write policy." }
+      - { "Policy Name": "filter-admin", "Description": "Filter admin policy." }
+      - { "Policy Name": "topology-read", "Description": "Topology read only policy." }
+      - { "Policy Name": "topology-write", "Description": "Topology write policy." }
+      - { "Policy Name": "topology-admin", "Description": "Topology admin policy." }
+      - { "Policy Name": "mapping-read", "Description": "Mapping read only policy." }
+      - { "Policy Name": "mapping-write", "Description": "Mapping write policy." }
+      - { "Policy Name": "mapping-admin", "Description": "Mapping admin policy." }
+      - { "Policy Name": "monitoring-read", "Description": "Monitoring read only policy." }
+      - { "Policy Name": "monitoring-write", "Description": "Monitoring write policy." }
+      - { "Policy Name": "monitoring-admin", "Description": "Monitoring admin policy." }
+      - { "Policy Name": "replay-read", "Description": "Replay read only policy." }
+      - { "Policy Name": "replay-write", "Description": "Replay write policy." }
+      - { "Policy Name": "replay-admin", "Description": "Replay admin policy." }
+      - { "Policy Name": "housekeeping-read", "Description": "Housekeeping read only policy." }
+      - { "Policy Name": "housekeeping-write", "Description": "Housekeeping write policy." }
+      - { "Policy Name": "housekeeping-admin", "Description": "Housekeeping admin policy." }
+      - { "Policy Name": "user_administration-read", "Description": "User Administration read only policy." }
+      - { "Policy Name": "user_administration-write", "Description": "User Administration write policy." }
+      - { "Policy Name": "user_administration-admin", "Description": "User Administration admin policy." }
+      - { "Policy Name": "group_administration-read", "Description": "Group Administration read only policy." }
+      - { "Policy Name": "group_administration-write", "Description": "Group Administration write policy." }
+      - { "Policy Name": "group_administration-admin", "Description": "Group Administration admin policy." }
+      - { "Policy Name": "role_administration-read", "Description": "Role Administration read only policy." }
+      - { "Policy Name": "role_administration-write", "Description": "Role Administration write policy." }
+      - { "Policy Name": "role_administration-admin", "Description": "Role Administration admin policy." }
+      - { "Policy Name": "policy_administration-read", "Description": "Policy Administration read only policy." }
+      - { "Policy Name": "policy_administration-write", "Description": "Policy Administration write policy." }
+      - { "Policy Name": "policy_administration-admin", "Description": "Policy Administration admin policy." }
+      - { "Policy Name": "user_directory-read", "Description": "User Directory read only policy." }
+      - { "Policy Name": "user_directory-write", "Description": "User Directory write policy." }
+      - { "Policy Name": "user_directory-admin", "Description": "User Directory admin policy." }
+      - { "Policy Name": "platform_configuration-read", "Description": "Platform Configuration read only policy." }
+      - { "Policy Name": "platform_configuration-write", "Description": "Platform Configuration write policy." }
+      - { "Policy Name": "platform_configuration-admin", "Description": "Platform Configuration admin policy." }
+      - { "Policy Name": "notification-read", "Description": "Notification read only policy." }
+      - { "Policy Name": "notification-write", "Description": "Notification write policy." }
+      - { "Policy Name": "notification-admin", "Description": "Notification admin policy." }
+      - { "Policy Name": "harvesting-read", "Description": "Harvesting read only policy." }
+      - { "Policy Name": "harvesting-write", "Description": "Harvesting write policy." }
+      - { "Policy Name": "harvesting-admin", "Description": "Harvesting admin policy." }
+      - { "Policy Name": "search-read", "Description": "Search read only policy." }
+      - { "Policy Name": "search-write", "Description": "Search write policy." }
+      - { "Policy Name": "search-admin", "Description": "Search admin policy." }
+      - { "Policy Name": "search-replay-read", "Description": "Search replay read only policy." }
+      - { "Policy Name": "search-replay-write", "Description": "Search replay write policy." }
+      - { "Policy Name": "search-replay-admin", "Description": "Search replay admin policy." }
+      - { "Policy Name": "ReadBlueConsole", "Description": "BlueConsole read only policy." }
+      - { "Policy Name": "WriteBlueConsole", "Description": "BlueConsole write only policy." }
+      - { "Policy Name": "WebServiceAdmin", "Description": "REST access read write policy policy." }
+      - { "Policy Name": "module-control-read", "Description": "Module control read only policy." }
+      - { "Policy Name": "module-control-write", "Description": "Module control write policy." }
+      - { "Policy Name": "module-control-admin", "Description": "Control control admin policy." }
+      - { "Policy Name": "scheduler-read", "Description": "Scheduler read only policy." }
+      - { "Policy Name": "scheduler-write", "Description": "Scheduler write policy." }
+      - { "Policy Name": "scheduler-admin", "Description": "Scheduler admin policy." }
+      - { "Policy Name": "business-stream-read", "Description": "Business Stream read only policy." }
+      - { "Policy Name": "business-stream-write", "Description": "Business Stream write policy." }
+      - { "Policy Name": "business-stream-admin", "Description": "Business Stream admin policy." }
+      - { "Policy Name": "wiretap_all_modules-read", "Description": "Wiretap read only policy." }
+      - { "Policy Name": "wiretap_all_modules-write", "Description": "Wiretap write policy." }
+      - { "Policy Name": "wiretap_all_modules-admin", "Description": "Wiretap admin policy." }
+      - { "Policy Name": "error_all_modules-read", "Description": "Error read only policy." }
+      - { "Policy Name": "error_all_modules-write", "Description": "Error write policy." }
+      - { "Policy Name": "error_all_modules-admin", "Description": "Error admin policy." }
+      - { "Policy Name": "exclusion_all_modules-read", "Description": "Exclusion read only policy." }
+      - { "Policy Name": "exclusion_all_modules-write", "Description": "Exclusion write policy." }
+      - { "Policy Name": "exclusion_all_modules-admin", "Description": "Exclusion admin policy." }
+      - { "Policy Name": "replay_all_modules-read", "Description": "Replay read only policy." }
+      - { "Policy Name": "replay_all_modules-write", "Description": "Replay write policy." }
+      - { "Policy Name": "replay_all_modules-admin", "Description": "Replay admin policy." }
+      - { "Policy Name": "scheduler-all-read", "Description": "Scheduler read only policy with access to all job plans." }
+      - { "Policy Name": "scheduler-all-write", "Description": "Scheduler write policy with access to all job plans." }
+      - { "Policy Name": "scheduler-all-admin", "Description": "Scheduler admin policy with access to all job plans." }
+      - { "Policy Name": "scheduler-dev-read", "Description": "Scheduler dev read only policy." }
+      - { "Policy Name": "scheduler-dev-write", "Description": "Scheduler dev write policy." }
+      - { "Policy Name": "scheduler-dev-admin", "Description": "Scheduler dev admin policy." }
+      - { "Policy Name": "dashboard-read", "Description": "Dashboard view read only policy with access to all job plans." }
+      - { "Policy Name": "dashboard-write", "Description": "Dashboard view write policy with access to all job plans." }
+      - { "Policy Name": "dashboard-admin", "Description": "Dashboard view admin policy with access to all job plans." }
+
+  # groups of type 'application' only arrive through an LDAP synchronisation, so the baseline has none
+  - name: groups view is empty without LDAP
+    tags: [groups]
+    input: { route: groupManagement }
+    expect: { size: 0, headers: [Group Name, Group Type, Description], rowsExact: true, rows: [] }
+
+  # the dashboard's own harvesting and housekeeping jobs; fire times move, so they are patterns
+  # (note: this view shows times in the server's zone, not the user's)
+  - name: quartz scheduler view lists the dashboard jobs
+    tags: [quartz]
+    input: { route: quartzSchedulerView }
+    expect:
+      headers: [Job Name, Job Group, Next Fire Time, Previous Fire Time]
+      rowsExact: true
+      rows:
+      - { "Job Name": "moduleMetaDataHarvestJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "wiretapHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "exclusionHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "moduleFlowStateJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "replayHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "messageHistoryHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "systemEventHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "configurationMetaDataHarvestJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "errorReportingHarvestingJob", "Job Group": "harvest", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "messageHistoryHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "systemEventServiceHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "errorReportingHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "wiretapHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "replayHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "persistenceHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+      - { "Job Name": "duplicateFilterHousekeepingJob", "Job Group": "housekeeping", "Next Fire Time": "@timestamp", "Previous Fire Time": "@optionalTimestamp" }
+
+  # job locks only exist when job plans with locks run; the baseline has none
+  - name: job lock view is empty without job plans
+    tags: [joblocks]
+    input: { route: jobLockView }
+    expect: { size: 0, headers: [Environment, Lock Name, Lock Count, Current Lock holders, Queued Jobs Waiting For Lock], rowsExact: true, rows: [] }
+
+  # every login (the harness, LoginIT) has a session, so only the harness admin's session shape is required
+  - name: sessions view lists the harness session
+    tags: [sessions]
+    input: { route: sessionsView }
+    expect:
+      headers: [Session Identifier, Username, Session Size (bytes), Number of UI Instances, Session Creation Time, Session Last Accessed]
+      rowsExact: false
+      rows:
+      - { "Session Identifier": "@sessionId", "Username": "admin", "Session Size (bytes)": "@number", "Number of UI Instances": "@number", "Session Creation Time": "@timestamp", "Session Last Accessed": "@timestamp" }

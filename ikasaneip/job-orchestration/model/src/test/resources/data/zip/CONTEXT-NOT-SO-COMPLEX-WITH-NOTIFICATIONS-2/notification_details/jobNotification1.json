@@ -1,0 +1,15 @@
+{
+  "jobName" : "jobName1",
+  "contextName" : "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+  "childContextName" : "CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS",
+  "monitorType" : "ERROR",
+  "emailNotificationTemplateParameters" : {
+    "EMAIL_BODY_TEXT" : "Testing1",
+    "EMAIL_SUBJECT_TEXT" : "Testing1"
+  },
+  "emailSendTo" : [ "test@doesnotexist", "test2@doesnotexist" ],
+  "emailSubject" : "",
+  "emailBody" : "",
+  "emailBodyTemplate" : "",
+  "html" : false
+}

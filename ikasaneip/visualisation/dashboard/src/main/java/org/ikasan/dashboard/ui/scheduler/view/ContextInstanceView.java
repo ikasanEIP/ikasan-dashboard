@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import org.ikasan.dashboard.ui.util.SessionLocale;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -202,6 +203,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
                 beforeEnterEvent.getUI().getSession().setAttribute("locale",
                     optionalLocale.get().getLanguage());
                 VaadinSession.getCurrent().setLocale(optionalLocale.get());
+                SessionLocale.remember(VaadinSession.getCurrent(), optionalLocale.get());
                 beforeEnterEvent.getUI().setLocale(optionalLocale.get());
             }
         }

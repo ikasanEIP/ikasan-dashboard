@@ -1,0 +1,14 @@
+# Login scenarios. 'configured' means: use dashboard.username / dashboard.password from the harness config.
+scenarios:
+  - name: valid credentials land on the dashboard
+    tags: [smoke]
+    input: { username: configured, password: configured }
+    expect: { success: true, landingRoute: "" }
+
+  - name: wrong password is rejected
+    input: { username: configured, password: not-the-password }
+    expect: { success: false }
+
+  - name: unknown user is rejected
+    input: { username: no-such-user, password: whatever }
+    expect: { success: false }

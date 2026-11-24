@@ -1,0 +1,4 @@
+# Docker compose stack, Mongo (Atlas local) backend.
+backend: mongo
+compose:
+  enabled: true

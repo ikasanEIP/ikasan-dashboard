@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "afterGlobal",
+  "jobDescription": "afterGlobal",
+  "contextName": "E2E-GLOBAL",
+  "childContextNames": [
+    "E2E-GLOBAL-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-afterGlobal",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo global",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": []
+}

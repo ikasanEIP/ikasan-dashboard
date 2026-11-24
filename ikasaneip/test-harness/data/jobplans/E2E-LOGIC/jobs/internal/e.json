@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "e",
+  "contextName": "E2E-LOGIC",
+  "childContextNames": [
+    "E2E-LOGIC-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-e",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo e",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": [],
+  "jobDescription": "e"
+}

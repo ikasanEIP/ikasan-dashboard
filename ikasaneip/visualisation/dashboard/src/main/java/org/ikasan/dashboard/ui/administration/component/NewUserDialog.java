@@ -114,6 +114,15 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
             {
                 binder.writeBean(user);
 
+                // User ids are derived from the username, so creating a user whose username is already taken would
+                // silently overwrite the existing user (e.g. resetting 'admin') rather than fail.
+                if(usernameExists(user.getUsername()))
+                {
+                    NotificationHelper.showErrorNotification(getTranslation("message.username-must-be-unique",
+                        UI.getCurrent().getLocale(), null));
+                    return;
+                }
+
                 user.setRequiresPasswordChange(true);
                 this.userService.createUser(user);
 
@@ -159,5 +168,18 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
         this.content.add(layout);
         this.setHeight("550px");
         this.setWidth("600px");
+    }
+
+    /**
+     * Is the username already taken? The 'like' lookup returns every user whose username contains the value
+     * (case-insensitively, or token based on Solr), so the exact match is decided here.
+     *
+     * @param username the new user's username
+     * @return true if a user with exactly this username exists
+     */
+    private boolean usernameExists(String username)
+    {
+        return username != null && !username.isEmpty() && this.userService.getUserByUsernameLike(username).stream()
+            .anyMatch(existing -> username.equals(existing.getUsername()));
     }
 }

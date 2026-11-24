@@ -154,6 +154,7 @@ public class SearchResults extends Div {
         createSearchResultsGrid();
 
         this.resultsLabel.setVisible(false);
+        this.resultsLabel.setId("searchResultsCountLabel");
 
         Image selectAllImage = new Image("/frontend/images/all-small-off-icon.png", "");
         selectAllImage.setHeight("30px");
@@ -348,6 +349,7 @@ public class SearchResults extends Div {
     private void createSearchResultsGrid()
     {
         this.searchResultsGrid = new SearchFilteringGrid(this.esbSearchService, searchFilter, this.resultsLabel);
+        this.searchResultsGrid.setId("searchResultsGrid");
 
         // Add the icon column to the grid
         this.searchResultsGrid.addColumn(new ComponentRenderer<>(ikasanSolrDocument ->
@@ -355,6 +357,7 @@ public class SearchResults extends Div {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             horizontalLayout.setWidth("100%");
             horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+            horizontalLayout.getElement().setAttribute("data-entity-type", ikasanSolrDocument.getType().toLowerCase());
 
             if(ikasanSolrDocument.getType().equalsIgnoreCase(SearchConstants.WIRETAP))
             {

@@ -299,6 +299,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                     LocalEventJobInstance instance = (LocalEventJobInstance) schedulerJobInstanceRecord
                         .getSchedulerJobInstance();
 
+                    // before the job is sent: see ManualJobSubmission
+                    ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
                     this.localEventService.raiseLocalEventJob(instance,
                         this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
@@ -310,8 +312,6 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                     instance.setStatus(InstanceStatus.COMPLETE);
                     schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
                     schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
-                    schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                    schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                     this.setButtonVisibility();
 

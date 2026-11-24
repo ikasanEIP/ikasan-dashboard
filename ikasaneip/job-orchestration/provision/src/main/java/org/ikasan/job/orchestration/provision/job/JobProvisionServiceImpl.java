@@ -62,6 +62,13 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             logger.warn("Attempt to provision jobs with a null list of jobs. This should never happen!");
             return;
         }
+        if(jobs.isEmpty()) {
+            // Nothing to provision (e.g. enabling a job plan that has no jobs yet). Carrying on would look up the
+            // agents for an empty list of names, which matches every agent, and then fail the check that each named
+            // agent is known.
+            logger.info("No jobs to provision.");
+            return;
+        }
 
         long now = System.currentTimeMillis();
         List<String> uniqueAgentNames = this.getUniqueAgentNames(jobs);

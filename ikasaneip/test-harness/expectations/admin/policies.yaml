@@ -1,0 +1,19 @@
+# Policy management (read only - policies cannot be created or deleted in the dashboard)
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: filter policies by name
+    input: { filter: wiretap }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Policy Name": "wiretap-read", "Description": "Wiretap read only policy." }
+      - { "Policy Name": "wiretap-write", "Description": "Wiretap write policy." }
+      - { "Policy Name": "wiretap-admin", "Description": "Wiretap admin policy." }
+      - { "Policy Name": "wiretap_all_modules-read", "Description": "Wiretap read only policy." }
+      - { "Policy Name": "wiretap_all_modules-write", "Description": "Wiretap write policy." }
+      - { "Policy Name": "wiretap_all_modules-admin", "Description": "Wiretap admin policy." }
+
+  - name: open a policy profile
+    input: { policy: wiretap-read }
+    expect: { title: "Policy Profile - wiretap-read" }

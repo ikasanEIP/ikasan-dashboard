@@ -1,0 +1,18 @@
+# Baseline datasets for the test harness.
+#
+# Each dataset lives in data/baseline/<name>/ as NDJSON files (one document per line) using the
+# backend-neutral Ikasan field names (org.ikasan.spec.entity.EntityFields), primary key in 'id'.
+# Time values may use tokens such as "{{now-5m}}" (see src/seed/tokens.ts).
+#
+# Security users/roles/policies are NOT part of the baseline: the dashboard re-creates them (admin/admin)
+# from persistence-initialisation's baseline-security on start-up, because the wipe removes the
+# 'dashboardPlatformSetup' marker.
+#
+# Grow a dataset with: build state in the dashboard, then `npm run capture -- --dataset <name>`.
+
+datasets:
+  core:
+    description: Small, hand-curated dataset covering event search (wiretaps and errors over two modules).
+    documents:
+      - wiretap.ndjson
+      - error.ndjson

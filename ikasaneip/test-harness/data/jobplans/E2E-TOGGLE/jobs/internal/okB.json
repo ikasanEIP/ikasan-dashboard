@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "okB",
+  "contextName": "E2E-TOGGLE",
+  "childContextNames": [
+    "E2E-TOGGLE-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-okB",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "echo beta",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": [],
+  "jobDescription": "okB"
+}

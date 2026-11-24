@@ -1,0 +1,19 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "slowJob",
+  "contextName": "E2E-SLOW",
+  "childContextNames": [
+    "E2E-SLOW-1"
+  ],
+  "startupControlType": "AUTOMATIC",
+  "identifier": "scheduler-agent-slowJob",
+  "successfulReturnCodes": [
+    "0"
+  ],
+  "workingDirectory": "",
+  "commandLine": "sleep 30",
+  "minExecutionTime": 0,
+  "maxExecutionTime": 600000,
+  "contextParameters": [],
+  "jobDescription": "slowJob"
+}

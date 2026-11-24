@@ -204,6 +204,8 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
+                    // before the job is sent: see ManualJobSubmission
+                    ManualJobSubmission.recordSubmitter(this.schedulerJobInstanceService, this.schedulerJobInstanceRecord, authentication.getName());
                     this.jobInitiationService.raiseFileEventSchedulerJob(
                         this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance, this.fileEventDrivenJobInstance.getContextInstanceId());
 
@@ -213,8 +215,6 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                             )
                         , this.authentication.getName());
 
-                    this.schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
-                    this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
 

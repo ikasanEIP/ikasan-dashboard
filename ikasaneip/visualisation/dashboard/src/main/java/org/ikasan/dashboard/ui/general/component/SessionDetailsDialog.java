@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import org.ikasan.dashboard.ui.util.SessionLocale;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -32,8 +33,9 @@ public class SessionDetailsDialog extends AbstractCloseableResizableDialog
         formLayout.addFormItem(username, getTranslation("label.username"));
         TextField locale = new TextField();
         locale.setWidthFull();
-        locale.setValue(this.vaadinSession.getLocale()
-            .getDisplayName(this.vaadinSession.getLocale()));
+        // another user's session: its locale can only be read from what it recorded (see SessionLocale)
+        java.util.Locale sessionLocale = SessionLocale.of(this.vaadinSession);
+        locale.setValue(sessionLocale != null ? sessionLocale.getDisplayName(sessionLocale) : "");
         locale.setReadOnly(true);
         formLayout.addFormItem(locale, getTranslation("label.locale"));
         TextArea browser = new TextArea();

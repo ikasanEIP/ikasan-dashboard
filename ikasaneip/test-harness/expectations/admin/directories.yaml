@@ -1,0 +1,16 @@
+# LDAP user directories (mutating). Creating, enabling/disabling and deleting a directory does not contact the
+# server; only Test and Synchronise do, so those are not covered without an LDAP server.
+scenarios:
+  - name: directory lifecycle
+    input:
+      directoryName: harness-ldap
+      serverUrl: "ldap://ldap.invalid:389"
+      username: "cn=harness,dc=example,dc=com"
+      password: harness
+      userDn: "ou=users,dc=example,dc=com"
+      groupDn: "ou=groups,dc=example,dc=com"
+    expect: { saved: Saved, disabled: Disabled, enabled: Enabled, deleted: "Deleted!" }
+
+  - name: directory validation
+    input: {}
+    expect: { notification: "Please check forms for errors." }

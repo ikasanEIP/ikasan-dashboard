@@ -67,6 +67,12 @@ public class RoleManagementViewTest extends UITest
     @After
     public void teardown() {
         securityService.deletePrincipal(securityService.findPrincipalByName("sample_group"));
+        // test_add_new_role creates this role; remove it so the test can run again against the same datastore
+        // (surefire reruns a failed test, and a second "new_role" is refused as a duplicate name)
+        Role newRole = securityService.findRoleByName("new_role");
+        if (newRole != null) {
+            securityService.deleteRole(newRole);
+        }
     }
 
     @Test
@@ -109,8 +115,12 @@ public class RoleManagementViewTest extends UITest
         Assertions.assertNotNull(roleGrid);
         expectRows(roleGrid, 6);
 
-        // Open new role in role management view
-        _doubleClickItem(roleGrid, 5);
+        // Open new role in role management view. Find its row by name: the grid lists roles in the datastore's order,
+        // which on Mongo is the collection's natural order and need not put the newest role last.
+        int newRoleRow = java.util.stream.IntStream.range(0, _size(roleGrid))
+            .filter(row -> "new_role".equals(((Role) com.github.mvysny.kaributesting.v10.GridKt._get(roleGrid, row)).getName()))
+            .findFirst().orElseThrow(() -> new AssertionError("new_role is not in the role grid"));
+        _doubleClickItem(roleGrid, newRoleRow);
 
         // Associate a policy with the new role
         Grid policyGrid = _get(Grid.class, spec -> spec.withId("policyGrid"));

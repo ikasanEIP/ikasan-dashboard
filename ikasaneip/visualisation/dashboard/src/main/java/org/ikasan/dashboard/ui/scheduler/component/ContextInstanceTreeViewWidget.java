@@ -1703,8 +1703,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                            ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
 
                             this.jobInitiationService.raiseFileEventSchedulerJob(
                                 agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance(), schedulerJobInstanceRecord.getContextInstanceId());
@@ -1735,6 +1734,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                            // before the job is sent: see ManualJobSubmission
+                            ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
                             this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
@@ -1743,8 +1744,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
                                     , this.contextInstance.getId()), this.authentication.getName());
 
-                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
@@ -1768,6 +1767,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             GlobalEventJobInstance globalEventJobInstance = (GlobalEventJobInstance)schedulerJobInstanceRecord
                                 .getSchedulerJobInstance();
 
+                            // before the job is sent: see ManualJobSubmission
+                            ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
@@ -1778,8 +1779,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
                             schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
-                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
@@ -1803,6 +1802,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             LocalEventJobInstance localEventJobInstance = (LocalEventJobInstance)schedulerJobInstanceRecord
                                 .getSchedulerJobInstance();
 
+                            // before the job is sent: see ManualJobSubmission
+                            ManualJobSubmission.recordSubmitter(schedulerJobInstanceService, schedulerJobInstanceRecord, this.authentication.getName());
                             localEventService.raiseLocalEventJob(localEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
@@ -1813,8 +1814,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             localEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(localEventJobInstance);
                             schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
-                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {

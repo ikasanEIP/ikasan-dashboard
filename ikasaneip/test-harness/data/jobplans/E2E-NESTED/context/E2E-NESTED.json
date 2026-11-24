@@ -1,0 +1,104 @@
+{
+  "name": "E2E-NESTED",
+  "description": "Harness job plan: two child job plans joined by terminal and start jobs",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": true,
+  "contexts": [
+    {
+      "name": "E2E-NESTED-STEP-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "step1Job",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-step1Job"
+        },
+        {
+          "agentName": "CONTEXT_TERMINAL_JOB",
+          "jobName": "E2E-NESTED-STEP-1 Terminal",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "CONTEXT_TERMINAL_JOB-E2E-NESTED-STEP-1 Terminal"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-step1Job",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "CONTEXT_TERMINAL_JOB-E2E-NESTED-STEP-1 Terminal",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-step1Job"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "E2E-NESTED-STEP-2",
+      "scheduledJobs": [
+        {
+          "agentName": "CONTEXT_TERMINAL_JOB",
+          "jobName": "E2E-NESTED-STEP-1 Terminal",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "CONTEXT_TERMINAL_JOB-E2E-NESTED-STEP-1 Terminal"
+        },
+        {
+          "agentName": "CONTEXT_START_JOB",
+          "jobName": "E2E-NESTED-STEP-2 Start",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "CONTEXT_START_JOB-E2E-NESTED-STEP-2 Start"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "step2Job",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-step2Job"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "CONTEXT_START_JOB-E2E-NESTED-STEP-2 Start",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "CONTEXT_TERMINAL_JOB-E2E-NESTED-STEP-1 Terminal"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-step2Job",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "CONTEXT_START_JOB-E2E-NESTED-STEP-2 Start"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

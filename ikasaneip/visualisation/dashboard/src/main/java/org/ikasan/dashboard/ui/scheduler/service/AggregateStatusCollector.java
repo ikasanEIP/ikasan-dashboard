@@ -23,7 +23,7 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
     private static AggregateStatusCollector instance;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
-    private List<ContextInstanceAggregateJobStatus> jobStatuses = null;
+    private volatile List<ContextInstanceAggregateJobStatus> jobStatuses = null;
 
     /**
      * Constructor for the AggregateStatusCollector class
@@ -81,7 +81,11 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
      * Populates the job statuses by retrieving the count of job statuses for context instances
      * from the {@link SchedulerJobInstanceService}.
      */
-    private void populateJobStatuses() {
+    // Synchronized: broadcasts arrive on different threads, and an unsynchronized population that read the context
+    // machine cache before an instance ended (and left the cache) could finish after the population that followed it,
+    // putting the ended instance back. Serialised, each population reads the cache when it runs, so the last one wins
+    // with the current state.
+    private synchronized void populateJobStatuses() {
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
 
         contextInstanceIdentifiers = contextInstanceIdentifiers.stream()

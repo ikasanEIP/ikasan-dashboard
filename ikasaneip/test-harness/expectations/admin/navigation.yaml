@@ -1,0 +1,44 @@
+# Every Administration menu item opens its view (IkasanAppLayout). The admin user has ALL, so all are visible.
+# input:  menuItem (id), parent (id of the menu group to expand, if any)
+# expect: route (url path), heading (text shown by the view)
+scenarios:
+  - name: Support
+    tags: [smoke]
+    input: { menuItem: supportMenuItem, parent: adminMenuItem }
+    expect: { route: adminSupportView, heading: "Download the System Events Generated in the Last 24 Hours" }
+  - name: Audit
+    tags: [smoke]
+    input: { menuItem: systemEventMenuItem, parent: adminMenuItem }
+    expect: { route: adminSearchView, heading: "System Events" }
+  - name: Users
+    tags: [smoke]
+    input: { menuItem: userManagementMenuItem, parent: adminMenuItem }
+    expect: { route: userManagement, heading: "User Management" }
+  - name: Groups
+    tags: [smoke]
+    input: { menuItem: groupManagementMenuItem, parent: adminMenuItem }
+    expect: { route: groupManagement, heading: "Group Management" }
+  - name: Roles
+    tags: [smoke]
+    input: { menuItem: roleManagementMenuItem, parent: adminMenuItem }
+    expect: { route: roleManagement, heading: "Role Management" }
+  - name: Policies
+    tags: [smoke]
+    input: { menuItem: policyManagementMenuItem, parent: adminMenuItem }
+    expect: { route: policyManagement, heading: "Policy Management" }
+  - name: LDAP Configuration
+    tags: [smoke]
+    input: { menuItem: userDirectoryManagementMenuItem, parent: adminMenuItem }
+    expect: { route: userDirectories, heading: "LDAP Configuration" }
+  - name: Quartz Scheduler
+    tags: [smoke]
+    input: { menuItem: quartzSchedulerViewMenuItem, parent: adminMenuItem }
+    expect: { route: quartzSchedulerView, heading: "Quartz Scheduler Jobs" }
+  - name: Session Management
+    tags: [smoke]
+    input: { menuItem: sessionManagementViewMenuItem, parent: adminMenuItem }
+    expect: { route: sessionsView, heading: "Session Management" }
+  - name: Job Lock Management
+    tags: [smoke]
+    input: { menuItem: jobLockMenuItem, parent: adminMenuItem }
+    expect: { route: jobLockView, heading: "Job Lock Management" }

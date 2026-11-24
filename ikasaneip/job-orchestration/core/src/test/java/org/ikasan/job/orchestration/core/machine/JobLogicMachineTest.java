@@ -3565,4 +3565,66 @@ public class JobLogicMachineTest extends AbstractTest {
 
         Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, context.getScheduledJobsMap().get("agentName1-jobName1").getStatus());
     }
+
+    /**
+     * State changes reach the listeners one at a time in the order they happened (they are persisted with a
+     * read-modify-write, so a RUNNING change must never be applied after the COMPLETE one), and a listener that fails
+     * does not stop the other listeners.
+     */
+    @Test
+    public void state_change_events_reach_listeners_in_order_and_a_failing_listener_does_not_stop_the_others() throws Exception {
+        JobLogicMachine machine = new JobLogicMachine(new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService);
+        java.util.List<InstanceStatus> received = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(200);
+        machine.addSchedulerJobStateChangeEventListener(event -> {
+            throw new IllegalStateException("listener failure");
+        });
+        machine.addSchedulerJobStateChangeEventListener(event -> {
+            received.add(((org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl) event).getNewStatus());
+            done.countDown();
+        });
+
+        java.util.List<InstanceStatus> issued = new java.util.ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            for (InstanceStatus status : List.of(InstanceStatus.RUNNING, InstanceStatus.COMPLETE)) {
+                issued.add(status);
+                machine.issueSchedulerJobStateChangeEvent(new org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl(
+                    new InternalEventDrivenJobInstanceImpl(), null, InstanceStatus.WAITING, status));
+            }
+        }
+
+        Assert.assertTrue("all events delivered", done.await(30, java.util.concurrent.TimeUnit.SECONDS));
+        Assert.assertEquals(issued, received);
+        machine.getExecutor().shutdownNow();
+    }
+
+    /** Listeners get the job as it was when the change was issued, not as the machine changes it afterwards. */
+    @Test
+    public void state_change_listeners_get_a_snapshot_of_the_job() throws Exception {
+        JobLogicMachine machine = new JobLogicMachine(new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService);
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicReference<InstanceStatus> seen = new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        machine.addSchedulerJobStateChangeEventListener(event -> {
+            try {
+                release.await(10, java.util.concurrent.TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            seen.set(event.getSchedulerJobInstance().getStatus());
+            done.countDown();
+        });
+
+        InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+        job.setStatus(InstanceStatus.RUNNING);
+        machine.issueSchedulerJobStateChangeEvent(new org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl(
+            job, null, InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        job.setStatus(InstanceStatus.COMPLETE);   // the machine moves on before the listener runs
+        release.countDown();
+
+        Assert.assertTrue(done.await(10, java.util.concurrent.TimeUnit.SECONDS));
+        Assert.assertEquals(InstanceStatus.RUNNING, seen.get());
+        machine.getExecutor().shutdownNow();
+    }
 }

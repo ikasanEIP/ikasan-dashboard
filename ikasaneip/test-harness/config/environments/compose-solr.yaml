@@ -1,0 +1,4 @@
+# Docker compose stack, Solr backend.
+backend: solr
+compose:
+  enabled: true

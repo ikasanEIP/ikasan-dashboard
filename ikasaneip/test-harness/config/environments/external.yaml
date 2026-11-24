@@ -1,0 +1,14 @@
+# An already running dashboard + datastore. Nothing is started by the harness.
+#
+# Point the harness at it with env vars, e.g.
+#   HARNESS_ENV=external HARNESS_DASHBOARD_URL=http://myhost:9090 HARNESS_BACKEND=solr \
+#   HARNESS_SOLR_URL=http://myhost:8983/solr npx playwright test
+#
+# Seeding an external environment WIPES its datastore, so it is off by default here.
+# Note the dashboard caches scheduler state in memory: if you do seed, restart the dashboard afterwards.
+compose:
+  enabled: false
+seed:
+  enabled: false
+  # never remove the users/roles/policies of a live dashboard
+  preserveTypes: [securityUser, securityRole, securityPolicy, securityPrincipal, securityAuthenticationMethod, dashboardPlatformSetup]

@@ -1,0 +1,59 @@
+{
+  "name": "E2E-SCHEDULED",
+  "description": "Harness job plan: used to disable and enable scheduled jobs",
+  "timezone": "Europe/London",
+  "timeWindowStart": "0 0 0 1 1 ? *",
+  "contextTtlMilliseconds": 86400000,
+  "ableToRunConcurrently": true,
+  "endJobPlanUponCompletion": true,
+  "contexts": [
+    {
+      "name": "E2E-SCHEDULED-1",
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "trigger",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-trigger"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "okA",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-okA"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "okB",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-okB"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-trigger"
+        },
+        {
+          "jobIdentifier": "scheduler-agent-okA",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-trigger"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-okB",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-okA"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

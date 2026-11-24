@@ -39,7 +39,7 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
     private SearchResults searchResults;
 
     public EventLifeIdDeepLinkView(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
-                                   ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
+                                   @Qualifier("esbSearchService") ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                                    @Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
                                    ReplayRestServiceImpl replayRestService, @Qualifier("replayAuditService") BatchInsert replayAuditService, DateFormatter dateFormatter)
     {

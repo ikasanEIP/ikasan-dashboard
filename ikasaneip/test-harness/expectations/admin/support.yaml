@@ -1,0 +1,21 @@
+# Support downloads (AdministrationSupportView). Each widget has a 'Download' button.
+# expect.download: regex of the downloaded file name; expect.notification: text of the message shown instead.
+# In the compose stack the dashboard writes logs/application.log, but no Solr installation or module runs next to
+# it, so those downloads report their missing preconditions; override in expectations/env/<env>/admin/support.yaml.
+scenarios:
+  - name: system events of the last 24 hours
+    tags: [smoke]
+    input: { widget: "Download the System Events Generated in the Last 24 Hours" }
+    expect: { download: "system-events-.*\\.zip" }
+
+  - name: dashboard logs
+    input: { widget: "Download Aggregate Dashboard Logs ZIP" }
+    expect: { download: "dashboard-logs-.*\\.zip" }
+
+  - name: solr logs
+    input: { widget: "Download Aggregate SOLR Logs ZIP" }
+    expect: { notification: "Cannot download" }
+
+  - name: module logs require a module selection
+    input: { widget: "Download Aggregate Module/Agent Logs ZIP" }
+    expect: { fieldError: "A module/agent name must be selected!" }

@@ -1,0 +1,25 @@
+# Audit / system event search. The harness logging in creates DASHBOARD_LOGIN system events, so there is data
+# without seeding any.
+# rows: expected grid rows with a value for every column (see org.ikasan.testharness.support.GridRows).
+# Other tests and logins add events, so the harness login event must be present but others are allowed.
+patterns:
+  timestamp: '/\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3} \[.+ - .+\]/'
+
+scenarios:
+  - name: search today's system events
+    tags: [smoke]
+    input: { term: "" }
+    expect:
+      minRecords: 1
+      actorFilter: admin
+      rowsExact: false
+      rows:
+        - { "Action Performed By": "admin", "System Event Context": "Dashboard login", "System Event": "Dashboard login - Performed by [admin]", "Timestamp": "@timestamp" }
+
+  - name: system event details
+    input: { term: "" }
+    expect: { dialogTitle: "System Event Details" }
+
+  - name: export system events to csv
+    input: { term: "" }
+    expect: { downloadName: "system-events-results-.*\\.csv" }

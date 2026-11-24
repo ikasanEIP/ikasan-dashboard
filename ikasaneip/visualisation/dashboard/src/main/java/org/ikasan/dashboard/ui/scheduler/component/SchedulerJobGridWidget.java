@@ -242,6 +242,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             schedulerJobSearchFilter.setJobNameFilter(this.jobName);
         }
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
+        schedulerJobFilteringGrid.setId("jobTemplateGrid");
         schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "40px");
         schedulerJobFilteringGrid.removeAllColumns();
         schedulerJobFilteringGrid.setVisible(true);
@@ -1238,10 +1239,10 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     error = true;
                 } finally {
                     if (error) {
-                        NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                        NotificationHelper.showUserNotification(getTranslation("notification.enable-scheduled-jobs-error"
                             , UI.getCurrent().getLocale()));
                     } else {
-                        NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                        NotificationHelper.showUserNotification(getTranslation("notification.enabled-scheduled-successfully"
                             , UI.getCurrent().getLocale()));
                     }
                 }
@@ -1299,6 +1300,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
      */
     private Button createRefreshButton() {
         Button refreshJobsButton = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()), VaadinIcon.REFRESH.create());
+        refreshJobsButton.setId("jobTemplateGridRefreshButton");
         refreshJobsButton.setIconAfterText(true);
 
         refreshJobsButton.addClickListener(event -> this.refresh());

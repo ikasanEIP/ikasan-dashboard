@@ -1,0 +1,23 @@
+# The eventLifeId/{id} deep link view searches wiretaps, errors and exclusions for one event life id.
+# The id is searched as a term and backends tokenise hyphenated ids differently (Mongo/Atlas Search may also
+# return events sharing a part such as 'EVT'), so the event's own row must be there but others are allowed.
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: wiretap event by event life id
+    tags: [smoke, wiretap]
+    input: { eventLifeId: EVT-A-001 }
+    expect:
+      minTotal: 1
+      rowsExact: false
+      rows:
+      - { "Entity Type": "wiretap", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderConsumer", "Event Id / Error URI": "EVT-A-001", "Timestamp": "{{now-5m|table}}" }
+
+  - name: error event by event life id
+    tags: [error]
+    input: { eventLifeId: EVT-ERR-004 }
+    expect:
+      minTotal: 1
+      rowsExact: false
+      rows:
+      - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-004 / err-0004", "Timestamp": "{{now-28m|table}}" }

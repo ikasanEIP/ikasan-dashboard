@@ -55,6 +55,17 @@ public class JobProvisionServiceTest extends AbstractTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
+    /** A job plan without jobs (e.g. a new one being enabled) has nothing to provision and no agent is asked. */
+    @Test
+    public void test_provision_no_jobs_does_nothing() {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        jobProvisionService.provisionJobs(List.of(), "system");
+
+        verifyNoMoreInteractions(schedulerJobService, jobProvisionModuleRestService, moduleMetaDataService);
+    }
+
     @Test
     public void test_provision_jobs_success() throws IOException {
         when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
