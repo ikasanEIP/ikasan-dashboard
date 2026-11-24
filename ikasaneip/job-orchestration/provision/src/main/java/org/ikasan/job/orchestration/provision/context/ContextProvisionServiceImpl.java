@@ -242,8 +242,17 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             }
 
             if(!contextBundle.getRoles().isEmpty()) {
-                this.securityService.setJobPlanRoles(contextBundle.getContextTemplate().getName()
-                    , contextBundle.getRoles());
+                // We only provision roles that exist in the dashboard so filter junk
+                // we may have received.
+                List<String> validRoles = contextBundle.getRoles().stream()
+                    .filter(role -> this.securityService.findRoleByName(role) != null)
+                    .toList();
+
+                // Now provision security for any valid roles.
+                if(!validRoles.isEmpty()) {
+                    this.securityService.setJobPlanRoles(contextBundle.getContextTemplate().getName()
+                        , validRoles);
+                }
             }
 
             // Even though the next start job may be tomorrow, the trigger must be setup
