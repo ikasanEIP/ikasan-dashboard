@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
+import org.ikasan.job.orchestration.provision.job.JobProvisionException;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -36,6 +37,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;
@@ -161,6 +163,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         List<String> roleList = List.of("role1", "role2");
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        givenRolesExist(roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -181,6 +184,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verifyRolesLookedUp(roleList);
         verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
@@ -214,6 +218,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         List<String> roleList = List.of("role1", "role2");
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        givenRolesExist(roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -235,6 +240,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verifyRolesLookedUp(roleList);
         verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
@@ -280,6 +286,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         List<String> roleList = List.of("role1", "role2");
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        givenRolesExist(roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -299,6 +306,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verifyRolesLookedUp(roleList);
         verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
@@ -346,6 +354,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         List<String> roleList = List.of("role1", "role2");
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        givenRolesExist(roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -365,6 +374,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verifyRolesLookedUp(roleList);
         verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
@@ -787,6 +797,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         List<String> roleList = List.of("role1", "role2");
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        givenRolesExist(roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -803,6 +814,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         assertNotNull(actualContextRecord.getContext());
         assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
 
+        verifyRolesLookedUp(roleList);
         verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
@@ -1433,6 +1445,148 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
             emailNotificationDetailsService, emailNotificationContextService, securityService);
+    }
+
+    // ------------------------------------------------------------------------------------------------- job plan roles
+    //
+    // Only roles that exist in the dashboard are provisioned for a job plan: a bundle may name roles that are unknown
+    // here (e.g. exported from another environment).
+
+    /** The named roles exist in the dashboard. */
+    private void givenRolesExist(List<String> roleNames) {
+        roleNames.forEach(name -> when(securityService.findRoleByName(name)).thenReturn(mock(Role.class)));
+    }
+
+    /** Each of the bundle's roles was looked up exactly once. */
+    private void verifyRolesLookedUp(List<String> roleNames) {
+        roleNames.forEach(name -> verify(securityService, times(1)).findRoleByName(name));
+    }
+
+    /** A provisionable job plan on agentName with the given roles, with its agent known to the dashboard. */
+    private ContextBundle givenJobPlan(String contextName, String agentName, List<String> roles) {
+        ContextBundle bundle = this.createContextBundle(contextName, agentName);
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName(agentName);
+        lenient().when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+        return new ContextBundleImpl(bundle.getContextTemplate(), bundle.getSchedulerJobs(), Collections.EMPTY_LIST,
+            Collections.EMPTY_LIST, null, roles);
+    }
+
+    @Test
+    public void should_provision_all_roles_when_they_all_exist() {
+        List<String> roles = List.of("role1", "role2");
+        ContextBundle bundle = givenJobPlan("rolesExist", "agent1", roles);
+        givenRolesExist(roles);
+
+        service.provisionContext(bundle);
+
+        verifyRolesLookedUp(roles);
+        verify(securityService).setJobPlanRoles("rolesExist", List.of("role1", "role2"));
+        verifyNoMoreInteractions(securityService);
+    }
+
+    @Test
+    public void should_provision_only_the_roles_that_exist() {
+        ContextBundle bundle = givenJobPlan("someRolesExist", "agent1", List.of("role1", "unknownRole", "role2"));
+        givenRolesExist(List.of("role1", "role2"));
+
+        service.provisionContext(bundle);
+
+        verifyRolesLookedUp(List.of("role1", "unknownRole", "role2"));
+        verify(securityService).setJobPlanRoles("someRolesExist", List.of("role1", "role2"));
+        verifyNoMoreInteractions(securityService);
+    }
+
+    @Test
+    public void should_keep_the_order_of_the_roles_that_exist() {
+        ContextBundle bundle = givenJobPlan("roleOrder", "agent1", List.of("zRole", "unknownRole", "aRole", "mRole"));
+        givenRolesExist(List.of("zRole", "aRole", "mRole"));
+
+        service.provisionContext(bundle);
+
+        verify(securityService).setJobPlanRoles("roleOrder", List.of("zRole", "aRole", "mRole"));
+    }
+
+    @Test
+    public void should_not_provision_roles_when_none_exist() {
+        List<String> roles = List.of("unknownRole1", "unknownRole2");
+        ContextBundle bundle = givenJobPlan("noRolesExist", "agent1", roles);
+        // findRoleByName returns null for every role
+
+        service.provisionContext(bundle);
+
+        verifyRolesLookedUp(roles);
+        verify(securityService, never()).setJobPlanRoles(anyString(), anyList());
+        verifyNoMoreInteractions(securityService);
+    }
+
+    @Test
+    public void should_still_provision_the_job_plan_when_no_roles_exist() {
+        ContextBundle bundle = givenJobPlan("planWithoutValidRoles", "agent1", List.of("unknownRole"));
+
+        service.provisionContext(bundle);
+
+        // the rest of provisioning is unaffected by the roles being dropped
+        verify(schedulerJobService).save(bundle.getSchedulerJobs(), "system");
+        verify(scheduledContextService).save(any(ScheduledContextRecord.class));
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verify(contextInstanceSchedulerService).registerStartJobAndTrigger(bundle.getContextTemplate(),
+            bundle.getContextTemplate().getTimezone());
+        verify(securityService, never()).setJobPlanRoles(anyString(), anyList());
+    }
+
+    @Test
+    public void should_not_look_up_or_provision_roles_when_the_bundle_has_none() {
+        ContextBundle bundle = givenJobPlan("noRoles", "agent1", new ArrayList<>());
+
+        service.provisionContext(bundle);
+
+        verify(securityService, never()).findRoleByName(anyString());
+        verify(securityService, never()).setJobPlanRoles(anyString(), anyList());
+        verify(contextInstanceSchedulerService).registerStartJobAndTrigger(bundle.getContextTemplate(),
+            bundle.getContextTemplate().getTimezone());
+    }
+
+    @Test
+    public void should_look_up_a_repeated_role_for_each_occurrence_and_provision_it_as_given() {
+        ContextBundle bundle = givenJobPlan("repeatedRole", "agent1", List.of("role1", "role1"));
+        givenRolesExist(List.of("role1"));
+
+        service.provisionContext(bundle);
+
+        verify(securityService, times(2)).findRoleByName("role1");
+        verify(securityService).setJobPlanRoles("repeatedRole", List.of("role1", "role1"));
+    }
+
+    @Test
+    public void should_report_a_role_lookup_failure_as_a_provisioning_failure_and_release_the_agent_lock() {
+        ContextBundle failing = givenJobPlan("roleLookupFails", "agent1", List.of("role1"));
+        when(securityService.findRoleByName("role1")).thenThrow(new RuntimeException("security store unavailable"));
+
+        JobProvisionException exception = assertThrows(JobProvisionException.class, () -> service.provisionContext(failing));
+        assertTrue(exception.getMessage().contains("security store unavailable"));
+        verify(securityService, never()).setJobPlanRoles(anyString(), anyList());
+        verify(contextInstanceSchedulerService, never()).registerStartJobAndTrigger(any(), any());
+
+        // the agent was unlocked: another job plan on the same agent can be provisioned
+        ContextBundle next = givenJobPlan("nextPlanOnSameAgent", "agent1", new ArrayList<>());
+        service.provisionContext(next);
+        verify(contextInstanceSchedulerService).registerStartJobAndTrigger(next.getContextTemplate(),
+            next.getContextTemplate().getTimezone());
+    }
+
+    @Test
+    public void should_report_a_role_provisioning_failure_as_a_provisioning_failure() {
+        List<String> roles = List.of("role1");
+        ContextBundle bundle = givenJobPlan("setRolesFails", "agent1", roles);
+        givenRolesExist(roles);
+        doThrow(new RuntimeException("cannot save job plan roles")).when(securityService).setJobPlanRoles(anyString(), anyList());
+
+        JobProvisionException exception = assertThrows(JobProvisionException.class, () -> service.provisionContext(bundle));
+        assertTrue(exception.getMessage().contains("cannot save job plan roles"));
+        verify(contextInstanceSchedulerService, never()).registerStartJobAndTrigger(any(), any());
     }
 
     private ContextBundle createContextBundle(String contextName, String agentName) {
