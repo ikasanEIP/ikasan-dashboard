@@ -1427,7 +1427,7 @@ public class ContextMachineImpl implements ContextMachine {
     private void _reinstateDisableJobs(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
             if(!schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
-                throw new ContextMachineException(String.format("Attempting to reinstate disable job[%s], " +
+                logger.warn(String.format("Attempting to reinstate disable job[%s], " +
                         "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be reinstated."
                     , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
             }
