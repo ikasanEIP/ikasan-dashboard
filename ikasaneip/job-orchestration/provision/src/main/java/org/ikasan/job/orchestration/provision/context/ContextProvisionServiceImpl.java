@@ -248,11 +248,28 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                     .filter(role -> this.securityService.findRoleByName(role) != null)
                     .toList();
 
+                if(validRoles.size() != contextBundle.getRoles().size()) {
+                    List<String> unknownRoles = contextBundle.getRoles().stream()
+                        .filter(role -> !validRoles.contains(role))
+                        .toList();
+                    LOG.warn("Job plan [{}] names roles that do not exist in the dashboard and will not be provisioned: {}. " +
+                            "Provisioning the roles that exist: {}", contextBundle.getContextTemplate().getName(),
+                        unknownRoles, validRoles);
+                }
+                else {
+                    LOG.info("Provisioning roles {} for job plan [{}]", validRoles,
+                        contextBundle.getContextTemplate().getName());
+                }
+
                 // Now provision security for any valid roles.
                 if(!validRoles.isEmpty()) {
                     this.securityService.setJobPlanRoles(contextBundle.getContextTemplate().getName()
                         , validRoles);
                 }
+            }
+            else {
+                LOG.info("Job plan [{}] has no associated roles, so no roles will be provisioned!",
+                    contextBundle.getContextTemplate().getName());
             }
 
             // Even though the next start job may be tomorrow, the trigger must be setup
