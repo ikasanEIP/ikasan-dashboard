@@ -1640,12 +1640,28 @@ public class ContextMachineTest extends AbstractTest {
         contextMachine.reinstateDisabledJob("non-existent-job", "Context3");
     }
 
-    @Test(expected = ContextMachineException.class)
-    public void test_reinstate_disabled_job_throws_exception_when_job_not_disabled() throws IOException, InvalidContextTemplateException {
+    /**
+     * Reinstating a job that is not disabled is no longer refused: the machine logs a warning and carries on, leaving the
+     * job WAITING and not disabled, in memory and in the datastore.
+     */
+    @Test
+    public void test_reinstate_disabled_job_when_job_not_disabled_logs_and_still_sets_it_to_waiting() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
-        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
-            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.WAITING);
+        SchedulerJobInstance job = contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1");
+        job.setStatus(InstanceStatus.WAITING);
+        job.setDisabled(false);
+
+        InternalEventDrivenJobInstanceImpl dbJobInstance = new InternalEventDrivenJobInstanceImpl();
+        dbJobInstance.setIdentifier("agentName1-jobName1");
+        dbJobInstance.setJobName("jobName1");
+        dbJobInstance.setChildContextName("Context3");
+        dbJobInstance.setStatus(InstanceStatus.WAITING);
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(dbJobInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
         this.contextTemplateValidator.validate(context);
@@ -1656,7 +1672,15 @@ public class ContextMachineTest extends AbstractTest {
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
 
+        // no exception
         contextMachine.reinstateDisabledJob("agentName1-jobName1", "Context3");
+
+        Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        Assert.assertFalse(job.isDisabled());
+        Assert.assertEquals(InstanceStatus.WAITING, dbJobInstance.getStatus());
+        Assert.assertFalse(dbJobInstance.isDisabled());
+        verify(this.schedulerJobInstanceRecord).setStatus(InstanceStatus.WAITING.name());
+        verify(this.schedulerJobInstanceService).save(this.schedulerJobInstanceRecord);
     }
 
     @Test
