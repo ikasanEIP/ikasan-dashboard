@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.ikasan.spec.entity.EntityFields.*;
 
@@ -500,5 +501,53 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             .append(CLOSE_BRACKET);
 
         super.deleteByQuery(queryBuffer.toString());
+    }
+
+    /** Every job instance document type: the core holds every entity type. */
+    private static final List<String> ALL_JOB_INSTANCE_TYPES = List.of(
+        JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE,
+        JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE,
+        JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE,
+        JobConstants.GLOBAL_EVENT_JOB_INSTANCE,
+        JobConstants.CONTEXT_START_JOB_INSTANCE,
+        JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE,
+        JobConstants.LOCAL_EVENT_JOB_INSTANCE,
+        JobConstants.BRIDGING_JOB_INSTANCE
+    );
+
+    /**
+     * The job instance of the job plan instance with this job name in this child plan, matched exactly (the fields
+     * are string fields; the filter search matches job and child plan names that contain the text); null if there is
+     * none, or if any argument is null. If there is more than one, a warning is logged and the most recently modified
+     * is returned.
+     */
+    @Override
+    public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String contextInstanceId, String jobName,
+                                                                            String childContextName) {
+        if (contextInstanceId == null || jobName == null || childContextName == null) {
+            return null;
+        }
+
+        // term queries take the value literally: names need no escaping, whatever characters they contain
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("{!terms f=" + TYPE + "}" + String.join(",", ALL_JOB_INSTANCE_TYPES));
+        solrQuery.addFilterQuery(term(COMPONENT_NAME, contextInstanceId));
+        solrQuery.addFilterQuery(term(MODULE_NAME, jobName));
+        solrQuery.addFilterQuery(term(CHILD_CONTEXT_NAME, childContextName));
+        solrQuery.setSort(UPDATED_DATE_TIME, SolrQuery.ORDER.desc);
+        logger.debug("query: " + solrQuery);
+
+        List<SchedulerJobInstanceRecord> matches = this.findByQuery(solrQuery, SolrSchedulerJobInstanceRecordImpl.class, 0, 2)
+            .getResultList();
+        if (matches.size() > 1) {
+            logger.warn("More than one SchedulerJobInstance for Context ID[{}], Job Name[{}] and Child Context Name[{}]; "
+                + "returning the most recently modified", contextInstanceId, jobName, childContextName);
+        }
+        return matches.isEmpty() ? null : matches.get(0);
+    }
+
+    /** Exactly this value of the field (Solr's term query parser: the value is not parsed, so not escaped). */
+    private static String term(String field, String value) {
+        return "{!term f=" + field + "}" + value;
     }
 }

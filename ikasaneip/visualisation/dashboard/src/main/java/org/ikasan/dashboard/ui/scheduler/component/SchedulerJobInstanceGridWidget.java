@@ -1212,11 +1212,11 @@ public class SchedulerJobInstanceGridWidget extends AbstractGridSchedulerJobInst
             filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
             filter.setChildContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
 
-            SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
-                (filter, 1, 0, null, null);
+            SchedulerJobInstanceRecord record = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
+                (jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(),
+                    jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
 
-            if(searchResults.getResultList().size() == 1) {
-                SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+            if(record != null) {
                 record.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
                 SchedulerJobInstance instance = record.getSchedulerJobInstance();
                 instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());

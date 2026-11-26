@@ -505,4 +505,34 @@ public class MongoSchedulerJobInstanceDaoImpl implements SchedulerJobInstanceDao
 
         return Sort.by(direction, sortField);
     }
+
+    /**
+     * The job instance of the job plan instance with this job name in this child plan, matched exactly; null if there
+     * is none, or if any argument is null. If there is more than one, a warning is logged and the most recently
+     * modified is returned.
+     *
+     * <p>A plain query, not Atlas Search: the scheduler reads job instances back straight after writing them, and the
+     * search index is only updated about a second later.</p>
+     */
+    @Override
+    public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String contextInstanceId, String jobName,
+                                                                            String childContextName) {
+        if (contextInstanceId == null || jobName == null || childContextName == null) {
+            return null;
+        }
+
+        Query query = new Query(Criteria.where(EntityFields.TYPE).in(ALL_JOB_INSTANCE_TYPES)
+            .and(EntityFields.COMPONENT_NAME).is(contextInstanceId)
+            .and(EntityFields.MODULE_NAME).is(jobName)
+            .and(EntityFields.CHILD_CONTEXT_NAME).is(childContextName))
+            .with(Sort.by(Sort.Direction.DESC, EntityFields.UPDATED_DATE_TIME))
+            .limit(2);
+
+        List<MongoSchedulerJobInstanceRecordImpl> matches = mongoTemplate.find(query, MongoSchedulerJobInstanceRecordImpl.class);
+        if (matches.size() > 1) {
+            logger.warn("More than one SchedulerJobInstance for Context ID[{}], Job Name[{}] and Child Context Name[{}]; "
+                + "returning the most recently modified", contextInstanceId, jobName, childContextName);
+        }
+        return matches.isEmpty() ? null : matches.get(0);
+    }
 }

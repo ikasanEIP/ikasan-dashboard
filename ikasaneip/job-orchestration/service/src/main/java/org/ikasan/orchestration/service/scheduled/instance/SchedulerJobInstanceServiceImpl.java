@@ -89,24 +89,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     @Override
     public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String uuid, String jobName, String childContextName) {
-        SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SchedulerJobInstanceSearchFilterImpl();
-        schedulerJobInstanceSearchFilter.setChildContextName(childContextName);
-        schedulerJobInstanceSearchFilter.setJobName(jobName);
-        schedulerJobInstanceSearchFilter.setContextInstanceId(uuid);
-
-        SearchResults<SchedulerJobInstanceRecord> jobs = this.getScheduledContextInstancesByFilter(schedulerJobInstanceSearchFilter,
-            1, 0, null, null);
-
-        if(jobs.getTotalNumberOfResults() > 1) {
-            logger.warn("SchedulerJobInstance search returned more than one result for Context ID[{}], Job Name[{}] and Child Context Name[{}]",
-                uuid, jobName, childContextName);
-        }
-
-        if(jobs.getResultList().size() > 0) {
-            return jobs.getResultList().get(0);
-        }
-
-        return null;
+        return this.schedulerJobInstanceDao.findByContextIdJobNameChildContextName(uuid, jobName, childContextName);
     }
 
     @Override
@@ -121,15 +104,9 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     @Override
     public void update(SchedulerJobInstance schedulerJobInstance) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(schedulerJobInstance.getContextInstanceId());
-        filter.setJobName(schedulerJobInstance.getJobName());
-        filter.setChildContextName(schedulerJobInstance.getChildContextName());
-
-        SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceDao
-            .getScheduledContextInstancesByFilter(filter, 1, 0, null, null);
-
-        SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+        SchedulerJobInstanceRecord record = this.schedulerJobInstanceDao
+            .findByContextIdJobNameChildContextName(schedulerJobInstance.getContextInstanceId(), schedulerJobInstance.getJobName(),
+                schedulerJobInstance.getChildContextName());
 
         record.setStatus(schedulerJobInstance.getStatus().name());
         SchedulerJobInstance persistedInstance = record.getSchedulerJobInstance();

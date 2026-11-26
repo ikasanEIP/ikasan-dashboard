@@ -370,4 +370,9 @@ public class HibernateSchedulerJobInstanceDaoImpl implements SchedulerJobInstanc
             query.orderBy(cb.desc(root.get("modifiedTimestamp")));
         }
     }
+
+    @Override
+    public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String contestInstanceId, String jobName, String childContextName) {
+        return null;
+    }
 }
