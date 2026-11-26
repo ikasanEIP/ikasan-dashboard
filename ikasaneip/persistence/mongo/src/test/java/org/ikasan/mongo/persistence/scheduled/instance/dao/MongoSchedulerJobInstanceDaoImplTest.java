@@ -982,4 +982,126 @@ public class MongoSchedulerJobInstanceDaoImplTest {
     public void testSaveNonMongoRecordWithoutJobInstanceThrows() {
         dao.save(new SchedulerJobInstanceRecordImpl());
     }
+
+    // ------------------------------------------------------------------ findByContextIdJobNameChildContextName
+
+    /** A job instance record of the type, in the child plan; ids as the scheduler builds them. */
+    private MongoSchedulerJobInstanceRecordImpl jobInChild(String jobName, String contextInstanceId, String childContextName,
+                                                         String type) {
+        MongoSchedulerJobInstanceRecordImpl record = createJobInstanceRecord(jobName, "test-context", contextInstanceId,
+            InstanceStatus.WAITING);
+        record.setId(jobName + "_" + contextInstanceId + "_" + childContextName + "_" + type);
+        record.setChildContextName(childContextName);
+        record.setType(type);
+        return record;
+    }
+
+    private MongoSchedulerJobInstanceRecordImpl jobInChild(String jobName, String contextInstanceId, String childContextName) {
+        return jobInChild(jobName, contextInstanceId, childContextName, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextName() {
+        dao.save(jobInChild("job-1", "ctx-1", "child-a"));
+        dao.save(jobInChild("job-2", "ctx-1", "child-a"));
+
+        SchedulerJobInstanceRecord found = dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child-a");
+
+        assertNotNull(found);
+        assertEquals("job-1", found.getJobName());
+        assertEquals("ctx-1", found.getContextInstanceId());
+        assertEquals("child-a", found.getChildContextName());
+        assertEquals("job-1", found.getSchedulerJobInstance().getJobName());
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameMatchesTheWholeJobName() {
+        // the filter search matches names containing the text: "e" would also find "trigger"
+        dao.save(jobInChild("trigger", "ctx-1", "child-a"));
+        dao.save(jobInChild("e", "ctx-1", "child-a"));
+
+        assertEquals("e", dao.findByContextIdJobNameChildContextName("ctx-1", "e", "child-a").getJobName());
+        assertEquals("trigger", dao.findByContextIdJobNameChildContextName("ctx-1", "trigger", "child-a").getJobName());
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "trig", "child-a"));
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameMatchesTheWholeChildContextName() {
+        dao.save(jobInChild("job-1", "ctx-1", "child-1"));
+        dao.save(jobInChild("job-1", "ctx-1", "child-10"));
+
+        assertEquals("child-1", dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child-1").getChildContextName());
+        assertEquals("child-10", dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child-10").getChildContextName());
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child"));
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameIsScopedToTheContextInstance() {
+        dao.save(jobInChild("job-1", "ctx-1", "child-a"));
+        dao.save(jobInChild("job-1", "ctx-2", "child-a"));
+
+        assertEquals("ctx-2", dao.findByContextIdJobNameChildContextName("ctx-2", "job-1", "child-a").getContextInstanceId());
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-3", "job-1", "child-a"));
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameTakesValuesLiterally() {
+        // regular expression and query operator characters are plain text
+        String job = "job.* (copy) [1] $where {\"$ne\": 1}";
+        dao.save(jobInChild(job, "ctx-1", "child.a"));
+        dao.save(jobInChild("jobX (copy) [1] $where {\"$ne\": 1}", "ctx-1", "childXa"));
+
+        SchedulerJobInstanceRecord found = dao.findByContextIdJobNameChildContextName("ctx-1", job, "child.a");
+
+        assertNotNull(found);
+        assertEquals(job, found.getJobName());
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "job.*", "child.a"));
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameFindsEveryJobInstanceType() {
+        List<String> types = List.of(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE,
+            JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, JobConstants.GLOBAL_EVENT_JOB_INSTANCE,
+            JobConstants.CONTEXT_START_JOB_INSTANCE, JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE,
+            JobConstants.LOCAL_EVENT_JOB_INSTANCE, JobConstants.BRIDGING_JOB_INSTANCE);
+        types.forEach(type -> dao.save(jobInChild("job-" + type, "ctx-1", "child-a", type)));
+
+        for (String type : types) {
+            SchedulerJobInstanceRecord found = dao.findByContextIdJobNameChildContextName("ctx-1", "job-" + type, "child-a");
+            assertNotNull("no " + type + " job", found);
+            assertEquals(type, found.getType());
+        }
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameIgnoresOtherDocumentTypes() {
+        // every entity type shares the collection: a document of another type with the same fields is not a job instance
+        MongoSchedulerJobInstanceRecordImpl other = jobInChild("job-1", "ctx-1", "child-a", "someOtherEntity");
+        mongoTemplate.save(other);
+
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child-a"));
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameReturnsTheMostRecentlyModifiedOfSeveral() throws InterruptedException {
+        // the same job in two record types: two documents for one job
+        dao.save(jobInChild("job-1", "ctx-1", "child-a", JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
+        Thread.sleep(5);
+        dao.save(jobInChild("job-1", "ctx-1", "child-a", JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE));
+
+        SchedulerJobInstanceRecord found = dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", "child-a");
+
+        assertNotNull(found);
+        assertEquals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE, found.getType());
+    }
+
+    @Test
+    public void testFindByContextIdJobNameChildContextNameNotFoundOrNullArguments() {
+        dao.save(jobInChild("job-1", "ctx-1", "child-a"));
+
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "unknown", "child-a"));
+        assertNull(dao.findByContextIdJobNameChildContextName(null, "job-1", "child-a"));
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", null, "child-a"));
+        assertNull(dao.findByContextIdJobNameChildContextName("ctx-1", "job-1", null));
+    }
 }

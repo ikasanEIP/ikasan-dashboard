@@ -158,12 +158,9 @@ public class SchedulerJobInstanceServiceImplTest {
     @Test
     public void testFindByContextIdJobNameChildContextName() {
         // Given
-        List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord);
-        SearchResults<SchedulerJobInstanceRecord> searchResults =
-            new SearchResultsImpl<>(records, 1L, 100L);
-        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
-            .thenReturn(searchResults);
+        when(mockJobInstanceDao.findByContextIdJobNameChildContextName(
+            anyString(), anyString(), anyString()))
+            .thenReturn(mockJobInstanceRecord);
 
         // When
         SchedulerJobInstanceRecord result = service.findByContextIdJobNameChildContextName(
@@ -172,26 +169,14 @@ public class SchedulerJobInstanceServiceImplTest {
         // Then
         assertNotNull(result);
         assertEquals(mockJobInstanceRecord, result);
-
-        ArgumentCaptor<SchedulerJobInstanceSearchFilter> filterCaptor =
-            ArgumentCaptor.forClass(SchedulerJobInstanceSearchFilter.class);
-        verify(mockJobInstanceDao).getScheduledContextInstancesByFilter(
-            filterCaptor.capture(), eq(1), eq(0), isNull(), isNull());
-
-        SchedulerJobInstanceSearchFilter capturedFilter = filterCaptor.getValue();
-        assertEquals("child-ctx", capturedFilter.getChildContextName());
-        assertEquals("test-job", capturedFilter.getJobName());
-        assertEquals("ctx-uuid-1", capturedFilter.getContextInstanceId());
     }
 
     @Test
     public void testFindByContextIdJobNameChildContextNameReturnsNull() {
         // Given
-        SearchResults<SchedulerJobInstanceRecord> searchResults =
-            new SearchResultsImpl<>(new ArrayList<>(), 0L, 50L);
-        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
-            .thenReturn(searchResults);
+        when(mockJobInstanceDao.findByContextIdJobNameChildContextName(
+            anyString(), anyString(), anyString()))
+            .thenReturn(null);
 
         // When
         SchedulerJobInstanceRecord result = service.findByContextIdJobNameChildContextName(
@@ -239,12 +224,8 @@ public class SchedulerJobInstanceServiceImplTest {
         SchedulerJobInstance persistedInstance = mock(SchedulerJobInstance.class);
         when(mockJobInstanceRecord.getSchedulerJobInstance()).thenReturn(persistedInstance);
 
-        List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord);
-        SearchResults<SchedulerJobInstanceRecord> searchResults =
-            new SearchResultsImpl<>(records, 1L, 100L);
-        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
-            .thenReturn(searchResults);
+        when(mockJobInstanceDao.findByContextIdJobNameChildContextName(anyString(), anyString(), anyString()))
+            .thenReturn(mockJobInstanceRecord);
 
         // When
         service.update(mockJobInstance);
@@ -530,26 +511,6 @@ public class SchedulerJobInstanceServiceImplTest {
         assertEquals(3L, results.getTotalNumberOfResults());
         verify(mockJobInstanceDao).getSchedulerJobInstancesByContextInstanceId(
             "ctx-instance-1", 20, 5, "jobName", "ASC");
-    }
-
-    @Test
-    public void testFindByContextIdJobNameChildContextNameWithMultipleResultsLogsWarning() {
-        // Given
-        SchedulerJobInstanceRecord record2 = mock(SchedulerJobInstanceRecord.class);
-        List<SchedulerJobInstanceRecord> records = Arrays.asList(mockJobInstanceRecord, record2);
-        SearchResults<SchedulerJobInstanceRecord> searchResults =
-            new SearchResultsImpl<>(records, 2L, 100L);
-        when(mockJobInstanceDao.getScheduledContextInstancesByFilter(
-            any(SchedulerJobInstanceSearchFilter.class), eq(1), eq(0), isNull(), isNull()))
-            .thenReturn(searchResults);
-
-        // When
-        SchedulerJobInstanceRecord result = service.findByContextIdJobNameChildContextName(
-            "ctx-uuid-1", "test-job", "child-ctx");
-
-        // Then - should return first result and log warning (warning verified by code inspection)
-        assertNotNull(result);
-        assertEquals(mockJobInstanceRecord, result);
     }
 
     @Test

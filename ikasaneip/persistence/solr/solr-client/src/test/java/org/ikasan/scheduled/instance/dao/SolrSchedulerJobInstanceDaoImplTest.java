@@ -375,6 +375,108 @@ public class SolrSchedulerJobInstanceDaoImplTest extends SolrTestCaseJ4 {
     }
 
     // Helper methods to create test records
+    // ------------------------------------------------------------------ findByContextIdJobNameChildContextName
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_finds_the_job() {
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "childContext1"));
+        dao.save(createInternalEventDrivenJobRecord("job2", "context1", "instanceId1", "childContext1"));
+
+        SchedulerJobInstanceRecord result = dao.findByContextIdJobNameChildContextName("instanceId1", "job1", "childContext1");
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals("job1", result.getJobName());
+        Assert.assertEquals("context1", result.getContextName());
+        Assert.assertEquals("instanceId1", result.getContextInstanceId());
+        Assert.assertEquals("childContext1", result.getChildContextName());
+        Assert.assertEquals("job1", result.getSchedulerJobInstance().getJobName());
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_matches_the_whole_job_name() {
+        // the filter search matches names containing the text: "e" would also find "trigger"
+        dao.save(createInternalEventDrivenJobRecord("trigger", "context1", "instanceId1", "childContext1"));
+        dao.save(createInternalEventDrivenJobRecord("e", "context1", "instanceId1", "childContext1"));
+
+        Assert.assertEquals("e", dao.findByContextIdJobNameChildContextName("instanceId1", "e", "childContext1").getJobName());
+        Assert.assertEquals("trigger", dao.findByContextIdJobNameChildContextName("instanceId1", "trigger", "childContext1").getJobName());
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId1", "trig", "childContext1"));
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_matches_the_whole_child_context_name() {
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "child-1"));
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "child-10"));
+
+        Assert.assertEquals("child-1", dao.findByContextIdJobNameChildContextName("instanceId1", "job1", "child-1").getChildContextName());
+        Assert.assertEquals("child-10", dao.findByContextIdJobNameChildContextName("instanceId1", "job1", "child-10").getChildContextName());
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId1", "job1", "child"));
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_is_scoped_to_the_context_instance() {
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "childContext1"));
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId2", "childContext1"));
+
+        Assert.assertEquals("instanceId2", dao.findByContextIdJobNameChildContextName("instanceId2", "job1", "childContext1").getContextInstanceId());
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId3", "job1", "childContext1"));
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_with_special_characters() {
+        String job = "job: one/two (copy) [1] \"quoted\" + more*";
+        String child = "child AND context OR -other";
+        dao.save(createInternalEventDrivenJobRecord(job, "context1", "instanceId1", child));
+        dao.save(createInternalEventDrivenJobRecord("job", "context1", "instanceId1", child));
+
+        SchedulerJobInstanceRecord result = dao.findByContextIdJobNameChildContextName("instanceId1", job, child);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(job, result.getJobName());
+        Assert.assertEquals(child, result.getChildContextName());
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_finds_every_job_instance_type() {
+        List<SchedulerJobInstanceRecord> records = List.of(
+            createInternalEventDrivenJobRecord("internal", "context1", "instanceId1", "childContext1"),
+            createFileEventDrivenJobRecord("file", "context1", "instanceId1", "childContext1"),
+            createQuartzScheduleDrivenJobRecord("quartz", "context1", "instanceId1", "childContext1"),
+            createGlobalEventJobRecord("global", "context1", "instanceId1", "childContext1"),
+            createContextStartJobRecord("start", "context1", "instanceId1", "childContext1"),
+            createContextTerminalJobRecord("terminal", "context1", "instanceId1", "childContext1"));
+        records.forEach(dao::save);
+
+        for (SchedulerJobInstanceRecord record : records) {
+            SchedulerJobInstanceRecord result = dao.findByContextIdJobNameChildContextName("instanceId1", record.getJobName(), "childContext1");
+            Assert.assertNotNull("no " + record.getJobName() + " job", result);
+            Assert.assertEquals(record.getJobName(), result.getJobName());
+        }
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_returns_the_most_recently_modified_of_several() throws InterruptedException {
+        // the same job in two record types: two documents for one job
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "childContext1"));
+        Thread.sleep(5);
+        dao.save(createFileEventDrivenJobRecord("job1", "context1", "instanceId1", "childContext1"));
+
+        SchedulerJobInstanceRecord result = dao.findByContextIdJobNameChildContextName("instanceId1", "job1", "childContext1");
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE, result.getType());
+    }
+
+    @Test
+    public void test_findByContextIdJobNameChildContextName_not_found_or_null_arguments() {
+        dao.save(createInternalEventDrivenJobRecord("job1", "context1", "instanceId1", "childContext1"));
+
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId1", "unknown", "childContext1"));
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName(null, "job1", "childContext1"));
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId1", null, "childContext1"));
+        Assert.assertNull(dao.findByContextIdJobNameChildContextName("instanceId1", "job1", null));
+    }
+
     private SchedulerJobInstanceRecord createInternalEventDrivenJobRecord(String jobName, String contextName, String contextInstanceId, String childContextName) {
         SolrSchedulerJobInstanceRecordImpl record = new SolrSchedulerJobInstanceRecordImpl();
         record.setJobName(jobName);
