@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -31,10 +32,6 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisual
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
-//import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-//import org.ikasan.security.service.SecurityService;
-//import org.ikasan.security.service.UserService;
-//import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -383,10 +380,9 @@ public class JobTemplateVisualisationView extends VerticalLayout
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
             this.saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
-            this.saveButton.addClickListener(buttonClickEvent -> {
-                this.schedulerVisualisation.save();
-                this.contextTemplate = schedulerVisualisation.getContextTemplate();
-            });
+            // saving completes later (the diagram is read from the browser first): the saved plan is taken up when the
+            // visualisation reports it saved (jobPlanSaveRequired(false))
+            this.saveButton.addClickListener(buttonClickEvent -> this.schedulerVisualisation.save());
 
             ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
@@ -474,13 +470,14 @@ public class JobTemplateVisualisationView extends VerticalLayout
                     this.rootContextTemplate, "Select Command Execution Job Template", "Select Command Execution Job Template");
                 schedulerJobSelectDialog.open();
                 schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
+                    // as a new command execution job: the plan is the parent, and the job made from the template is the plan's
                     InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.configurationRestService,
-                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
+                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.rootContextTemplate, this.contextTemplate,
                         this.schedulerJobExecutionEnvironmentLabel, true);
 
-                    InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
-                    internalEventDrivenJob.setContextName(this.contextTemplate.getName());
-                    internalEventDrivenJobDialog.setJob((InternalEventDrivenJob) schedulerJob, EditMode.NEW);
+                    InternalEventDrivenJob jobFromTemplate = (InternalEventDrivenJob) schedulerJob;
+                    jobFromTemplate.setContextName(this.rootContextTemplate.getName());
+                    internalEventDrivenJobDialog.setJob(jobFromTemplate, EditMode.NEW);
                     internalEventDrivenJobDialog.addSchedulerJobSelectedListener(this);
 
                     this.jobSynchronisationRequiredListeners.forEach(listener ->
@@ -623,9 +620,10 @@ public class JobTemplateVisualisationView extends VerticalLayout
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, @WildcardParameter String param) {
+        // jobTemplateManagement/<plan>/<child plan>[/<auto layout>]: a link without the child plan is not found
         String[] params = param.split("/");
         this.contextName = params[0];
-        this.childContextName = params[1];
+        this.childContextName = params.length > 1 ? params[1] : null;
 
         if(params.length == 3) {
             this.showPrettyFormat = Boolean.parseBoolean(params[2]);
@@ -634,9 +632,23 @@ public class JobTemplateVisualisationView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // the scheduler's job plan and instance pages are for scheduler users only, however they are reached
+        if(!DashboardContextNavigator.hasSchedulerAuthority()) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
         if(!this.isInitialised) {
-            ScheduledContextRecord record = this.scheduledContextService.findByName(contextName);
-            ContextTemplate child = ContextHelper.getChildContextTemplate(childContextName, record.getContext());
+            ScheduledContextRecord record = this.childContextName == null ? null : this.scheduledContextService.findByName(contextName);
+            ContextTemplate child = record == null ? null : ContextHelper.getChildContextTemplate(childContextName, record.getContext());
+            // an unknown plan or child plan has nothing to edit, nor has a plan that only holds child plans (e.g. the
+            // plan itself): their jobs are edited in the child plans
+            boolean onlyHoldsChildPlans = child != null && (child.getScheduledJobs() == null || child.getScheduledJobs().isEmpty())
+                && child.getContexts() != null && !child.getContexts().isEmpty();
+            if(child == null || child.getScheduledJobs() == null || onlyHoldsChildPlans) {
+                logger.info("No job plan [{}] with child plan [{}] holding jobs to edit", contextName, childContextName);
+                beforeEnterEvent.rerouteTo("pageNotFound");
+                return;
+            }
 
             try {
                 this.createSchedulerVisualisation(record.getContext(), child);
@@ -650,7 +662,7 @@ public class JobTemplateVisualisationView extends VerticalLayout
 
     @Override
     public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
-        if(schedulerVisualisation.isSaveRequired()) {
+        if(schedulerVisualisation != null && schedulerVisualisation.isSaveRequired()) {
             BeforeLeaveEvent.ContinueNavigationAction continueNavigationAction = beforeLeaveEvent.postpone();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("header.save-required", UI.getCurrent().getLocale()));
@@ -672,6 +684,8 @@ public class JobTemplateVisualisationView extends VerticalLayout
         else {
             this.saveButton.getStyle().set("background-color", IkasanColours.WHITE);
             this.saveButton.getStyle().set("color", IkasanColours.IKASAN_ORANGE);
+            // the plan as saved: what further jobs are checked against (duplicate names, the one start/terminal job)
+            this.contextTemplate = schedulerVisualisation.getContextTemplate();
         }
     }
 }

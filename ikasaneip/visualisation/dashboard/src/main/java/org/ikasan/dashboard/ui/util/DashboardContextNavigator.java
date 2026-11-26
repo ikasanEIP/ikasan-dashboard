@@ -48,4 +48,21 @@ public class DashboardContextNavigator {
             event.rerouteTo("noaccess");
         }
     }
+
+    /**
+     * Whether the user may use the scheduler: any scheduler authority (read, write or admin; for their own job plans,
+     * all job plans or development), or ALL. The scheduler views let these users in, and the menu offers them.
+     */
+    public static boolean hasSchedulerAuthority() {
+        return ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
+            , SecurityConstants.SCHEDULER_READ
+            , SecurityConstants.SCHEDULER_WRITE
+            , SecurityConstants.SCHEDULER_ADMIN
+            , SecurityConstants.SCHEDULER_DEV_READ
+            , SecurityConstants.SCHEDULER_DEV_WRITE
+            , SecurityConstants.SCHEDULER_DEV_ADMIN
+            , SecurityConstants.SCHEDULER_ALL_READ
+            , SecurityConstants.SCHEDULER_ALL_WRITE
+            , SecurityConstants.SCHEDULER_ALL_ADMIN);
+    }
 }

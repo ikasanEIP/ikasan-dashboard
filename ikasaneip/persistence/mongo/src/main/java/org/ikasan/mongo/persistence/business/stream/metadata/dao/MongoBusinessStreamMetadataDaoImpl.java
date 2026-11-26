@@ -86,8 +86,7 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
 
         // Add name filter if provided
         if (businessStreamNames != null && !businessStreamNames.isEmpty()) {
-            Criteria criteria = Criteria.where(EntityFields.MODULE_NAME).in(businessStreamNames);
-            query.addCriteria(criteria);
+            query.addCriteria(new Criteria().orOperator(businessStreamNames.stream().map(this::nameCriteria).toArray(Criteria[]::new)));
         }
 
         // Count total matching records
@@ -217,5 +216,19 @@ public class MongoBusinessStreamMetadataDaoImpl implements BusinessStreamMetadat
         businessStreamMetaData.setJson(mongoBusinessStream.getBusinessStreamMetaData());
 
         return businessStreamMetaData;
+    }
+
+    /**
+     * Criteria for a business stream name: an exact name, or a pattern where '*' stands for any text, matched
+     * case-insensitively as the Solr store does (the dashboard's grids filter with "*typed text*").
+     */
+    private Criteria nameCriteria(String name) {
+        if (name == null || !name.contains("*")) {
+            return Criteria.where(EntityFields.MODULE_NAME).is(name);
+        }
+        String regex = java.util.Arrays.stream(name.split("\\*", -1))
+            .map(part -> part.isEmpty() ? "" : Pattern.quote(part))
+            .collect(Collectors.joining(".*"));
+        return Criteria.where(EntityFields.MODULE_NAME).regex("^" + regex + "$", "i");
     }
 }

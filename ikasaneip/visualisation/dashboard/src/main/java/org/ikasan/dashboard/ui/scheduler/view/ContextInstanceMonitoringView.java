@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import com.vaadin.flow.component.dashboard.Dashboard;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -154,6 +155,11 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // the scheduler's job plan and instance pages are for scheduler users only, however they are reached
+        if(!DashboardContextNavigator.hasSchedulerAuthority()) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
         if(!initialised) {
             init();
             initialised = true;

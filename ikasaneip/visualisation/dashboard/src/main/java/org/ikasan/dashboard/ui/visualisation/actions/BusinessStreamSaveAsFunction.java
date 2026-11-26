@@ -23,17 +23,17 @@ public class BusinessStreamSaveAsFunction implements SaveAsFunction {
 
     @Override
     public String getName() {
-        return this.businessStreamSaveAsDialog.getName();
+        return this.businessStreamSaveAsDialog == null ? null : this.businessStreamSaveAsDialog.getName();
     }
 
     @Override
     public String getId() {
-        return this.businessStreamSaveAsDialog.getBusinessStreamId();
+        return this.businessStreamSaveAsDialog == null ? null : this.businessStreamSaveAsDialog.getBusinessStreamId();
     }
 
     @Override
     public String getDescription() {
-        return this.businessStreamSaveAsDialog.getDescription();
+        return this.businessStreamSaveAsDialog == null ? null : this.businessStreamSaveAsDialog.getDescription();
     }
 
 }

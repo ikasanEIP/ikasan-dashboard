@@ -248,6 +248,24 @@ public class MongoBusinessStreamMetadataDaoImplTest {
         assertEquals(2, results.getTotalNumberOfResults());
     }
 
+    /** The dashboard's grids filter by "*typed text*": a contains match, case-insensitive, with regex characters literal. */
+    @Test
+    public void testFindWithWildcardNames() throws IOException {
+        String businessStreamJson = loadDataFile(BUSINESS_STREAM_JSON);
+        dao.save(createBusinessStreamMetaData("id1", "Order to Cash", "Orders", businessStreamJson));
+        dao.save(createBusinessStreamMetaData("id2", "Procure to Pay", "Purchases", businessStreamJson));
+        dao.save(createBusinessStreamMetaData("id3", "Orders (EU) v1.2", "European orders", businessStreamJson));
+
+        assertEquals(2, dao.find(Arrays.asList("*order*"), 0, 10).getTotalNumberOfResults());
+        assertEquals(1, dao.find(Arrays.asList("*To Pay*"), 0, 10).getTotalNumberOfResults());
+        assertEquals(1, dao.find(Arrays.asList("*(EU) v1.2*"), 0, 10).getTotalNumberOfResults());
+        assertEquals(2, dao.find(Arrays.asList("Order*"), 0, 10).getTotalNumberOfResults());
+        assertEquals(0, dao.find(Arrays.asList("*no such stream*"), 0, 10).getTotalNumberOfResults());
+        // a name without '*' is still an exact match
+        assertEquals(0, dao.find(Arrays.asList("Order"), 0, 10).getTotalNumberOfResults());
+        assertEquals(1, dao.find(Arrays.asList("Order to Cash"), 0, 10).getTotalNumberOfResults());
+    }
+
     @Test
     public void testFindWithPagination() throws IOException {
         // Given

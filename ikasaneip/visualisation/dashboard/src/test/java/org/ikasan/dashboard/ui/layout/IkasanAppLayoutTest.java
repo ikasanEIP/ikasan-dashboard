@@ -328,6 +328,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "quartzSchedulerMenuItem")).isVisible());
     }
 
     @Test
@@ -1009,8 +1010,11 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        // the menu offers exactly the views a scheduler user may open: Quartz yes, Support (system events) no
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "quartzSchedulerMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "supportMenuItem")).isVisible());
     }
 
     @Test
@@ -1022,7 +1026,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "dashboardMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
+        // SearchView lets scheduler writers in, so the menu offers them Search
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "schedulerMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
@@ -1030,8 +1035,11 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        // the menu offers exactly the views a scheduler user may open: Quartz yes, Support (system events) no
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "quartzSchedulerMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "supportMenuItem")).isVisible());
     }
 
     @Test
@@ -1051,7 +1059,10 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
-        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
+        // the menu offers exactly the views a scheduler user may open: Quartz yes, Support (system events) no
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "quartzSchedulerMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "supportMenuItem")).isVisible());
     }
 }

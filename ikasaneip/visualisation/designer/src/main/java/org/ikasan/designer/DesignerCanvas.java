@@ -48,6 +48,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private List<ConnectorEventListener> connectorEventListeners = new ArrayList<>();
     private List<CanvasInitialisedListener> canvasInitialisedListeners = new ArrayList<>();
     private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
+    private List<org.ikasan.designer.event.CanvasEditedListener> canvasEditedListeners = new ArrayList<>();
     private List<FigureUndoDeleteEventListener> figureUndoDeleteEventListeners = new ArrayList<>();
     private List<FigureDeleteEventListener> figureDeleteEventListeners = new ArrayList<>();
     private List<FigureMovedEventListener> figureMovedEventListeners = new ArrayList<>();
@@ -847,6 +848,23 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         catch (JacksonException e) {
             logger.error("An error has occurred processing figure json associated with a job mouse over event - [%s]!".formatted(e.getMessage()), e);
         }
+    }
+
+    /**
+     * Adds a listener told whenever the user changes the canvas.
+     *
+     * @param listener The listener to be added.
+     */
+    public void addCanvasEditedListener(org.ikasan.designer.event.CanvasEditedListener listener) {
+        if(!this.canvasEditedListeners.contains(listener)) {
+            this.canvasEditedListeners.add(listener);
+        }
+    }
+
+    /** Sent by the browser after each command the user executes, undoes or redoes on the canvas. */
+    @ClientCallable
+    private void canvasEdited(String command){
+        this.canvasEditedListeners.forEach(listener -> listener.canvasEdited(command));
     }
 
     @ClientCallable

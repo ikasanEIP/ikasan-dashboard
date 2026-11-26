@@ -476,7 +476,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
             return;
         }
         this.authentication = (IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication();

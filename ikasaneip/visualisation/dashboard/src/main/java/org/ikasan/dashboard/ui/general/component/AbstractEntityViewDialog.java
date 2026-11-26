@@ -100,6 +100,23 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         this.rawContent = event;
     }
 
+    /**
+     * Show content in the editor, e.g. on changing tab: it becomes the content None restores, and the selected format
+     * (XML or JSON) is applied to it. Missing content shows the "no content" placeholder.
+     */
+    protected void showContent(String content)
+    {
+        this.rawContent = content != null ? content : getTranslation("placeholder.not-content", UI.getCurrent().getLocale());
+        String shown = this.rawContent;
+        if(this.select.getValue() != null && this.select.getValue().equals("XML")) {
+            shown = this.formatXml(this.rawContent);
+        }
+        else if(this.select.getValue() != null && this.select.getValue().equals("JSON")) {
+            shown = this.formatJson(this.rawContent);
+        }
+        this.aceEditor.setValue(shown);
+    }
+
     protected String formatXml(String event)
     {
         String xmlString;

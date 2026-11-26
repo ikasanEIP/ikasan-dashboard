@@ -237,6 +237,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
             replayAuditEvent.setResultMessage(String.format(i18NProvider.getTranslation("message.replay-audit-failure"
                 , current.getLocale()), document.getId()));
         }
+        replayAuditEvent.setSuccess(result);
         replayAuditEvent.setTimestamp(System.currentTimeMillis());
 
         return replayAuditEvent;

@@ -101,6 +101,10 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
             });
         });
 
+        // only users who may change roles are offered to add one (reading roles is not enough)
+        addRoleButton.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_WRITE,
+            SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ALL_AUTHORITY));
+
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setJustifyContentMode(JustifyContentMode.END);
         buttonLayout.setMargin(true);
@@ -141,7 +145,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
             });
 
             trash.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_WRITE,
-                SecurityConstants.ROLE_ADMINISTRATION_WRITE, SecurityConstants.ALL_AUTHORITY));
+                SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ALL_AUTHORITY));
 
             horizontalLayout.add(trash);
 
@@ -175,7 +179,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ROLE_ADMINISTRATION_WRITE, SecurityConstants.ROLE_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
             return;
         }
         this.updateRoles();

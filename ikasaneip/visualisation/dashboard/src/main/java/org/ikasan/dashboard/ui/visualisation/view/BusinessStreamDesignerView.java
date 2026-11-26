@@ -1,5 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
@@ -246,7 +249,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         computerImage.setHeight("35px");
         computerImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(computerImage);
+                // as dragging it does: the add action gives the item its identifier before adding it
+                computerImage.executeCanvasAddAction();
             }
         });
         DragSource.create(computerImage);
@@ -268,6 +272,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         }
         catch (IOException e) {
             logger.error("Could not get integrated systems", e);
+            this.integratedSystems = new ArrayList<>();
         }
 
         DesignerPalletButtonItem palletIconItem = new DesignerPalletButtonItem(VaadinIcon.PLUS.create(), designerPalletItem -> {
@@ -383,13 +388,22 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
     private ArrayList<Image> getIntegratedSystems() throws IOException {
         ArrayList<Image> images = new ArrayList<>();
 
-        Files.list(Paths.get(this.integratedSystemsImagePath)).forEach(
-            file -> {
+        // without the images directory there are no integrated system images, but the designer still works
+        Path directory = Paths.get(this.integratedSystemsImagePath);
+        if(!Files.isDirectory(directory)) {
+            logger.warn("The integrated systems image directory [{}] (integrated.systems.image.path) does not exist:"
+                + " the designer offers no integrated system images", this.integratedSystemsImagePath);
+            return images;
+        }
+
+        try(java.util.stream.Stream<Path> files = Files.list(directory)) {
+            files.forEach(file -> {
                 DesignerPalletImageItem item = getImageItem(file, BusinessStreamItemTypes.INTEGRATED_SYSTEM.name());
                 if(item != null) {
                     images.add(item);
                 }
             });
+        }
 
         return images;
     }
@@ -458,6 +472,12 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        // the designer is for the users the menu offers it to
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.BUSINESS_STREAM_ADMIN)) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
+
         if(!initialised)
         {
             this.init();

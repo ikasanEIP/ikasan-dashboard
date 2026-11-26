@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.search.listener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -69,7 +68,6 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
     protected List<ExclusionEventAction> actionHospitalEvents(List<IkasanESBDocument> exclusionEvents, ExclusionEventAction exclusionEventAction, ProgressIndicatorDialog progressIndicatorDialog
         , String action, String username, UI current, Authentication authentication) throws JsonProcessingException {
         ExclusionEventAction eventAction;
-        ObjectMapper mapper = new ObjectMapper();
         List<ExclusionEventAction> exclusionEventActions = new ArrayList<>();
 
         for (IkasanESBDocument document : exclusionEvents) {
@@ -80,6 +78,20 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
 
             if (this.shouldActionEvent(document)) {
                 ModuleMetaData moduleMetaData = super.getModuleMetaData(document.getModuleName());
+                if (moduleMetaData == null || moduleMetaData.getUrl() == null) {
+                    // the module is unknown to the dashboard, so it cannot be asked to action its exclusions
+                    logger.warn("Cannot {} exclusion [{}]: there is no module metadata (url) for module [{}]", action
+                        , document.getId(), document.getModuleName());
+                    current.access(() ->
+                    {
+                        progressIndicatorDialog.cancel();
+                        progressIndicatorDialog.close();
+                        NotificationHelper.showErrorNotification(String.format(getTranslation("error.exclusion-module-not-found"
+                            , current.getLocale()), document.getModuleName()));
+                    });
+
+                    return exclusionEventActions;
+                }
                 boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), document.getModuleName(),
                     document.getFlowName(), action, this.getErrorUri(document.getId()), authentication.getName());
 
@@ -98,10 +110,11 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
                     return exclusionEventActions;
                 }
 
-                eventAction = getExclusionEventAction(exclusionEventAction.getComment(), ExclusionEventActionImpl.RESUBMIT
+                // record what was actually done to the event: the module was asked to resubmit or to ignore it
+                eventAction = getExclusionEventAction(exclusionEventAction.getComment()
+                    , action.equals("ignore") ? ExclusionEventActionImpl.IGNORED : ExclusionEventActionImpl.RESUBMIT
                     , document, username);
 
-                eventAction.setEvent(mapper.writeValueAsString(eventAction));
 
                 exclusionEventActions.add(eventAction);
 
@@ -128,7 +141,9 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
         exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action
-            , user , this.dateFormatter.getFormattedDate(ZonedDateTime.now()), errorOccurrence.getEvent()));
+            , user , this.dateFormatter.getFormattedDate(ZonedDateTime.now())
+            // the error may have expired or been removed: record the excluded event itself then
+            , errorOccurrence != null ? errorOccurrence.getEvent() : document.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());

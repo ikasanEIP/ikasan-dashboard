@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -197,6 +198,11 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // the scheduler's job plan and instance pages are for scheduler users only, however they are reached
+        if(!DashboardContextNavigator.hasSchedulerAuthority()) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
         this.contextTemplate = this.scheduledContextService.findByName(this.contextName).getContext();
         if(!isInitialised) {
             init();

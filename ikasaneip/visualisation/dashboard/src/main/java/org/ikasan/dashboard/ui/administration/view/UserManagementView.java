@@ -215,7 +215,8 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,  SecurityConstants.USER_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
         }
     }
 

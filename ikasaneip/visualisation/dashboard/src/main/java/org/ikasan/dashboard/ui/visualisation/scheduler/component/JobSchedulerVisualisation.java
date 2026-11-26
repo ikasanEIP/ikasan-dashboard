@@ -88,6 +88,8 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         this.designerCanvas.addCanvasItemRightClickEventListener(this);
         this.designerCanvas.addCanvasUpdatedListener(this);
         this.designerCanvas.addFigureDeleteEventListeners(this);
+        // connecting, moving or deleting on the canvas changes the plan as much as adding a job does
+        this.designerCanvas.addCanvasEditedListener(command -> this.markSaveRequired());
         this.designerCanvas.addFigureUndoDeleteEventListeners(this);
         this.designerCanvas.addCanvasItemSingleClickEventListener(this);
     }
@@ -218,8 +220,8 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
             SchedulerJob job = this.contextTemplate.getScheduledJobsMap()
                 .get(identifier);
 
-
-            if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+            // only a terminal job has a right-click action; other figures (boxes, labels, child plans) have none
+            if(job != null && job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
                 if(this.saveRequired) {
                     NotificationHelper.showUserNotification("You must save the job plan before linking a terminal job!");
                     return;

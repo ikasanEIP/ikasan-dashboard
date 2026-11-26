@@ -74,7 +74,7 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE
             , SecurityConstants.SYSTEM_EVENT_READ, SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
             return;
         }
 

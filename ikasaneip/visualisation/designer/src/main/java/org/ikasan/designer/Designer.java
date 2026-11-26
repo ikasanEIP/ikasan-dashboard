@@ -53,6 +53,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
     private ManageFunction manageFunction;
+    /** Where the diagram being edited was last opened from or saved as, which Save then saves to. */
+    private enum CurrentSource { NONE, OPEN, SAVE_AS }
+    private CurrentSource currentSource = CurrentSource.NONE;
     private String diagramId;
     private String diagramName;
     private String diagramDescription;
@@ -128,6 +131,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         SubMenu fileSubMenu = file.getSubMenu();
         MenuItem newDiagram = fileSubMenu.addItem(getTranslation("menu.new", UI.getCurrent().getLocale()));
         newDiagram.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+            this.currentSource = CurrentSource.NONE;
             if(!this.designerCanvas.isSaved()) {
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas),
                     getTranslation("header.save-required", UI.getCurrent().getLocale()),
@@ -143,6 +147,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
         MenuItem open = fileSubMenu.addItem(getTranslation("menu.open", UI.getCurrent().getLocale()));
         open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+            this.currentSource = CurrentSource.OPEN;
             if(!this.designerCanvas.isSaved()) {
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction, this.designerCanvas),
                     getTranslation("header.save-required", UI.getCurrent().getLocale()),
@@ -161,18 +166,14 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         MenuItem save = fileSubMenu.addItem(getTranslation("menu.save", UI.getCurrent().getLocale()));
         save.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
             -> {
-            if(this.openFunction.getId() != null) {
-                this.diagramId = this.openFunction.getId();
-                this.diagramName = this.openFunction.getName();
-                this.diagramDescription = this.openFunction.getDescription();
-                this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
-            } else {
-                this.designerCanvas.saveAs();
-            }
+            this.saveCurrent();
         });
 
         MenuItem saveAs = fileSubMenu.addItem(getTranslation("menu.save-as", UI.getCurrent().getLocale()));
-        saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> this.designerCanvas.saveAs());
+        saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+            this.currentSource = CurrentSource.SAVE_AS;
+            this.designerCanvas.saveAs();
+        });
 
         fileSubMenu.addItem(new Hr());
 
@@ -286,6 +287,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         open.getElement().setAttribute("title", getTranslation("tooltip.open-diagram", UI.getCurrent().getLocale()));
         actions.add(open);
         open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            this.currentSource = CurrentSource.OPEN;
             if(!this.designerCanvas.isSaved()) {
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction, this.designerCanvas),
                     getTranslation("header.save-required", UI.getCurrent().getLocale()),
@@ -305,14 +307,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         save.getElement().setAttribute("title", getTranslation("tooltip.save-diagram", UI.getCurrent().getLocale()));
         actions.add(save, getDivider());
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            if(this.openFunction.getId() != null) {
-                this.diagramId = this.openFunction.getId();
-                this.diagramName = this.openFunction.getName();
-                this.diagramDescription = this.openFunction.getDescription();
-                this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
-            } else {
-                this.designerCanvas.saveAs();
-            }
+            this.saveCurrent();
         });
 
         paintButton = new ColorPicker();
@@ -520,5 +515,27 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
         return tooltip;
     }
-}
 
+    /**
+     * Save the diagram as the stream it was last opened as or saved as; a new diagram, or one whose Save as was
+     * cancelled, is saved as a new stream (Save as).
+     */
+    private void saveCurrent() {
+        if(this.currentSource == CurrentSource.SAVE_AS && this.saveAsFunction.getId() != null) {
+            this.diagramId = this.saveAsFunction.getId();
+            this.diagramName = this.saveAsFunction.getName();
+            this.diagramDescription = this.saveAsFunction.getDescription();
+            this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
+        }
+        else if(this.currentSource == CurrentSource.OPEN && this.openFunction.getId() != null) {
+            this.diagramId = this.openFunction.getId();
+            this.diagramName = this.openFunction.getName();
+            this.diagramDescription = this.openFunction.getDescription();
+            this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
+        }
+        else {
+            this.currentSource = CurrentSource.SAVE_AS;
+            this.designerCanvas.saveAs();
+        }
+    }
+}

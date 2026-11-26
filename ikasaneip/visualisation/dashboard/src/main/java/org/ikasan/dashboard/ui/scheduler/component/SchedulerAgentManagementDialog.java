@@ -106,7 +106,8 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             this.synchroniseAllJobsOnAgent(scheduledContextService, jobProvisionService, schedulerJobService, agent);
         });
 
-        ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), downloadLogFileButton,
+        // synchronising the agent changes what it runs: scheduler write access, as downloading its log
+        ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), synchroniseAllJobPlans,
             SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE,
             SecurityConstants.SCHEDULER_ADMIN,

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
@@ -123,8 +124,18 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
             {
-                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
-                this.businessStreamGrid.getDataProvider().refreshAll();
+                // deleting cannot be undone: ask first, as the business stream view's delete does
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("header.delete-business-stream"));
+                confirmDialog.setText(getTranslation("body.delete-business-stream"));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
+                    this.businessStreamGrid.getDataProvider().refreshAll();
+                });
+                confirmDialog.open();
             });
 
             ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,

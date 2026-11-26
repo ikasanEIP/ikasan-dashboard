@@ -1,5 +1,6 @@
 package org.ikasan.systemevent.dao;
 
+import org.ikasan.solr.util.SolrContainsClause;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
@@ -88,32 +89,17 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(SYSTEM_EVENT_TYPE).append("\" ");
 
+        // actor, subject and action are tokenised: a value with a hyphen, space or dot must be matched part by part
         if(filter.getActor() != null && !filter.getActor().isEmpty()) {
-            queryBuffer.append(AND);
-            queryBuffer.append(ACTOR).append(COLON)
-                .append(WILDCARD)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getActor()))
-                .append(WILDCARD);
+            queryBuffer.append(AND).append(SolrContainsClause.of(ACTOR, filter.getActor()));
         }
 
         if(filter.getSubject() != null && !filter.getSubject().isEmpty()) {
-            queryBuffer.append(AND);
-            queryBuffer.append(SYSTEM_EVENT_SUBJECT).append(COLON);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSubject()))queryBuffer.append("\"");
-            queryBuffer.append(WILDCARD)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getSubject()))
-                .append(WILDCARD);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSubject()))queryBuffer.append("\"");
+            queryBuffer.append(AND).append(SolrContainsClause.of(SYSTEM_EVENT_SUBJECT, filter.getSubject()));
         }
 
         if(filter.getAction() != null && !filter.getAction().isEmpty()) {
-            queryBuffer.append(AND);
-            queryBuffer.append(SYSTEM_EVENT_ACTION).append(COLON);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getAction()))queryBuffer.append("\"");
-            queryBuffer.append(WILDCARD)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getAction()))
-                .append(WILDCARD);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getAction()))queryBuffer.append("\"");
+            queryBuffer.append(AND).append(SolrContainsClause.of(SYSTEM_EVENT_ACTION, filter.getAction()));
         }
 
         if(filter.getSearchTerm() != null && !filter.getSearchTerm().isEmpty()) {

@@ -147,7 +147,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         IkasanPrincipalFilter ikasanPrincipalFilter = new SolrIkasanPrincipalFilterImpl();
         ikasanPrincipalFilter.setTypeFilter("user");
         List principalNames = this.ikasanPrincipalDao
-            .getAllPrincipalNamesWithRole(roleName, ikasanPrincipalFilter, limit, offset);
+            .getAllPrincipalNamesWithRole(roleName, ikasanPrincipalFilter, -1, -1);
 
         if (principalNames.isEmpty()) {
             return Collections.emptyList();
@@ -160,11 +160,11 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         // If userIds exceed the max predicates limit, break into batches
         if (userIds.size() > MAX_PREDICATES_PER_QUERY) {
-            return getUsersInBatches(userIds);
+            return page(getUsersInBatches(userIds, userFilter), limit, offset);
         }
 
         // Single query for <= 1024 predicates
-        return executeUserQuery(userIds);
+        return page(executeUserQuery(userIds, userFilter), limit, offset);
     }
 
     /**
@@ -264,7 +264,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
      * @param userIds the list of user IDs to query for
      * @return a combined list of UserLite objects from all batches
      */
-    private List<UserLite> getUsersInBatches(List userIds) {
+    private List<UserLite> getUsersInBatches(List userIds, UserFilter userFilter) {
         List<UserLite> allUsers = new ArrayList<>();
         int totalIds = userIds.size();
 
@@ -272,7 +272,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         for (int i = 0; i < totalIds; i += MAX_PREDICATES_PER_QUERY) {
             int endIndex = Math.min(i + MAX_PREDICATES_PER_QUERY, totalIds);
             List batchIds = userIds.subList(i, endIndex);
-            allUsers.addAll(executeUserQuery(batchIds));
+            allUsers.addAll(executeUserQuery(batchIds, userFilter));
         }
 
         return allUsers;
@@ -285,7 +285,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
      * @param userIds the list of user IDs to process
      * @return the total count of users corresponding to the provided user IDs
      */
-    private int getUsersCountInBatches(List userIds) {
+    private int getUsersCountInBatches(List userIds, UserFilter userFilter) {
         List<UserLite> allUsers = new ArrayList<>();
         int totalIds = userIds.size();
 
@@ -294,7 +294,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         for (int i = 0; i < totalIds; i += MAX_PREDICATES_PER_QUERY) {
             int endIndex = Math.min(i + MAX_PREDICATES_PER_QUERY, totalIds);
             List batchIds = userIds.subList(i, endIndex);
-            count += executeUserCountQuery(batchIds);
+            count += executeUserCountQuery(batchIds, userFilter);
         }
 
         return count;
@@ -306,12 +306,14 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
      * @param userIds the list of user IDs to query for
      * @return a list of UserLite objects matching the IDs
      */
-    private List<UserLite> executeUserQuery(List userIds) {
+    private List<UserLite> executeUserQuery(List userIds, UserFilter userFilter) {
         StringBuilder queryBuffer = new StringBuilder(TYPE + COLON + "\"" + USER_TYPE + "\"");
 
         queryBuffer.append(AND).append(ID + COLON).append(OPEN_BRACKET);
         queryBuffer.append(userIds.stream().collect(Collectors.joining(",")));
         queryBuffer.append(CLOSE_BRACKET);
+        // the dialog's column filters (username, name, email, ...)
+        addOptionalUserFilteringLogic(userFilter, queryBuffer);
 
         SolrQuery query = new SolrQuery();
         query.setQuery(queryBuffer.toString());
@@ -330,12 +332,14 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
      * @param userIds a list of user IDs used as a filter for the query
      * @return the total count of users matching the query
      */
-    private int executeUserCountQuery(List userIds) {
+    private int executeUserCountQuery(List userIds, UserFilter userFilter) {
         StringBuilder queryBuffer = new StringBuilder(TYPE + COLON + "\"" + USER_TYPE + "\"");
 
         queryBuffer.append(AND).append(ID + COLON).append(OPEN_BRACKET);
         queryBuffer.append(userIds.stream().collect(Collectors.joining(",")));
         queryBuffer.append(CLOSE_BRACKET);
+        // the dialog's column filters (username, name, email, ...)
+        addOptionalUserFilteringLogic(userFilter, queryBuffer);
 
         SolrQuery query = new SolrQuery();
         query.setQuery(queryBuffer.toString());
@@ -399,11 +403,11 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         // If userIds exceed the max predicates limit, break into batches
         if (userIds.size() > MAX_PREDICATES_PER_QUERY) {
-            return getUsersCountInBatches(userIds);
+            return getUsersCountInBatches(userIds, userFilter);
         }
 
         // Single query for <= 1024 predicates
-        return executeUserCountQuery(userIds);
+        return executeUserCountQuery(userIds, userFilter);
     }
 
     /**
@@ -420,7 +424,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         IkasanPrincipalFilter ikasanPrincipalFilter = new SolrIkasanPrincipalFilterImpl();
         ikasanPrincipalFilter.setTypeFilter("user");
         List principalNames = this.ikasanPrincipalDao
-            .getAllPrincipalNamesWithoutRole(roleName, ikasanPrincipalFilter, limit, offset);
+            .getAllPrincipalNamesWithoutRole(roleName, ikasanPrincipalFilter, -1, -1);
 
         if (principalNames.isEmpty()) {
             return Collections.emptyList();
@@ -433,11 +437,11 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         // If userIds exceed the max predicates limit, break into batches
         if (userIds.size() > MAX_PREDICATES_PER_QUERY) {
-            return getUsersInBatches(userIds);
+            return page(getUsersInBatches(userIds, userFilter), limit, offset);
         }
 
         // Single query for <= 1024 predicates
-        return executeUserQuery(userIds);
+        return page(executeUserQuery(userIds, userFilter), limit, offset);
     }
 
     /**
@@ -470,11 +474,11 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         // If userIds exceed the max predicates limit, break into batches
         if (userIds.size() > MAX_PREDICATES_PER_QUERY) {
-            return getUsersCountInBatches(userIds);
+            return getUsersCountInBatches(userIds, userFilter);
         }
 
         // Single query for <= 1024 predicates
-        return executeUserCountQuery(userIds);
+        return executeUserCountQuery(userIds, userFilter);
     }
 
     /**
@@ -827,16 +831,8 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
         }
     }
 
-    /** Characters Solr's StandardTokenizer keeps inside a token (besides letters and digits), e.g. john.smith. */
-    private static final java.util.regex.Pattern TOKEN_SEPARATORS = java.util.regex.Pattern.compile("[^\\p{L}\\p{N}._']+");
-
     /**
-     * A "contains" clause for a filter value on a tokenised (text_general) field.
-     * <p>
-     * A plain {@code field:*value*} wildcard is matched against single indexed tokens, so a value the tokenizer
-     * splits (e.g. 'harness-user-1' or 'a@b.com') never matched. The value is split the same way and every part must
-     * be contained in a token: {@code (field:*harness* AND field:*user* AND field:*1*)}. Parts are escaped, so
-     * characters with a query meaning (':', '(', '*', ...) are taken literally.
+     * A "contains" clause for a filter value on a tokenised (text_general) field: see {@link org.ikasan.solr.util.SolrContainsClause}.
      *
      * @param field the field to filter
      * @param value the filter text as typed
@@ -844,19 +840,22 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
      */
     static String containsClause(String field, String value)
     {
-        List<String> parts = new ArrayList<>();
-        if(value != null)
-        {
-            for(String part : TOKEN_SEPARATORS.split(value.trim()))
-            {
-                // the tokenizer drops leading/trailing '.', '_' and quote characters from a token
-                String trimmed = part.replaceAll("^[._']+|[._']+$", "");
-                if(!trimmed.isEmpty())
-                {
-                    parts.add(field + COLON + "*" + org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars(trimmed) + "*");
-                }
-            }
+        return org.ikasan.solr.util.SolrContainsClause.of(field, value);
+    }
+
+    /**
+     * A page of users (sorted by username, so pages are stable). The role's users are filtered first and paged after:
+     * paging the principals before filtering would leave matches out.
+     */
+    private static List<UserLite> page(List<UserLite> users, int limit, int offset) {
+        List<UserLite> sorted = users.stream()
+            .sorted(java.util.Comparator.comparing(UserLite::getUsername, java.util.Comparator.nullsLast(String::compareTo)))
+            .collect(Collectors.toList());
+        int from = Math.max(offset, 0);
+        if(from >= sorted.size()) {
+            return Collections.emptyList();
         }
-        return parts.isEmpty() ? field + COLON + "*" : "(" + String.join(AND, parts) + ")";
+        int to = limit > 0 ? Math.min(from + limit, sorted.size()) : sorted.size();
+        return sorted.subList(from, to);
     }
 }

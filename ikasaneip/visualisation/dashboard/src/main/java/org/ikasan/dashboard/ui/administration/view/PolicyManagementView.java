@@ -102,7 +102,7 @@ public class PolicyManagementView extends VerticalLayout implements BeforeEnterO
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.POLICY_ADMINISTRATION_WRITE, SecurityConstants.POLICY_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
             return;
         }
 

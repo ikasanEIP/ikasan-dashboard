@@ -103,7 +103,11 @@ public abstract class IkasanEventActionListener
         else
         {
             ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(moduleName);
-            this.moduleMetaDataCache.put(moduleName, moduleMetaData);
+            // only cache modules that are known: one registered later must still be found
+            if(moduleMetaData != null)
+            {
+                this.moduleMetaDataCache.put(moduleName, moduleMetaData);
+            }
 
             return moduleMetaData;
         }

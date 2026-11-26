@@ -325,15 +325,13 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     public void addAndGrouping() {
         this.designerCanvas.addBoundaryStyled("AND-"+UUID.randomUUID().toString(), 200, 200, "--"
             , IkasanColours.SCHEDULER_AND, 3);
-        this.saveRequired = true;
-        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
+        this.markSaveRequired();
     }
 
     public void addOrGrouping() {
         this.designerCanvas.addBoundaryStyled("OR-"+UUID.randomUUID().toString(), 200, 200, "--.."
             , IkasanColours.SCHEDULER_OR, 3);
-        this.saveRequired = true;
-        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
+        this.markSaveRequired();
     }
 
     public void save() {
@@ -463,8 +461,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
         }
         this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
-        this.saveRequired = true;
-        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
+        this.markSaveRequired();
     }
 
     @Override
@@ -535,9 +532,14 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                     job.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
                     return;
                 }
-                SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                SchedulerJobRecord schedulerJobRecord = this.findJobRecord(job);
+                if(schedulerJobRecord == null) {
+                    return;
+                }
                 SchedulerJob schedulerJob = schedulerJobRecord.getJob();
-                schedulerJob.getChildContextNames().removeAll(Collections.singleton(this.contextTemplate.getName()));
+                if(schedulerJob.getChildContextNames() != null) {
+                    schedulerJob.getChildContextNames().removeAll(Collections.singleton(this.contextTemplate.getName()));
+                }
 
                 jobsToSave.put(job.getIdentifier(), schedulerJob);
             });
@@ -553,7 +555,10 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                     jobsToSave.get(job.getIdentifier()).getChildContextNames().add(updatedContext.getName());
                 }
                 else {
-                    SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                    SchedulerJobRecord schedulerJobRecord = this.findJobRecord(job);
+                    if(schedulerJobRecord == null) {
+                        return;
+                    }
                     SchedulerJob schedulerJob = schedulerJobRecord.getJob();
                     if(schedulerJob.getChildContextNames() == null) {
                         schedulerJob.setChildContextNames(new ArrayList<>());
@@ -643,6 +648,31 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         public ContextTemplate getDeleted() {
             return deleted;
         }
+    }
+
+    /**
+     * The stored record of a job on the plan. A job is stored under its own context: the plan's, or another such as
+     * GLOBAL_EVENT for global event jobs. A job without a record is left out of the save (and logged).
+     */
+    private SchedulerJobRecord findJobRecord(SchedulerJob job) {
+        SchedulerJobRecord record = null;
+        if(job.getContextName() != null) {
+            record = this.schedulerJobService.findByContextNameAndJobName(job.getContextName(), job.getJobName());
+        }
+        if(record == null) {
+            record = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+        }
+        if(record == null) {
+            logger.warn("No stored job [{}] of context [{}] (plan [{}]): it is not saved with the plan", job.getJobName()
+                , job.getContextName(), this.parentContextTemplate.getName());
+        }
+        return record;
+    }
+
+    /** The diagram has changes that are not saved: Save shows it, and leaving asks first. */
+    protected void markSaveRequired() {
+        this.saveRequired = true;
+        this.jobPlanSaveRequiredListeners.forEach(listener -> listener.jobPlanSaveRequired(true));
     }
 
     public boolean isSaveRequired() {

@@ -2334,8 +2334,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ContextHelper.enrichJobs(contextInstance);
                 this.enableDisableScheduledJobs(this.contextInstance, this.ui);
                 manageContextStatusIndicators(this.ui);
-                this.grid.getDataCommunicator().reset();
-                this.createTreeGridDataProvider().refreshAll();
+                // this runs on the broadcaster's thread: the grid may only be changed holding the session lock
+                this.ui.access(() -> {
+                    this.grid.getDataCommunicator().reset();
+                    this.createTreeGridDataProvider().refreshAll();
+                });
             }
         }
         else {
@@ -2674,10 +2677,15 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
 
         // Keep the widget's contextInstance in sync so manageContextStatusIndicators works on the follower node.
-        SchedulerJobInstance contextJob = ContextHelper.getSchedulerJobInstance(
-            jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(),
-            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
-            this.contextInstance);
+        // On the leader the widget holds the context machine's live instance, which the machine has already updated:
+        // writing this (asynchronously delivered, possibly stale) status into it would overwrite the machine's state,
+        // e.g. put a job that has just completed back to RUNNING, so that ending the job plan then kills it.
+        SchedulerJobInstance contextJob = ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())
+            ? null
+            : ContextHelper.getSchedulerJobInstance(
+                jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(),
+                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+                this.contextInstance);
         if (contextJob != null) {
             contextJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
         }

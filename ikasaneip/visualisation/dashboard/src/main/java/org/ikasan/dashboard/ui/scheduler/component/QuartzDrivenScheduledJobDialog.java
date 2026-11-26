@@ -164,7 +164,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                 this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
             }
 
-            NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
+            // a success, shown as one (it was styled as an error)
+            NotificationHelper.showUserNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
             this.close();
         });
 

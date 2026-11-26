@@ -110,25 +110,14 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanESBDocument>
 
         tabs.addSelectedChangeListener(event ->
         {
+            // the tab's content is what the format selector's None restores (and the selected format applies to it)
             if(tabs.getSelectedTab().equals(errorTab))
             {
-                super.aceEditor.setValue(Optional.ofNullable(errorDetails)
-                    .orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
+                super.showContent(errorDetails);
             }
             else
             {
-                String content;
-                if(super.select.getValue() != null && super.select.getValue().equals("XML")){
-                    content = super.formatXml(errorEvent);
-                }
-                else if(super.select.getValue() != null && super.select.getValue().equals("JSON")){
-                    content = super.formatJson(errorEvent);
-                }
-                else {
-                    content = errorEvent;
-                }
-                super.aceEditor.setValue(Optional.ofNullable(content)
-                    .orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
+                super.showContent(errorEvent);
             }
         });
 

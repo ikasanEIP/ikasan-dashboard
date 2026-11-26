@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.layout;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -268,17 +269,18 @@ public class IkasanAppLayout extends AppLayout {
             this.dashboardMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.DASHBOARD_READ, SecurityConstants.DASHBOARD_WRITE,
                 SecurityConstants.DASHBOARD_ADMIN));
 
+            // the same authorities SearchView lets in
             this.searchMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ, SecurityConstants.SEARCH_WRITE,
-                SecurityConstants.ALL_AUTHORITY));
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.ALL_AUTHORITY));
 
             this.schedulerMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
                 , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
                 , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN)
                 && isIkasanEnterpriseSchedulerInstance);
 
+            // Each menu item is offered exactly to the users its view lets in (see the views' beforeEnter checks).
             this.supportMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
-                SecurityConstants.SYSTEM_EVENT_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
-                , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN));
+                SecurityConstants.SYSTEM_EVENT_WRITE));
 
             this.systemEventMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
                 SecurityConstants.SYSTEM_EVENT_WRITE));
@@ -298,10 +300,11 @@ public class IkasanAppLayout extends AppLayout {
             this.userDirectoryManagementMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
                 , SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ));
 
-            this.sessionManagementMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
+            this.quartzSchedulerMenuItem.setVisible(hasSchedulerViewAuthority());
 
-            this.jobLockMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY) &&
-                isIkasanEnterpriseSchedulerInstance);
+            this.sessionManagementMenuItem.setVisible(hasSchedulerViewAuthority());
+
+            this.jobLockMenuItem.setVisible(hasSchedulerViewAuthority() && isIkasanEnterpriseSchedulerInstance);
 
             this.swaggerUI.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 
@@ -310,5 +313,14 @@ public class IkasanAppLayout extends AppLayout {
 
             this.initialised = true;
         }
+    }
+
+    /**
+     * The authorities the Quartz scheduler, session management and job lock views accept (their beforeEnter checks):
+     * any scheduler authority, or ALL.
+     */
+    private static boolean hasSchedulerViewAuthority()
+    {
+        return DashboardContextNavigator.hasSchedulerAuthority();
     }
 }

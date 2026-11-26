@@ -97,16 +97,17 @@ public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog
                 }
 
 
-                this.id = businessStreamNameTextfield.getValue();
-                this.name = businessStreamNameTextfield.getValue();
-                this.description = businessStreamDescriptionTextfield.getValue();
                 BusinessStreamMetaData saveBusinessStreamMetaData = new BusinessStreamMetaDataImpl();
-                saveBusinessStreamMetaData.setId(this.id);
-                saveBusinessStreamMetaData.setName(this.name);
-                saveBusinessStreamMetaData.setDescription(this.description);
+                saveBusinessStreamMetaData.setId(businessStreamNameTextfield.getValue());
+                saveBusinessStreamMetaData.setName(businessStreamNameTextfield.getValue());
+                saveBusinessStreamMetaData.setDescription(businessStreamDescriptionTextfield.getValue());
                 saveBusinessStreamMetaData.setJson(businessStreamJson);
 
                 this.businessStreamMetaDataService.save(saveBusinessStreamMetaData);
+                // only a saved stream becomes the one the designer's Save saves to
+                this.id = saveBusinessStreamMetaData.getId();
+                this.name = saveBusinessStreamMetaData.getName();
+                this.description = saveBusinessStreamMetaData.getDescription();
             }
             catch (Exception e) {
                 logger.error(String.format("An error has occurred saving business stream[%s]",name), e);

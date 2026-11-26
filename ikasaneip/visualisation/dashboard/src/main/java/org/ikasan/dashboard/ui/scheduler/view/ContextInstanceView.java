@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SessionLocale;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -192,6 +193,11 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // the scheduler's job plan and instance pages are for scheduler users only, however they are reached
+        if(!DashboardContextNavigator.hasSchedulerAuthority()) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
         Cookie uiLanguage = CookieUtil.getCookieByName("ikasan-language", VaadinRequest.getCurrent());
 
         if (uiLanguage != null){

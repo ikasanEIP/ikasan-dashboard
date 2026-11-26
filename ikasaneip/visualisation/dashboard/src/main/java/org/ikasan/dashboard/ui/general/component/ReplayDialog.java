@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -122,12 +124,17 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanESBDocument>
         downloadAnchor.add(downloadButton);
 
         Button replayButton = new Button(getTranslation("button.replay", UI.getCurrent().getLocale(), null));
+        // replaying needs replay write access, as the search view's bulk replay does: reading replay events is not enough
+        ComponentSecurityVisibility.applySecurity(replayButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN
+            , SecurityConstants.REPLAY_ALL_MODULES_WRITE, SecurityConstants.REPLAY_ALL_MODULES_ADMIN, SecurityConstants.ALL_AUTHORITY);
         replayButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
 
             ReplayDialogDto replayDialogDto = new ReplayDialogDto();
+            // the audit records who replayed the event (as the bulk replay does)
+            replayDialogDto.setUser(SecurityContextHolder.getContext().getAuthentication().getName());
             ReplayCommentsDialog replayCommentsDialog = new ReplayCommentsDialog(replayDialogDto);
 
             replayCommentsDialog.open();

@@ -61,15 +61,16 @@ public class MongoUserDaoImpl implements UserDao {
 
     @Override
     public List<UserLite> getUsersWithRole(String roleName, UserFilter userFilter, int limit, int offset) {
+        // the role's users, then the dialog's filter, then the page: paging the principals first would page before filtering
         IkasanPrincipalFilter ikasanPrincipalFilter = createPrincipalFilter("user");
         List<String> principalNames = this.ikasanPrincipalDao
-            .getAllPrincipalNamesWithRole(roleName, ikasanPrincipalFilter, limit, offset);
+            .getAllPrincipalNamesWithRole(roleName, ikasanPrincipalFilter, MongoPaging.UNPAGED, MongoPaging.UNPAGED);
 
         if (principalNames.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return getUsersByPrincipalNames(principalNames);
+        return findUsersByPrincipalNames(principalNames, userFilter, limit, offset);
     }
 
     public List<String> getUserNamesWithRole(String roleName, UserFilter userFilter, int limit, int offset) {
@@ -114,24 +115,21 @@ public class MongoUserDaoImpl implements UserDao {
             .map(IkasanPrincipalLite::getName)
             .collect(Collectors.toList());
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
-        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
-
-        return (int) mongoTemplate.count(query, MongoUserRecord.class);
+        return countUsersByPrincipalNames(principalNames, userFilter);
     }
 
     @Override
     public List<UserLite> getUsersWithoutRole(String roleName, UserFilter userFilter, int limit, int offset) {
+        // the role's users, then the dialog's filter, then the page: paging the principals first would page before filtering
         IkasanPrincipalFilter ikasanPrincipalFilter = createPrincipalFilter("user");
         List<String> principalNames = this.ikasanPrincipalDao
-            .getAllPrincipalNamesWithoutRole(roleName, ikasanPrincipalFilter, limit, offset);
+            .getAllPrincipalNamesWithoutRole(roleName, ikasanPrincipalFilter, MongoPaging.UNPAGED, MongoPaging.UNPAGED);
 
         if (principalNames.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return getUsersByPrincipalNames(principalNames);
+        return findUsersByPrincipalNames(principalNames, userFilter, limit, offset);
     }
 
     @Override
@@ -148,11 +146,7 @@ public class MongoUserDaoImpl implements UserDao {
             .map(IkasanPrincipalLite::getName)
             .collect(Collectors.toList());
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where(EntityFields.NAME).in(principalNames));
-        query.addCriteria(Criteria.where(EntityFields.TYPE).is(USER_TYPE));
-
-        return (int) mongoTemplate.count(query, MongoUserRecord.class);
+        return countUsersByPrincipalNames(principalNames, userFilter);
     }
 
     @Override
@@ -437,5 +431,27 @@ public class MongoUserDaoImpl implements UserDao {
         if (filter.getDepartmentFilter() != null && !filter.getDepartmentFilter().isEmpty()) {
             query.addCriteria(RegexCriteria.containsIgnoreCase(EntityFields.DEPARTMENT, filter.getDepartmentFilter()));
         }
+    }
+
+    /** Users of the principals that match the filter, paged (limit/offset as in {@link MongoPaging}). */
+    private List<UserLite> findUsersByPrincipalNames(List<String> principalNames, UserFilter userFilter, int limit, int offset) {
+        Query query = new Query();
+        // under $and: the username filter adds its own criterion on the name field
+        query.addCriteria(new Criteria().andOperator(Criteria.where(EntityFields.NAME).in(principalNames)));
+        addUserFilterCriteria(query, userFilter);
+
+        return MongoPaging.find(mongoTemplate, query, offset, limit, MongoUserRecord.class).stream()
+            .map(userRecord -> OBJECT_MAPPER.readValue(userRecord.getUser(), MongoUserImpl.class))
+            .map(user -> (UserLite) user)
+            .collect(Collectors.toList());
+    }
+
+    /** The number of users of the principals that match the filter. */
+    private int countUsersByPrincipalNames(List<String> principalNames, UserFilter userFilter) {
+        Query query = new Query();
+        // under $and: the username filter adds its own criterion on the name field
+        query.addCriteria(new Criteria().andOperator(Criteria.where(EntityFields.NAME).in(principalNames)));
+        addUserFilterCriteria(query, userFilter);
+        return (int) mongoTemplate.count(query, MongoUserRecord.class);
     }
 }

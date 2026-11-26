@@ -302,7 +302,8 @@ window.Vaadin.Flow.designerConnector = {
             let attributes = JSON.parse(connectionAttributes);
             let connection = new draw2d.Connection(attributes);
 
-            _this.designer.add(connection);
+            // _this is the draw2d canvas itself
+            _this.add(connection);
         }
 
         /**
@@ -1257,6 +1258,16 @@ window.Vaadin.Flow.designerConnector = {
 
             designer.$connector.designer.getCommandStack().addEventListener(function(e){
 
+                // every change the user makes (or undoes/redoes) is reported, so the server knows the diagram changed;
+                // the indicators drawn on downstream jobs when a job is clicked are not changes to the diagram
+                let commandFigure = e.getCommand().figure;
+                let figurePath = commandFigure == null ? null
+                    : (typeof commandFigure.getPath === "function" ? commandFigure.getPath() : commandFigure.path);
+                let indicator = typeof figurePath === "string" && figurePath.endsWith("mr-squid-head.png");
+                if(!indicator && (e.action === "POST_EXECUTE" || e.action === "POST_UNDO" || e.action === "POST_REDO")) {
+                    element.$server.canvasEdited(e.getCommand().getLabel());
+                }
+
                 if(e.getCommand().getLabel() === "Connect Ports" && e.action === "POST_EXECUTE") {
                     element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_ADDED", e.getCommand().source.parent.getId(), e.getCommand().source.parent.getUserData(),
                         e.getCommand().target.parent.getId(), e.getCommand().target.parent.getUserData())));
@@ -1300,13 +1311,13 @@ window.Vaadin.Flow.designerConnector = {
                 else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "POST_EXECUTE") {
                     if (e.getCommand().figure != null && e.getCommand().figure.NAME === "draw2d.Connection") {
                         // send a connection removed event back to the server
-                        element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_REMOVED", e.getCommand().figure.sourcePort.parent.getId(), e.getCommand().source.parent.getUserData(),
-                            e.getCommand().figure.targetPort.parent.getId(), e.getCommand().target.parent.getUserData())));
+                        // the delete command holds the connection: its ends are the connection's ports
+                        let connection = e.getCommand().figure;
+                        element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_REMOVED", connection.getSource().getParent().getId(), connection.getSource().getParent().getUserData(),
+                            connection.getTarget().getParent().getId(), connection.getTarget().getParent().getUserData())));
                     }
                 }
                 else if(e.getCommand().getLabel() === "Move Shape" && e.action === "POST_EXECUTE") {
-                    debugger;
-                    console.log("MOVE EVENT!");
                     if (e.getCommand().figure != null && e.getCommand().figure.assignedFigures != null) {
                         // send a context moved back to the server
                         e.getCommand().figure.assignedFigures.each((i, figure) => {

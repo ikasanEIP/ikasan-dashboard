@@ -128,7 +128,8 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
         if(!initialised) {
             // Go to default view if there is no visualisation name
             if(this.visualisationName == null) {
-                DashboardContextNavigator.navigateToLandingPage();
+                DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+                return;
             }
             this.init();
             this.graphVisualisation.setVisualisationName(this.visualisationName);

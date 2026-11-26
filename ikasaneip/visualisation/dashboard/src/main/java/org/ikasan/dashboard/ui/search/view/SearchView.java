@@ -108,9 +108,11 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        // the same authorities the menu offers Search to (IkasanAppLayout)
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ,
-            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.ALL_AUTHORITY)) {
-            DashboardContextNavigator.navigateToLandingPage();
+            SecurityConstants.SEARCH_WRITE, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.ALL_AUTHORITY)) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
         }
 
         if(!initialised)
