@@ -111,4 +111,16 @@ class ConfigLoaderTest
             assertThat(config.scheduler().fakeAgentHost()).as(env + " fake agent host").isEqualTo("localhost");
         }
     }
+
+    /** With -Dharness.env=all, the run's own configuration (e.g. for timeouts) is the first backend's, on its stack. */
+    @Test
+    void allResolvesToTheFirstBackendsEnvironment()
+    {
+        Properties props = new Properties();
+        props.setProperty("harness.env", "all");
+        assertThat(ConfigLoader.load(Map.of(), props).env()).isEqualTo("compose-mongo");
+
+        props.setProperty("harness.stack", "local");
+        assertThat(ConfigLoader.load(Map.of(), props).env()).isEqualTo("local-mongo");
+    }
 }

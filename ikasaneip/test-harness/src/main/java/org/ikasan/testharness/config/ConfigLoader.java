@@ -37,6 +37,9 @@ public final class ConfigLoader
     private static volatile HarnessConfig cached;
     private static final Map<String, HarnessConfig> BY_ENV = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** The environment name that runs every end-to-end test on each backend (MongoBackendSuite, SolrBackendSuite). */
+    public static final String ALL = "all";
+
     private ConfigLoader() {}
 
     /** The configuration for this JVM, loaded once from the process environment and system properties. */
@@ -93,6 +96,12 @@ public final class ConfigLoader
     public static HarnessConfig load(String envName, Map<String, String> env, Map<Object, Object> props)
     {
         envName = firstNonBlank(envName, env.get("HARNESS_ENV"), (String) props.get("harness.env"), "compose-mongo");
+        if (ALL.equals(envName))
+        {
+            // -Dharness.env=all: each per-backend suite names its own environment; anything asking for the run's
+            // configuration (timeouts, say, which are the same for both) gets the first backend's
+            envName = "compose-mongo";
+        }
         envName = onStack(envName, firstNonBlank(env.get("HARNESS_STACK"), (String) props.get("harness.stack"), ""));
         Path configDir = harnessRoot().resolve("config");
         Path envFile = configDir.resolve("environments").resolve(envName + ".yaml");
