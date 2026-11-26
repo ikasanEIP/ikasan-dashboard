@@ -1,5 +1,6 @@
 package org.ikasan.testharness.junit;
 
+import org.ikasan.testharness.support.Timeouts;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
@@ -40,17 +41,32 @@ public final class HarnessSession implements AutoCloseable
     private final String authenticatedState;
     private final SchedulerApi schedulerApi;
     private final FakeSchedulerAgent fakeAgent;
+    private final Map<String, String> personaStates = new java.util.HashMap<>();
+    private org.ikasan.testharness.support.Personas.Definitions personas;
 
-    HarnessSession()
+    /** @param env the harness environment (e.g. compose-solr), or null for the process's (HARNESS_ENV, ...) */
+    HarnessSession(String env)
     {
-        this.config = ConfigLoader.get();
+        this.config = ConfigLoader.get(env);
         logger.info("harness env '{}', backend {}, dashboard {}", config.env(), config.backend(), config.dashboard().url());
 
         boolean skipBaseline = "true".equalsIgnoreCase(System.getenv("HARNESS_SKIP_BASELINE"))
             || Boolean.getBoolean("harness.skipBaseline");
+        if (skipBaseline && ("all".equals(System.getenv("HARNESS_ENV")) || "all".equals(System.getProperty("harness.env"))))
+        {
+            // the stack holds one backend at a time: after a run on both, only the last one's is still up
+            throw new IllegalStateException("HARNESS_SKIP_BASELINE cannot be used with -Dharness.env=all: the stack only "
+                + "holds the last backend. Reuse a stack with a single backend (-Dharness.env=compose-mongo|compose-solr).");
+        }
         if (skipBaseline)
         {
             logger.info("HARNESS_SKIP_BASELINE set: using the running environment as is");
+            if (org.ikasan.testharness.support.DashboardProcess.enabled(config) && !config.compose().enabled())
+            {
+                // a dashboard process ends with the JVM that started it: start one on the seeded data if none is up
+                org.ikasan.testharness.support.DashboardProcess.ensureRunning(config);
+                org.ikasan.testharness.support.DashboardApi.waitForDashboard(config);
+            }
             // reuse the anchor the running data was seeded with, so exact timestamps in expectations still match
             this.clock = Baseline.seededClock(config);
             logger.info("time tokens anchored at {}", java.time.Instant.ofEpochMilli(clock.anchor()));
@@ -88,12 +104,12 @@ public final class HarnessSession implements AutoCloseable
                     new Compose(config).upAgent();
                 }
                 // the agent registers itself (with its flows) on start; wait for that rather than overwrite it
-                schedulerApi.awaitAgentRegistered(scheduler.agentName(), scheduler.realAgentUrl(), java.time.Duration.ofMinutes(2));
+                schedulerApi.awaitAgentRegistered(scheduler.agentName(), scheduler.realAgentUrl(), Timeouts.of(java.time.Duration.ofMinutes(2)));
                 logger.info("real scheduler agent '{}' registered at {}", scheduler.agentName(), scheduler.realAgentUrl());
             }
         }
 
-        PlaywrightAssertions.setDefaultAssertionTimeout(config.run().expectTimeoutSeconds() * 1000.0);
+        PlaywrightAssertions.setDefaultAssertionTimeout(Timeouts.millis(config.run().expectTimeoutSeconds() * 1000.0));
         this.playwright = Playwright.create();
         BrowserType type = switch (config.run().browser())
         {
@@ -124,14 +140,39 @@ public final class HarnessSession implements AutoCloseable
     /** Log in through the UI once; tests start from this session instead of logging in themselves. */
     private String login()
     {
+        return login(config.dashboard().username(), config.dashboard().password());
+    }
+
+    private String login(String username, String password)
+    {
         try (BrowserContext context = newContext(null))
         {
             Page page = context.newPage();
             LoginPage loginPage = new LoginPage(page).open();
-            loginPage.login(config.dashboard().username(), config.dashboard().password());
+            loginPage.login(username, password);
             page.waitForURL(url -> !url.contains("/login"));
             return context.storageState();
         }
+    }
+
+    /**
+     * The logged in browser state of a persona ({@code data/personas.yaml}): the personas are written to the store the
+     * first time one is asked for (the dashboard has created its baseline policies by then), and each logs in once.
+     */
+    public synchronized String authenticatedState(String persona)
+    {
+        if (personas == null)
+        {
+            personas = org.ikasan.testharness.support.Personas.load();
+            org.ikasan.testharness.support.Personas.seed(config, personas);
+            logger.info("seeded personas {}", personas.personas().keySet());
+        }
+        if (!personas.personas().containsKey(persona))
+        {
+            throw new IllegalArgumentException("Unknown persona '" + persona + "'; " + org.ikasan.testharness.support.Personas.FILE
+                + " defines " + personas.personas().keySet());
+        }
+        return personaStates.computeIfAbsent(persona, name -> login(name, personas.password()));
     }
 
     /**
@@ -151,8 +192,9 @@ public final class HarnessSession implements AutoCloseable
             options.setStorageState(storageState);
         }
         BrowserContext context = browser.newContext(options);
-        context.setDefaultTimeout(config.run().timeoutSeconds() * 1000.0);
-        context.setDefaultNavigationTimeout(config.run().timeoutSeconds() * 1000.0);
+        context.addInitScript(org.ikasan.testharness.support.Vaadin.NOTIFICATION_RECORDER);
+        context.setDefaultTimeout(Timeouts.millis(config.run().timeoutSeconds() * 1000.0));
+        context.setDefaultNavigationTimeout(Timeouts.millis(config.run().timeoutSeconds() * 1000.0));
         return context;
     }
 
@@ -172,7 +214,7 @@ public final class HarnessSession implements AutoCloseable
         return seeded;
     }
 
-    String authenticatedState()
+    public String authenticatedState()
     {
         return authenticatedState;
     }
@@ -204,6 +246,10 @@ public final class HarnessSession implements AutoCloseable
         }
         finally
         {
+            if (org.ikasan.testharness.support.DashboardProcess.enabled(config))
+            {
+                org.ikasan.testharness.support.DashboardProcess.stop();
+            }
             if (config.compose().enabled() && config.compose().teardown())
             {
                 logger.info("tearing down the compose stack");

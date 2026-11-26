@@ -128,4 +128,55 @@ public class SearchPage
         return (List<String>) page.locator("vaadin-grid#searchResultsGrid [data-entity-type]")
             .evaluateAll("els => els.map(e => e.getAttribute('data-entity-type'))");
     }
+
+    /**
+     * Search, repeating the search until the condition holds, e.g. until documents just written to the store are
+     * found (Mongo's Atlas Search indexes them about a second after the write).
+     */
+    public void searchUntil(SearchInput input, java.util.function.Predicate<SearchPage> condition, java.time.Duration timeout,
+                            String description)
+    {
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (true)
+        {
+            search(input);
+            if (condition.test(this))
+            {
+                return;
+            }
+            if (System.nanoTime() > deadline)
+            {
+                throw new AssertionError("Search did not show " + description + " within " + timeout + "; grid: " + grid.visibleText());
+            }
+            page.waitForTimeout(500);
+        }
+    }
+
+    /** Double-click the result row containing the text and return the dialog that opens, titled e.g. "Exclusion EVT-1". */
+    public Locator openRow(String rowText, String dialogTitle)
+    {
+        grid.doubleClickRow(rowText);
+        return Vaadin.dialog(page, dialogTitle);
+    }
+
+    /**
+     * Tick the selection checkbox of result rows (rendered when only exclusions or only replay events are searched);
+     * the checkbox id is the document id.
+     */
+    public void select(String... documentIds)
+    {
+        for (String id : documentIds)
+        {
+            Vaadin.setChecked(grid.root().locator("vaadin-checkbox[id='" + id + "']"), true);
+        }
+    }
+
+    /**
+     * A bulk action button above the results, by its title: "replay all selected events", "resubmit all selected
+     * events", "ignore all selected events", "select all".
+     */
+    public Locator bulkButton(String title)
+    {
+        return page.locator("vaadin-button[title='" + title + "']");
+    }
 }

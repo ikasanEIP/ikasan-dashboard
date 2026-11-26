@@ -1,0 +1,45 @@
+# Users with narrower access than admin, for the role-based access tests (it/access).
+#
+# Each persona gets its own role holding exactly these policies (the dashboard's baseline policies, whose names are
+# the authorities checked in the UI - see SecurityConstants), optionally scoped to modules and job plans, and a user
+# of the same name. They are seeded (org.ikasan.testharness.support.Personas) the first time a test logs in as one,
+# after the dashboard has created its baseline security. Tests choose one with @LoginAs("<name>").
+#
+# A search user without ALL or a *_all_modules policy only sees the modules assigned to their role.
+password: harness-access
+personas:
+  access-reader:
+    description: reads everything it can search and schedule, changes nothing
+    policies: [dashboard-read, search-read, wiretap_all_modules-read, error_all_modules-read, exclusion_all_modules-read,
+               replay_all_modules-read, scheduler-read, scheduler-all-read]
+
+  access-operator:
+    description: actions exclusions and replays, and runs job plans, but administers nothing
+    policies: [dashboard-read, search-read, wiretap_all_modules-read, error_all_modules-read, exclusion_all_modules-write,
+               replay_all_modules-write, scheduler-write, scheduler-all-write]
+
+  access-wiretaps:
+    description: may only search wiretaps
+    policies: [dashboard-read, search-read, wiretap_all_modules-read]
+
+  access-module-a:
+    description: searches wiretaps and errors of harness-module-a only
+    policies: [dashboard-read, search-read, wiretap-read, error-read]
+    modules: [harness-module-a]
+
+  access-no-modules:
+    description: may search wiretaps and errors but has no modules assigned, so finds nothing
+    policies: [dashboard-read, search-read, wiretap-read, error-read]
+
+  access-admin-reader:
+    description: reads users, roles, policies, groups and system events, changes nothing
+    policies: [dashboard-read, user_administration-read, role_administration-read, policy_administration-read,
+               group_administration-read, system_event-read]
+
+  access-search-writer:
+    description: holds search write (not read) and wiretap read; Search must be both offered and open
+    policies: [dashboard-read, search-write, wiretap_all_modules-read]
+
+  access-nothing:
+    description: may read system events but has neither the dashboard nor the scheduler to land on
+    policies: [system_event-read]

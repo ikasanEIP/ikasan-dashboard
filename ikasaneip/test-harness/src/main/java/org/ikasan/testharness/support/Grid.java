@@ -80,6 +80,35 @@ public class Grid
             .filter(new Locator.FilterOptions().setHasText(text).setVisible(true)).first();
     }
 
+    /**
+     * Double-click the rendered row having a cell with each of the texts exactly, e.g. a module's flow when several
+     * modules have flows of the same name.
+     */
+    public void doubleClickRowWhere(String... cellTexts)
+    {
+        String tag = java.util.UUID.randomUUID().toString();
+        Object found = root.evaluate("""
+            (g, a) => {
+              const rows = Array.from(g.shadowRoot.querySelectorAll('tbody#items tr:not([hidden])'));
+              for (const r of rows) {
+                const cells = Array.from(r.querySelectorAll('slot')).flatMap(s => s.assignedElements ? s.assignedElements() : []);
+                const texts = cells.map(c => (c.textContent || '').trim());
+                if (a.texts.every(t => texts.includes(t))) {
+                  const cell = cells.find(c => (c.textContent || '').trim() === a.texts[a.texts.length - 1]);
+                  cell.setAttribute('data-harness-target', a.tag);
+                  return true;
+                }
+              }
+              return false;
+            }""", java.util.Map.of("texts", java.util.List.of(cellTexts), "tag", tag));
+        if (!Boolean.TRUE.equals(found))
+        {
+            throw new IllegalStateException("No row with cells " + java.util.List.of(cellTexts));
+        }
+        root.locator("[data-harness-target='" + tag + "']").dblclick();
+        Vaadin.waitForVaadin(root.page());
+    }
+
     /** Double-click the rendered row containing the text - dashboard grids open their detail dialogs this way. */
     public void doubleClickRow(String text)
     {
@@ -187,7 +216,7 @@ public class Grid
 
     private void waitFor(java.util.function.BooleanSupplier condition, String description)
     {
-        long deadline = System.nanoTime() + Duration.ofSeconds(15).toNanos();
+        long deadline = System.nanoTime() + Timeouts.seconds(15).toNanos();
         while (!condition.getAsBoolean())
         {
             if (System.nanoTime() > deadline)
@@ -262,7 +291,7 @@ public class Grid
     /** Wait until the grid has finished loading data from the server. */
     public void waitForLoaded()
     {
-        long deadline = System.nanoTime() + Duration.ofSeconds(30).toNanos();
+        long deadline = System.nanoTime() + Timeouts.seconds(30).toNanos();
         while (Boolean.TRUE.equals(root.evaluate("g => !!g.loading")))
         {
             if (System.nanoTime() > deadline)

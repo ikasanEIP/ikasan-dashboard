@@ -1,5 +1,6 @@
 package org.ikasan.testharness.it.admin;
 
+import org.ikasan.testharness.support.Timeouts;
 import com.microsoft.playwright.Download;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -30,13 +31,27 @@ class AuditIT
 {
     private static final Pattern RECORDS = Pattern.compile("Number of records returned: (\\d+)");
 
-    /** Open the audit view and run the default search (today 00:00 to tomorrow 00:00); returns the grid. */
+    /**
+     * Open the audit view and run the default search (today 00:00 to tomorrow 00:00); returns the grid. The run's own
+     * login is today's first system event and is indexed shortly after it is written, so the search is repeated until
+     * it finds something.
+     */
     private static Grid searchToday(Page page)
     {
         Vaadin.gotoRoute(page, "adminSearchView");
-        page.locator("#systemEventSearchFormSearchButton").click();
-        Vaadin.waitForVaadin(page);
-        assertThat(page.getByText(RECORDS).first()).isVisible();
+        long deadline = System.nanoTime() + Timeouts.seconds(30).toNanos();
+        do
+        {
+            page.locator("#systemEventSearchFormSearchButton").click();
+            Vaadin.waitForVaadin(page);
+            assertThat(page.getByText(RECORDS).first()).isVisible();
+            if (!page.getByText(RECORDS).first().innerText().matches(".*returned: 0 .*"))
+            {
+                break;
+            }
+            page.waitForTimeout(500);
+        }
+        while (System.nanoTime() < deadline);
         Grid grid = new Grid(page.locator("#identifier vaadin-grid").first());
         grid.waitForLoaded();
         return grid;

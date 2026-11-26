@@ -11,9 +11,12 @@ import java.util.List;
  * @param mongo        Mongo connection, used by the seeder
  * @param solr         Solr connection, used by the seeder
  * @param compose      the docker compose stack the harness can run itself
+ * @param dashboardProcess the dashboard run by the harness as a local java process (no docker), on a datastore
+ *                     that is already running
  * @param seed         baseline dataset settings
  * @param expectations where externalised expectations are read from
  * @param run          browser and test selection settings
+ * @param report       test reports
  */
 public record HarnessConfig(
     String env,
@@ -22,11 +25,21 @@ public record HarnessConfig(
     Mongo mongo,
     Solr solr,
     Compose compose,
+    DashboardProcess dashboardProcess,
     Seed seed,
     Scheduler scheduler,
     Expectations expectations,
-    Run run)
+    Run run,
+    Report report)
 {
+    /**
+     * @param reportingLabs write the Reporting Labs HTML report (target/reporting-labs/index.html), which then captures
+     *                      each test's steps and a failed test's screenshot and trace; when off (or when the run does
+     *                      not register its JUnit extension, e.g. from an IDE), the harness keeps its own trace and
+     *                      screenshots of failed tests under target/playwright/
+     */
+    public record Report(boolean reportingLabs) {}
+
     public enum Backend
     {
         mongo, solr;
@@ -45,6 +58,24 @@ public record HarnessConfig(
     public record Solr(String url, String core, String username, String password) {}
 
     public record Compose(boolean enabled, String file, String project, boolean teardown, String dashboardJar) {}
+
+    /**
+     * The dashboard as a local java process, for machines without docker: the datastore (Solr, or MongoDB Atlas) is
+     * already running and the harness starts, restarts (after seeding) and stops the dashboard jar itself.
+     *
+     * @param enabled      run the dashboard as a local process
+     * @param java         the java executable; empty = the one running the harness
+     * @param dashboardJar the dashboard jar (relative to the harness module)
+     * @param jvmArgs      extra JVM arguments, e.g. -Xmx2g
+     * @param log          the dashboard's console log (relative to the harness module)
+     */
+    public record DashboardProcess(boolean enabled, String java, String dashboardJar, List<String> jvmArgs, String log)
+    {
+        public List<String> jvmArgs()
+        {
+            return jvmArgs == null ? List.of() : jvmArgs;
+        }
+    }
 
     /**
      * @param enabled       wipe the datastore and load the dataset before the run
@@ -94,9 +125,12 @@ public record HarnessConfig(
      * @param exclude               skip tests/scenarios with any of these tags
      * @param traceOnFailure        keep a Playwright trace + screenshot for failed tests
      * @param timezone              browser and time-token time zone; empty = the system default
+     * @param timeoutScale          multiplies every timeout and wait (Playwright's and the harness's own); 0 or unset =
+     *                              automatic: 3 on a CI server (environment variable CI=true, as Travis sets), else 1
      */
     public record Run(String browser, boolean headless, int slowMoMillis, int timeoutSeconds, int expectTimeoutSeconds,
-                      List<String> include, List<String> exclude, boolean traceOnFailure, String timezone)
+                      List<String> include, List<String> exclude, boolean traceOnFailure, String timezone,
+                      double timeoutScale)
     {
         /** The configured time zone, or the system default. */
         public java.time.ZoneId zone()

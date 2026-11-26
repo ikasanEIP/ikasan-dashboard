@@ -11,7 +11,7 @@
     "0"
   ],
   "workingDirectory": "",
-  "commandLine": "sleep 30",
+  "commandLine": "sleep 300",
   "minExecutionTime": 0,
   "maxExecutionTime": 600000,
   "contextParameters": [],

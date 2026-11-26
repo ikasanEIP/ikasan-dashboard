@@ -24,6 +24,22 @@ class ConfigLoaderTest
         assertThat(config.expectations().paths()).containsExactly("expectations", "expectations/env/compose-mongo");
     }
 
+    /** A per-backend suite names its environment, which wins over HARNESS_ENV / -Dharness.env (e.g. "all"). */
+    @Test
+    void anExplicitEnvironmentWinsOverTheProcessEnvironment()
+    {
+        Properties props = new Properties();
+        props.setProperty("harness.env", "all");
+
+        HarnessConfig solr = ConfigLoader.load("compose-solr", Map.of("HARNESS_ENV", "all"), props);
+        HarnessConfig mongo = ConfigLoader.load("compose-mongo", Map.of("HARNESS_ENV", "all"), props);
+
+        assertThat(solr.env()).isEqualTo("compose-solr");
+        assertThat(solr.backend()).isEqualTo(HarnessConfig.Backend.solr);
+        assertThat(mongo.env()).isEqualTo("compose-mongo");
+        assertThat(mongo.backend()).isEqualTo(HarnessConfig.Backend.mongo);
+    }
+
     @Test
     void environmentFileIsLayeredOverTheDefaults()
     {
@@ -72,5 +88,27 @@ class ConfigLoaderTest
     {
         assertThatThrownBy(() -> ConfigLoader.load(Map.of("HARNESS_ENV", "nope"), new Properties()))
             .hasMessageContaining("Unknown harness environment 'nope'");
+    }
+
+    /** -Dharness.env=all -Dharness.stack=local: the per-backend suites run on the docker-free environments. */
+    @Test
+    void aStackRenamesTheComposeEnvironments()
+    {
+        assertThat(ConfigLoader.onStack("compose-solr", "local")).isEqualTo("local-solr");
+        assertThat(ConfigLoader.onStack("compose-mongo", "local")).isEqualTo("local-mongo");
+        assertThat(ConfigLoader.onStack("compose-solr", "")).isEqualTo("compose-solr");
+        assertThat(ConfigLoader.onStack("external", "local")).isEqualTo("external");
+    }
+
+    @Test
+    void localEnvironmentsStartNoContainers()
+    {
+        for (String env : java.util.List.of("local-mongo", "local-solr"))
+        {
+            HarnessConfig config = ConfigLoader.load(env, java.util.Map.of(), new java.util.Properties());
+            assertThat(config.compose().enabled()).as(env + " compose").isFalse();
+            assertThat(config.dashboardProcess().enabled()).as(env + " dashboard process").isTrue();
+            assertThat(config.scheduler().fakeAgentHost()).as(env + " fake agent host").isEqualTo("localhost");
+        }
     }
 }

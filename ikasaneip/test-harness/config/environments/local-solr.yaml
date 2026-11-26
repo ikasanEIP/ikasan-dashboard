@@ -1,0 +1,17 @@
+# No docker: a Solr server that is already running, and the dashboard run by the harness as a local java process
+# (dashboardProcess). Nothing is created in docker.
+#
+# The 'ikasan' core must exist, created from the Ikasan configset
+# (persistence/solr/solr-distribution/src/main/resources/ikasan/conf). Seeding WIPES it. Point the harness at it, e.g.
+#   HARNESS_SOLR_URL=http://solrhost:8983/solr HARNESS_SOLR_USERNAME=... HARNESS_SOLR_PASSWORD=... \
+#   mvn -Pall,e2e verify -pl test-harness -Dharness.env=local-solr
+backend: solr
+compose:
+  enabled: false
+dashboardProcess:
+  enabled: true
+solr:
+  url: http://localhost:8983/solr
+# the dashboard runs on this machine, so it reaches the harness's fake agent and fake modules here
+scheduler:
+  fakeAgentHost: localhost

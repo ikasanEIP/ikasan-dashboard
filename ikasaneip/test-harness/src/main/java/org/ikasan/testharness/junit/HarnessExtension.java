@@ -39,21 +39,54 @@ import java.util.Set;
  *     {@link HarnessSession}, {@link DashboardApi} and any page object with a {@code (Page)} constructor</li>
  *     <li>applies the run's tag selection to non-parameterized tests (scenario-driven tests are filtered by
  *     {@link org.ikasan.testharness.support.Expectations})</li>
- *     <li>keeps a trace and a screenshot of failed tests under target/playwright/</li>
+ *     <li>reports each test's Playwright steps, and a failed test's screenshot and trace, in the Reporting Labs HTML
+ *     report (target/reporting-labs/index.html); without it, keeps a trace and screenshots of failed tests under
+ *     target/playwright/</li>
  * </ul>
  */
 public class HarnessExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver,
     ExecutionCondition
 {
     private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(HarnessExtension.class);
+    private static final String REPORTING_LABS = "reportingLabs";
     private static final Set<Class<?>> PAGE_OBJECTS = Set.of(LoginPage.class, SearchPage.class, AppLayout.class,
         AdminGridPage.class, org.ikasan.testharness.pages.scheduler.JobPlansPage.class,
-        org.ikasan.testharness.pages.scheduler.SchedulerPage.class);
+        org.ikasan.testharness.pages.scheduler.SchedulerPage.class, org.ikasan.testharness.pages.HomePage.class,
+        org.ikasan.testharness.pages.DesignerPage.class);
 
+    /** JUnit's switch for extensions registered through their services entry, as Reporting Labs' is. */
+    private static final String AUTODETECTION = "junit.jupiter.extensions.autodetection.enabled";
+
+    /**
+     * Whether Reporting Labs captures this run's tests: the harness setting is on and its JUnit extension is registered
+     * (failsafe sets the autodetection parameter; a plain IDE run does not, and then the harness captures failures
+     * itself). Reporting Labs records its own trace, and a browser context can only have one.
+     */
+    private static boolean reportingLabs(ExtensionContext context)
+    {
+        HarnessConfig.Report report = session(context).config().report();
+        return report != null && report.reportingLabs()
+            && context.getConfigurationParameter(AUTODETECTION).map(Boolean::parseBoolean).orElse(false);
+    }
+
+    /**
+     * The harness environment of this execution: the JUnit configuration parameter {@code harness.env}. A per-backend
+     * suite sets it (one run can then cover several environments); otherwise JUnit falls back to the
+     * {@code -Dharness.env} system property. Null means {@link ConfigLoader#get()} (HARNESS_ENV, ...).
+     */
+    static String env(ExtensionContext context)
+    {
+        return context.getConfigurationParameter("harness.env").filter(env -> !env.isBlank()).orElse(null);
+    }
+
+    /**
+     * The session of this execution, kept in the root context: one per run, or one per suite when per-backend suites
+     * run (each suite is its own execution), and closed with it.
+     */
     public static HarnessSession session(ExtensionContext context)
     {
         return context.getRoot().getStore(NAMESPACE)
-            .getOrComputeIfAbsent(HarnessSession.class, k -> new HarnessSession(), HarnessSession.class);
+            .getOrComputeIfAbsent(HarnessSession.class, k -> new HarnessSession(env(context)), HarnessSession.class);
     }
 
     @Override
@@ -70,7 +103,7 @@ public class HarnessExtension implements BeforeAllCallback, BeforeEachCallback, 
         {
             return ConditionEvaluationResult.enabled("selection applies to test methods / scenarios");
         }
-        HarnessConfig config = ConfigLoader.get();
+        HarnessConfig config = ConfigLoader.get(env(context));
         HarnessConfig.Scheduler scheduler = config.scheduler();
         java.util.Set<String> tags = context.getTags();
         // tests that drive the in-JVM fake agent cannot run against a real (or no) agent
@@ -102,12 +135,25 @@ public class HarnessExtension implements BeforeAllCallback, BeforeEachCallback, 
         HarnessSession session = session(context);
         boolean anonymous = AnnotationSupport.isAnnotated(context.getTestMethod(), Unauthenticated.class)
             || AnnotationSupport.isAnnotated(context.getTestClass(), Unauthenticated.class);
-        BrowserContext browserContext = session.newContext(anonymous ? null : session.authenticatedState());
-        if (session.config().run().traceOnFailure())
+        LoginAs loginAs = AnnotationSupport.findAnnotation(context.getTestMethod(), LoginAs.class)
+            .or(() -> AnnotationSupport.findAnnotation(context.getTestClass(), LoginAs.class)).orElse(null);
+        String state = anonymous ? null : loginAs != null ? session.authenticatedState(loginAs.value()) : session.authenticatedState();
+        BrowserContext browserContext = session.newContext(state);
+        boolean reportingLabs = reportingLabs(context);
+        if (reportingLabs)
+        {
+            // before the first page: the context's pages, and tabs the test opens later, are all recorded. Reporting
+            // Labs' extension (registered before @HarnessTest's) has already opened this test's slot.
+            dev.reportinglabs.playwright.RlPlaywright.attach(browserContext);
+            // which backend the test ran on: a chip and a filter in the report (reporting-labs.dimensions)
+            dev.reportinglabs.core.Rl.meta("backend", session.config().backend().name());
+        }
+        else if (session.config().run().traceOnFailure())
         {
             browserContext.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(false));
         }
         ExtensionContext.Store store = context.getStore(NAMESPACE);
+        store.put(REPORTING_LABS, reportingLabs);
         store.put(BrowserContext.class, browserContext);
         store.put(Page.class, browserContext.newPage());
     }
@@ -118,13 +164,15 @@ public class HarnessExtension implements BeforeAllCallback, BeforeEachCallback, 
         ExtensionContext.Store store = context.getStore(NAMESPACE);
         BrowserContext browserContext = store.remove(BrowserContext.class, BrowserContext.class);
         Page page = store.remove(Page.class, Page.class);
+        boolean reportingLabs = Boolean.TRUE.equals(store.remove(REPORTING_LABS, Boolean.class));
         if (browserContext == null)
         {
             return;
         }
         try
         {
-            boolean trace = session(context).config().run().traceOnFailure();
+            // with Reporting Labs the screenshot and trace were taken when the test finished (before this callback)
+            boolean trace = !reportingLabs && session(context).config().run().traceOnFailure();
             if (trace && context.getExecutionException().isPresent())
             {
                 Path dir = ConfigLoader.harnessRoot().resolve("target/playwright");

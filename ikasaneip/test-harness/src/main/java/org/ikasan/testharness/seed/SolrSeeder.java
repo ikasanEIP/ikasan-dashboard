@@ -1,5 +1,6 @@
 package org.ikasan.testharness.seed;
 
+import org.ikasan.testharness.support.Timeouts;
 import org.ikasan.testharness.config.HarnessConfig;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -27,7 +28,7 @@ public class SolrSeeder implements Seeder
 
     private final String base;
     private final String auth;
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Timeouts.seconds(10)).build();
 
     public SolrSeeder(HarnessConfig config)
     {
@@ -40,7 +41,7 @@ public class SolrSeeder implements Seeder
     private JsonNode request(String path, Object body)
     {
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(base + path))
-            .timeout(Duration.ofMinutes(2))
+            .timeout(Timeouts.of(Duration.ofMinutes(2)))
             .header("Authorization", auth)
             .header("Content-Type", "application/json");
         b = body == null ? b.GET() : b.POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body)));
@@ -94,6 +95,12 @@ public class SolrSeeder implements Seeder
         {
             request("/update?commit=true", documents.subList(i, Math.min(i + 1000, documents.size())));
         }
+    }
+
+    @Override
+    public void delete(List<String> ids)
+    {
+        request("/update?commit=true", Map.of("delete", ids));
     }
 
     @Override

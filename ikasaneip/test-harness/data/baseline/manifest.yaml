@@ -12,7 +12,12 @@
 
 datasets:
   core:
-    description: Small, hand-curated dataset covering event search (wiretaps and errors over two modules).
+    description: Small, hand-curated dataset covering event search (wiretaps, errors, exclusions and replay events over two modules).
     documents:
       - wiretap.ndjson
       - error.ndjson
+      # one exclusion per error whose errorAction is ExcludeEvent; the hospital dialog reads that error by the
+      # exclusion id's errorUri suffix (<module>:exclusion:<errorUri>)
+      - exclusion.ndjson
+      # payloadRaw (what a replay sends to the target module) is base64, as both backends take it
+      - replay.ndjson

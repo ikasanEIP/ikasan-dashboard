@@ -92,8 +92,7 @@ class RolesIT
             Vaadin.fillField(page.locator("#descriptionTf"), String.valueOf(s.input().get("duplicateDescription")));
             page.locator("#saveButton").click();
             Vaadin.waitForVaadin(page);
-            boolean rejected = page.locator("vaadin-notification-card").filter(new Locator.FilterOptions()
-                .setHasText(String.valueOf(s.expect().get("notification")))).count() > 0;
+            boolean rejected = Vaadin.wasNotified(page, String.valueOf(s.expect().get("notification")));
             if (dialog.count() > 0 && Vaadin.button(dialog, "Cancel").isVisible())
             {
                 Vaadin.button(dialog, "Cancel").click();
@@ -164,7 +163,8 @@ class RolesIT
             Grid available = new Grid(select.locator("vaadin-grid").first());
             available.filterBy(0, user);
             available.waitForText(user);
-            available.doubleClickRow(user);
+            // other users' names can contain this one (e.g. personas such as access-admin-reader): pick it exactly
+            available.doubleClickRowWhere(user);
             Vaadin.closeDialog(page, select);
 
             Grid assigned = new Grid(profile.locator("vaadin-grid").first());
@@ -175,9 +175,19 @@ class RolesIT
             assigned.waitForNoText(user);
             Vaadin.closeDialog(page, profile);
         }
-        finally
+        catch (RuntimeException | AssertionError e)
         {
-            deleteRole(page, openRoles(page), name);
+            // clean up, but report what went wrong in the test, not a failure of the clean-up it causes
+            try
+            {
+                deleteRole(page, openRoles(page), name);
+            }
+            catch (RuntimeException | AssertionError cleanUp)
+            {
+                e.addSuppressed(cleanUp);
+            }
+            throw e;
         }
+        deleteRole(page, openRoles(page), name);
     }
 }

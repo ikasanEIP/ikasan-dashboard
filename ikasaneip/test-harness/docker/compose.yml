@@ -35,6 +35,9 @@ x-dashboard: &dashboard
   volumes:
     - ${HARNESS_DASHBOARD_JAR:-../../visualisation/dashboard/target/ikasan-dashboard-5.0.0-SNAPSHOT.jar}:/app/dashboard.jar:ro
     - ./dashboard:/app/harness-config:ro
+    # the business stream designer's integrated system images (integrated.systems.image.path): the designer cannot
+    # open without the directory
+    - ./dashboard/images:/opt/data/images:ro
   healthcheck:
     # the JRE image has no curl: a bare HTTP request over bash's /dev/tcp
     test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/9090 && printf 'GET /actuator/health HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]

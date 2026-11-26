@@ -1,4 +1,4 @@
-# Base configuration for the Ikasan Dashboard test harness.
+  # Base configuration for the Ikasan Dashboard test harness.
 #
 # Layering (later wins), see org.ikasan.testharness.config.ConfigLoader:
 #   1. this file
@@ -45,6 +45,17 @@ compose:
   teardown: false
   # dashboard jar mounted into the container (relative to the harness module)
   dashboardJar: ../visualisation/dashboard/target/ikasan-dashboard-5.0.0-SNAPSHOT.jar
+
+dashboardProcess:
+  # when true the harness runs the dashboard jar as a local java process, against a datastore that is already
+  # running (mongo.uri / solr.url): for machines without docker. See config/environments/local-*.yaml.
+  enabled: false
+  # the java executable; empty = the JVM running the harness
+  java: ""
+  dashboardJar: ../visualisation/dashboard/target/ikasan-dashboard-5.0.0-SNAPSHOT.jar
+  jvmArgs: [-Xmx1g]
+  # the dashboard's console output
+  log: target/dashboard.log
 
 seed:
   # wipe the datastore and load the baseline dataset before the run
@@ -94,3 +105,14 @@ run:
   traceOnFailure: true
   # time zone of the browser (the dashboard shows times in it) and of the time tokens; empty = this machine's zone
   timezone: ""
+  # multiplies every timeout and wait, for slow machines (CI): Playwright's action/navigation/assertion timeouts above,
+  # the tests' waits for asynchronous work (searches, job states, ...) and the dashboard start-up timeout.
+  # 0 = automatic: 3 when the environment variable CI is true (Travis, GitHub Actions, ...), otherwise 1.
+  # Override with HARNESS_RUN_TIMEOUT_SCALE=4 or -Dharness.run.timeoutScale=4.
+  timeoutScale: 0
+
+report:
+  # the Reporting Labs HTML report of the end-to-end tests: target/reporting-labs/index.html, with each test's steps
+  # and a failed test's screenshot and trace (then not written to target/playwright/). Switch off with
+  # -Dharness.report.reportingLabs=false, which also leaves its JUnit extension unregistered (pom.xml).
+  reportingLabs: true

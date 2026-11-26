@@ -1,5 +1,6 @@
 package org.ikasan.testharness.it.scheduler;
 
+import org.ikasan.testharness.support.Timeouts;
 import org.ikasan.testharness.junit.HarnessTest;
 import org.ikasan.testharness.junit.Scenarios;
 import org.ikasan.testharness.pages.scheduler.ContextInstancePage;
@@ -27,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("mutating")
 class JobPlanInstanceRunIT
 {
-    private static final Duration WAIT = Duration.ofSeconds(60);
+    private static final Duration WAIT = Timeouts.seconds(60);
 
     @Test
     @Tag("smoke")

@@ -27,6 +27,7 @@ Run from `ikasaneip`. The harness is not part of the default build.
 ```bash
 mvn -Pall,e2e verify -pl test-harness                                    # Mongo (default)
 mvn -Pall,e2e verify -pl test-harness -Dharness.env=compose-solr         # Solr
+mvn -Pall,e2e verify -pl test-harness -Dharness.env=all                  # Mongo, then Solr, in one run and one report
 mvn -Pall,e2e verify -pl test-harness -Dharness.include=smoke            # only tests/scenarios tagged smoke
 mvn -Pall,e2e verify -pl test-harness -Dit.test=SearchIT                 # one test class
 mvn -Pall,e2e verify -pl test-harness -Dharness.run.headless=false -Dharness.run.slowMoMillis=250   # watch it
@@ -39,6 +40,13 @@ mvn -Pall,e2e verify -pl test-harness -Dharness.include=slow             # slow 
 - `mvn -Pall,e2e test -pl test-harness` runs only the harness's own unit tests (config, tokens, data files). These need no Docker.
 - Tests can also be run from the IDE. Set the working directory to `test-harness` and choose the environment with the `HARNESS_ENV` env var.
 - A full run of the scheduler tests takes about ten minutes per backend, most of it the baseline and the dashboard start.
+- **Both backends in one run** (`-Dharness.env=all`, profile `all-backends` in `pom.xml`):
+  - Failsafe runs `it/MongoBackendSuite` and then `it/SolrBackendSuite`, in one JVM.
+  - Each suite is a JUnit Platform suite that runs every `*IT` with its own environment, so each gets its own baseline, stack, login and scheduler agent.
+  - One Reporting Labs report covers both: each test appears once per backend, with a `backend` chip and filter.
+  - It takes about as long as the two single-backend runs together.
+  - Select tests with tags (`-Dharness.include=smoke`). `-Dit.test` names test classes directly, which bypasses the suites.
+  - `HARNESS_SKIP_BASELINE` is refused, because the stack only holds the last backend.
 
 ### While writing tests
 
@@ -65,14 +73,30 @@ mvn -q exec:java -Dexec.args="stack down"    # remove the stack (and its volumes
       The wipe removes the `dashboardPlatformSetup` marker, so the dashboard re-creates the baseline security data on start-up. That gives the user `admin` / `admin`.
    4. Waits for `/actuator/health`.
 2. **One browser and one UI login.** Each test then gets a fresh browser context that starts already logged in, unless it is marked `@Unauthenticated`.
-3. **Parameters injected into test methods:** `Page`, `BrowserContext`, `HarnessConfig`, `Clock`, `DashboardApi`, `HarnessSession`, `SchedulerApi`, `FakeSchedulerAgent`, and any page object with a `(Page)` constructor.
-4. **Failures:** a failed test leaves a Playwright trace and a screenshot in `target/playwright/`.
+3. **Who is logged in:** admin, unless the test or class says `@Unauthenticated` or `@LoginAs("<persona>")`.
+4. **Parameters injected into test methods:** `Page`, `BrowserContext`, `HarnessConfig`, `Clock`, `DashboardApi`, `HarnessSession`, `SchedulerApi`, `FakeSchedulerAgent`, and any page object with a `(Page)` constructor.
+5. **Report and failures:** each run writes an HTML report, `target/reporting-labs/index.html` (see [Reports](#reports)), with every test's Playwright steps, and a failed test's screenshot and trace.
+   With the report switched off, or when running from an IDE, a failed test instead leaves a Playwright trace and a screenshot of every open tab in `target/playwright/`.
    Open a trace with `mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="show-trace <zip>"`, or drop it onto https://trace.playwright.dev.
-5. **Mutating tests:** classes tagged `@Tag("mutating")` run after all the others (`MutatingLastClassOrderer`).
-6. **The scheduler agent:** the fake agent is started and registered, or the real agent container started and awaited (see [Scheduler](#scheduler)).
-7. **Conditional tests:** tests tagged `slow` run only when included by name (`-Dharness.include=slow`), and tests tagged `real-agent` only with the real agent.
+6. **Mutating tests:** classes tagged `@Tag("mutating")` run after all the others (`MutatingLastClassOrderer`).
+7. **The scheduler agent:** the fake agent is started and registered, or the real agent container started and awaited (see [Scheduler](#scheduler)).
+8. **Conditional tests:** tests tagged `slow` run only when included by name (`-Dharness.include=slow`), and tests tagged `real-agent` only with the real agent.
 
-The stack uses host ports 27117 (Mongo), 8993 (Solr), 9190 (dashboard), 18080 (real scheduler agent) and 18090 (the fake scheduler agent, in the harness JVM). They are deliberately not the defaults, so a local development Mongo or Solr is never touched.
+The stack uses host ports 27117 (Mongo), 8993 (Solr), 9190 (dashboard), 18080 (real scheduler agent) and 18090 (the fake scheduler agent, in the harness JVM) and 18091 (the fake Ikasan module used by the exclusion and replay tests, also in the harness JVM; `-Dharness.fakeModulePort`). They are deliberately not the defaults, so a local development Mongo or Solr is never touched.
+
+## Reports
+
+End-to-end runs write a [Reporting Labs](https://reportinglabs.dev) report: **`target/reporting-labs/index.html`**, one self-contained file to open in a browser or archive.
+- It holds every test (display name, tags, outcome, duration, error), each test's Playwright steps (navigate, click, fill, expect; typed passwords are masked), and, for a failed test, a full-page screenshot and a Playwright trace.
+- The report is written locally only: nothing is uploaded, and no account or API key is needed.
+- Trends: the run history is kept in `target/reporting-labs-history.json`, so `mvn clean` starts it afresh. In CI, archive `target/reporting-labs/`, and keep the history file between builds if you want the trend chart.
+- **Settings:** `src/test/resources/reporting-labs.properties` sets screenshots and traces on failure, steps always, no video and no PDF. `pom.xml` (failsafe) sets the title, environment and output folder. Any `reporting-labs.*` setting can be overridden with `-D`, for example `-Dreporting-labs.playwright.trace=always`.
+- **Off:** `-Dharness.report.reportingLabs=false` (or `report.reportingLabs: false`) writes no report, and the harness goes back to its own failure capture in `target/playwright/`.
+- **How it is wired:**
+  - The Reporting Labs JUnit extension is registered for failsafe only, through `junit.jupiter.extensions.autodetection.enabled`, so the harness's own unit tests are not reported.
+  - `HarnessExtension` attaches each test's browser context with `RlPlaywright.attach`, because tests get `Page` and page objects as parameters, which Reporting Labs' field scan cannot see. That also covers tabs a test opens, such as a job plan instance.
+  - A browser context can record only one trace, so the harness starts its own trace only when Reporting Labs is off.
+  - An IDE run that doesn't set the autodetection parameter keeps the `target/playwright/` capture.
 
 ## Configuration
 
@@ -83,6 +107,50 @@ Settings are layered; later layers win (`config/ConfigLoader`):
 3. `config/local.yaml`. Optional and git-ignored.
 4. `-Dharness.<section>.<key>=value`, for example `-Dharness.dashboard.url=http://host:9090`.
 5. `HARNESS_<SECTION>_<KEY>` environment variables, for example `HARNESS_RUN_INCLUDE=smoke,search` or `HARNESS_MONGO_URI=...`.
+
+### Machines without Docker (`local-solr`, `local-mongo`)
+
+The `local-solr` and `local-mongo` environments create no containers. The datastore must already be running: a Solr server with an `ikasan` core built from the Ikasan configset, or a MongoDB Atlas deployment. The harness then:
+- seeds the datastore;
+- applies the Mongo indexes and Atlas Search index with the Java driver, then waits until the search index can be queried;
+- runs the dashboard jar as a local Java process with the same harness properties as the container (`dashboardProcess`), on the port of `dashboard.url`;
+- restarts the dashboard after seeding, and stops it when the run ends.
+
+Seeding wipes the datastore, so point the harness at a Solr core or Mongo database used only for tests.
+
+```bash
+# Solr
+HARNESS_SOLR_URL=http://solrhost:8983/solr HARNESS_SOLR_USERNAME=... HARNESS_SOLR_PASSWORD=... \
+  mvn -Pall,e2e verify -pl test-harness -Dharness.env=local-solr
+
+# MongoDB Atlas (a database of its own)
+HARNESS_MONGO_URI='mongodb+srv://user:password@cluster/' HARNESS_MONGO_DATABASE=ikasan_harness \
+  mvn -Pall,e2e verify -pl test-harness -Dharness.env=local-mongo
+
+# both backends in one run, as -Dharness.env=all does with docker
+... mvn -Pall,e2e verify -pl test-harness -Dharness.env=all -Dharness.stack=local
+```
+
+Build the dashboard jar first (`mvn -Pall package -pl visualisation/dashboard -DskipTests`), or point `dashboardProcess.dashboardJar` at one. The dashboard runs on the harness's JVM unless `dashboardProcess.java` names another `java`. Its console output goes to `target/dashboard-<backend>.log`, and its last lines are logged if it fails to start.
+
+The fake scheduler agent and fake modules run in the test JVM, and the dashboard reaches them on `localhost`. The real agent (`scheduler.agent: real`) needs one already running: set `scheduler.realAgentUrl` to its URL.
+
+### Slow machines and CI
+
+Every timeout and wait is multiplied by `run.timeoutScale` (`support/Timeouts`). That covers:
+- Playwright's action, navigation and assertion timeouts;
+- the tests' waits for asynchronous work, such as search indexing, job states and module calls;
+- the dashboard start-up timeout and HTTP timeouts.
+
+The default of `0` means automatic: `3` when the environment variable `CI` is `true` (Travis sets it), otherwise `1`. Raise it if a CI machine is slower still, with `HARNESS_RUN_TIMEOUT_SCALE=5` or `-Dharness.run.timeoutScale=5`. Locally, a failing wait still fails at the usual speed.
+
+Only waits are scaled, never data. Seeded events and expectations resolve their time tokens against one anchor taken at seeding, so a long run doesn't move them out of their search windows.
+
+Tests check notifications with `Vaadin.expectNotification`. Its first argument is the page; the second, the notification's text. It checks every notification the page has shown, not just the ones still open. The dashboard closes notifications after 5 seconds, and a slow machine can spend that long between an action and its check.
+
+When writing tests:
+- wait through `Timeouts` (`Timeouts.seconds(30)`), never a bare `Duration`;
+- check notifications with `Vaadin.expectNotification`, not by locating `vaadin-notification-card`.
 
 ### External environments
 
@@ -100,6 +168,8 @@ Seeding is off by default for `external` because it wipes the datastore. If you 
 - Each dataset is a directory of NDJSON files, one document per line.
   - Field names are the shared Ikasan entity fields (`org.ikasan.spec.entity.EntityFields`).
   - The primary key is in `id`. The Mongo seeder stores it as `_id`.
+  - `payloadRaw` (a replay event's raw bytes) is written as base64; the Mongo seeder stores it as BSON binary.
+- The `core` dataset holds wiretaps, errors, exclusions (one per error whose `errorAction` is `ExcludeEvent`; the id is `<module>:exclusion:<errorUri>` and the exclusion dialog reads that error) and replay events, over two modules.
 - Time values can use **time tokens**: `{{now}}`, `{{now-5m}}`, `{{now+30d}}`, `{{today@09:00}}`, `{{now-1d|iso}}`.
   Tokens resolve against a clock anchor: the run start, or `seed.clockAnchor`. Date-based behaviour therefore gives the same results on any day.
 - **Capturing state:** to add data that is easier to create through the dashboard (job plans, business streams, configuration):
@@ -109,6 +179,15 @@ Seeding is off by default for `external` because it wipes the datastore. If you 
   mvn -q exec:java -Dexec.args="capture my-dataset scheduledContext,jobLockCache"
   ```
   This writes one NDJSON file per type, with timestamps turned into tokens, and prints the manifest entry to add.
+
+## Personas (`data/personas.yaml`)
+
+Users with narrower access than admin, for the role-based access tests (`it/access`). Each persona is a user with a role of the same name holding exactly the listed policies (the dashboard's baseline policies, whose names are the authorities the UI checks), optionally scoped to modules and job plans.
+
+- `support/Personas` writes their `securityRole`, `securityPrincipal` and `securityUser` documents straight into the store (the same fields in Mongo and Solr) the first time a test asks for a persona, after the dashboard has created its baseline policies. The password is `{noop}` + `password` from the file.
+- A test (or class) logs in as one with `@LoginAs("access-reader")`; each persona logs in once per session.
+- Seeding personas adds users and roles, so classes that use them are tagged `mutating` and run after the read-only classes (e.g. `AdminGridsIT`, which lists every user and role).
+- `Vaadin.isShown(locator)` answers "is this offered to the user": rendered and not hidden by `setVisible(false)`, regardless of a collapsed menu.
 
 ## Expectations (`expectations/`)
 
@@ -196,7 +275,7 @@ Each fixture is an unpacked job plan bundle (`context/<PLAN>.json`, `jobs/{inter
 | `E2E-CHAIN` | quartz `trigger` &rarr; `okA` (`echo alpha`) &rarr; `okB` (`echo beta`); ends when complete | the happy path |
 | `E2E-FAILURE` | `trigger` &rarr; `failJob` (`echo boom; exit 3`) &rarr; `after` | errors, acknowledge, reset |
 | `E2E-LOGIC` | `trigger` &rarr; `a`, `b`, `c`; `d` = AND(a, b); `e` = OR(b, c) | dependency logic, hold/release all |
-| `E2E-SLOW` | `trigger` &rarr; `slowJob` (`sleep 30`) &rarr; `next` | running jobs, kill |
+| `E2E-SLOW` | `trigger` &rarr; `slowJob` (`sleep 300`) &rarr; `next` | running jobs, kill |
 | `E2E-PARAMS` | `trigger` &rarr; `paramJob` (`echo $GREETING`); plan parameter `GREETING=hello` | parameters |
 | `E2E-GLOBAL` | global event `e2e-go` &rarr; `afterGlobal` | global events |
 | `E2E-NESTED` | child plans `STEP-1` and `STEP-2` joined by a terminal and a start job | nested plans |
@@ -227,21 +306,33 @@ Fixture rules learnt the hard way:
 | `src/main/java/.../config` | `HarnessConfig` (typed config) and `ConfigLoader` |
 | `src/main/java/.../seed` | `Clock` (time tokens), `Dataset`, the `Seeder` interface, `MongoSeeder`, `SolrSeeder` |
 | `src/main/java/.../support` | `Baseline`, `Compose`, `DashboardApi` (JWT REST client), `Expectations`/`Scenario`, `TagFilter`, `Vaadin` and `Grid` helpers |
-| `src/main/java/.../pages` | page objects, one per view |
+| `src/main/java/.../pages` | page objects, one per view (`DesignerPage` reads the draw2d diagram of the business stream designer and viewer in the browser) |
 | `src/main/java/.../junit` | `@HarnessTest`, `HarnessExtension`, `HarnessSession`, `Scenarios`, `@Unauthenticated` |
 | `src/main/java/.../scheduler` | `FakeSchedulerAgent`, `SchedulerApi`, `JobPlans` |
+| `src/main/java/.../module` | `FakeIkasanModule`: stands in for integration modules (exclusion resubmit/ignore, replay targets, flows and their states) |
 | `data/jobplans/` | job plan fixtures |
 | `src/main/java/.../cli` | `HarnessCli`: `seed`, `stack up`/`down`, `capture` |
 | `src/test/java/.../it` | the end-to-end tests (`*IT`, run by failsafe) |
-| `docker/` | the compose stack, the dashboard's harness property overrides, and the real scheduler agent's configuration (`docker/agent`) |
+| `docker/` | the compose stack (the dashboards mount `docker/dashboard/images` as the designer's integrated system images), the dashboard's harness property overrides, and the real scheduler agent's configuration (`docker/agent`) |
 
 ## Coverage
 
 | Test | What it covers | Expectations |
 |---|---|---|
 | `auth/LoginIT` | login (valid, wrong password, unknown user), logout, deep links to plain and parameterised routes | `auth/login.yaml` |
-| `search/SearchIT` | event search: date window, entity types, payload term, grid column filters | `search/*.yaml` |
+| `search/SearchIT` | event search of wiretaps, errors, exclusions and replay events: date window, entity types, payload term, grid column filters | `search/*.yaml` |
+| `search/ExclusionLifecycleIT` *(mutating)* | open an exclusion (fields, error details), resubmit or ignore it from its dialog or in bulk, a module that rejects the resubmission, an exclusion whose error has gone, a module the dashboard has no metadata for (dialog and bulk), bulk action without a selection; checks the module request, the recorded `exclusionEventAction` and that the exclusion leaves the results | (in the test) |
+| `search/ReplayLifecycleIT` *(mutating)* | open a replay event, replay it from its dialog (form validation) or in bulk (the replay manifest), a target that rejects the credentials, bulk replay without a selection; checks the target request (base64 raw payload) and the `replay_audit` written to the store | (in the test) |
+| `search/EventDetailsIT` | the wiretap and error dialogs (fields, event life link, event and error details, XML/JSON/None formatting, download, own window), exporting results as CSV and as a ZIP of JSON files, nothing to export | `search/event-details.yaml` |
+| `search/JsonEventDetailsIT` *(mutating)* | a JSON event is laid out by the JSON format and shown as stored by None | (in the test) |
 | `search/EventLifeIdIT` | the `eventLifeId/{id}` deep link view | `search/event-life-id.yaml` |
+| `access/AccessViewsIT` | per persona: the side menu offers exactly the views the persona may open, and deep links to other views are refused; a user with no landing page is told so and may log out | `access/views.yaml` |
+| `access/AccessSearchIT` | per persona: the entity types it may search, the modules whose events it sees (all, one, none), and whether exclusion resubmit/ignore and replay are offered (bulk and in the dialogs) | (in the test) |
+| `access/AccessAdminIT` | an administration reader cannot add users or add/delete roles | (in the test) |
+| `access/AccessSchedulerIT` *(mutating)* | a scheduler reader may only look at plans and start instances; a writer may also upload, create and enable/disable plans, but not delete them; only a writer may synchronise an agent or download its log; links to the job plan and instance pages turn away users without scheduler access | (in the test) |
+| `home/HomeDashboardIT` *(mutating)* | the home dashboard: flow status counts by state (states asked of fake modules, then a state reported by a module), the modules and business stream grids and filters, the exclusions-per-day and errors-per-minute charts against the store | (in the test) |
+| `ingest/IngestionIT` *(mutating)* | data sent as modules send it (`PUT /rest/harvest/...`): wiretaps, an error and its exclusion, a replay event (replaying the exact bytes sent) and system events arrive in search, the dialogs and the audit view; the audit actor filter finds hyphenated names; malformed data, no token and users without REST access are refused | (in the test) |
+| `stream/BusinessStreamIT` *(mutating)* | business streams: drawn in the designer from a module's flows, a message channel and a connection, saved (stored diagram checked), saved again without a new name, and opened again; Save as validation; deleting from Manage (after confirming); an integrated system added by double-click; the designer refused to users without business stream access; the stream view framing each flow in its state's colour and following state reports; the home dashboard's list, name filter and view link | (in the test) |
 | `admin/AdminNavigationIT` | every Administration menu item opens its view | `admin/navigation.yaml` |
 | `admin/AdminGridsIT` | users, roles, policies, groups, quartz, job locks and sessions grids: content and columns | `admin/grids.yaml` |
 | `admin/UsersIT` *(mutating)* | create user, required-field validation, duplicate usernames, default role, add/remove a role, filter by full username | `admin/users.yaml` |
@@ -258,6 +349,7 @@ Fixture rules learnt the hard way:
 | `scheduler/JobPlanInstanceRunIT` *(mutating)* | an instance runs to completion (complete job rows before and after, initiation order), AND/OR dependencies, plan parameters reach the agent, nested plans, a global event starts every waiting instance | `scheduler/instance-run.yaml` |
 | `scheduler/JobInstanceActionsIT` *(mutating)* | hold/release, skip, disable/reinstate, error &rarr; acknowledge &rarr; reset &rarr; resubmit, submit a command job by hand, submit the scheduled trigger, a running job, hold/release all, disable/enable an instance's scheduled jobs, ignore the duration and end an instance by hand | |
 | `scheduler/ContextInstanceMonitoringIT` *(mutating)* | the active instances grid with every status count, the ERROR filter, ended instances move to the completed grid | |
+| `scheduler/JobPlanEditorIT` *(mutating)* | the visual job plan editor on its own plan (E2E-EDITOR): the child plan's jobs and dependencies drawn; a new command job (form validation, saved, drawn); dependencies drawn between jobs, alone or in an AND box, saved into the plan and shown again; a connection drawn or deleted on the canvas is an unsaved change and is saved; a global event job and a scheduled job (no timezone; its save reported as a success) added; overlapping figures refused; leaving with unsaved changes asks first; bad links show page-not-found; a scheduler reader can look but not change | (in the test) |
 | `scheduler/RealAgentIT` *(real-agent)* | on the real agent: the trigger fired by the agent, command output in the job log (`alpha`, `boom`, `hello` from `$GREETING`), `exit 3` &rarr; ERROR, ending an instance kills a running `sleep` | |
 | `scheduler/CronStartIT` *(slow)* | an instance started and ended by the plan's own time window, then listed as completed | |
 

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Event search (wiretap, error, exclusion, replay) against the baseline.
- * Scenarios: expectations/search/{wiretap,error,combined}.yaml.
+ * Scenarios: expectations/search/{wiretap,error,exclusion,replay,combined}.yaml.
  */
 @HarnessTest
 @Tag("search")
@@ -36,7 +36,7 @@ class SearchIT
 
     static Stream<Scenario> scenarios()
     {
-        return Scenarios.load(List.of("search/wiretap", "search/error", "search/combined"), "search");
+        return Scenarios.load(List.of("search/wiretap", "search/error", "search/exclusion", "search/replay", "search/combined"), "search");
     }
 
     @ParameterizedTest(name = "{0}", allowZeroInvocations = true)

@@ -1,0 +1,26 @@
+# Replay event search scenarios against the 'core' dataset (data/baseline/core/replay.ndjson). Replay events have no
+# component ("not applicable") and show their event id. Replaying does not change them (ReplayLifecycleIT).
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: all replay events in the last day
+    tags: [smoke, replay]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [replay], term: "" }
+    expect:
+      total: 4
+      rowsExact: true
+      rows:
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-001", "Timestamp": "{{now-6m|table}}" }
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-002", "Timestamp": "{{now-12m|table}}" }
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-003", "Timestamp": "{{now-18m|table}}" }
+      - { "Entity Type": "replay", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-004", "Timestamp": "{{now-24m|table}}" }
+
+  - name: replay events for the order module
+    tags: [replay]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [replay], term: "", filters: { moduleName: harness-module-a } }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-001", "Timestamp": "{{now-6m|table}}" }
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-002", "Timestamp": "{{now-12m|table}}" }
+      - { "Entity Type": "replay", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-RPL-003", "Timestamp": "{{now-18m|table}}" }

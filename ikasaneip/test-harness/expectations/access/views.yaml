@@ -1,0 +1,32 @@
+# Which views each persona (data/personas.yaml) may open (AccessViewsIT).
+#
+# views: every view that checks the user's authorities on entry, with its side-menu item (if it has one) and a marker
+# only that view shows. A user without the authority is sent to their landing page instead (the dashboard, for these personas).
+# The menu should offer exactly the views the user may open: an item leading to a view that turns the user away, or a
+# view the user may open without its menu item, is a fault.
+views:
+  - { route: "",                  menuItem: dashboardMenuItem,              marker: { text: "Flow Status" } }
+  - { route: Search,              menuItem: searchMenuItem,                 marker: { selector: "#searchFormSearchButton" } }
+  - { route: scheduler,           menuItem: schedulerMenuItem,              marker: { selector: "#schedulerViewTabs" } }
+  - { route: adminSupportView,    menuItem: supportMenuItem,                marker: { text: "Download the System Events Generated in the Last 24 Hours" } }
+  - { route: adminSearchView,     menuItem: systemEventMenuItem,            marker: { text: "System Events" } }
+  - { route: userManagement,      menuItem: userManagementMenuItem,         marker: { text: "User Management" } }
+  - { route: groupManagement,     menuItem: groupManagementMenuItem,        marker: { text: "Group Management" } }
+  - { route: roleManagement,      menuItem: roleManagementMenuItem,         marker: { text: "Role Management" } }
+  - { route: policyManagement,    menuItem: policyManagementMenuItem,       marker: { text: "Policy Management" } }
+  - { route: userDirectories,     menuItem: userDirectoryManagementMenuItem, marker: { text: "LDAP Configuration" } }
+  - { route: quartzSchedulerView, menuItem: quartzSchedulerViewMenuItem,    marker: { text: "Quartz Scheduler Jobs" } }
+  - { route: sessionsView,        menuItem: sessionManagementViewMenuItem,  marker: { text: "Session Management" } }
+  - { route: jobLockView,         menuItem: jobLockMenuItem,                marker: { text: "Job Lock Management" } }
+  # no menu item of its own (reached from the scheduler view)
+  - { route: contextInstanceMonitoring,                                     marker: { selector: "#contextInstancesTab" } }
+
+# One scenario per persona: the routes above it may open (the authorities each view accepts are in its beforeEnter).
+scenarios:
+  - { name: access-reader,       tags: [smoke], expect: { views: ["", Search, scheduler, quartzSchedulerView, sessionsView, jobLockView, contextInstanceMonitoring] } }
+  - { name: access-operator,     expect: { views: ["", Search, scheduler, quartzSchedulerView, sessionsView, jobLockView, contextInstanceMonitoring] } }
+  - { name: access-wiretaps,     expect: { views: ["", Search] } }
+  - { name: access-module-a,     expect: { views: ["", Search] } }
+  - { name: access-no-modules,   expect: { views: ["", Search] } }
+  - { name: access-admin-reader, expect: { views: ["", adminSupportView, adminSearchView, userManagement, groupManagement, roleManagement, policyManagement] } }
+  - { name: access-search-writer, expect: { views: ["", Search] } }

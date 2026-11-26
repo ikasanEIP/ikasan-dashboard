@@ -1,0 +1,31 @@
+# Exclusion (hospital) search scenarios against the 'core' dataset (data/baseline/core/exclusion.ndjson): one
+# exclusion per error whose errorAction is ExcludeEvent. Exclusions have no component ("not applicable") and show
+# "<event id> / <error uri>". Resubmitting or ignoring an exclusion removes it (ExclusionLifecycleIT, which runs
+# after this read-only class and restores what it actions).
+# rows: every expected grid row with a value for every column (see org.ikasan.testharness.support.GridRows);
+# rowsExact: the grid holds exactly these rows. Timestamps use {{...|table}}, the format the grids display.
+scenarios:
+  - name: all exclusions in the last day
+    tags: [smoke, exclusion]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [exclusion], term: "" }
+    expect:
+      total: 3
+      rowsExact: true
+      rows:
+      - { "Entity Type": "exclusion", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-ERR-001 / err-0001", "Timestamp": "{{now-7m|table}}" }
+      - { "Entity Type": "exclusion", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-ERR-003 / err-0003", "Timestamp": "{{now-21m|table}}" }
+      - { "Entity Type": "exclusion", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-ERR-005 / err-0005", "Timestamp": "{{now-35m|table}}" }
+
+  - name: exclusions for the payment module
+    tags: [exclusion]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [exclusion], term: "", filters: { moduleName: harness-module-b } }
+    expect:
+      rowsExact: true
+      rows:
+      - { "Entity Type": "exclusion", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "not applicable", "Event Id / Error URI": "EVT-ERR-005 / err-0005", "Timestamp": "{{now-35m|table}}" }
+
+  - name: exclusions outside the time window
+    tags: [exclusion]
+    input: { from: "{{now-3d}}", to: "{{now-2d}}", types: [exclusion], term: "" }
+    expect:
+      total: 0

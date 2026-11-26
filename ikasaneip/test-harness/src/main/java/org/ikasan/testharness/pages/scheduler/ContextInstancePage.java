@@ -1,5 +1,6 @@
 package org.ikasan.testharness.pages.scheduler;
 
+import org.ikasan.testharness.support.Timeouts;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.ikasan.testharness.support.Grid;
@@ -118,7 +119,7 @@ public class ContextInstancePage
         try
         {
             confirm.first().waitFor(new Locator.WaitForOptions().setState(
-                com.microsoft.playwright.options.WaitForSelectorState.ATTACHED).setTimeout(2000));
+                com.microsoft.playwright.options.WaitForSelectorState.ATTACHED).setTimeout(Timeouts.millis(2000)));
             Vaadin.confirm(page);
         }
         catch (com.microsoft.playwright.TimeoutError noConfirmation)

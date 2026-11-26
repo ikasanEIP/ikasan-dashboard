@@ -1,5 +1,6 @@
 package org.ikasan.testharness.it.scheduler;
 
+import org.ikasan.testharness.support.Timeouts;
 import com.microsoft.playwright.Page;
 import org.ikasan.testharness.junit.HarnessTest;
 import org.ikasan.testharness.pages.scheduler.JobPlansPage;
@@ -36,11 +37,11 @@ class CronStartIT
         try
         {
             // the window opens at the next full minute
-            String instanceId = awaitLiveInstance(api, Duration.ofSeconds(90));
+            String instanceId = awaitLiveInstance(api, Timeouts.seconds(90));
             assertThat(api.instanceStatus(instanceId)).as("status of the started instance").contains("WAITING");
 
             // ... and closes 90 seconds later, ending the instance
-            api.waitForInstance(instanceId, "ENDED", Duration.ofSeconds(150));
+            api.waitForInstance(instanceId, "ENDED", Timeouts.seconds(150));
 
             Map<String, String> row = new MonitoringPage(page).open().completed().rows().stream()
                 .filter(r -> Objects.equals(instanceId, r.get("Job Plan Instance Id"))).findFirst()

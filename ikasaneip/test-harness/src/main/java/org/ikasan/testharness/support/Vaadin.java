@@ -156,11 +156,87 @@ public final class Vaadin
         waitForVaadin(page);
     }
 
-    /** Assert a notification containing the text is shown (notifications render as vaadin-notification-card). */
-    public static void expectNotification(Page page, String text)
+    /**
+     * Installed in every page (see HarnessSession): records each notification the page shows, with its theme, in
+     * {@code window.__harnessNotifications}. The dashboard closes notifications after a few seconds, which a slow
+     * machine can spend between an action and the check that follows it; the record keeps them.
+     */
+    public static final String NOTIFICATION_RECORDER = """
+        (() => {
+          if (window.__harnessNotifications) return;
+          window.__harnessNotifications = [];
+          // a card's text can sit in its shadow DOM or be slotted into it: read it as rendered, across both
+          const text = node => {
+            if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+            if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return '';
+            let t = '';
+            if (node.shadowRoot) t += ' ' + [...node.shadowRoot.childNodes].map(text).join(' ');
+            if (node.localName === 'slot') t += ' ' + node.assignedNodes({ flatten: true }).map(text).join(' ');
+            else t += ' ' + [...node.childNodes].map(text).join(' ');
+            return t;
+          };
+          const cards = () => [...document.querySelectorAll('vaadin-notification-card'),
+            ...[...document.querySelectorAll('vaadin-notification-container')]
+              .flatMap(c => c.shadowRoot ? [...c.shadowRoot.querySelectorAll('vaadin-notification-card')] : [])];
+          const seen = new WeakMap();
+          // polled, not observed: a mutation observer does not see into shadow roots. Notifications stay for seconds.
+          setInterval(() => cards().forEach(card => {
+            const t = text(card).replace(/\\s+/g, ' ').trim();
+            if (t && seen.get(card) !== t) {
+              seen.set(card, t);
+              window.__harnessNotifications.push({ text: t, theme: card.getAttribute('theme') || '' });
+            }
+          }), 100);
+        })();
+        """;
+
+    /**
+     * Assert a notification containing the text has been shown (even if it has closed since), and return its theme
+     * (e.g. "error"). Each shown notification satisfies one check: a later check for the same text needs a new one.
+     */
+    public static String expectNotification(Page page, String text)
     {
-        assertThat(page.locator("vaadin-notification-card").filter(new Locator.FilterOptions().setHasText(text)).first())
-            .isVisible();
+        try
+        {
+            Object theme = page.waitForFunction("t => { const n = window.__harnessNotifications || [];"
+                + " const i = n.findIndex(x => x.text.includes(t)); if (i < 0) return false;"
+                + " return n.splice(i, 1)[0].theme || ' '; }", normalise(text),
+                new Page.WaitForFunctionOptions().setTimeout(Timeouts.millis(
+                    org.ikasan.testharness.config.ConfigLoader.get().run().expectTimeoutSeconds() * 1000.0))).jsonValue();
+            return String.valueOf(theme).trim();
+        }
+        catch (com.microsoft.playwright.TimeoutError e)
+        {
+            throw new AssertionError("no notification containing \"" + text + "\" was shown; shown: "
+                + page.evaluate("() => window.__harnessNotifications ? window.__harnessNotifications.map(n => n.text)"
+                + " : 'no recorder in ' + location.href")
+                + "; on screen: " + page.locator("vaadin-notification-card").allInnerTexts(), e);
+        }
+    }
+
+    /**
+     * Whether a notification containing the text is shown within a few seconds (the recorder polls); like
+     * expectNotification, it uses it up. For checks where no notification is also an acceptable outcome.
+     */
+    public static boolean wasNotified(Page page, String text)
+    {
+        waitForVaadin(page);
+        try
+        {
+            page.waitForFunction("t => { const n = window.__harnessNotifications || [];"
+                + " const i = n.findIndex(x => x.text.includes(t)); if (i < 0) return false; n.splice(i, 1); return true; }",
+                normalise(text), new Page.WaitForFunctionOptions().setTimeout(Timeouts.millis(3000)));
+            return true;
+        }
+        catch (com.microsoft.playwright.TimeoutError e)
+        {
+            return false;
+        }
+    }
+
+    private static String normalise(String text)
+    {
+        return text.replaceAll("\\s+", " ").trim();
     }
 
     /** A button by its visible text inside the given scope (exact match on the accessible name). */
@@ -208,5 +284,40 @@ public final class Vaadin
         input.press("Enter");
         waitForVaadin(page);
         assertThat(input).hasValue(java.util.regex.Pattern.compile(".*" + item.replaceAll("[.*+?^${}()|\\[\\]\\\\/]", "\\\\$0") + ".*"));
+    }
+
+    /**
+     * Whether a component is shown to the user, judged by the dashboard's own visibility: it is rendered and neither
+     * it nor an ancestor has {@code hidden} (Vaadin's {@code setVisible(false)}). Unlike {@code isVisible} this does not
+     * depend on a collapsed menu or drawer, so it answers "may this user see it?" for menu items and controls alike.
+     * Waits for the view to settle first.
+     */
+    public static boolean isShown(Locator locator)
+    {
+        waitForVaadin(locator.page());
+        if (locator.count() == 0)
+        {
+            return false;
+        }
+        return (Boolean) locator.first().evaluate(
+            "el => { for (let e = el; e; e = e.parentElement) { if (e.hasAttribute('hidden')) return false; } return true; }");
+    }
+
+    /** The text of the (read-only) Ace editor in the scope, e.g. an event dialog's payload. */
+    public static String editorText(Locator scope)
+    {
+        waitForVaadin(scope.page());
+        // lit-ace keeps the text in its Ace editor instance
+        return (String) scope.locator("lit-ace").first().evaluate("el => el.editor ? el.editor.getValue() : el.value");
+    }
+
+    /** Choose an item of a vaadin-select by its text: open it with its value button, then pick the option. */
+    public static void selectOption(Locator select, String item)
+    {
+        Locator button = select.locator("vaadin-select-value-button");
+        (button.count() > 0 ? button.first() : select).click();
+        select.page().getByRole(com.microsoft.playwright.options.AriaRole.OPTION,
+            new Page.GetByRoleOptions().setName(item).setExact(true)).first().click();
+        waitForVaadin(select.page());
     }
 }

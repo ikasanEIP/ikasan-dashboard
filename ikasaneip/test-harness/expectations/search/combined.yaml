@@ -26,3 +26,10 @@ scenarios:
       - { "Entity Type": "error", "Module Name": "harness-module-a", "Flow Name": "Order Flow", "Component Name": "orderProducer", "Event Id / Error URI": "EVT-ERR-003 / err-0003", "Timestamp": "{{now-21m|table}}" }
       - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-004 / err-0004", "Timestamp": "{{now-28m|table}}" }
       - { "Entity Type": "error", "Module Name": "harness-module-b", "Flow Name": "Payment Flow", "Component Name": "paymentConsumer", "Event Id / Error URI": "EVT-ERR-005 / err-0005", "Timestamp": "{{now-35m|table}}" }
+
+  - name: every entity type together
+    tags: [wiretap, error, exclusion, replay]
+    input: { from: "{{now-1d}}", to: "{{now+1h}}", types: [wiretap, error, exclusion, replay], term: "" }
+    expect:
+      total: 24
+      onlyTypes: [wiretap, error, exclusion, replay]

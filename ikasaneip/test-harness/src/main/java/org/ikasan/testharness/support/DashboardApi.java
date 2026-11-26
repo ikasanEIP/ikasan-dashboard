@@ -22,13 +22,24 @@ public class DashboardApi
 
     private final HarnessConfig config;
     private final String base;
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Timeouts.seconds(10)).build();
     private String token;
+
+    private final String username;
+    private final String password;
 
     public DashboardApi(HarnessConfig config)
     {
+        this(config, config.dashboard().restUsername(), config.dashboard().restPassword());
+    }
+
+    /** A client that authenticates as the given user, e.g. a persona, instead of the REST user. */
+    public DashboardApi(HarnessConfig config, String username, String password)
+    {
         this.config = config;
         this.base = config.dashboard().url().replaceAll("/$", "");
+        this.username = username;
+        this.password = password;
     }
 
     public synchronized String authenticate()
@@ -36,7 +47,7 @@ public class DashboardApi
         HttpResponse<String> res = send(HttpRequest.newBuilder(URI.create(base + "/authenticate"))
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(Map.of(
-                "username", config.dashboard().restUsername(), "password", config.dashboard().restPassword()))))
+                "username", username, "password", password))))
             .build());
         if (res.statusCode() != 200)
         {
@@ -58,7 +69,7 @@ public class DashboardApi
             authenticate();
         }
         return send(HttpRequest.newBuilder(URI.create(base + path))
-            .timeout(Duration.ofMinutes(1))
+            .timeout(Timeouts.of(Duration.ofMinutes(1)))
             .header("Authorization", "Bearer " + token)
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
@@ -67,6 +78,17 @@ public class DashboardApi
     }
 
     /** Send a request with the JWT; fails on a non-2xx response. */
+    /** A call without any authentication, e.g. to check an endpoint refuses it. */
+    public HttpResponse<String> callWithoutToken(String method, String path, String body)
+    {
+        return send(HttpRequest.newBuilder(URI.create(base + path))
+            .timeout(Timeouts.of(Duration.ofMinutes(1)))
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body))
+            .build());
+    }
+
     public HttpResponse<String> request(String method, String path, String body)
     {
         HttpResponse<String> res = call(method, path, body);
@@ -104,15 +126,15 @@ public class DashboardApi
     /** Poll {@code /actuator/health} until it reports UP or the configured startup timeout passes. */
     public static void waitForDashboard(HarnessConfig config)
     {
-        HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+        HttpClient http = HttpClient.newBuilder().connectTimeout(Timeouts.seconds(5)).build();
         URI uri = URI.create(config.dashboard().url().replaceAll("/$", "") + "/actuator/health");
-        long deadline = System.nanoTime() + Duration.ofSeconds(config.dashboard().startupTimeoutSeconds()).toNanos();
+        long deadline = System.nanoTime() + Timeouts.seconds(config.dashboard().startupTimeoutSeconds()).toNanos();
         String last = "";
         while (System.nanoTime() < deadline)
         {
             try
             {
-                HttpResponse<String> res = http.send(HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(10)).build(),
+                HttpResponse<String> res = http.send(HttpRequest.newBuilder(uri).timeout(Timeouts.seconds(10)).build(),
                     HttpResponse.BodyHandlers.ofString());
                 if (res.statusCode() == 200 && res.body().matches("(?s).*\"status\"\\s*:\\s*\"UP\".*"))
                 {
@@ -128,6 +150,11 @@ public class DashboardApi
             {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException(e);
+            }
+            if (DashboardProcess.exited())
+            {
+                throw new IllegalStateException("the dashboard process exited while starting; its log ends:\n"
+                    + DashboardProcess.logTail(80));
             }
             try
             {

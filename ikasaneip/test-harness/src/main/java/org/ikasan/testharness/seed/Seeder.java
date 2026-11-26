@@ -18,6 +18,9 @@ public interface Seeder extends AutoCloseable
     /** Insert or replace the documents. */
     void load(List<Map<String, Object>> documents);
 
+    /** Remove the documents with these ids (e.g. ones a test added). */
+    void delete(List<String> ids);
+
     /** Number of documents of a type. */
     long count(String type);
 

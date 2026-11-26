@@ -1,0 +1,19 @@
+# No docker: a MongoDB Atlas deployment that is already running, and the dashboard run by the harness as a local java
+# process (dashboardProcess). Nothing is created in docker.
+#
+# Point it at the deployment (use a database of its own: seeding WIPES it), e.g.
+#   HARNESS_MONGO_URI='mongodb+srv://user:password@cluster.example.com/' HARNESS_MONGO_DATABASE=ikasan_harness \
+#   mvn -Pall,e2e verify -pl test-harness -Dharness.env=local-mongo
+#
+# The harness applies the repo's indexes and Atlas Search index to it (mongo.applyIndexes) and waits until the search
+# index is queryable.
+backend: mongo
+compose:
+  enabled: false
+dashboardProcess:
+  enabled: true
+mongo:
+  uri: mongodb://localhost:27017/
+# the dashboard runs on this machine, so it reaches the harness's fake agent and fake modules here
+scheduler:
+  fakeAgentHost: localhost

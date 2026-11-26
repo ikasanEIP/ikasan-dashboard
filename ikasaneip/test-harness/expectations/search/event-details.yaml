@@ -1,0 +1,23 @@
+# The event dialogs opened from search results (EventDetailsIT), against the 'core' dataset.
+# input:  type (searched alone), row (text of a cell of the row to open: a wiretap's event id cell is a link, so its
+#         timestamp is used), title (the dialog's title)
+# expect: fields (label -> value of the read-only fields), eventLifeIdLink (wiretaps: the event id links to its event
+#         life), payload (the event as stored), errorDetail (errors: shown first, the payload is on its own tab)
+scenarios:
+  - name: wiretap dialog
+    tags: [smoke, wiretap]
+    input: { type: wiretap, row: "{{now-5m|table}}", title: "Wiretap EVT-A-001" }
+    expect:
+      fields: { "Module Name": harness-module-a, "Flow Name": Order Flow, "Component Name": orderConsumer, "Date/Time": "{{now-5m|table}}" }
+      eventLifeIdLink: EVT-A-001
+      payload: "<order><id>ORDER-1001</id><module>harness-module-a</module></order>"
+
+  - name: error dialog
+    tags: [smoke, error]
+    input: { type: error, row: "EVT-ERR-001 / err-0001", title: "Error err-0001" }
+    expect:
+      fields: { "Module Name": harness-module-a, "Flow Name": Order Flow, "Component Name": orderProducer, "Event Id": EVT-ERR-001,
+                "Error URI": err-0001, "Error Action": ExcludeEvent, "Exception Class": java.lang.IllegalStateException,
+                "Date/Time": "{{now-7m|table}}" }
+      errorDetail: "java.lang.IllegalStateException: harness failure 1\n\tat org.ikasan.Harness.run(Harness.java:1)"
+      payload: "<order><id>ORDER-901</id></order>"

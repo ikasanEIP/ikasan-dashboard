@@ -35,10 +35,18 @@
         <version.org.mongodb.driver-sync>5.8.1</version.org.mongodb.driver-sync>
         <version.tools.jackson.dataformat.yaml>3.1.0</version.tools.jackson.dataformat.yaml>
         <version.maven-failsafe-plugin>3.5.3</version.maven-failsafe-plugin>
+        <version.dev.reportinglabs>0.1.35</version.dev.reportinglabs>
         <harness.skip>false</harness.skip>
         <harness.env>compose-mongo</harness.env>
         <harness.include />
         <harness.exclude />
+        <!-- the Reporting Labs HTML report of the end-to-end tests (target/reporting-labs/index.html) -->
+        <harness.report.reportingLabs>true</harness.report.reportingLabs>
+        <!-- the end-to-end tests failsafe runs: each *IT on harness.env; with -Dharness.env=all (profile all-backends)
+             the per-backend suites instead, which run every *IT on Mongo, then on Solr, in one JVM -->
+        <harness.it.includes>**/*IT.java</harness.it.includes>
+        <harness.report.title>Ikasan Dashboard end-to-end (${harness.env})</harness.report.title>
+        <harness.report.env>${harness.env}</harness.report.env>
         <!-- nothing to deploy: the harness is only ever run from source -->
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
@@ -62,6 +70,21 @@
             </exclusions>
         </dependency>
 
+        <!--
+            Reporting Labs: a local, self-contained HTML report (no upload, no API key) with each test's Playwright
+            steps, and a failure screenshot and trace. Compile scope: HarnessExtension (src/main) attaches the browser
+            context to it. Enabled for the end-to-end tests only (failsafe, see harness.report.reportingLabs).
+        -->
+        <dependency>
+            <groupId>dev.reportinglabs</groupId>
+            <artifactId>reporting-labs-junit5</artifactId>
+            <version>${version.dev.reportinglabs}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.reportinglabs</groupId>
+            <artifactId>reporting-labs-playwright</artifactId>
+            <version>${version.dev.reportinglabs}</version>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
@@ -86,6 +109,12 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>compile</scope>
         </dependency>
+        <!-- per-backend suites (MongoBackendSuite, SolrBackendSuite): both backends in one run -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -108,6 +137,37 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-commons</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <!-- and the rest of the platform likewise, for the suite engine -->
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-suite</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-suite-api</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-suite-engine</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-suite-commons</artifactId>
                 <version>1.14.4</version>
             </dependency>
         </dependencies>
@@ -145,12 +205,30 @@
                 <configuration>
                     <skipITs>${harness.skip}</skipITs>
                     <workingDirectory>${project.basedir}</workingDirectory>
+                    <includes>
+                        <include>${harness.it.includes}</include>
+                    </includes>
+                    <!-- MongoBackendSuite before SolrBackendSuite (within a run JUnit orders the classes itself) -->
+                    <runOrder>alphabetical</runOrder>
                     <trimStackTrace>false</trimStackTrace>
+                    <properties>
+                        <!-- registers the Reporting Labs extension (its services entry) for the end-to-end tests only;
+                             the harness's own unit tests (surefire) are not reported -->
+                        <configurationParameters>junit.jupiter.extensions.autodetection.enabled = ${harness.report.reportingLabs}</configurationParameters>
+                    </properties>
                     <systemPropertyVariables>
                         <harness.root>${project.basedir}</harness.root>
+                        <reporting-labs.title>${harness.report.title}</reporting-labs.title>
+                        <reporting-labs.metadata.env>${harness.report.env}</reporting-labs.metadata.env>
+                        <reporting-labs.project.name>${project.name}</reporting-labs.project.name>
+                        <reporting-labs.project.version>${project.version}</reporting-labs.project.version>
+                        <reporting-labs.outputFolder>${project.build.directory}/reporting-labs</reporting-labs.outputFolder>
                     </systemPropertyVariables>
                     <environmentVariables>
                         <HARNESS_ENV>${harness.env}</HARNESS_ENV>
+                        <HARNESS_REPORT_REPORTINGLABS>${harness.report.reportingLabs}</HARNESS_REPORT_REPORTINGLABS>
+                        <!-- no "star us on GitHub" line at the end of local runs -->
+                        <REPORTING_LABS_NO_STAR>1</REPORTING_LABS_NO_STAR>
                         <HARNESS_RUN_INCLUDE>${harness.include}</HARNESS_RUN_INCLUDE>
                         <HARNESS_RUN_EXCLUDE>${harness.exclude}</HARNESS_RUN_EXCLUDE>
                     </environmentVariables>
@@ -166,4 +244,26 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+            mvn -Pall,e2e verify -pl test-harness -Dharness.env=all
+            Runs every end-to-end test on Mongo and then on Solr in one JVM (MongoBackendSuite, SolrBackendSuite), so one
+            Reporting Labs report covers both. Select tests with -Dharness.include=<tags>: -Dit.test bypasses the suites.
+        -->
+        <profile>
+            <id>all-backends</id>
+            <activation>
+                <property>
+                    <name>harness.env</name>
+                    <value>all</value>
+                </property>
+            </activation>
+            <properties>
+                <harness.it.includes>**/*BackendSuite.java</harness.it.includes>
+                <harness.report.title>Ikasan Dashboard end-to-end (mongo + solr)</harness.report.title>
+                <harness.report.env>mongo + solr</harness.report.env>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -35,6 +35,7 @@ public final class ConfigLoader
     private static final YAMLMapper YAML = YAMLMapper.builder().build();
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static volatile HarnessConfig cached;
+    private static final Map<String, HarnessConfig> BY_ENV = new java.util.concurrent.ConcurrentHashMap<>();
 
     private ConfigLoader() {}
 
@@ -54,6 +55,19 @@ public final class ConfigLoader
         return cached;
     }
 
+    /**
+     * The configuration of a named environment (e.g. {@code compose-solr}), loaded once per name: one run can use
+     * several environments, as the per-backend suites do. A blank name means {@link #get()}.
+     */
+    public static HarnessConfig get(String envName)
+    {
+        if (envName == null || envName.isBlank())
+        {
+            return get();
+        }
+        return BY_ENV.computeIfAbsent(envName, name -> load(name, System.getenv(), System.getProperties()));
+    }
+
     /** Root of the test-harness module: {@code -Dharness.root}, else the working directory. */
     public static Path harnessRoot()
     {
@@ -69,7 +83,17 @@ public final class ConfigLoader
 
     public static HarnessConfig load(Map<String, String> env, Map<Object, Object> props)
     {
-        String envName = firstNonBlank(env.get("HARNESS_ENV"), (String) props.get("harness.env"), "compose-mongo");
+        return load(null, env, props);
+    }
+
+    /**
+     * Load the configuration of the named environment, or (blank name) of {@code HARNESS_ENV}, else
+     * {@code -Dharness.env}, else {@code compose-mongo}.
+     */
+    public static HarnessConfig load(String envName, Map<String, String> env, Map<Object, Object> props)
+    {
+        envName = firstNonBlank(envName, env.get("HARNESS_ENV"), (String) props.get("harness.env"), "compose-mongo");
+        envName = onStack(envName, firstNonBlank(env.get("HARNESS_STACK"), (String) props.get("harness.stack"), ""));
         Path configDir = harnessRoot().resolve("config");
         Path envFile = configDir.resolve("environments").resolve(envName + ".yaml");
         if (!Files.exists(envFile))
@@ -83,14 +107,15 @@ public final class ConfigLoader
         for (Map.Entry<Object, Object> e : props.entrySet())
         {
             String key = String.valueOf(e.getKey());
-            if (key.startsWith("harness.") && !key.equals("harness.env") && !key.equals("harness.root"))
+            if (key.startsWith("harness.") && !key.equals("harness.env") && !key.equals("harness.root")
+                && !key.equals("harness.stack"))
             {
                 override(merged, key.substring("harness.".length()).split("\\.", 2), String.valueOf(e.getValue()));
             }
         }
         for (Map.Entry<String, String> e : env.entrySet())
         {
-            if (e.getKey().startsWith("HARNESS_") && !e.getKey().equals("HARNESS_ENV"))
+            if (e.getKey().startsWith("HARNESS_") && !e.getKey().equals("HARNESS_ENV") && !e.getKey().equals("HARNESS_STACK"))
             {
                 overrideFromEnv(merged, e.getKey().substring("HARNESS_".length()), e.getValue());
             }
@@ -107,6 +132,20 @@ public final class ConfigLoader
             }
         }
         return JSON.treeToValue(merged, HarnessConfig.class);
+    }
+
+    /**
+     * The per-backend suites (-Dharness.env=all) name the compose environments; {@code harness.stack} (or
+     * HARNESS_STACK) runs them on another stack instead: {@code local} turns compose-solr into local-solr, for
+     * machines without docker.
+     */
+    static String onStack(String envName, String stack)
+    {
+        if (stack == null || stack.isBlank() || stack.equals("compose") || !envName.startsWith("compose-"))
+        {
+            return envName;
+        }
+        return stack + "-" + envName.substring("compose-".length());
     }
 
     private static ObjectNode readYaml(Path file)

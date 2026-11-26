@@ -1,5 +1,6 @@
 package org.ikasan.testharness.it.scheduler;
 
+import org.ikasan.testharness.support.Timeouts;
 import org.ikasan.testharness.pages.scheduler.ContextInstancePage;
 import org.ikasan.testharness.pages.scheduler.JobPlansPage;
 import org.ikasan.testharness.scheduler.FakeSchedulerAgent;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Shared steps for tests that run job plan instances. */
 final class Instances
 {
-    static final Duration WAIT = Duration.ofSeconds(60);
+    static final Duration WAIT = Timeouts.seconds(60);
     static final String AGENT = "scheduler-agent";
 
     private Instances() {}

@@ -74,7 +74,7 @@ class RealAgentIT
         assertThat(instance.viewLog("paramJob")).containsText("hello");
     }
 
-    /** "sleep 30" runs on the agent; ending the instance by hand kills it. */
+    /** "sleep 300" runs on the agent (long enough to outlast a slow CI machine); ending the instance by hand kills it. */
     @Test
     void endingTheInstanceKillsARunningJob(JobPlansPage jobPlans, SchedulerApi api)
     {

@@ -67,6 +67,11 @@ public final class Baseline
             logger.info("starting {} datastore", config.backend());
             compose.upStore();
         }
+        if (DashboardProcess.enabled(config))
+        {
+            // the datastore is already running; the dashboard caches it, so it is (re)started after seeding
+            DashboardProcess.stop();
+        }
         if (config.seed().enabled())
         {
             Dataset dataset = Dataset.load(config.seed().dataset(), clock);
@@ -93,6 +98,10 @@ public final class Baseline
             logger.info("starting dashboard");
             compose.restartDashboard();
         }
+        else if (DashboardProcess.enabled(config))
+        {
+            DashboardProcess.start(config);
+        }
         logger.info("waiting for dashboard at {}", config.dashboard().url());
         try
         {
@@ -100,7 +109,11 @@ public final class Baseline
         }
         catch (RuntimeException e)
         {
-            if (config.compose().enabled())
+            if (DashboardProcess.enabled(config) && !config.compose().enabled())
+            {
+                logger.error("dashboard log tail:\n{}", DashboardProcess.logTail(150));
+            }
+            else if (config.compose().enabled())
             {
                 try
                 {
